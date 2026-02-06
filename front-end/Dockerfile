@@ -15,7 +15,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/front-end/node_modules ./front-end/node_modules
 COPY shared/ shared/
 COPY front-end/ front-end/
-COPY package.json .
+COPY package.json tsconfig.json ./
 WORKDIR /app/front-end
 EXPOSE 5173
 CMD ["bunx", "vite", "--host", "0.0.0.0"]
