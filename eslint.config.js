@@ -65,6 +65,17 @@ export default tseslint.config(
     },
   },
   {
+    /* Relax type-aware safety rules for test files (excluded from tsconfig composite builds) */
+    files: ["**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+    },
+  },
+  {
     ignores: ["**/dist/", "**/node_modules/", "**/*.config.js"],
   },
 );

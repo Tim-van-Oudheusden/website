@@ -43,5 +43,6 @@
     }
   },
   "include": ["src"],
+  "exclude": ["src/**/*.test.ts"],
   "references": [{ "path": "../shared" }, { "path": "./tsconfig.node.json" }]
 }

@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import { APP_NAME, type HealthCheckResponse, type HelloResponse } from "shared";
+import { APP_NAME, ROUTES, type HealthCheckResponse, type HelloResponse } from "shared";
 
 const HOST = process.env["HOST"] ?? "0.0.0.0";
 const PORT = Number(process.env["PORT"] ?? 3001);
@@ -16,7 +16,7 @@ const app = Fastify({
  *
  * Returns 200 with a HealthCheckResponse body when the service is healthy.
  */
-app.get("/health", (): HealthCheckResponse => {
+app.get(ROUTES.HEALTH, (): HealthCheckResponse => {
   return {
     status: "ok",
     name: APP_NAME,
@@ -30,7 +30,7 @@ app.get("/health", (): HealthCheckResponse => {
  * Called by the front-end HelloButton component via the Vite dev proxy
  * (GET /api/hello → GET /hello).
  */
-app.get("/hello", (): HelloResponse => {
+app.get(ROUTES.HELLO, (): HelloResponse => {
   return {
     message: "hello",
     timestamp: new Date().toISOString(),
@@ -38,7 +38,7 @@ app.get("/hello", (): HelloResponse => {
 });
 
 // Root endpoint
-app.get("/", () => {
+app.get(ROUTES.ROOT, () => {
   return { name: APP_NAME, version: "0.1.0" };
 });
 

@@ -4,6 +4,28 @@
 
 export const APP_NAME = "website";
 
+/* ── Route Constants ── */
+
+/**
+ * Base path prefix used by the front-end API client.
+ *
+ * In development the Vite dev proxy rewrites `/api/*` → `http://localhost:<PORT>/*`,
+ * stripping this prefix before forwarding to the back-end.
+ */
+export const API_BASE = "/api";
+
+/**
+ * Canonical route paths used by both front-end and back-end.
+ *
+ * - The **back-end** registers handlers at these exact paths.
+ * - The **front-end** prefixes them with `API_BASE` before fetching.
+ */
+export const ROUTES = {
+  HELLO: "/hello",
+  HEALTH: "/health",
+  ROOT: "/",
+} as const;
+
 /* ── Shared Interfaces ── */
 
 /**

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import type { HelloResponse } from "shared";
+import { ROUTES, type HelloResponse } from "shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiGet } from "@/lib/api";
@@ -16,7 +16,7 @@ export function HelloButton(): React.JSX.Element {
     setResponse(null);
 
     try {
-      const data = await apiGet<HelloResponse>("/hello");
+      const data = await apiGet<HelloResponse>(ROUTES.HELLO);
       setResponse(data.message);
     } catch (err: unknown) {
       const message =

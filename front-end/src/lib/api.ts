@@ -6,7 +6,7 @@
  * so `/api/hello` → `http://localhost:3001/hello`.
  */
 
-const API_BASE = "/api";
+import { API_BASE } from "shared";
 
 export class ApiError extends Error {
   public readonly status: number;
