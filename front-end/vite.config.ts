@@ -15,6 +15,13 @@ export default defineConfig({
     port: 5173,
     host: true, // Listen on all interfaces (needed for Docker)
     strictPort: true,
+    proxy: {
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api/, ""),
+      },
+    },
   },
   build: {
     outDir: "dist",

@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { HelloButton } from "@/components/HelloButton";
 
 export function App(): React.JSX.Element {
   const [count, setCount] = useState(0);
@@ -39,6 +40,18 @@ export function App(): React.JSX.Element {
           </Button>
           <Button onClick={() => { setCount((c) => c + 1); }}>Increment</Button>
         </CardFooter>
+      </Card>
+
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>Back-end Integration</CardTitle>
+          <CardDescription>
+            Request a greeting from the Fastify back-end
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center gap-4">
+          <HelloButton />
+        </CardContent>
       </Card>
     </div>
   );
