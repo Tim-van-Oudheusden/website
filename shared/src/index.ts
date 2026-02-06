@@ -4,12 +4,30 @@
 
 export const APP_NAME = "website";
 
+/* ── Network Constants ── */
+
+/** Default port the back-end listens on. */
+export const BACKEND_PORT = 3001;
+
+/** Default port the front-end dev server binds to. */
+export const FRONTEND_PORT = 5173;
+
+/**
+ * Default hostname for the back-end when reached from the front-end dev proxy.
+ *
+ * - On the **host** machine: `localhost` (both processes share the same network)
+ * - In **Docker**: overridden via `VITE_BACKEND_HOST` env var to the Docker
+ *   service name (e.g. `back-end`) since each container has its own network
+ *   namespace and `localhost` refers to the front-end container itself.
+ */
+export const BACKEND_HOST = "localhost";
+
 /* ── Route Constants ── */
 
 /**
  * Base path prefix used by the front-end API client.
  *
- * In development the Vite dev proxy rewrites `/api/*` → `http://localhost:<PORT>/*`,
+ * In development the Vite dev proxy rewrites `/api/*` → `http://<backend-host>:<PORT>/*`,
  * stripping this prefix before forwarding to the back-end.
  */
 export const API_BASE = "/api";

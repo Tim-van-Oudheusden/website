@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { API_BASE, ROUTES } from "./index";
+import { API_BASE, BACKEND_HOST, BACKEND_PORT, FRONTEND_PORT, ROUTES } from "./index";
 
 describe("shared route constants", () => {
   test("API_BASE starts with /", () => {
@@ -30,5 +30,27 @@ describe("shared route constants", () => {
 
   test("ROUTES.ROOT is /", () => {
     expect(ROUTES.ROOT).toBe("/");
+  });
+});
+
+describe("shared network constants", () => {
+  test("BACKEND_HOST defaults to localhost", () => {
+    expect(BACKEND_HOST).toBe("localhost");
+  });
+
+  test("BACKEND_PORT is a valid port number", () => {
+    expect(BACKEND_PORT).toBeGreaterThan(0);
+    expect(BACKEND_PORT).toBeLessThanOrEqual(65535);
+    expect(Number.isInteger(BACKEND_PORT)).toBe(true);
+  });
+
+  test("FRONTEND_PORT is a valid port number", () => {
+    expect(FRONTEND_PORT).toBeGreaterThan(0);
+    expect(FRONTEND_PORT).toBeLessThanOrEqual(65535);
+    expect(Number.isInteger(FRONTEND_PORT)).toBe(true);
+  });
+
+  test("BACKEND_PORT and FRONTEND_PORT are different", () => {
+    expect(BACKEND_PORT).not.toBe(FRONTEND_PORT);
   });
 });

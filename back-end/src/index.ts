@@ -1,8 +1,8 @@
 import Fastify from "fastify";
-import { APP_NAME, ROUTES, type HealthCheckResponse, type HelloResponse } from "shared";
+import { APP_NAME, BACKEND_PORT, ROUTES, type HealthCheckResponse, type HelloResponse } from "shared";
 
 const HOST = process.env["HOST"] ?? "0.0.0.0";
-const PORT = Number(process.env["PORT"] ?? 3001);
+const PORT = Number(process.env["PORT"] ?? BACKEND_PORT);
 
 const app = Fastify({
   logger: {

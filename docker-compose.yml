@@ -13,6 +13,13 @@ services:
       - /app/front-end/node_modules
     environment:
       - NODE_ENV=development
+      # Override the proxy target so Vite forwards API requests to the
+      # back-end Docker service instead of localhost (which would be
+      # this container's own loopback and cause ECONNREFUSED).
+      - VITE_BACKEND_HOST=back-end
+    depends_on:
+      back-end:
+        condition: service_healthy
 
   back-end:
     build:

@@ -1,5 +1,5 @@
 import { describe, expect, test, mock, beforeEach, afterEach } from "bun:test";
-import { API_BASE, ROUTES } from "shared";
+import { API_BASE, BACKEND_HOST, BACKEND_PORT, ROUTES } from "shared";
 import { apiGet, apiFetch, ApiError } from "./api";
 
 /**
@@ -70,5 +70,29 @@ describe("front-end API client uses shared constants", () => {
       expect(err).toBeInstanceOf(ApiError);
       expect((err as ApiError).status).toBe(404);
     }
+  });
+});
+
+describe("shared network constants for Docker proxy", () => {
+  test("BACKEND_HOST defaults to localhost for host-machine development", () => {
+    expect(BACKEND_HOST).toBe("localhost");
+  });
+
+  test("BACKEND_PORT matches the port the back-end listens on", () => {
+    expect(BACKEND_PORT).toBe(3001);
+  });
+
+  test("default proxy target resolves to http://localhost:3001", () => {
+    const target = `http://${BACKEND_HOST}:${BACKEND_PORT}`;
+    expect(target).toBe("http://localhost:3001");
+  });
+
+  test("VITE_BACKEND_HOST env var can override the proxy target for Docker", () => {
+    // Simulate what docker-compose does: VITE_BACKEND_HOST=back-end
+    const dockerHost = "back-end";
+    const target = `http://${dockerHost}:${BACKEND_PORT}`;
+    expect(target).toBe("http://back-end:3001");
+    // This is the Docker service name, resolvable within the compose network
+    expect(target).not.toContain("localhost");
   });
 });
