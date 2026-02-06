@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "fastify": "^5.7.4",
     "shared": "workspace:*"
   },
   "scripts": {
-    "dev": "echo 'back-end dev not yet configured'",
-    "build": "echo 'back-end build not yet configured'",
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "start": "bun run src/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
