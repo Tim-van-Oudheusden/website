@@ -1,10 +1,15 @@
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
+import stylistic from "@stylistic/eslint-plugin";
 
 export default tseslint.config(
   eslint.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
   {
+    plugins: {
+      "@stylistic": stylistic,
+    },
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -12,11 +17,51 @@ export default tseslint.config(
       },
     },
     rules: {
+      /* ── Semicolons ── */
+      semi: ["error", "always"],
+      "@stylistic/member-delimiter-style": [
+        "error",
+        {
+          multiline: { delimiter: "semi", requireLast: true },
+          singleline: { delimiter: "semi", requireLast: false },
+        },
+      ],
+
+      /* ── Best practices ── */
       "@typescript-eslint/no-unused-vars": [
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/explicit-function-return-type": [
+        "warn",
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+          allowHigherOrderFunctions: true,
+          allowDirectConstAssertionInArrowFunctions: true,
+        },
+      ],
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        { prefer: "type-imports", fixStyle: "inline-type-imports" },
+      ],
+      "@typescript-eslint/no-import-type-side-effects": "error",
+      "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+      "@typescript-eslint/prefer-nullish-coalescing": "error",
+      "@typescript-eslint/prefer-optional-chain": "error",
+      "@typescript-eslint/no-unnecessary-condition": "warn",
+      "@typescript-eslint/strict-boolean-expressions": "off",
+      "@typescript-eslint/restrict-template-expressions": [
+        "error",
+        { allowNumber: true },
+      ],
+
+      /* ── General quality ── */
+      "no-console": ["warn", { allow: ["warn", "error"] }],
+      eqeqeq: ["error", "always"],
+      "prefer-const": "error",
+      "no-var": "error",
     },
   },
   {

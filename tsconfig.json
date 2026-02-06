@@ -5,14 +5,29 @@
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+
+    /* Strict type-checking */
     "strict": true,
-    "skipLibCheck": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "exactOptionalPropertyTypes": true,
+
+    /* Emit */
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+
+    /* Module */
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noUncheckedIndexedAccess": true
+    "verbatimModuleSyntax": true,
+
+    /* Quality */
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "references": [
     { "path": "./front-end" },

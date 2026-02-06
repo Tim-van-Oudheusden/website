@@ -11,12 +11,12 @@ const app = Fastify({
 });
 
 // Health check endpoint
-app.get("/health", async () => {
+app.get("/health", () => {
   return { status: "ok", name: APP_NAME };
 });
 
 // Root endpoint
-app.get("/", async () => {
+app.get("/", () => {
   return { name: APP_NAME, version: "0.1.0" };
 });
 
@@ -30,4 +30,4 @@ async function start(): Promise<void> {
   }
 }
 
-start();
+void start();

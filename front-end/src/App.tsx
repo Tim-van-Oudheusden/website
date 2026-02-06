@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export function App() {
+export function App(): React.JSX.Element {
   const [count, setCount] = useState(0);
 
   return (
@@ -33,10 +34,10 @@ export function App() {
           </Badge>
         </CardContent>
         <CardFooter className="flex justify-center gap-3">
-          <Button variant="outline" onClick={() => setCount(0)}>
+          <Button variant="outline" onClick={() => { setCount(0); }}>
             Reset
           </Button>
-          <Button onClick={() => setCount((c) => c + 1)}>Increment</Button>
+          <Button onClick={() => { setCount((c) => c + 1); }}>Increment</Button>
         </CardFooter>
       </Card>
     </div>
