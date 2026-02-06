@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import { APP_NAME } from "shared";
+import { APP_NAME, type HealthCheckResponse } from "shared";
 
 const HOST = process.env["HOST"] ?? "0.0.0.0";
 const PORT = Number(process.env["PORT"] ?? 3001);
@@ -11,8 +11,8 @@ const app = Fastify({
 });
 
 // Health check endpoint
-app.get("/health", () => {
-  return { status: "ok", name: APP_NAME };
+app.get("/health", (): HealthCheckResponse => {
+  return { status: "ok", name: APP_NAME, uptime: process.uptime() };
 });
 
 // Root endpoint
