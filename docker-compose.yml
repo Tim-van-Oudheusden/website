@@ -10,6 +10,7 @@ services:
       - ./front-end:/app/front-end
       - ./shared:/app/shared
       - /app/node_modules
+      - /app/front-end/node_modules
     environment:
       - NODE_ENV=development
 

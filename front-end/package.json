@@ -2,12 +2,22 @@
   "name": "front-end",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "shared": "workspace:*"
   },
-  "scripts": {
-    "dev": "echo 'front-end dev not yet configured'",
-    "build": "echo 'front-end build not yet configured'",
-    "typecheck": "tsc --noEmit"
+  "devDependencies": {
+    "@types/react": "^19.2.13",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.3",
+    "vite": "^7.3.1"
   }
 }
