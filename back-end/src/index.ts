@@ -10,9 +10,18 @@ const app = Fastify({
   },
 });
 
-// Health check endpoint
+/**
+ * Health check endpoint — used by Docker HEALTHCHECK, load balancers,
+ * and monitoring tools for periodic liveness/readiness probes.
+ *
+ * Returns 200 with a HealthCheckResponse body when the service is healthy.
+ */
 app.get("/health", (): HealthCheckResponse => {
-  return { status: "ok", name: APP_NAME, uptime: process.uptime() };
+  return {
+    status: "ok",
+    name: APP_NAME,
+    uptime: Math.round(process.uptime()),
+  };
 });
 
 // Root endpoint
