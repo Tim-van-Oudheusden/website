@@ -1,0 +1,13 @@
+{
+  "name": "front-end",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "shared": "workspace:*"
+  },
+  "scripts": {
+    "dev": "echo 'front-end dev not yet configured'",
+    "build": "echo 'front-end build not yet configured'",
+    "typecheck": "tsc --noEmit"
+  }
+}

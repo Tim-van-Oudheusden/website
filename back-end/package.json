@@ -1,0 +1,16 @@
+{
+  "name": "back-end",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "shared": "workspace:*"
+  },
+  "scripts": {
+    "dev": "echo 'back-end dev not yet configured'",
+    "build": "echo 'back-end build not yet configured'",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "bun-types": "^1.3.8"
+  }
+}
