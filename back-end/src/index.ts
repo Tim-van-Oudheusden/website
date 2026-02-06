@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import { APP_NAME, type HealthCheckResponse } from "shared";
+import { APP_NAME, type HealthCheckResponse, type HelloResponse } from "shared";
 
 const HOST = process.env["HOST"] ?? "0.0.0.0";
 const PORT = Number(process.env["PORT"] ?? 3001);
@@ -21,6 +21,19 @@ app.get("/health", (): HealthCheckResponse => {
     status: "ok",
     name: APP_NAME,
     uptime: Math.round(process.uptime()),
+  };
+});
+
+/**
+ * Hello endpoint — responds with a greeting message.
+ *
+ * Called by the front-end HelloButton component via the Vite dev proxy
+ * (GET /api/hello → GET /hello).
+ */
+app.get("/hello", (): HelloResponse => {
+  return {
+    message: "hello",
+    timestamp: new Date().toISOString(),
   };
 });
 
