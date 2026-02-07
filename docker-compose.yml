@@ -9,8 +9,9 @@ services:
     volumes:
       - ./front-end:/app/front-end
       - ./shared:/app/shared
+      - ./package.json:/app/package.json:ro
+      - ./bun.lock:/app/bun.lock
       - /app/node_modules
-      - /app/front-end/node_modules
     environment:
       - NODE_ENV=development
       # Override the proxy target so Vite forwards API requests to the
@@ -31,8 +32,9 @@ services:
     volumes:
       - ./back-end:/app/back-end
       - ./shared:/app/shared
+      - ./package.json:/app/package.json:ro
+      - ./bun.lock:/app/bun.lock
       - /app/node_modules
-      - /app/back-end/node_modules
     environment:
       - NODE_ENV=development
     healthcheck:
