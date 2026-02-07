@@ -175,4 +175,23 @@
     --tw-prose-th-borders: var(--border);
     --tw-prose-td-borders: var(--border);
   }
+
+  /* rehype-pretty-code: show light theme by default, dark in dark mode */
+  [data-rehype-pretty-code-figure] code[data-theme*=" "] span {
+    color: var(--shiki-light);
+    background-color: var(--shiki-light-bg);
+  }
+
+  .dark [data-rehype-pretty-code-figure] code[data-theme*=" "] span {
+    color: var(--shiki-dark);
+    background-color: var(--shiki-dark-bg);
+  }
+
+  [data-rehype-pretty-code-figure] pre {
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    overflow-x: auto;
+  }
 }
