@@ -44,6 +44,32 @@ export const ROUTES = {
   ROOT: "/",
 } as const;
 
+/* ── Content Schema ── */
+
+/** The valid content types for Obsidian frontmatter entries. */
+export const CONTENT_TYPES = ["article", "project"] as const;
+
+/** Union type of valid content types. */
+export type ContentType = (typeof CONTENT_TYPES)[number];
+
+/**
+ * Frontmatter fields expected in Obsidian markdown files.
+ *
+ * This is the contract between the back-end (which parses frontmatter)
+ * and the front-end (which displays it).
+ */
+export interface ContentFrontmatter {
+  title: string;
+  description: string;
+  /** ISO 8601 date string. */
+  date: string;
+  tags: string[];
+  type: ContentType;
+  draft: boolean;
+  /** Derived from filename if absent. */
+  slug?: string | undefined;
+}
+
 /* ── Shared Interfaces ── */
 
 /**
