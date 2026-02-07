@@ -1,7 +1,14 @@
 ---
 title: My operating system is a container image, yes, really
+slug: my-operating-system-is-a-container-image-yes-really
+description: The experience of running an atomic Linux OS
+type: article
 socialImage: images/cover.png
 publishDate: 2025-04-13
+tags:
+  - Bazzite
+  - Bluefin
+  - Docker
 ---
 # The discovery
 We all have our opinions on the directions of Windows the last couple of years. As a Software Engineer, mine were... not that positive. So I jumped ship to Linux in late 2022, and as most do I started trying various spins a.k.a. "distro hopping", from KDE neon, to Arch, to Linux Mint, until I eventually discovered [Fedora](https://fedoraproject.org/). In a nutshell, Fedora is known to be a balance between the "bleeding edge" (a.k.a. the latest features and updates) and the more "conservative" Linux spins. Or, in other words, you get the shiny new stuff after it's been tested decently. 

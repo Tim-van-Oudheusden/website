@@ -1,7 +1,12 @@
 ---
 title: Yoga Nidra, a way to be at peace in chaos
+slug: yoga-nidra-a-way-to-be-at-peace-in-chaos
+description: How Eastern methods can help in a western life
+type: article
 socialImage: images/cover.png
 publishDate: 2025-01-17
+tags:
+  - Meditation
 ---
 # How I discovered Yoga Nidra
 Like many people around the world, I too experienced difficulties when Covid19 struck the world back in 2020. My performance at the university was in a steep decline and my personal life wasn't any better either. We are social animals, and removing this aspect of our lives causes distress and somberness. 
