@@ -10,6 +10,7 @@ const ThemeContext = createContext<{
   setTheme: (theme: Theme) => void;
 }>({
   theme: "system",
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   setTheme: () => {},
 });
 
