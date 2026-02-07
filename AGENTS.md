@@ -48,3 +48,28 @@ bd sync               # Sync with git
 - **Run the full suite after every change** - Not just the new test. AI refactoring frequently breaks existing functionality
 - **Never modify tests to make them pass** - Fix the implementation, not the test. Never delete, skip, comment out, or weaken assertions. Never add `@pytest.mark.skip`, `@ts-expect-error`, `# type: ignore`, or similar suppressions to silence failures
 - **Don't over-implement** - If the test passes, the implementation is done. Do not add code that is not required by a failing test
+
+## Dependency Management
+
+### Ask First
+- **Never install, upgrade, or remove a package without explicit user approval.** State the package name, version, and why it is needed
+- **Never use `--force` or `--legacy-peer-deps`** (or Bun equivalents) to bypass dependency conflicts. Report the conflict and ask for guidance
+
+### Before Proposing a New Dependency
+- **Verify the package exists** on the official registry and has a real repository with meaningful history and downloads. LLMs hallucinate package names (~20% of AI-suggested packages don't exist), and attackers register these names with malicious payloads (slopsquatting)
+- **Check whether the functionality already exists** in the language stdlib, Web APIs, or a dependency the project already has. Do not add packages for things like URL parsing (`new URL()`), deep cloning (`structuredClone()`), or other built-ins
+- **Check whether the package is deprecated or superseded.** Do not suggest packages from training data that have been replaced (e.g. `moment` -> `date-fns`, `request` -> `fetch`)
+
+### Version Discipline
+- **Always specify an explicit version** when installing (e.g. `bun add foo@3.2.1`), never bare `bun add foo`
+- **Match the version range style** already used in package.json (exact, caret, tilde). Do not mix conventions
+- **Never upgrade a major version as a side-effect** of another change. Major upgrades are their own task/PR
+
+### Lock Files
+- **Never manually edit lock files** (`bun.lock`). They must only be modified by running the package manager
+- To resolve lock file conflicts: accept one side, delete the lock file, re-run `bun install`, and commit the result
+- Always commit lock file changes alongside package.json changes
+
+### Removal
+- Before removing a dependency, **search the entire codebase** for all imports, requires, and dynamic references to it
+- Check that no other package depends on it as a peer dependency
