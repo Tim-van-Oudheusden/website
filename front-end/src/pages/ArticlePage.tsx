@@ -25,12 +25,13 @@ export function ArticlePage(): React.JSX.Element {
 
   useEffect(() => {
     if (!slug) return;
+    const contentSlug = slug;
 
     let cancelled = false;
 
     async function fetchArticle(): Promise<void> {
       try {
-        const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", slug!);
+        const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", contentSlug);
         const data = await apiGet<ArticleData>(path);
         if (!cancelled) {
           setArticle(data);

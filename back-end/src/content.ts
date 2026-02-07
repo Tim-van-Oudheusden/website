@@ -2,6 +2,7 @@ import { readdir, readFile } from "fs/promises";
 import { join, basename } from "path";
 import matter from "gray-matter";
 import type { ContentFrontmatter, ContentType } from "shared";
+import { rewriteObsidianImageEmbeds } from "./obsidian";
 
 /** Content item with frontmatter only (for listing pages). */
 export type ContentListItem = ContentFrontmatter;
@@ -32,7 +33,7 @@ export async function listContent(contentDir: string, options?: ListContentOptio
     const { data } = matter(raw);
     const frontmatter = data as ContentFrontmatter;
 
-    if (process.env["NODE_ENV"] === "production" && frontmatter.draft) {
+    if (process.env.NODE_ENV === "production" && frontmatter.draft) {
       continue;
     }
 
@@ -76,7 +77,7 @@ export async function getContentBySlug(
     const fileSlug = frontmatter.slug ?? basename(file, ".md");
     if (fileSlug !== slug) continue;
 
-    if (process.env["NODE_ENV"] === "production" && frontmatter.draft) {
+    if (process.env.NODE_ENV === "production" && frontmatter.draft) {
       return null;
     }
 
@@ -88,7 +89,7 @@ export async function getContentBySlug(
       type: frontmatter.type,
       draft: frontmatter.draft,
       slug: fileSlug,
-      body: content,
+      body: rewriteObsidianImageEmbeds(content),
     };
   }
 
