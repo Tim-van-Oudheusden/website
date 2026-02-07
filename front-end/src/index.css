@@ -1,3 +1,14 @@
+/*
+ * Responsive Breakpoint Strategy (Tailwind CSS v4 defaults)
+ * ---------------------------------------------------------
+ * Phone:   < 640px   (default / no prefix)
+ * Tablet:  640-1023px (sm: and md: prefixes)
+ * Desktop: >= 1024px  (lg:, xl:, 2xl: prefixes)
+ *
+ * Design mobile-first: write base styles for phone, then layer
+ * on sm/md/lg overrides. Use Tailwind responsive utilities in
+ * markup (e.g. p-4 sm:p-6 lg:p-8) rather than custom media queries.
+ */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -45,6 +56,29 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/*
+ * Global Color Scheme (shadCN / Tailwind CSS v4)
+ * -----------------------------------------------
+ * Colors are defined as CSS custom properties using oklch() and mapped
+ * to Tailwind utilities via the @theme block above.
+ *
+ * Semantic tokens — use these in components:
+ *   --background / --foreground     Page background & default text
+ *   --card / --card-foreground      Card surfaces & their text
+ *   --popover / --popover-foreground  Dropdowns, tooltips, sheets
+ *   --primary / --primary-foreground  Main action buttons & links
+ *   --secondary / --secondary-foreground  Secondary/subtle actions
+ *   --muted / --muted-foreground    Disabled states, placeholder text
+ *   --accent / --accent-foreground  Hover highlights, active states
+ *   --destructive                   Error & danger actions
+ *   --border / --input / --ring     Borders, form inputs, focus rings
+ *
+ * To change the palette: edit the oklch() values below in both
+ * :root (light) and .dark (dark). Keep foreground/background pairs
+ * with sufficient contrast (WCAG AA ≥ 4.5:1 for text).
+ *
+ * Base palette: stone (neutral warm)
+ */
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
