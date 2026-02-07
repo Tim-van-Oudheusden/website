@@ -5,6 +5,7 @@ import { ROUTES } from "shared";
 import { apiGet, ApiError } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface ArticleData {
   title: string;
@@ -97,7 +98,9 @@ export function ArticlePage(): React.JSX.Element {
             ))}
           </div>
         </header>
-        <MarkdownRenderer content={article.body} />
+        <ErrorBoundary>
+          <MarkdownRenderer content={article.body} />
+        </ErrorBoundary>
       </article>
     </main>
   );
