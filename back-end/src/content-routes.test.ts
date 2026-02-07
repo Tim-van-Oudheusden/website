@@ -47,4 +47,23 @@ describe("content API routes", () => {
     const res = await app.inject({ method: "GET", url: "/content/nonexistent" });
     expect(res.statusCode).toBe(404);
   });
+
+  test("GET /content?type=article returns only articles", async () => {
+    const res = await app.inject({ method: "GET", url: "/content?type=article" });
+    expect(res.statusCode).toBe(200);
+
+    const body = res.json() as ContentListItem[];
+    expect(body.length).toBeGreaterThan(0);
+    for (const item of body) {
+      expect(item.type).toBe("article");
+    }
+  });
+
+  test("GET /content?type=project returns empty array (no projects in test data)", async () => {
+    const res = await app.inject({ method: "GET", url: "/content?type=project" });
+    expect(res.statusCode).toBe(200);
+
+    const body = res.json() as ContentListItem[];
+    expect(body).toEqual([]);
+  });
 });

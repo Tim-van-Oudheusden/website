@@ -1,7 +1,7 @@
 import { readdir, readFile } from "fs/promises";
 import { join, basename } from "path";
 import matter from "gray-matter";
-import type { ContentFrontmatter } from "shared";
+import type { ContentFrontmatter, ContentType } from "shared";
 
 /** Content item with frontmatter only (for listing pages). */
 export type ContentListItem = ContentFrontmatter;
@@ -11,11 +11,17 @@ export interface ContentItem extends ContentFrontmatter {
   body: string;
 }
 
+/** Optional filters for listing content. */
+export interface ListContentOptions {
+  type?: ContentType | undefined;
+}
+
 /**
  * List all content items with frontmatter only (no body).
  * Filters out drafts when NODE_ENV is "production".
+ * Optionally filters by content type.
  */
-export async function listContent(contentDir: string): Promise<ContentListItem[]> {
+export async function listContent(contentDir: string, options?: ListContentOptions): Promise<ContentListItem[]> {
   const files = await readdir(contentDir);
   const mdFiles = files.filter((f) => f.endsWith(".md"));
 
@@ -27,6 +33,10 @@ export async function listContent(contentDir: string): Promise<ContentListItem[]
     const frontmatter = data as ContentFrontmatter;
 
     if (process.env["NODE_ENV"] === "production" && frontmatter.draft) {
+      continue;
+    }
+
+    if (options?.type !== undefined && frontmatter.type !== options.type) {
       continue;
     }
 

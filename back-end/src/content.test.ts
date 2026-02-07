@@ -33,4 +33,20 @@ describe("content service", () => {
     const item = await getContentBySlug("nonexistent", CONTENT_DIR);
     expect(item).toBeNull();
   });
+
+  test("listContent filters by type when provided", async () => {
+    const articles = await listContent(CONTENT_DIR, { type: "article" });
+    expect(articles.length).toBeGreaterThan(0);
+    for (const item of articles) {
+      expect(item.type).toBe("article");
+    }
+
+    const projects = await listContent(CONTENT_DIR, { type: "project" });
+    expect(projects.length).toBe(0); // no project files in test content
+  });
+
+  test("listContent returns all types when no filter", async () => {
+    const all = await listContent(CONTENT_DIR);
+    expect(all.length).toBeGreaterThan(0);
+  });
 });
