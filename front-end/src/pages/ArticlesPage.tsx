@@ -16,7 +16,7 @@ export function ArticlesPage(): React.JSX.Element {
 
     async function fetchArticles(): Promise<void> {
       try {
-        const data = await apiGet<ContentFrontmatter[]>(ROUTES.CONTENT);
+        const data = await apiGet<ContentFrontmatter[]>(`${ROUTES.CONTENT}?type=article`);
         if (!cancelled) {
           setArticles(data);
         }
