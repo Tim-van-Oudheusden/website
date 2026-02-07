@@ -2,23 +2,14 @@ import * as React from "react";
 import { memo } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypePrettyCode from "rehype-pretty-code";
+import rehypeHighlight from "rehype-highlight";
 import type { Components } from "react-markdown";
-import type { Options as RehypePrettyCodeOptions } from "rehype-pretty-code";
+import "highlight.js/styles/github.css";
 
 export interface MarkdownRendererProps {
   /** Raw markdown string (frontmatter already stripped). */
   content: string;
 }
-
-/** rehype-pretty-code configuration with light/dark themes. */
-const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
-  theme: {
-    dark: "github-dark",
-    light: "github-light",
-  },
-  keepBackground: false,
-};
 
 /** Custom component overrides for react-markdown. */
 const components: Components = {
@@ -67,7 +58,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     <article className="prose dark:prose-invert max-w-none">
       <Markdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[[rehypePrettyCode, rehypePrettyCodeOptions]]}
+        rehypePlugins={[rehypeHighlight]}
         components={components}
       >
         {content}
