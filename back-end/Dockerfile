@@ -14,6 +14,7 @@ FROM base AS dev
 COPY --from=deps /app/node_modules ./node_modules
 COPY shared/ shared/
 COPY back-end/ back-end/
+COPY content/ content/
 COPY front-end/package.json front-end/package.json
 COPY package.json tsconfig.json ./
 WORKDIR /app/back-end
@@ -28,6 +29,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/back-end/node_modules ./back-end/node_modules
 COPY shared/ shared/
 COPY back-end/ back-end/
+COPY content/ content/
 COPY package.json tsconfig.json ./
 WORKDIR /app/back-end
 EXPOSE 3001
