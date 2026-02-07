@@ -28,3 +28,6 @@ docker-compose.override.yml
 # bv (beads viewer) local config and caches
 .bv/
 .bv.lock
+
+# beads transient socket lock
+.beads/bd.sock.startlock

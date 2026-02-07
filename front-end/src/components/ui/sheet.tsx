@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type --
+   These are thin Radix wrapper components where inferred return types are intentional. */
 import * as React from "react";
 import { XIcon } from "lucide-react";
 import { Dialog as SheetPrimitive } from "radix-ui";
