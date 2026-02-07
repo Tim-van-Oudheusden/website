@@ -37,3 +37,14 @@ bd sync               # Sync with git
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
+
+## Testing
+
+- **TDD must be used** - Write tests before implementation code
+- **Quality over quantity** - Fewer meaningful tests that cover real behaviour are better than many shallow tests
+- **One test at a time** - Write one failing test, make it pass, refactor, then write the next. Do not generate an entire test suite up front
+- **Confirm the test fails first** - Run each new test and verify it fails for the expected reason before writing any implementation. This catches phantom tests that pass trivially
+- **Test behaviour, not implementation** - Assert against observable outputs, return values, and side effects. Never assert on internal state or private methods. Tests that break on refactor (without behaviour change) are wrong
+- **Run the full suite after every change** - Not just the new test. AI refactoring frequently breaks existing functionality
+- **Never modify tests to make them pass** - Fix the implementation, not the test. Never delete, skip, comment out, or weaken assertions. Never add `@pytest.mark.skip`, `@ts-expect-error`, `# type: ignore`, or similar suppressions to silence failures
+- **Don't over-implement** - If the test passes, the implementation is done. Do not add code that is not required by a failing test
