@@ -58,6 +58,72 @@ describe("content service", () => {
     expect(all.length).toBeGreaterThan(0);
   });
 
+  test("listContent treats publishDate-only frontmatter as an article", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "publish-date-only.md"),
+        [
+          "---",
+          "title: Publish Date Only",
+          "publishDate: 2025-07-02",
+          "---",
+          "",
+          "# Publish Date Only",
+        ].join("\n"),
+      );
+
+      const items = await listContent(tempContentDir, { type: "article" });
+      expect(items).toHaveLength(1);
+
+      const first = items[0];
+      if (first === undefined) {
+        throw new Error("Expected one content item");
+      }
+      expect(first.type).toBe("article");
+      expect(first.date.startsWith("2025-07-02")).toBe(true);
+      expect(first.tags).toEqual([]);
+      expect(first.draft).toBe(false);
+      expect(first.slug).toBe("publish-date-only");
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
+  test("getContentBySlug normalizes publishDate-only frontmatter", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "publish-date-details.md"),
+        [
+          "---",
+          "title: Publish Date Details",
+          "publishDate: 2025-07-03",
+          "---",
+          "",
+          "# Publish Date Details",
+        ].join("\n"),
+      );
+
+      const item = await getContentBySlug("publish-date-details", tempContentDir);
+      expect(item).not.toBeNull();
+      if (item === null) {
+        throw new Error("Expected publish-date-details content item");
+      }
+
+      expect(item.type).toBe("article");
+      expect(item.date.startsWith("2025-07-03")).toBe(true);
+      expect(item.tags).toEqual([]);
+      expect(item.draft).toBe(false);
+      expect(item.description).toBe("");
+      expect(item.body).toContain("# Publish Date Details");
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
   test("getContentBySlug rewrites Obsidian image embeds to site image URLs", async () => {
     const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
 

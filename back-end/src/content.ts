@@ -17,6 +17,40 @@ export interface ListContentOptions {
   type?: ContentType | undefined;
 }
 
+function normalizeDate(value: unknown): string | undefined {
+  if (typeof value === "string" && value.trim() !== "") {
+    return value;
+  }
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString();
+  }
+
+  return undefined;
+}
+
+function normalizeFrontmatter(file: string, value: unknown): ContentFrontmatter | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+
+  const raw = value as Record<string, unknown>;
+
+  const title = typeof raw["title"] === "string" ? raw["title"] : undefined;
+  const date = normalizeDate(raw["date"]) ?? normalizeDate(raw["publishDate"]);
+  if (title === undefined || date === undefined) {
+    return null;
+  }
+
+  const description = typeof raw["description"] === "string" ? raw["description"] : "";
+  const tags = Array.isArray(raw["tags"]) ? raw["tags"].filter((tag): tag is string => typeof tag === "string") : [];
+  const type = raw["type"] === "article" || raw["type"] === "project" ? raw["type"] : "article";
+  const draft = typeof raw["draft"] === "boolean" ? raw["draft"] : false;
+  const slug = typeof raw["slug"] === "string" && raw["slug"] !== "" ? raw["slug"] : basename(file, ".md");
+
+  return { title, description, date, tags, type, draft, slug };
+}
+
 /**
  * List all content items with frontmatter only (no body).
  * Filters out drafts when NODE_ENV is "production".
@@ -31,7 +65,10 @@ export async function listContent(contentDir: string, options?: ListContentOptio
   for (const file of mdFiles) {
     const raw = await readFile(join(contentDir, file), "utf-8");
     const { data } = matter(raw);
-    const frontmatter = data as ContentFrontmatter;
+    const frontmatter = normalizeFrontmatter(file, data);
+    if (frontmatter === null) {
+      continue;
+    }
 
     if (process.env.NODE_ENV === "production" && frontmatter.draft) {
       continue;
@@ -41,8 +78,6 @@ export async function listContent(contentDir: string, options?: ListContentOptio
       continue;
     }
 
-    const slug = frontmatter.slug ?? basename(file, ".md");
-
     items.push({
       title: frontmatter.title,
       description: frontmatter.description,
@@ -50,7 +85,7 @@ export async function listContent(contentDir: string, options?: ListContentOptio
       tags: frontmatter.tags,
       type: frontmatter.type,
       draft: frontmatter.draft,
-      slug,
+      slug: frontmatter.slug,
     });
   }
 
@@ -72,10 +107,12 @@ export async function getContentBySlug(
   for (const file of mdFiles) {
     const raw = await readFile(join(contentDir, file), "utf-8");
     const { data, content } = matter(raw);
-    const frontmatter = data as ContentFrontmatter;
+    const frontmatter = normalizeFrontmatter(file, data);
+    if (frontmatter === null) {
+      continue;
+    }
 
-    const fileSlug = frontmatter.slug ?? basename(file, ".md");
-    if (fileSlug !== slug) continue;
+    if (frontmatter.slug !== slug) continue;
 
     if (process.env.NODE_ENV === "production" && frontmatter.draft) {
       return null;
@@ -88,7 +125,7 @@ export async function getContentBySlug(
       tags: frontmatter.tags,
       type: frontmatter.type,
       draft: frontmatter.draft,
-      slug: fileSlug,
+      slug: frontmatter.slug,
       body: rewriteObsidianImageEmbeds(content),
     };
   }
