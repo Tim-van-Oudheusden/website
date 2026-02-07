@@ -4,58 +4,152 @@ import { tmpdir } from "os";
 import { mkdtemp, rm, writeFile } from "fs/promises";
 import { getContentBySlug, listContent } from "./content";
 
-const CONTENT_DIR = resolve(import.meta.dirname, "../../content");
+function articleMarkdown(
+  overrides: Partial<{
+    title: string;
+    description: string;
+    date: string;
+    slug: string;
+    tags: string[];
+    body: string;
+    type: "article" | "project";
+    draft: boolean;
+  }> = {},
+): string {
+  const title = overrides.title ?? "Sample Article";
+  const description = overrides.description ?? "Sample description";
+  const date = overrides.date ?? "2026-02-07T12:00:00Z";
+  const slug = overrides.slug ?? "sample-article";
+  const tags = overrides.tags ?? ["sample"];
+  const body = overrides.body ?? "# Sample Article\n\nBody text";
+  const type = overrides.type ?? "article";
+  const draft = overrides.draft ?? false;
+
+  return [
+    "---",
+    `title: ${title}`,
+    `description: ${description}`,
+    `date: ${date}`,
+    "tags:",
+    ...tags.map((tag) => `  - ${tag}`),
+    `type: ${type}`,
+    `draft: ${draft}`,
+    `slug: ${slug}`,
+    "---",
+    "",
+    body,
+  ].join("\n");
+}
 
 describe("content service", () => {
   test("listContent returns items with frontmatter but no body", async () => {
-    const items = await listContent(CONTENT_DIR);
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
 
-    expect(items.length).toBeGreaterThan(0);
+    try {
+      await writeFile(
+        resolve(tempContentDir, "sample-article.md"),
+        articleMarkdown(),
+      );
 
-    const first = items[0];
-    if (first === undefined) {
-      throw new Error("Expected at least one content item");
+      const items = await listContent(tempContentDir);
+      expect(items).toHaveLength(1);
+
+      const first = items[0];
+      if (first === undefined) {
+        throw new Error("Expected one content item");
+      }
+      expect(first.title).toBe("Sample Article");
+      expect(first.type).toBe("article");
+      expect(first.tags).toContain("sample");
+      expect(first.slug).toBe("sample-article");
+      expect(first).not.toHaveProperty("body");
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
     }
-    expect(first.title).toBe("Hello World");
-    expect(first.type).toBe("article");
-    expect(first.tags).toContain("example");
-    expect(first.slug).toBe("hello-world");
-    // listContent should NOT include the body
-    expect(first).not.toHaveProperty("body");
   });
 
   test("getContentBySlug returns frontmatter and body", async () => {
-    const item = await getContentBySlug("hello-world", CONTENT_DIR);
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
 
-    expect(item).not.toBeNull();
-    if (item === null) {
-      throw new Error("Expected hello-world content item");
+    try {
+      await writeFile(
+        resolve(tempContentDir, "sample-article.md"),
+        articleMarkdown({ body: "# Sample Article\n\n## Details\n\nMore text" }),
+      );
+
+      const item = await getContentBySlug("sample-article", tempContentDir);
+      expect(item).not.toBeNull();
+      if (item === null) {
+        throw new Error("Expected sample-article content item");
+      }
+      expect(item.title).toBe("Sample Article");
+      expect(item.slug).toBe("sample-article");
+      expect(item.body).toContain("# Sample Article");
+      expect(item.body).toContain("## Details");
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
     }
-    expect(item.title).toBe("Hello World");
-    expect(item.slug).toBe("hello-world");
-    expect(item.body).toContain("# Hello World");
-    expect(item.body).toContain("## Text Formatting");
   });
 
   test("getContentBySlug returns null for nonexistent slug", async () => {
-    const item = await getContentBySlug("nonexistent", CONTENT_DIR);
-    expect(item).toBeNull();
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(resolve(tempContentDir, "sample-article.md"), articleMarkdown());
+
+      const item = await getContentBySlug("nonexistent", tempContentDir);
+      expect(item).toBeNull();
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
   });
 
   test("listContent filters by type when provided", async () => {
-    const articles = await listContent(CONTENT_DIR, { type: "article" });
-    expect(articles.length).toBeGreaterThan(0);
-    for (const item of articles) {
-      expect(item.type).toBe("article");
-    }
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
 
-    const projects = await listContent(CONTENT_DIR, { type: "project" });
-    expect(projects.length).toBe(0); // no project files in test content
+    try {
+      await writeFile(
+        resolve(tempContentDir, "sample-article.md"),
+        articleMarkdown({ slug: "sample-article", type: "article" }),
+      );
+      await writeFile(
+        resolve(tempContentDir, "sample-project.md"),
+        articleMarkdown({
+          title: "Sample Project",
+          slug: "sample-project",
+          type: "project",
+        }),
+      );
+
+      const articles = await listContent(tempContentDir, { type: "article" });
+      expect(articles).toHaveLength(1);
+      expect(articles[0]).toHaveProperty("type", "article");
+      expect(articles[0]).toHaveProperty("slug", "sample-article");
+
+      const projects = await listContent(tempContentDir, { type: "project" });
+      expect(projects).toHaveLength(1);
+      expect(projects[0]).toHaveProperty("type", "project");
+      expect(projects[0]).toHaveProperty("slug", "sample-project");
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
   });
 
   test("listContent returns all types when no filter", async () => {
-    const all = await listContent(CONTENT_DIR);
-    expect(all.length).toBeGreaterThan(0);
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(resolve(tempContentDir, "sample-article.md"), articleMarkdown());
+      await writeFile(
+        resolve(tempContentDir, "sample-project.md"),
+        articleMarkdown({ slug: "sample-project", type: "project" }),
+      );
+
+      const all = await listContent(tempContentDir);
+      expect(all).toHaveLength(2);
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
   });
 
   test("listContent treats publishDate-only frontmatter as an article", async () => {
