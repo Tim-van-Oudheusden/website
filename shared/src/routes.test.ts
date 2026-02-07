@@ -20,6 +20,8 @@ describe("shared route constants", () => {
     expect(ROUTES).toHaveProperty("HELLO");
     expect(ROUTES).toHaveProperty("HEALTH");
     expect(ROUTES).toHaveProperty("ROOT");
+    expect(ROUTES).toHaveProperty("CONTENT");
+    expect(ROUTES).toHaveProperty("CONTENT_BY_SLUG");
   });
 
   test("ROUTES values are strings", () => {

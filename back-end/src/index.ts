@@ -1,5 +1,7 @@
+import { resolve } from "path";
 import Fastify from "fastify";
 import { APP_NAME, BACKEND_PORT, ROUTES, type HealthCheckResponse, type HelloResponse } from "shared";
+import { registerContentRoutes } from "./content-routes";
 
 const HOST = process.env["HOST"] ?? "0.0.0.0";
 const PORT = Number(process.env["PORT"] ?? BACKEND_PORT);
@@ -41,6 +43,10 @@ app.get(ROUTES.HELLO, (): HelloResponse => {
 app.get(ROUTES.ROOT, () => {
   return { name: APP_NAME, version: "0.1.0" };
 });
+
+// Content routes
+const CONTENT_DIR = process.env["CONTENT_DIR"] ?? resolve(import.meta.dirname, "../../content");
+registerContentRoutes(app, CONTENT_DIR);
 
 async function start(): Promise<void> {
   try {

@@ -42,6 +42,8 @@ export const ROUTES = {
   HELLO: "/hello",
   HEALTH: "/health",
   ROOT: "/",
+  CONTENT: "/content",
+  CONTENT_BY_SLUG: "/content/:slug",
 } as const;
 
 /* ── Content Schema ── */
