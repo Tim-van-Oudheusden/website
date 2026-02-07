@@ -17,6 +17,7 @@ dist/
 .idea/
 *.swp
 *.swo
+content/.obsidian/
 
 # OS
 .DS_Store
