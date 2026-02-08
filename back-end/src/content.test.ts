@@ -215,6 +215,50 @@ describe("content service", () => {
     }
   });
 
+  test("listContent skips files missing required title/date frontmatter", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "missing-title.md"),
+        [
+          "---",
+          "publishDate: 2025-07-04",
+          "---",
+          "",
+          "# Missing Title",
+        ].join("\n"),
+      );
+      await writeFile(
+        resolve(tempContentDir, "missing-date.md"),
+        [
+          "---",
+          "title: Missing Date",
+          "---",
+          "",
+          "# Missing Date",
+        ].join("\n"),
+      );
+      await writeFile(
+        resolve(tempContentDir, "valid-entry.md"),
+        [
+          "---",
+          "title: Valid Entry",
+          "publishDate: 2025-07-05",
+          "---",
+          "",
+          "# Valid Entry",
+        ].join("\n"),
+      );
+
+      const items = await listContent(tempContentDir, { type: "article" });
+      expect(items).toHaveLength(1);
+      expect(items[0]).toHaveProperty("slug", "valid-entry");
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
   test("getContentBySlug normalizes publishDate-only frontmatter", async () => {
     const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
 
@@ -243,6 +287,100 @@ describe("content service", () => {
       expect(item.draft).toBe(false);
       expect(item.description).toBe("");
       expect(item.body).toContain("# Publish Date Details");
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
+  test("getContentBySlug applies optional defaults and ignores unsupported category values", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "defaults-and-category.md"),
+        [
+          "---",
+          "title: Defaults And Category",
+          "publishDate: 2025-07-06",
+          "category: Unsupported",
+          "---",
+          "",
+          "# Defaults And Category",
+        ].join("\n"),
+      );
+
+      const item = await getContentBySlug("defaults-and-category", tempContentDir);
+      expect(item).not.toBeNull();
+      if (item === null) {
+        throw new Error("Expected defaults-and-category content item");
+      }
+
+      expect(item.description).toBe("");
+      expect(item.tags).toEqual([]);
+      expect(item.type).toBe("article");
+      expect(item.draft).toBe(false);
+      expect(item.category).toBeUndefined();
+      expect(item.slug).toBe("defaults-and-category");
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
+  test("listContent prefers date over publishDate when both are present", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "date-precedence.md"),
+        [
+          "---",
+          "title: Date Precedence",
+          "date: 2025-08-01",
+          "publishDate: 2025-01-01",
+          "---",
+          "",
+          "# Date Precedence",
+        ].join("\n"),
+      );
+
+      const items = await listContent(tempContentDir, { type: "article" });
+      expect(items).toHaveLength(1);
+      expect(items[0]?.date.startsWith("2025-08-01")).toBe(true);
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
+  test("listContent skips files with non-object frontmatter", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "invalid-frontmatter.md"),
+        [
+          "---",
+          "- not",
+          "- a map",
+          "---",
+          "",
+          "# Invalid Frontmatter",
+        ].join("\n"),
+      );
+      await writeFile(
+        resolve(tempContentDir, "valid-frontmatter.md"),
+        [
+          "---",
+          "title: Valid Frontmatter",
+          "publishDate: 2025-07-10",
+          "---",
+          "",
+          "# Valid Frontmatter",
+        ].join("\n"),
+      );
+
+      const items = await listContent(tempContentDir, { type: "article" });
+      expect(items).toHaveLength(1);
+      expect(items[0]).toHaveProperty("slug", "valid-frontmatter");
     } finally {
       await rm(tempContentDir, { recursive: true, force: true });
     }

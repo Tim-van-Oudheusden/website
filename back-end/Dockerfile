@@ -7,7 +7,7 @@ COPY package.json bun.lock ./
 COPY front-end/package.json front-end/package.json
 COPY back-end/package.json back-end/package.json
 COPY shared/package.json shared/package.json
-RUN bun install --frozen-lockfile || bun install
+RUN bun install --frozen-lockfile
 
 # Development — Fastify dev server with file watching
 FROM base AS dev
@@ -18,10 +18,11 @@ COPY content/ content/
 COPY front-end/package.json front-end/package.json
 COPY package.json tsconfig.json ./
 WORKDIR /app/back-end
+ENV HOST=0.0.0.0
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD bun -e "fetch('http://localhost:3001/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
-CMD ["sh", "-c", "cd /app && bun install && cd /app/back-end && bun run --watch src/index.ts"]
+CMD ["sh", "-c", "cd /app && bun install --frozen-lockfile && cd /app/back-end && bun run --watch src/index.ts"]
 
 # Production
 FROM base AS prod
@@ -32,6 +33,7 @@ COPY back-end/ back-end/
 COPY content/ content/
 COPY package.json tsconfig.json ./
 WORKDIR /app/back-end
+ENV HOST=0.0.0.0
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD bun -e "fetch('http://localhost:3001/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"

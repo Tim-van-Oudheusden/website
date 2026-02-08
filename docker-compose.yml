@@ -38,6 +38,9 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      # Explicitly expose from inside the container so host/peer containers
+      # can reach Fastify. The app default remains loopback for local runs.
+      - HOST=0.0.0.0
     healthcheck:
       test: ["CMD", "bun", "-e", "fetch('http://localhost:3001/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
       interval: 30s
