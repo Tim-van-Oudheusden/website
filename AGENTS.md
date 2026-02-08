@@ -44,6 +44,7 @@ bd sync               # Sync with git
 - NEVER stop before committing - that leaves work stranded in the working tree
 - NEVER say "ready to commit when you are" - YOU must commit (and push if applicable)
 - If push fails, resolve and retry until it succeeds
+- Every commit message MUST follow Conventional Commits format (for example: `feat(scope): short summary`)
 
 ## Testing
 
