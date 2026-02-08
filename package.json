@@ -14,7 +14,8 @@
     "build": "bun run --filter '*' build",
     "lint": "eslint .",
     "test": "bun run --filter '*' test",
-    "typecheck": "bun run --filter '*' typecheck"
+    "typecheck:root": "tsc -b --noEmit",
+    "typecheck": "bun run --filter '*' typecheck && tsc -b --noEmit"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
