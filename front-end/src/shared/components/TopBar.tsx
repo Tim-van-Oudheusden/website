@@ -1,7 +1,8 @@
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { MenuIcon } from "lucide-react";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import {
   Sheet,
@@ -20,9 +21,29 @@ const navLinks = [
 
 export function TopBar(): React.JSX.Element {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    function handleScroll(): void {
+      setScrolled(window.scrollY > 0);
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
-    <header className="bg-background sticky top-0 z-40 w-full border-b">
+    <header
+      className={cn(
+        "bg-background sticky top-0 z-40 w-full border-b transition-shadow",
+        scrolled ? "shadow-md" : "",
+      )}
+      data-scrolled={String(scrolled)}
+    >
       <div className="mx-auto flex h-14 max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="text-lg font-semibold tracking-tight">
           Website

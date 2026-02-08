@@ -16,4 +16,14 @@ describe("TopBar", () => {
     expect(html).not.toContain("bg-background/80");
     expect(html).toContain("bg-background");
   });
+
+  test("does not render shadow in initial (unscrolled) state", () => {
+    const html = renderTopBar();
+    expect(html).not.toContain("shadow-md");
+  });
+
+  test("exposes a data-scrolled attribute for scroll-aware styling", () => {
+    const html = renderTopBar();
+    expect(html).toContain('data-scrolled="false"');
+  });
 });
