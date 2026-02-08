@@ -22,7 +22,11 @@ export function ProjectsPage(): React.JSX.Element {
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : "Failed to load projects");
+          let message = "Failed to load projects";
+          if (err instanceof ApiError) {
+            message = err.message;
+          }
+          setError(message);
         }
       } finally {
         if (!cancelled) {

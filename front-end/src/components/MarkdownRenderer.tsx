@@ -14,11 +14,19 @@ export interface MarkdownRendererProps {
 /** Custom component overrides for react-markdown. */
 const components: Components = {
   a({ href, children, ...rest }) {
-    const isExternal = href?.startsWith("http");
+    const isExternal = href?.startsWith("http") === true;
+    let externalLinkProps: {
+      target?: string;
+      rel?: string;
+    } = {};
+    if (isExternal) {
+      externalLinkProps = { target: "_blank", rel: "noopener noreferrer" };
+    }
+
     return (
       <a
         href={href}
-        {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        {...externalLinkProps}
         {...rest}
       >
         {children}

@@ -37,21 +37,47 @@ function normalizeFrontmatter(file: string, value: unknown): ContentFrontmatter 
 
   const raw = value as Record<string, unknown>;
 
-  const title = typeof raw["title"] === "string" ? raw["title"] : undefined;
+  let title: string | undefined;
+  if (typeof raw["title"] === "string") {
+    title = raw["title"];
+  }
   const date = normalizeDate(raw["date"]) ?? normalizeDate(raw["publishDate"]);
   if (title === undefined || date === undefined) {
     return null;
   }
 
-  const description = typeof raw["description"] === "string" ? raw["description"] : "";
-  const tags = Array.isArray(raw["tags"]) ? raw["tags"].filter((tag): tag is string => typeof tag === "string") : [];
-  const type = raw["type"] === "article" || raw["type"] === "project" ? raw["type"] : "article";
-  const draft = typeof raw["draft"] === "boolean" ? raw["draft"] : false;
-  const category = typeof raw["category"] === "string"
+  let description = "";
+  if (typeof raw["description"] === "string") {
+    description = raw["description"];
+  }
+
+  let tags: string[] = [];
+  if (Array.isArray(raw["tags"])) {
+    tags = raw["tags"].filter((tag): tag is string => typeof tag === "string");
+  }
+
+  let type: ContentType = "article";
+  if (raw["type"] === "article" || raw["type"] === "project") {
+    type = raw["type"];
+  }
+
+  let draft = false;
+  if (typeof raw["draft"] === "boolean") {
+    draft = raw["draft"];
+  }
+
+  let category: ArticleCategory | undefined;
+  if (
+    typeof raw["category"] === "string"
     && (ARTICLE_CATEGORIES as readonly string[]).includes(raw["category"])
-    ? (raw["category"] as ArticleCategory)
-    : undefined;
-  const slug = typeof raw["slug"] === "string" && raw["slug"] !== "" ? raw["slug"] : basename(file, ".md");
+  ) {
+    category = raw["category"] as ArticleCategory;
+  }
+
+  let slug = basename(file, ".md");
+  if (typeof raw["slug"] === "string" && raw["slug"] !== "") {
+    slug = raw["slug"];
+  }
 
   return { title, description, date, tags, type, draft, category, slug };
 }

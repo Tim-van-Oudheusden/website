@@ -26,7 +26,11 @@ function applyTheme(theme: Theme): void {
 export function ThemeProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const [theme, setThemeState] = useState<Theme>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === "light" || stored === "dark" ? stored : "system";
+    if (stored === "light" || stored === "dark") {
+      return stored;
+    }
+
+    return "system";
   });
 
   const setTheme = (next: Theme): void => {

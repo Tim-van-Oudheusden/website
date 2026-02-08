@@ -48,7 +48,10 @@ function Button({
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
   }): React.JSX.Element {
-  const Comp = asChild ? Slot.Root : "button";
+  let Comp: React.ElementType = "button";
+  if (asChild) {
+    Comp = Slot.Root;
+  }
 
   return (
     <Comp

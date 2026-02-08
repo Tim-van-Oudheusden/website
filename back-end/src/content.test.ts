@@ -27,6 +27,10 @@ function articleMarkdown(
   const type = overrides.type ?? "article";
   const draft = overrides.draft ?? false;
   const category = overrides.category;
+  const categoryLines: string[] = [];
+  if (category !== undefined) {
+    categoryLines.push(`category: ${category}`);
+  }
 
   return [
     "---",
@@ -37,7 +41,7 @@ function articleMarkdown(
     ...tags.map((tag) => `  - ${tag}`),
     `type: ${type}`,
     `draft: ${draft}`,
-    ...(category === undefined ? [] : [`category: ${category}`]),
+    ...categoryLines,
     `slug: ${slug}`,
     "---",
     "",

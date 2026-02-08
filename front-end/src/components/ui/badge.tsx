@@ -33,7 +33,10 @@ function Badge({
   ...props
 }: React.ComponentProps<"span"> &
   VariantProps<typeof badgeVariants> & { asChild?: boolean }): React.JSX.Element {
-  const Comp = asChild ? Slot.Root : "span";
+  let Comp: React.ElementType = "span";
+  if (asChild) {
+    Comp = Slot.Root;
+  }
 
   return (
     <Comp

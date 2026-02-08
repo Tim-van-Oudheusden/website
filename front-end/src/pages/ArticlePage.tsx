@@ -41,7 +41,11 @@ export function ArticlePage(): React.JSX.Element {
           if (err instanceof ApiError && err.status === 404) {
             setNotFound(true);
           } else {
-            setError(err instanceof ApiError ? err.message : "Failed to load article");
+            let message = "Failed to load article";
+            if (err instanceof ApiError) {
+              message = err.message;
+            }
+            setError(message);
           }
         }
       } finally {

@@ -45,6 +45,7 @@ bd sync               # Sync with git
 - NEVER say "ready to commit when you are" - YOU must commit (and push if applicable)
 - If push fails, resolve and retry until it succeeds
 - Every commit message MUST follow Conventional Commits format (for example: `feat(scope): short summary`)
+- Do NOT use short-hand if expressions (`condition ? this : that`); use explicit `if/else` blocks only
 
 ## Testing
 

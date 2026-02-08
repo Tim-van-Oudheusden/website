@@ -53,7 +53,11 @@ export function ArticlesPage(): React.JSX.Element {
         }
       } catch (err) {
         if (!cancelled) {
-          setListError(err instanceof ApiError ? err.message : "Failed to load articles");
+          let message = "Failed to load articles";
+          if (err instanceof ApiError) {
+            message = err.message;
+          }
+          setListError(message);
         }
       } finally {
         if (!cancelled) {
@@ -86,7 +90,11 @@ export function ArticlesPage(): React.JSX.Element {
         }
       } catch (err) {
         if (!cancelled) {
-          setArticleError(err instanceof ApiError ? err.message : "Failed to load article");
+          let message = "Failed to load article";
+          if (err instanceof ApiError) {
+            message = err.message;
+          }
+          setArticleError(message);
           setSelectedArticle(null);
         }
       } finally {
@@ -136,6 +144,10 @@ export function ArticlesPage(): React.JSX.Element {
             {ARTICLE_CATEGORIES.map((category) => {
               const isOpen = openCategories[category];
               const categoryArticles = groupedArticles[category];
+              let chevronRotationClass = "rotate-0";
+              if (isOpen) {
+                chevronRotationClass = "rotate-90";
+              }
 
               return (
                 <Collapsible
@@ -150,7 +162,7 @@ export function ArticlesPage(): React.JSX.Element {
                       <ChevronRight
                         className={cn(
                           "size-4 transition-transform",
-                          isOpen ? "rotate-90" : "rotate-0",
+                          chevronRotationClass,
                         )}
                       />
                       <Folder className="size-4" />
@@ -161,20 +173,27 @@ export function ArticlesPage(): React.JSX.Element {
                     </Button>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="space-y-1 pt-1 pl-6">
-                    {categoryArticles.map((article) => (
-                      <button
-                        key={article.slug}
-                        type="button"
-                        onClick={() => { setSelectedSlug(article.slug); }}
-                        className={cn(
-                          "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-                          article.slug === selectedSlug ? "bg-accent text-accent-foreground" : "text-muted-foreground",
-                        )}
-                      >
-                        <FileText className="size-4" />
-                        <span className="truncate">{article.title}</span>
-                      </button>
-                    ))}
+                    {categoryArticles.map((article) => {
+                      let articleStateClass = "text-muted-foreground";
+                      if (article.slug === selectedSlug) {
+                        articleStateClass = "bg-accent text-accent-foreground";
+                      }
+
+                      return (
+                        <button
+                          key={article.slug}
+                          type="button"
+                          onClick={() => { setSelectedSlug(article.slug); }}
+                          className={cn(
+                            "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
+                            articleStateClass,
+                          )}
+                        >
+                          <FileText className="size-4" />
+                          <span className="truncate">{article.title}</span>
+                        </button>
+                      );
+                    })}
                   </CollapsibleContent>
                 </Collapsible>
               );

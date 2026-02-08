@@ -19,14 +19,19 @@ export function HelloButton(): React.JSX.Element {
       const data = await apiGet<HelloResponse>(ROUTES.HELLO);
       setResponse(data.message);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Failed to reach back-end";
+      let message = "Failed to reach back-end";
+      if (err instanceof Error) {
+        message = err.message;
+      }
       setError(message);
     } finally {
       setLoading(false);
     }
+  }
+
+  let buttonText = "Say Hello";
+  if (loading) {
+    buttonText = "Requesting...";
   }
 
   return (
@@ -37,7 +42,7 @@ export function HelloButton(): React.JSX.Element {
         variant="default"
         size="lg"
       >
-        {loading ? "Requesting..." : "Say Hello"}
+        {buttonText}
       </Button>
 
       {response !== null && (

@@ -41,7 +41,11 @@ export function ProjectPage(): React.JSX.Element {
           if (err instanceof ApiError && err.status === 404) {
             setNotFound(true);
           } else {
-            setError(err instanceof ApiError ? err.message : "Failed to load project");
+            let message = "Failed to load project";
+            if (err instanceof ApiError) {
+              message = err.message;
+            }
+            setError(message);
           }
         }
       } finally {
