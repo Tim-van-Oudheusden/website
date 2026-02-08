@@ -7,9 +7,13 @@ export type HomeSectionId =
   | "secondary-cta"
   | "footer";
 
+export type HomeSectionContentDirection = "row" | "column";
+
 export interface HomeSectionDefinition {
   id: HomeSectionId;
   label: string;
   heading: string;
   body: string;
+  bgColor: string;
+  contentDirection: HomeSectionContentDirection;
 }

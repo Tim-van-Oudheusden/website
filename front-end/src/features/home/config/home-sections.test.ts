@@ -21,4 +21,27 @@ describe("HOME_SECTIONS", () => {
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(labels).size).toBe(labels.length);
   });
+
+  test("every section has a non-empty bgColor", () => {
+    for (const section of HOME_SECTIONS) {
+      expect(section.bgColor).toBeTruthy();
+    }
+  });
+
+  test("uses unique background colors", () => {
+    const bgColors = HOME_SECTIONS.map((section) => section.bgColor);
+    expect(new Set(bgColors).size).toBe(bgColors.length);
+  });
+
+  test("every section has a valid contentDirection", () => {
+    for (const section of HOME_SECTIONS) {
+      expect(["row", "column"]).toContain(section.contentDirection);
+    }
+  });
+
+  test("uses a mix of row and column content directions", () => {
+    const directions = HOME_SECTIONS.map((section) => section.contentDirection);
+    expect(directions).toContain("row");
+    expect(directions).toContain("column");
+  });
 });

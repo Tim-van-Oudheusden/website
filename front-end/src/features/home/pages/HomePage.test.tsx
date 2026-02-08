@@ -9,7 +9,8 @@ describe("HomePage", () => {
     const html = renderToStaticMarkup(createElement(HomePage));
 
     expect(html).toContain("<main");
-    expect(html).toContain("On this page");
+    expect(html).toContain("<nav");
+    expect(html).toContain("Page sections");
 
     for (const section of HOME_SECTIONS) {
       expect(html).toContain(`id="${section.id}"`);
