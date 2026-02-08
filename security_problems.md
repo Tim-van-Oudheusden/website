@@ -22,3 +22,5 @@ This file lists concrete project instances of the vulnerability categories ident
 
 - `back-end/src/content-routes.ts:20` and `back-end/src/content-routes.ts:39` already include path traversal protection for image file access.
 - `bun audit` currently reports no known vulnerabilities, but this does not remove architectural/configuration risks listed above.
+- Potential future ticket for SP-006 (removed from current beads backlog):
+  Migrate frontmatter parsing off the `gray-matter`/`js-yaml@3.x` path while preserving current content parsing behavior and test expectations.
