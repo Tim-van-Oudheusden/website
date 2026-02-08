@@ -215,6 +215,32 @@ describe("content service", () => {
     }
   });
 
+  test("listContent preserves Introduction category values from frontmatter", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "introduction-article.md"),
+        [
+          "---",
+          "title: Introduction Article",
+          "description: Category parsing test",
+          "publishDate: 2025-07-05",
+          "category: Introduction",
+          "---",
+          "",
+          "# Introduction Article",
+        ].join("\n"),
+      );
+
+      const items = await listContent(tempContentDir, { type: "article" });
+      expect(items).toHaveLength(1);
+      expect(items[0]).toHaveProperty("category", "Introduction");
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
   test("listContent skips files missing required title/date frontmatter", async () => {
     const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
 

@@ -55,7 +55,7 @@ export const CONTENT_TYPES = ["article", "project"] as const;
 export const DEFAULT_ARTICLE_SLUG = "introduction";
 
 /** Allowed folder categories for article navigation on the Articles page. */
-export const ARTICLE_CATEGORIES = ["Linux", "Work", "Personal Life"] as const;
+export const ARTICLE_CATEGORIES = ["Introduction", "Linux", "Work", "Personal Life"] as const;
 
 /** Union type of valid content types. */
 export type ContentType = (typeof CONTENT_TYPES)[number];

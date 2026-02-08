@@ -73,4 +73,22 @@ describe("article sidebar helpers", () => {
     expect(grouped.Work.map((article) => article.slug)).toEqual(["office-notes"]);
     expect(grouped["Personal Life"].map((article) => article.slug)).toEqual(["yoga"]);
   });
+
+  test("groupArticlesByCategory includes the Introduction category", () => {
+    const articles: ArticleSummary[] = [
+      {
+        title: "Introduction",
+        description: "Default intro article",
+        date: "2026-02-08T00:00:00Z",
+        tags: ["introduction"],
+        type: "article",
+        draft: false,
+        category: "Introduction",
+        slug: "introduction",
+      },
+    ];
+
+    const grouped = groupArticlesByCategory(articles);
+    expect(grouped.Introduction.map((article) => article.slug)).toEqual(["introduction"]);
+  });
 });

@@ -36,6 +36,7 @@ export function groupArticlesByCategory(
   articles: ArticleSummary[],
 ): Record<ArticleCategory, ArticleSummary[]> {
   const grouped: Record<ArticleCategory, ArticleSummary[]> = {
+    Introduction: [],
     Linux: [],
     Work: [],
     "Personal Life": [],

@@ -24,6 +24,7 @@ interface ArticleData extends ArticleSummary {
 }
 
 const INITIAL_OPEN_CATEGORIES: Record<ArticleCategory, boolean> = {
+  Introduction: true,
   Linux: true,
   Work: true,
   "Personal Life": true,
