@@ -3,6 +3,7 @@ title: Making my work easier with notes in Obsidian
 slug: making-my-work-easier-with-notes-in-obsidian
 description: How a note taking tool can help make office work easier
 type: article
+category: Work
 socialImage: images/cover.png
 publishDate: 2025-01-17
 tags:
@@ -43,4 +44,3 @@ Dataview, by far the most popular **community extension** available in the Obsid
 
 ### Embedding
 There are numerous community extensions available that allow the user to embed content into obsidian. A few examples are: excalidraw, handwritten notes, mathematical formulas or YouTube videos. Almost anything can be embedded which can be very useful if you wish to make obsidian the central place for everything.
-

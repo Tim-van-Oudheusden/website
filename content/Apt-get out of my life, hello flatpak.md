@@ -3,6 +3,7 @@ title: Apt-get out of my life, hello flatpak
 slug: apt-get-out-of-my-life-hello-flatpak
 description: A modest take on Flatpaks for the future of Linux
 type: article
+category: Linux
 socialImage: images/cover.png
 publishDate: 2025-07-02
 tags:

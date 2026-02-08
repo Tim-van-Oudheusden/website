@@ -1,7 +1,8 @@
 import { readdir, readFile } from "fs/promises";
 import { join, basename } from "path";
 import matter from "gray-matter";
-import type { ContentFrontmatter, ContentType } from "shared";
+import { ARTICLE_CATEGORIES } from "shared";
+import type { ArticleCategory, ContentFrontmatter, ContentType } from "shared";
 import { rewriteObsidianImageEmbeds } from "./obsidian";
 
 /** Content item with frontmatter only (for listing pages). */
@@ -46,9 +47,13 @@ function normalizeFrontmatter(file: string, value: unknown): ContentFrontmatter 
   const tags = Array.isArray(raw["tags"]) ? raw["tags"].filter((tag): tag is string => typeof tag === "string") : [];
   const type = raw["type"] === "article" || raw["type"] === "project" ? raw["type"] : "article";
   const draft = typeof raw["draft"] === "boolean" ? raw["draft"] : false;
+  const category = typeof raw["category"] === "string"
+    && (ARTICLE_CATEGORIES as readonly string[]).includes(raw["category"])
+    ? (raw["category"] as ArticleCategory)
+    : undefined;
   const slug = typeof raw["slug"] === "string" && raw["slug"] !== "" ? raw["slug"] : basename(file, ".md");
 
-  return { title, description, date, tags, type, draft, slug };
+  return { title, description, date, tags, type, draft, category, slug };
 }
 
 /**
@@ -85,6 +90,7 @@ export async function listContent(contentDir: string, options?: ListContentOptio
       tags: frontmatter.tags,
       type: frontmatter.type,
       draft: frontmatter.draft,
+      category: frontmatter.category,
       slug: frontmatter.slug,
     });
   }
@@ -125,6 +131,7 @@ export async function getContentBySlug(
       tags: frontmatter.tags,
       type: frontmatter.type,
       draft: frontmatter.draft,
+      category: frontmatter.category,
       slug: frontmatter.slug,
       body: rewriteObsidianImageEmbeds(content),
     };

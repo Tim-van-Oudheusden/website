@@ -3,6 +3,7 @@ title: My operating system is a container image, yes, really
 slug: my-operating-system-is-a-container-image-yes-really
 description: The experience of running an atomic Linux OS
 type: article
+category: Linux
 socialImage: images/cover.png
 publishDate: 2025-04-13
 tags:

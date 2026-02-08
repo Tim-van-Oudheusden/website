@@ -3,6 +3,7 @@ title: Yoga Nidra, a way to be at peace in chaos
 slug: yoga-nidra-a-way-to-be-at-peace-in-chaos
 description: How Eastern methods can help in a western life
 type: article
+category: Personal Life
 socialImage: images/cover.png
 publishDate: 2025-01-17
 tags:

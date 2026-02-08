@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { resolve } from "path";
 import { tmpdir } from "os";
 import { mkdtemp, rm, writeFile } from "fs/promises";
+import type { ArticleCategory } from "shared";
 import { getContentBySlug, listContent } from "./content";
 
 function articleMarkdown(
@@ -14,6 +15,7 @@ function articleMarkdown(
     body: string;
     type: "article" | "project";
     draft: boolean;
+    category: ArticleCategory;
   }> = {},
 ): string {
   const title = overrides.title ?? "Sample Article";
@@ -24,6 +26,7 @@ function articleMarkdown(
   const body = overrides.body ?? "# Sample Article\n\nBody text";
   const type = overrides.type ?? "article";
   const draft = overrides.draft ?? false;
+  const category = overrides.category;
 
   return [
     "---",
@@ -34,6 +37,7 @@ function articleMarkdown(
     ...tags.map((tag) => `  - ${tag}`),
     `type: ${type}`,
     `draft: ${draft}`,
+    ...(category === undefined ? [] : [`category: ${category}`]),
     `slug: ${slug}`,
     "---",
     "",
@@ -180,6 +184,32 @@ describe("content service", () => {
       expect(first.tags).toEqual([]);
       expect(first.draft).toBe(false);
       expect(first.slug).toBe("publish-date-only");
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
+  test("listContent preserves supported article category values from frontmatter", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "linux-article.md"),
+        [
+          "---",
+          "title: Linux Article",
+          "description: Category parsing test",
+          "publishDate: 2025-07-04",
+          "category: Linux",
+          "---",
+          "",
+          "# Linux Article",
+        ].join("\n"),
+      );
+
+      const items = await listContent(tempContentDir, { type: "article" });
+      expect(items).toHaveLength(1);
+      expect(items[0]).toHaveProperty("category", "Linux");
     } finally {
       await rm(tempContentDir, { recursive: true, force: true });
     }

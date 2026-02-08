@@ -51,8 +51,17 @@ export const ROUTES = {
 /** The valid content types for Obsidian frontmatter entries. */
 export const CONTENT_TYPES = ["article", "project"] as const;
 
+/** Canonical slug for the introduction article shown by default on /articles. */
+export const DEFAULT_ARTICLE_SLUG = "introduction";
+
+/** Allowed folder categories for article navigation on the Articles page. */
+export const ARTICLE_CATEGORIES = ["Linux", "Work", "Personal Life"] as const;
+
 /** Union type of valid content types. */
 export type ContentType = (typeof CONTENT_TYPES)[number];
+
+/** Union type of valid article categories. */
+export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
 
 /**
  * Frontmatter fields expected in Obsidian markdown files.
@@ -68,6 +77,7 @@ export interface ContentFrontmatter {
   tags: string[];
   type: ContentType;
   draft: boolean;
+  category?: ArticleCategory | undefined;
   /** Derived from filename if absent. */
   slug?: string | undefined;
 }
