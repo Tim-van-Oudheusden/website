@@ -22,7 +22,7 @@ export function TopBar(): React.JSX.Element {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="bg-background/80 sticky top-0 z-40 w-full border-b backdrop-blur">
+    <header className="bg-background sticky top-0 z-40 w-full border-b">
       <div className="mx-auto flex h-14 max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="text-lg font-semibold tracking-tight">
           Website
