@@ -12,7 +12,11 @@ export default tseslint.config(
     },
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        project: [
+          "./front-end/tsconfig.eslint.json",
+          "./back-end/tsconfig.eslint.json",
+          "./shared/tsconfig.eslint.json",
+        ],
         tsconfigRootDir: import.meta.dirname,
       },
     },

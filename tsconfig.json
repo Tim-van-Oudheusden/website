@@ -1,4 +1,6 @@
 {
+  "files": [],
+  "include": [],
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
