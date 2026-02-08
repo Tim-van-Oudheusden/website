@@ -2,15 +2,15 @@ import * as React from "react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { MenuIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { ThemeToggle } from "@/components/ThemeToggle";
+} from "@/shared/components/ui/sheet";
+import { ThemeToggle } from "@/shared/components/ThemeToggle";
 
 const navLinks = [
   { label: "Home", href: "/" },

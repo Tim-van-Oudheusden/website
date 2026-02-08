@@ -2,10 +2,10 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import { ROUTES } from "shared";
-import { apiGet, ApiError } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
-import { MarkdownRenderer } from "@/components/MarkdownRenderer";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { apiGet, ApiError } from "@/shared/lib/api";
+import { Badge } from "@/shared/components/ui/badge";
+import { MarkdownRenderer } from "@/shared/components/MarkdownRenderer";
+import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
 
 interface ArticleData {
   title: string;

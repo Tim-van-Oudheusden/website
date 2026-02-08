@@ -1,60 +1,27 @@
-import { resolve } from "path";
-import Fastify from "fastify";
-import { APP_NAME, ROUTES, type HealthCheckResponse, type HelloResponse } from "shared";
-import { registerContentRoutes } from "./content-routes";
-import { registerRateLimiting } from "./rate-limit";
-import { registerSecurityHeaders } from "./security-headers";
-import { getServerConfig } from "./server-config";
+import { APP_NAME } from "shared";
+import { buildApp } from "./app";
+import { getServerConfig } from "./core/server-config";
 
 const { host: HOST, port: PORT } = getServerConfig(process.env);
 
-const app = Fastify({
-  logger: {
-    level: process.env["LOG_LEVEL"] ?? "info",
-  },
-});
-
 async function start(): Promise<void> {
+  const appOptions: {
+    logger: { level: string };
+    contentDir?: string;
+  } = {
+    logger: {
+      level: process.env["LOG_LEVEL"] ?? "info",
+    },
+  };
+
+  const contentDir = process.env["CONTENT_DIR"];
+  if (contentDir !== undefined) {
+    appOptions.contentDir = contentDir;
+  }
+
+  const app = await buildApp(appOptions);
+
   try {
-    registerSecurityHeaders(app);
-    await registerRateLimiting(app);
-
-    /**
-     * Health check endpoint — used by Docker HEALTHCHECK, load balancers,
-     * and monitoring tools for periodic liveness/readiness probes.
-     *
-     * Returns 200 with a HealthCheckResponse body when the service is healthy.
-     */
-    app.get(ROUTES.HEALTH, (): HealthCheckResponse => {
-      return {
-        status: "ok",
-        name: APP_NAME,
-        uptime: Math.round(process.uptime()),
-      };
-    });
-
-    /**
-     * Hello endpoint — responds with a greeting message.
-     *
-     * Called by the front-end HelloButton component via the Vite dev proxy
-     * (GET /api/hello → GET /hello).
-     */
-    app.get(ROUTES.HELLO, (): HelloResponse => {
-      return {
-        message: "hello",
-        timestamp: new Date().toISOString(),
-      };
-    });
-
-    // Root endpoint
-    app.get(ROUTES.ROOT, () => {
-      return { name: APP_NAME, version: "0.1.0" };
-    });
-
-    // Content routes
-    const CONTENT_DIR = process.env["CONTENT_DIR"] ?? resolve(import.meta.dirname, "../../content");
-    registerContentRoutes(app, CONTENT_DIR);
-
     await app.listen({ host: HOST, port: PORT });
     app.log.info(`${APP_NAME} back-end listening on ${HOST}:${PORT}`);
   } catch (err) {

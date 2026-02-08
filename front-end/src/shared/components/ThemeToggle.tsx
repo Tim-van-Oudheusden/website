@@ -1,13 +1,13 @@
 import * as React from "react";
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useTheme } from "@/hooks/use-theme";
+} from "@/shared/components/ui/dropdown-menu";
+import { useTheme } from "@/shared/hooks/use-theme";
 
 export function ThemeToggle(): React.JSX.Element {
   const { theme, setTheme } = useTheme();

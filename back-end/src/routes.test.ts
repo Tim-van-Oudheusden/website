@@ -1,45 +1,17 @@
 import { describe, expect, test, beforeAll, afterAll } from "bun:test";
-import Fastify, { type FastifyInstance } from "fastify";
-import { APP_NAME, ROUTES, type HealthCheckResponse, type HelloResponse } from "shared";
-import { registerRateLimiting } from "./rate-limit";
-import { registerSecurityHeaders } from "./security-headers";
+import type { FastifyInstance } from "fastify";
+import { APP_NAME, ROUTES } from "shared";
+import { buildApp } from "./app";
 
 /**
- * Build the same Fastify app used in index.ts but without calling listen().
+ * Build the same Fastify app used in index.ts without calling listen().
  * Fastify's `.inject()` method lets us test routes in-process.
  */
-async function buildApp(): Promise<FastifyInstance> {
-  const app = Fastify({ logger: false });
-  registerSecurityHeaders(app);
-  await registerRateLimiting(app);
-
-  app.get(ROUTES.HEALTH, (): HealthCheckResponse => {
-    return {
-      status: "ok",
-      name: APP_NAME,
-      uptime: Math.round(process.uptime()),
-    };
-  });
-
-  app.get(ROUTES.HELLO, (): HelloResponse => {
-    return {
-      message: "hello",
-      timestamp: new Date().toISOString(),
-    };
-  });
-
-  app.get(ROUTES.ROOT, () => {
-    return { name: APP_NAME, version: "0.1.0" };
-  });
-
-  return app;
-}
-
 describe("back-end routes use shared ROUTES constants", () => {
   let app: FastifyInstance | null = null;
 
   beforeAll(async () => {
-    app = await buildApp();
+    app = await buildApp({ logger: false });
     await app.ready();
   });
 

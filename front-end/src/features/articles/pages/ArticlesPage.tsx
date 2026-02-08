@@ -2,22 +2,22 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { ChevronRight, FileText, Folder } from "lucide-react";
 import { ARTICLE_CATEGORIES, ROUTES, type ArticleCategory } from "shared";
-import { apiGet, ApiError } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
+import { apiGet, ApiError } from "@/shared/lib/api";
+import { Badge } from "@/shared/components/ui/badge";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { MarkdownRenderer } from "@/components/MarkdownRenderer";
-import { cn } from "@/lib/utils";
+} from "@/shared/components/ui/collapsible";
+import { Button } from "@/shared/components/ui/button";
+import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
+import { MarkdownRenderer } from "@/shared/components/MarkdownRenderer";
+import { cn } from "@/shared/lib/utils";
 import {
   getDefaultArticleSlug,
   groupArticlesByCategory,
   type ArticleSummary,
-} from "./articles-sidebar";
+} from "../articles-sidebar";
 
 interface ArticleData extends ArticleSummary {
   body: string;

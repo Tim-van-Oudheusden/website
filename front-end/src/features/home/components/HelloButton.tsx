@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useState } from "react";
 import { ROUTES, type HelloResponse } from "shared";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { apiGet } from "@/lib/api";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { apiGet } from "@/shared/lib/api";
 
 export function HelloButton(): React.JSX.Element {
   const [response, setResponse] = useState<string | null>(null);

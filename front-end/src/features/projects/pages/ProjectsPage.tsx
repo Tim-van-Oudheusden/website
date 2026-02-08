@@ -2,9 +2,9 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { ROUTES, type ContentFrontmatter } from "shared";
-import { apiGet, ApiError } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { apiGet, ApiError } from "@/shared/lib/api";
+import { Badge } from "@/shared/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
 
 export function ProjectsPage(): React.JSX.Element {
   const [projects, setProjects] = useState<ContentFrontmatter[]>([]);

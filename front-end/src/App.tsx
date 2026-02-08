@@ -1,11 +1,11 @@
 import * as React from "react";
 import { BrowserRouter, Routes, Route } from "react-router";
-import { TopBar } from "@/components/TopBar";
-import { HomePage } from "@/pages/HomePage";
-import { ProjectsPage } from "@/pages/ProjectsPage";
-import { ArticlesPage } from "@/pages/ArticlesPage";
-import { ArticlePage } from "@/pages/ArticlePage";
-import { ProjectPage } from "@/pages/ProjectPage";
+import { TopBar } from "@/shared/components/TopBar";
+import { HomePage } from "@/features/home/pages/HomePage";
+import { ProjectsPage } from "@/features/projects/pages/ProjectsPage";
+import { ArticlesPage } from "@/features/articles/pages/ArticlesPage";
+import { ArticlePage } from "@/features/articles/pages/ArticlePage";
+import { ProjectPage } from "@/features/projects/pages/ProjectPage";
 
 export function App(): React.JSX.Element {
   return (
