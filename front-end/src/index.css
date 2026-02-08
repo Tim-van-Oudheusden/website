@@ -40,6 +40,13 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -79,75 +86,179 @@
  * :root (light) and .dark (dark). Keep foreground/background pairs
  * with sufficient contrast (WCAG AA ≥ 4.5:1 for text).
  *
- * Base palette: stone (neutral warm)
+ * Base palette: Adwaita (GNOME/libadwaita)
+ *
+ * Source references:
+ * - https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1-latest/css-variables.html
+ * - https://developer.gnome.org/hig/reference/palette.html
  */
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.147 0.004 49.25);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.147 0.004 49.25);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.147 0.004 49.25);
-  --primary: oklch(0.216 0.006 56.043);
-  --primary-foreground: oklch(0.985 0.001 106.423);
-  --secondary: oklch(0.97 0.001 106.424);
-  --secondary-foreground: oklch(0.216 0.006 56.043);
-  --muted: oklch(0.97 0.001 106.424);
-  --muted-foreground: oklch(0.553 0.013 58.071);
-  --accent: oklch(0.97 0.001 106.424);
-  --accent-foreground: oklch(0.216 0.006 56.043);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.923 0.003 48.717);
-  --input: oklch(0.923 0.003 48.717);
-  --ring: oklch(0.709 0.01 56.259);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0.001 106.423);
-  --sidebar-foreground: oklch(0.147 0.004 49.25);
-  --sidebar-primary: oklch(0.216 0.006 56.043);
-  --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-accent: oklch(0.97 0.001 106.424);
-  --sidebar-accent-foreground: oklch(0.216 0.006 56.043);
-  --sidebar-border: oklch(0.923 0.003 48.717);
-  --sidebar-ring: oklch(0.709 0.01 56.259);
+
+  /* GNOME HIG neutral palette */
+  --adw-light-1: #ffffff;
+  --adw-light-2: #f6f5f4;
+  --adw-light-3: #deddda;
+  --adw-light-4: #c0bfbc;
+  --adw-light-5: #9a9996;
+  --adw-dark-1: #77767b;
+  --adw-dark-2: #5e5c64;
+  --adw-dark-3: #3d3846;
+  --adw-dark-4: #241f31;
+  --adw-dark-5: #000000;
+
+  /* Adwaita named accent families */
+  --adw-accent-blue: #3584e4;
+  --adw-accent-teal: #2190a4;
+  --adw-accent-green: #3a944a;
+  --adw-accent-yellow: #c88800;
+  --adw-accent-orange: #ed5b00;
+  --adw-accent-red: #e62d42;
+  --adw-accent-pink: #d56199;
+  --adw-accent-purple: #9141ac;
+  --adw-accent-slate: #6f8396;
+
+  /* Adwaita semantic colors (light) */
+  --adw-accent-bg-color: var(--adw-accent-blue);
+  --adw-accent-fg-color: #ffffff;
+  --adw-accent-color: #0461be;
+  --adw-destructive-bg-color: #e01b24;
+  --adw-destructive-fg-color: #ffffff;
+  --adw-destructive-color: #c30000;
+  --adw-success-bg-color: #2ec27e;
+  --adw-success-fg-color: #ffffff;
+  --adw-success-color: #007c3d;
+  --adw-warning-bg-color: #e5a50a;
+  --adw-warning-fg-color: rgb(0 0 0 / 80%);
+  --adw-warning-color: #905400;
+  --adw-error-bg-color: #e01b24;
+  --adw-error-fg-color: #ffffff;
+  --adw-error-color: #c30000;
+  --adw-window-bg-color: #fafafb;
+  --adw-window-fg-color: rgb(0 0 6 / 80%);
+  --adw-view-bg-color: #ffffff;
+  --adw-view-fg-color: rgb(0 0 6 / 80%);
+  --adw-headerbar-bg-color: #ffffff;
+  --adw-headerbar-fg-color: rgb(0 0 6 / 80%);
+  --adw-headerbar-backdrop-color: #fafafb;
+  --adw-headerbar-shade-color: rgb(0 0 6 / 12%);
+  --adw-sidebar-bg-color: #ebebed;
+  --adw-sidebar-fg-color: rgb(0 0 6 / 80%);
+  --adw-sidebar-backdrop-color: #f2f2f4;
+  --adw-sidebar-border-color: rgb(0 0 6 / 7%);
+  --adw-sidebar-shade-color: rgb(0 0 6 / 7%);
+
+  /* Project semantic mapping (shadcn tokens) */
+  --background: var(--adw-window-bg-color);
+  --foreground: var(--adw-window-fg-color);
+  --card: var(--adw-view-bg-color);
+  --card-foreground: var(--adw-view-fg-color);
+  --popover: var(--adw-headerbar-bg-color);
+  --popover-foreground: var(--adw-headerbar-fg-color);
+  --primary: var(--adw-accent-bg-color);
+  --primary-foreground: var(--adw-accent-fg-color);
+  --secondary: var(--adw-sidebar-bg-color);
+  --secondary-foreground: var(--adw-sidebar-fg-color);
+  --muted: var(--adw-sidebar-backdrop-color);
+  --muted-foreground: var(--adw-dark-2);
+  --accent: var(--adw-sidebar-backdrop-color);
+  --accent-foreground: var(--adw-window-fg-color);
+  --destructive: var(--adw-destructive-bg-color);
+  --destructive-foreground: var(--adw-destructive-fg-color);
+  --success: var(--adw-success-bg-color);
+  --success-foreground: var(--adw-success-fg-color);
+  --warning: var(--adw-warning-bg-color);
+  --warning-foreground: var(--adw-warning-fg-color);
+  --error: var(--adw-error-bg-color);
+  --error-foreground: var(--adw-error-fg-color);
+  --border: var(--adw-sidebar-border-color);
+  --input: var(--adw-sidebar-border-color);
+  --ring: var(--adw-accent-color);
+  --chart-1: var(--adw-accent-blue);
+  --chart-2: #33d17a;
+  --chart-3: #f5c211;
+  --chart-4: #ff7800;
+  --chart-5: #e01b24;
+  --sidebar: var(--adw-sidebar-bg-color);
+  --sidebar-foreground: var(--adw-sidebar-fg-color);
+  --sidebar-primary: var(--adw-accent-bg-color);
+  --sidebar-primary-foreground: var(--adw-accent-fg-color);
+  --sidebar-accent: var(--adw-sidebar-backdrop-color);
+  --sidebar-accent-foreground: var(--adw-sidebar-fg-color);
+  --sidebar-border: var(--adw-sidebar-border-color);
+  --sidebar-ring: var(--adw-accent-color);
 }
 
 .dark {
-  --background: oklch(0.147 0.004 49.25);
-  --foreground: oklch(0.985 0.001 106.423);
-  --card: oklch(0.216 0.006 56.043);
-  --card-foreground: oklch(0.985 0.001 106.423);
-  --popover: oklch(0.216 0.006 56.043);
-  --popover-foreground: oklch(0.985 0.001 106.423);
-  --primary: oklch(0.923 0.003 48.717);
-  --primary-foreground: oklch(0.216 0.006 56.043);
-  --secondary: oklch(0.268 0.007 34.298);
-  --secondary-foreground: oklch(0.985 0.001 106.423);
-  --muted: oklch(0.268 0.007 34.298);
-  --muted-foreground: oklch(0.709 0.01 56.259);
-  --accent: oklch(0.268 0.007 34.298);
-  --accent-foreground: oklch(0.985 0.001 106.423);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.553 0.013 58.071);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.216 0.006 56.043);
-  --sidebar-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-accent: oklch(0.268 0.007 34.298);
-  --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.553 0.013 58.071);
+  /* Adwaita semantic colors (dark) */
+  --adw-accent-bg-color: var(--adw-accent-blue);
+  --adw-accent-fg-color: #ffffff;
+  --adw-accent-color: #81d0ff;
+  --adw-destructive-bg-color: #c01c28;
+  --adw-destructive-fg-color: #ffffff;
+  --adw-destructive-color: #ff938c;
+  --adw-success-bg-color: #26a269;
+  --adw-success-fg-color: #ffffff;
+  --adw-success-color: #78e9ab;
+  --adw-warning-bg-color: #cd9309;
+  --adw-warning-fg-color: rgb(0 0 0 / 80%);
+  --adw-warning-color: #ffc252;
+  --adw-error-bg-color: #c01c28;
+  --adw-error-fg-color: #ffffff;
+  --adw-error-color: #ff938c;
+  --adw-window-bg-color: #222226;
+  --adw-window-fg-color: #ffffff;
+  --adw-view-bg-color: #1d1d20;
+  --adw-view-fg-color: #ffffff;
+  --adw-headerbar-bg-color: #2e2e32;
+  --adw-headerbar-fg-color: #ffffff;
+  --adw-headerbar-backdrop-color: #222226;
+  --adw-headerbar-shade-color: rgb(0 0 6 / 36%);
+  --adw-sidebar-bg-color: #2e2e32;
+  --adw-sidebar-fg-color: #ffffff;
+  --adw-sidebar-backdrop-color: #28282c;
+  --adw-sidebar-border-color: rgb(0 0 6 / 36%);
+  --adw-sidebar-shade-color: rgb(0 0 6 / 25%);
+
+  /* Project semantic mapping (shadcn tokens) */
+  --background: var(--adw-window-bg-color);
+  --foreground: var(--adw-window-fg-color);
+  --card: var(--adw-view-bg-color);
+  --card-foreground: var(--adw-view-fg-color);
+  --popover: var(--adw-headerbar-bg-color);
+  --popover-foreground: var(--adw-headerbar-fg-color);
+  --primary: var(--adw-accent-bg-color);
+  --primary-foreground: var(--adw-accent-fg-color);
+  --secondary: var(--adw-sidebar-bg-color);
+  --secondary-foreground: var(--adw-sidebar-fg-color);
+  --muted: var(--adw-sidebar-backdrop-color);
+  --muted-foreground: var(--adw-light-4);
+  --accent: var(--adw-sidebar-backdrop-color);
+  --accent-foreground: var(--adw-window-fg-color);
+  --destructive: var(--adw-destructive-bg-color);
+  --destructive-foreground: var(--adw-destructive-fg-color);
+  --success: var(--adw-success-bg-color);
+  --success-foreground: var(--adw-success-fg-color);
+  --warning: var(--adw-warning-bg-color);
+  --warning-foreground: var(--adw-warning-fg-color);
+  --error: var(--adw-error-bg-color);
+  --error-foreground: var(--adw-error-fg-color);
+  --border: var(--adw-sidebar-border-color);
+  --input: var(--adw-sidebar-border-color);
+  --ring: var(--adw-accent-color);
+  --chart-1: var(--adw-accent-blue);
+  --chart-2: #33d17a;
+  --chart-3: #f5c211;
+  --chart-4: #ff7800;
+  --chart-5: #c01c28;
+  --sidebar: var(--adw-sidebar-bg-color);
+  --sidebar-foreground: var(--adw-sidebar-fg-color);
+  --sidebar-primary: var(--adw-accent-bg-color);
+  --sidebar-primary-foreground: var(--adw-accent-fg-color);
+  --sidebar-accent: var(--adw-sidebar-backdrop-color);
+  --sidebar-accent-foreground: var(--adw-sidebar-fg-color);
+  --sidebar-border: var(--adw-sidebar-border-color);
+  --sidebar-ring: var(--adw-accent-color);
 }
 
 @layer base {
