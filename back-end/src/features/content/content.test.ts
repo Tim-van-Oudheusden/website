@@ -26,7 +26,10 @@ function articleMarkdown(
   const body = overrides.body ?? "# Sample Article\n\nBody text";
   const type = overrides.type ?? "article";
   const draft = overrides.draft ?? false;
-  const category = overrides.category;
+  let category = overrides.category;
+  if (type === "article" && category === undefined) {
+    category = "Linux";
+  }
   const categoryLines: string[] = [];
   if (category !== undefined) {
     categoryLines.push(`category: ${category}`);
@@ -170,6 +173,7 @@ describe("content service", () => {
           "---",
           "title: Publish Date Only",
           "publishDate: 2025-07-02",
+          "category: Linux",
           "---",
           "",
           "# Publish Date Only",
@@ -245,6 +249,35 @@ describe("content service", () => {
     }
   });
 
+  test("listContent fails when an article is missing category", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "missing-category.md"),
+        [
+          "---",
+          "title: Missing Category",
+          "publishDate: 2025-07-05",
+          "type: article",
+          "---",
+          "",
+          "# Missing Category",
+        ].join("\n"),
+      );
+
+      let didThrow = false;
+      try {
+        await listContent(tempContentDir, { type: "article" });
+      } catch {
+        didThrow = true;
+      }
+      expect(didThrow).toBe(true);
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
   test("listContent skips files missing required title/date frontmatter", async () => {
     const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
 
@@ -275,6 +308,7 @@ describe("content service", () => {
           "---",
           "title: Valid Entry",
           "publishDate: 2025-07-05",
+          "category: Work",
           "---",
           "",
           "# Valid Entry",
@@ -299,6 +333,7 @@ describe("content service", () => {
           "---",
           "title: Publish Date Details",
           "publishDate: 2025-07-03",
+          "category: Personal Life",
           "---",
           "",
           "# Publish Date Details",
@@ -322,7 +357,7 @@ describe("content service", () => {
     }
   });
 
-  test("getContentBySlug applies optional defaults and ignores unsupported category values", async () => {
+  test("getContentBySlug fails when an article has unsupported category", async () => {
     const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
 
     try {
@@ -339,18 +374,13 @@ describe("content service", () => {
         ].join("\n"),
       );
 
-      const item = await getContentBySlug("defaults-and-category", tempContentDir);
-      expect(item).not.toBeNull();
-      if (item === null) {
-        throw new Error("Expected defaults-and-category content item");
+      let didThrow = false;
+      try {
+        await getContentBySlug("defaults-and-category", tempContentDir);
+      } catch {
+        didThrow = true;
       }
-
-      expect(item.description).toBe("");
-      expect(item.tags).toEqual([]);
-      expect(item.type).toBe("article");
-      expect(item.draft).toBe(false);
-      expect(item.category).toBeUndefined();
-      expect(item.slug).toBe("defaults-and-category");
+      expect(didThrow).toBe(true);
     } finally {
       await rm(tempContentDir, { recursive: true, force: true });
     }
@@ -367,6 +397,7 @@ describe("content service", () => {
           "title: Date Precedence",
           "date: 2025-08-01",
           "publishDate: 2025-01-01",
+          "category: Linux",
           "---",
           "",
           "# Date Precedence",
@@ -402,6 +433,7 @@ describe("content service", () => {
           "---",
           "title: Valid Frontmatter",
           "publishDate: 2025-07-10",
+          "category: Introduction",
           "---",
           "",
           "# Valid Frontmatter",
@@ -430,6 +462,7 @@ describe("content service", () => {
           "tags:",
           "  - test",
           "type: article",
+          "category: Linux",
           "draft: false",
           "slug: obsidian-image",
           "---",

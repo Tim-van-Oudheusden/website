@@ -28,6 +28,7 @@ describe("content API routes", () => {
         "tags:",
         "  - route-test",
         "type: article",
+        "category: Linux",
         "draft: false",
         `slug: ${ARTICLE_SLUG}`,
         "---",

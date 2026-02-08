@@ -1,8 +1,14 @@
 import { ARTICLE_CATEGORIES, DEFAULT_ARTICLE_SLUG } from "shared";
-import type { ArticleCategory, ContentFrontmatter } from "shared";
+import type { ArticleCategory } from "shared";
 
-export interface ArticleSummary extends ContentFrontmatter {
-  category?: ArticleCategory | undefined;
+export interface ArticleSummary {
+  title: string;
+  description: string;
+  date: string;
+  tags: string[];
+  type: "article";
+  draft: boolean;
+  category: ArticleCategory;
   slug: string;
 }
 
@@ -44,7 +50,7 @@ export function groupArticlesByCategory(
 
   for (const article of [...articles].sort(compareArticles)) {
     const category = article.category;
-    if (category === undefined || !ARTICLE_CATEGORIES.includes(category)) {
+    if (!ARTICLE_CATEGORIES.includes(category)) {
       continue;
     }
 

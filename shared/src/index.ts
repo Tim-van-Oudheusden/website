@@ -63,24 +63,33 @@ export type ContentType = (typeof CONTENT_TYPES)[number];
 /** Union type of valid article categories. */
 export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
 
+interface BaseContentFrontmatter {
+  title: string;
+  description: string;
+  /** ISO 8601 date string. */
+  date: string;
+  tags: string[];
+  draft: boolean;
+  /** Derived from filename if absent. */
+  slug?: string | undefined;
+}
+
 /**
  * Frontmatter fields expected in Obsidian markdown files.
  *
  * This is the contract between the back-end (which parses frontmatter)
  * and the front-end (which displays it).
  */
-export interface ContentFrontmatter {
-  title: string;
-  description: string;
-  /** ISO 8601 date string. */
-  date: string;
-  tags: string[];
-  type: ContentType;
-  draft: boolean;
-  category?: ArticleCategory | undefined;
-  /** Derived from filename if absent. */
-  slug?: string | undefined;
+export interface ArticleFrontmatter extends BaseContentFrontmatter {
+  type: "article";
+  category: ArticleCategory;
 }
+
+export interface ProjectFrontmatter extends BaseContentFrontmatter {
+  type: "project";
+}
+
+export type ContentFrontmatter = ArticleFrontmatter | ProjectFrontmatter;
 
 /* ── Shared Interfaces ── */
 

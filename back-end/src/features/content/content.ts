@@ -9,9 +9,7 @@ import { rewriteObsidianImageEmbeds } from "./obsidian";
 export type ContentListItem = ContentFrontmatter;
 
 /** Content item with frontmatter and raw markdown body. */
-export interface ContentItem extends ContentFrontmatter {
-  body: string;
-}
+export type ContentItem = ContentFrontmatter & { body: string };
 
 /** Optional filters for listing content. */
 export interface ListContentOptions {
@@ -79,7 +77,15 @@ function normalizeFrontmatter(file: string, value: unknown): ContentFrontmatter 
     slug = raw["slug"];
   }
 
-  return { title, description, date, tags, type, draft, category, slug };
+  if (type === "article") {
+    if (category === undefined) {
+      throw new Error(`Article "${file}" is missing a valid category`);
+    }
+
+    return { title, description, date, tags, type, draft, category, slug };
+  }
+
+  return { title, description, date, tags, type, draft, slug };
 }
 
 /**
@@ -109,16 +115,7 @@ export async function listContent(contentDir: string, options?: ListContentOptio
       continue;
     }
 
-    items.push({
-      title: frontmatter.title,
-      description: frontmatter.description,
-      date: frontmatter.date,
-      tags: frontmatter.tags,
-      type: frontmatter.type,
-      draft: frontmatter.draft,
-      category: frontmatter.category,
-      slug: frontmatter.slug,
-    });
+    items.push(frontmatter);
   }
 
   return items;
@@ -150,17 +147,7 @@ export async function getContentBySlug(
       return null;
     }
 
-    return {
-      title: frontmatter.title,
-      description: frontmatter.description,
-      date: frontmatter.date,
-      tags: frontmatter.tags,
-      type: frontmatter.type,
-      draft: frontmatter.draft,
-      category: frontmatter.category,
-      slug: frontmatter.slug,
-      body: rewriteObsidianImageEmbeds(content),
-    };
+    return { ...frontmatter, body: rewriteObsidianImageEmbeds(content) };
   }
 
   return null;

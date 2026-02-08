@@ -19,6 +19,7 @@ describe("content frontmatter schema", () => {
       date: "2026-01-15T00:00:00Z",
       tags: ["test", "example"],
       type: "article",
+      category: "Linux",
       draft: false,
     };
 
@@ -27,6 +28,7 @@ describe("content frontmatter schema", () => {
     expect(frontmatter.date).toBe("2026-01-15T00:00:00Z");
     expect(frontmatter.tags).toEqual(["test", "example"]);
     expect(frontmatter.type).toBe("article");
+    expect(frontmatter.category).toBe("Linux");
     expect(frontmatter.draft).toBe(false);
     expect(frontmatter.slug).toBeUndefined();
   });
