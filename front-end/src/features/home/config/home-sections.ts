@@ -1,0 +1,46 @@
+import type { HomeSectionDefinition } from "../types/home-section";
+
+export const HOME_SECTIONS: HomeSectionDefinition[] = [
+  {
+    id: "hero",
+    label: "Hero",
+    heading: "Build a modern Linux-first setup",
+    body: "Placeholder hero copy for brand positioning and primary conversion actions.",
+  },
+  {
+    id: "value-pillars",
+    label: "Value Pillars",
+    heading: "Why this project exists",
+    body: "Placeholder pillar block for concise statements that explain product value.",
+  },
+  {
+    id: "feature-strips",
+    label: "Feature Strips",
+    heading: "Core capabilities at a glance",
+    body: "Placeholder alternating feature rows for visuals, highlights, and context.",
+  },
+  {
+    id: "proof",
+    label: "Proof",
+    heading: "Evidence and ecosystem trust",
+    body: "Placeholder trust block for metrics, testimonials, and compatibility notes.",
+  },
+  {
+    id: "community-and-docs",
+    label: "Community & Docs",
+    heading: "Get help and follow updates",
+    body: "Placeholder links to documentation, community channels, and release notes.",
+  },
+  {
+    id: "secondary-cta",
+    label: "Secondary CTA",
+    heading: "Ready to dive deeper",
+    body: "Placeholder conversion block before footer with secondary action options.",
+  },
+  {
+    id: "footer",
+    label: "Footer",
+    heading: "Everything else",
+    body: "Placeholder footer surface for legal pages, social links, and contact paths.",
+  },
+];
