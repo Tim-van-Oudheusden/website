@@ -9,6 +9,7 @@ services:
     volumes:
       - ./front-end:/app/front-end
       - ./shared:/app/shared
+      - ./public:/app/public:ro
       - ./package.json:/app/package.json:ro
       - ./bun.lock:/app/bun.lock
       - /app/node_modules

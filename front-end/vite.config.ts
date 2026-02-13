@@ -19,6 +19,7 @@ const proxyTarget = `http://${backendHost}:${BACKEND_PORT}`;
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  publicDir: path.resolve(__dirname, "../public"),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

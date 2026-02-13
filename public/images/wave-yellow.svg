@@ -1,9 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
-  <defs>
-    <pattern id="wave-yellow" x="0" y="0" width="300" height="60" patternUnits="userSpaceOnUse">
-      <rect width="300" height="60" fill="#c88800"/>
-      <path d="M0 30 C37.5 5, 75 5, 112.5 30 S187.5 55, 225 30 S300 5, 300 30 L300 60 L0 60 Z" fill="#936300"/>
-    </pattern>
-  </defs>
-  <rect width="400" height="400" fill="url(#wave-yellow)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" preserveAspectRatio="xMidYMid slice">
+  <rect width="1600" height="900" fill="#c88800"/>
+  <path d="M0 120 C190 220 340 20 550 110 C760 200 930 170 1140 90 C1310 25 1470 80 1600 170 L1600 900 L0 900 Z" fill="#936300" opacity="0.22"/>
+  <path d="M0 260 C170 330 360 210 550 280 C760 360 940 450 1160 370 C1330 310 1460 220 1600 290 L1600 900 L0 900 Z" fill="#936300" opacity="0.34"/>
+  <path d="M0 440 C220 360 390 520 590 470 C800 415 950 300 1160 360 C1360 420 1485 580 1600 520 L1600 900 L0 900 Z" fill="#936300" opacity="0.48"/>
+  <path d="M0 620 C180 560 380 690 590 650 C810 610 990 500 1210 560 C1400 615 1520 760 1600 710 L1600 900 L0 900 Z" fill="#936300" opacity="0.6"/>
+  <path d="M0 760 C220 710 390 830 620 790 C840 750 1030 650 1260 700 C1410 735 1530 840 1600 820 L1600 900 L0 900 Z" fill="#936300" opacity="0.72"/>
 </svg>
