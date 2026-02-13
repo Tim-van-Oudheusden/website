@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <pattern id="wave-orange" x="0" y="0" width="400" height="100" patternUnits="userSpaceOnUse">
+      <rect width="400" height="100" fill="#ed5b00"/>
+      <path d="M0 50 C30 20, 70 20, 100 50 C130 80, 170 80, 200 50 C230 20, 270 20, 300 50 C330 80, 370 80, 400 50 L400 100 L0 100 Z" fill="#b34400"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="400" fill="url(#wave-orange)"/>
+</svg>

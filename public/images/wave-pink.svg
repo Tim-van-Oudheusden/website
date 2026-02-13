@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <pattern id="wave-pink" x="0" y="0" width="160" height="80" patternUnits="userSpaceOnUse">
+      <rect width="160" height="80" fill="#d56199"/>
+      <path d="M0 40 C20 15, 40 15, 60 40 S100 65, 120 40 S160 15, 160 40 L160 80 L0 80 Z" fill="#a4436f"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="400" fill="url(#wave-pink)"/>
+</svg>

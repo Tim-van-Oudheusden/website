@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <pattern id="wave-slate" x="0" y="0" width="400" height="150" patternUnits="userSpaceOnUse">
+      <rect width="400" height="150" fill="#6f8396"/>
+      <path d="M0 75 C50 35, 100 35, 150 75 S250 115, 300 75 S400 35, 400 75 L400 150 L0 150 Z" fill="#4f6170"/>
+      <path d="M0 50 C50 65, 100 65, 150 50 S250 35, 300 50 S400 65, 400 50 L400 0 L0 0 Z" fill="#4f6170"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="400" fill="url(#wave-slate)"/>
+</svg>
