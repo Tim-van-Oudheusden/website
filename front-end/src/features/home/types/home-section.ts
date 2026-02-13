@@ -15,5 +15,6 @@ export interface HomeSectionDefinition {
   heading: string;
   body: string;
   bgColor: string;
+  bgImage?: string;
   contentDirection: HomeSectionContentDirection;
 }

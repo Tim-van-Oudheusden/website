@@ -7,6 +7,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     heading: "Build a modern Linux-first setup",
     body: "Placeholder hero copy for brand positioning and primary conversion actions.",
     bgColor: "var(--adw-accent-blue)",
+    bgImage: "/images/wave-blue.svg",
     contentDirection: "column",
   },
   {
@@ -15,6 +16,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     heading: "Why this project exists",
     body: "Placeholder pillar block for concise statements that explain product value.",
     bgColor: "var(--adw-accent-teal)",
+    bgImage: "/images/gradient-teal.svg",
     contentDirection: "row",
   },
   {
@@ -23,6 +25,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     heading: "Core capabilities at a glance",
     body: "Placeholder alternating feature rows for visuals, highlights, and context.",
     bgColor: "var(--adw-accent-green)",
+    bgImage: "/images/wave-green.svg",
     contentDirection: "row",
   },
   {
@@ -31,6 +34,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     heading: "Evidence and ecosystem trust",
     body: "Placeholder trust block for metrics, testimonials, and compatibility notes.",
     bgColor: "var(--adw-accent-orange)",
+    bgImage: "/images/gradient-orange.svg",
     contentDirection: "column",
   },
   {
@@ -39,6 +43,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     heading: "Get help and follow updates",
     body: "Placeholder links to documentation, community channels, and release notes.",
     bgColor: "var(--adw-accent-purple)",
+    bgImage: "/images/wave-purple.svg",
     contentDirection: "row",
   },
   {
@@ -47,6 +52,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     heading: "Ready to dive deeper",
     body: "Placeholder conversion block before footer with secondary action options.",
     bgColor: "var(--adw-accent-pink)",
+    bgImage: "/images/gradient-pink.svg",
     contentDirection: "column",
   },
   {
@@ -55,6 +61,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     heading: "Everything else",
     body: "Placeholder footer surface for legal pages, social links, and contact paths.",
     bgColor: "var(--adw-accent-slate)",
+    bgImage: "/images/wave-slate.svg",
     contentDirection: "column",
   },
 ];

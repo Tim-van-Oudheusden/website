@@ -14,7 +14,16 @@ export function HomeSection({ section }: HomeSectionProps): React.JSX.Element {
       id={section.id}
       aria-labelledby={`${section.id}-heading`}
       className="flex min-h-svh scroll-mt-20 items-center justify-center px-6 py-12 sm:px-10 sm:py-16"
-      style={{ backgroundColor: section.bgColor }}
+      style={{
+        backgroundColor: section.bgColor,
+        ...(section.bgImage != null
+          ? {
+              backgroundImage: `url(${section.bgImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : {}),
+      }}
     >
       <div
         className={cn(
