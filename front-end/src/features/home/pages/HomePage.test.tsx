@@ -19,4 +19,13 @@ describe("HomePage", () => {
       expect(html).toContain(`href="#${section.id}"`);
     }
   });
+
+  test("renders hero slogan copy from branding and a discover control to the next section", () => {
+    const html = renderToStaticMarkup(createElement(HomePage));
+    expect(html).toContain("Reboot With Me");
+    expect(html).toContain("A new-age way of saying: getting your life back on track.");
+    expect(html).toContain("The core principle of the website and project, unfolding in various ways.");
+    expect(html).toContain(">Discover<");
+    expect(html).toContain('href="#value-pillars"');
+  });
 });

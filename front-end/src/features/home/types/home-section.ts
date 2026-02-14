@@ -16,5 +16,7 @@ export interface HomeSectionDefinition {
   body: string;
   bgColor: string;
   bgImage?: string;
+  ctaLabel?: string;
+  ctaTargetId?: HomeSectionId;
   contentDirection: HomeSectionContentDirection;
 }

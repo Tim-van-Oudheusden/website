@@ -43,7 +43,7 @@ export function HomePage(): React.JSX.Element {
   return (
     <main className="flex-1 scroll-smooth motion-reduce:scroll-auto">
       {HOME_SECTIONS.map((section) => (
-        <HomeSection key={section.id} section={section} />
+        <HomeSection key={section.id} section={section} onCtaActivate={activateSectionAnchor} />
       ))}
       <HomeFloatingNav
         sections={HOME_SECTIONS}

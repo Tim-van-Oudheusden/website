@@ -3,16 +3,18 @@ import type { HomeSectionDefinition } from "../types/home-section";
 export const HOME_SECTIONS: HomeSectionDefinition[] = [
   {
     id: "hero",
-    label: "Hero",
-    heading: "Build a modern Linux-first setup",
-    body: "Placeholder hero copy for brand positioning and primary conversion actions.",
+    label: "home",
+    heading: "Reboot With Me",
+    body: "A new-age way of saying: getting your life back on track. The core principle of the website and project, unfolding in various ways.",
     bgColor: "var(--adw-accent-blue)",
     bgImage: "/images/wave-blue.svg",
+    ctaLabel: "Discover",
+    ctaTargetId: "value-pillars",
     contentDirection: "column",
   },
   {
     id: "value-pillars",
-    label: "Value Pillars",
+    label: "for you",
     heading: "Why this project exists",
     body: "Placeholder pillar block for concise statements that explain product value.",
     bgColor: "var(--adw-accent-teal)",
@@ -21,7 +23,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
   },
   {
     id: "feature-strips",
-    label: "Feature Strips",
+    label: "for devs",
     heading: "Core capabilities at a glance",
     body: "Placeholder alternating feature rows for visuals, highlights, and context.",
     bgColor: "var(--adw-accent-green)",
@@ -30,7 +32,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
   },
   {
     id: "proof",
-    label: "Proof",
+    label: "conquer",
     heading: "Evidence and ecosystem trust",
     body: "Placeholder trust block for metrics, testimonials, and compatibility notes.",
     bgColor: "var(--adw-accent-orange)",
@@ -39,7 +41,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
   },
   {
     id: "community-and-docs",
-    label: "Community & Docs",
+    label: "strengthen",
     heading: "Get help and follow updates",
     body: "Placeholder links to documentation, community channels, and release notes.",
     bgColor: "var(--adw-accent-purple)",
@@ -48,7 +50,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
   },
   {
     id: "secondary-cta",
-    label: "Secondary CTA",
+    label: "independence",
     heading: "Ready to dive deeper",
     body: "Placeholder conversion block before footer with secondary action options.",
     bgColor: "var(--adw-accent-pink)",
@@ -57,7 +59,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
   },
   {
     id: "footer",
-    label: "Footer",
+    label: "inner peace",
     heading: "Everything else",
     body: "Placeholder footer surface for legal pages, social links, and contact paths.",
     bgColor: "var(--adw-accent-slate)",

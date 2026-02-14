@@ -1,13 +1,17 @@
 import * as React from "react";
 import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/components/ui/button";
+import type { HomeSectionId } from "../types/home-section";
 import type { HomeSectionDefinition } from "../types/home-section";
 
 interface HomeSectionProps {
   section: HomeSectionDefinition;
+  onCtaActivate?: (sectionId: HomeSectionId, event: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
-export function HomeSection({ section }: HomeSectionProps): React.JSX.Element {
+export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React.JSX.Element {
   const isRow = section.contentDirection === "row";
+  const hasCta = section.ctaLabel != null && section.ctaTargetId != null;
 
   return (
     <section
@@ -41,6 +45,20 @@ export function HomeSection({ section }: HomeSectionProps): React.JSX.Element {
           <p className="leading-relaxed text-white/80">
             {section.body}
           </p>
+          {hasCta && (
+            <Button asChild variant="secondary" size="lg" className="w-fit">
+              <a
+                href={`#${section.ctaTargetId}`}
+                onClick={(event) => {
+                  if (section.ctaTargetId != null && onCtaActivate != null) {
+                    onCtaActivate(section.ctaTargetId, event);
+                  }
+                }}
+              >
+                {section.ctaLabel}
+              </a>
+            </Button>
+          )}
         </div>
         <div className="flex flex-1 items-center justify-center rounded-2xl bg-white/10 p-8">
           <p className="text-sm text-white/50">Media placeholder</p>

@@ -52,4 +52,42 @@ describe("HomeFloatingNav", () => {
     const html = renderNav();
     expect(html).toContain('data-slot="badge"');
   });
+
+  test("uses updated section labels and larger translucent navbar styling", () => {
+    const html = renderNav();
+
+    expect(html).toContain("pb-8");
+    expect(html).toContain("bg-background/60");
+    expect(html).toContain("border-[var(--adw-light-4)]");
+    expect(html).toContain("px-4");
+    expect(html).toContain("py-2");
+    expect(html).toContain("uppercase");
+    expect(html).toContain("text-base");
+
+    const labels = ["home", "for you", "for devs", "conquer", "strengthen", "independence", "inner peace"];
+    let previousIndex = -1;
+    for (const label of labels) {
+      const currentIndex = html.indexOf(`>${label}<`);
+      expect(currentIndex).toBeGreaterThan(previousIndex);
+      previousIndex = currentIndex;
+    }
+  });
+
+  test("renders set-1 lucide icons for all navbar sections", () => {
+    const html = renderNav();
+
+    const iconClassNames = [
+      "lucide-house",
+      "lucide-user-round",
+      "lucide-code-xml",
+      "lucide-trophy",
+      "lucide-dumbbell",
+      "lucide-shield-check",
+      "lucide-sparkles",
+    ];
+
+    for (const iconClassName of iconClassNames) {
+      expect(html).toContain(iconClassName);
+    }
+  });
 });
