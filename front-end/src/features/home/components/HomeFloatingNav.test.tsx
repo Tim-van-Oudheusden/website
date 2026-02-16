@@ -53,6 +53,13 @@ describe("HomeFloatingNav", () => {
     expect(html).toContain('data-slot="badge"');
   });
 
+  test("renders a shared animated active-indicator element", () => {
+    const html = renderNav();
+    expect(html).toContain('data-slot="active-indicator"');
+    expect(html).toContain("transition-[transform,width]");
+    expect(html).toContain("motion-reduce:transition-none");
+  });
+
   test("uses updated section labels and larger opaque navbar styling", () => {
     const html = renderNav();
 
