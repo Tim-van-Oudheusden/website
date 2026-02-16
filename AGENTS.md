@@ -87,7 +87,10 @@ For more details, see README.md and docs/QUICKSTART.md.
 
 <!-- END BEADS INTEGRATION -->
 
+## Git and Version Management
+
 - Work must always be committed after finishing a beads issue.
+- Commits must always follow the Conventional Commits specification.
 
 ## Testing
 
@@ -124,5 +127,4 @@ For more details, see README.md and docs/QUICKSTART.md.
 ### Removal
 - Before removing a dependency, **search the entire codebase** for all imports, requires, and dynamic references to it
 - Check that no other package depends on it as a peer dependency
-
 
