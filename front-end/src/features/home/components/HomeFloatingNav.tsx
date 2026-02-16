@@ -100,7 +100,7 @@ export function HomeFloatingNav({
         <span
           aria-hidden="true"
           data-slot="active-indicator"
-          className="pointer-events-none absolute rounded-full bg-primary transition-[transform,width] duration-300 ease-out motion-reduce:transition-none"
+          className="pointer-events-none absolute top-0 left-0 rounded-full bg-primary transition-[transform,width] duration-300 ease-out motion-reduce:transition-none"
           style={indicatorStyle}
         />
         {sections.map((section) => {

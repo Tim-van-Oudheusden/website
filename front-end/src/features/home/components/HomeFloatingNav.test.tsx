@@ -56,6 +56,7 @@ describe("HomeFloatingNav", () => {
   test("renders a shared animated active-indicator element", () => {
     const html = renderNav();
     expect(html).toContain('data-slot="active-indicator"');
+    expect(html).toContain("top-0 left-0");
     expect(html).toContain("transition-[transform,width]");
     expect(html).toContain("motion-reduce:transition-none");
   });
