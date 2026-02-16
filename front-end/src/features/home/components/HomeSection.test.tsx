@@ -31,6 +31,11 @@ describe("HomeSection", () => {
     expect(html).toContain("min-h-svh");
   });
 
+  test("does not add anchor scroll top offset that reveals part of the previous section", () => {
+    const html = renderToStaticMarkup(createElement(HomeSection, { section: COLUMN_SECTION }));
+    expect(html).not.toContain("scroll-mt-20");
+  });
+
   test("applies background color from section config as inline style", () => {
     const html = renderToStaticMarkup(createElement(HomeSection, { section: COLUMN_SECTION }));
     expect(html).toContain("background-color:var(--adw-accent-blue)");

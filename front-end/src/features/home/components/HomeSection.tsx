@@ -17,7 +17,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
     <section
       id={section.id}
       aria-labelledby={`${section.id}-heading`}
-      className="flex min-h-svh scroll-mt-20 items-center justify-center px-6 py-12 sm:px-10 sm:py-16"
+      className="flex min-h-svh items-center justify-center px-6 py-12 sm:px-10 sm:py-16"
       style={{
         backgroundColor: section.bgColor,
         ...(section.bgImage != null
