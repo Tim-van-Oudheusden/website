@@ -39,7 +39,7 @@ export function HomeFloatingNav({
       aria-label="Page sections"
       className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center px-4 pb-8"
     >
-      <ul className="flex gap-2 rounded-2xl border border-[var(--adw-light-4)] bg-background/60 p-3 shadow-lg backdrop-blur-md">
+      <ul className="flex gap-2 rounded-2xl border border-[var(--adw-light-4)] bg-background p-3 shadow-lg backdrop-blur-md">
         {sections.map((section) => {
           const isActive = section.id === activeSectionId;
           const Icon = HOME_NAV_ICONS[section.id];

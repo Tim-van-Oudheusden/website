@@ -53,11 +53,12 @@ describe("HomeFloatingNav", () => {
     expect(html).toContain('data-slot="badge"');
   });
 
-  test("uses updated section labels and larger translucent navbar styling", () => {
+  test("uses updated section labels and larger opaque navbar styling", () => {
     const html = renderNav();
 
     expect(html).toContain("pb-8");
-    expect(html).toContain("bg-background/60");
+    expect(html).toContain("bg-background p-3");
+    expect(html).not.toContain("bg-background/60");
     expect(html).toContain("border-[var(--adw-light-4)]");
     expect(html).toContain("px-4");
     expect(html).toContain("py-2");

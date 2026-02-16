@@ -87,6 +87,8 @@ For more details, see README.md and docs/QUICKSTART.md.
 
 <!-- END BEADS INTEGRATION -->
 
+- Work must always be committed after finishing a beads issue.
+
 ## Testing
 
 - **TDD must be used** - Write tests before implementation code
@@ -122,6 +124,5 @@ For more details, see README.md and docs/QUICKSTART.md.
 ### Removal
 - Before removing a dependency, **search the entire codebase** for all imports, requires, and dynamic references to it
 - Check that no other package depends on it as a peer dependency
-
 
 
