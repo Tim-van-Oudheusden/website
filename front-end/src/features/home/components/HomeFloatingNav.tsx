@@ -91,7 +91,7 @@ export function HomeFloatingNav({
   return (
     <nav
       aria-label="Page sections"
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center px-4 pb-8"
+      className="fixed bottom-0 left-0 right-0 z-50 hidden sm:flex items-center justify-center px-4 pb-8"
     >
       <ul
         ref={navListRef}

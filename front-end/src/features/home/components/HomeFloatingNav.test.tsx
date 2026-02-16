@@ -23,6 +23,11 @@ describe("HomeFloatingNav", () => {
     expect(html).toContain("bottom-0");
   });
 
+  test("is hidden on phone screens and visible on small screens and up", () => {
+    const html = renderNav();
+    expect(html).toContain("hidden sm:flex");
+  });
+
   test("renders an anchor for every section", () => {
     const html = renderNav();
     for (const section of HOME_SECTIONS) {
