@@ -55,4 +55,10 @@ describe("HomePage", () => {
     expect(html).toContain("mx-auto flex w-full max-w-none flex-col items-center gap-8");
     expect(html).toContain("max-w-3xl text-center");
   });
+
+  test("adds explicit hover spacing between card title and revealed description text", () => {
+    const html = renderToStaticMarkup(createElement(HomePage));
+    expect(html).toContain("group-hover:pb-24");
+    expect(html).toContain("translate-y-[calc(100%+0.75rem)]");
+  });
 });

@@ -78,12 +78,12 @@ export function ValuePillarsCarousel({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
                   <div className="relative flex h-full items-end overflow-hidden p-6">
-                    <div className="w-full transition-transform duration-300 group-hover:-translate-y-14">
+                    <div className="w-full transition-[padding] duration-300 group-hover:pb-24">
                       <h3 className="text-xl font-semibold tracking-tight text-white">
                         {title}
                       </h3>
                     </div>
-                    <p className="pointer-events-none absolute right-6 bottom-6 left-6 translate-y-full text-sm leading-relaxed text-white/90 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                    <p className="pointer-events-none absolute right-6 bottom-6 left-6 translate-y-[calc(100%+0.75rem)] text-sm leading-relaxed text-white/90 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                       {HOVER_DESCRIPTION}
                     </p>
                   </div>
