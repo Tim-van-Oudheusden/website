@@ -58,7 +58,7 @@ describe("HomePage", () => {
 
   test("adds explicit hover spacing between card title and revealed description text", () => {
     const html = renderToStaticMarkup(createElement(HomePage));
-    expect(html).toContain("group-hover:pb-24");
+    expect(html).toContain("group-hover:pb-12");
     expect(html).toContain("translate-y-[calc(100%+0.75rem)]");
   });
 });

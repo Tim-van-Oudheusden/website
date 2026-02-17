@@ -2,5 +2,6 @@
   "database": "dolt",
   "jsonl_export": "issues.jsonl",
   "backend": "dolt",
-  "dolt_database": "beads_website"
+  "dolt_database": "beads_website",
+  "last_bd_version": "0.52.0"
 }
