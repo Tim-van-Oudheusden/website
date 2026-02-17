@@ -40,8 +40,8 @@ export function ValuePillarsCarousel({
   }, []);
 
   return (
-    <div className="mx-auto flex w-full max-w-none flex-col gap-8">
-      <div className="max-w-3xl">
+    <div className="mx-auto flex w-full max-w-none flex-col items-center gap-8">
+      <div className="max-w-3xl text-center">
         <h2 id={headingId} className="font-semibold tracking-tight text-white text-2xl sm:text-3xl">
           {heading}
         </h2>
@@ -50,7 +50,7 @@ export function ValuePillarsCarousel({
         </p>
       </div>
 
-      <div className="relative">
+      <div className="relative w-full">
         <Button
           type="button"
           variant="secondary"

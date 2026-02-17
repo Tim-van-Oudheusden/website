@@ -49,4 +49,10 @@ describe("HomePage", () => {
     expect(html).toContain("w-4/5");
     expect(html).toContain("aspect-[3/4]");
   });
+
+  test("renders for-you intro in a top-to-bottom centered composition", () => {
+    const html = renderToStaticMarkup(createElement(HomePage));
+    expect(html).toContain("mx-auto flex w-full max-w-none flex-col items-center gap-8");
+    expect(html).toContain("max-w-3xl text-center");
+  });
 });
