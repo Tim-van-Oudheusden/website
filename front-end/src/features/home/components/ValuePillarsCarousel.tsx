@@ -78,7 +78,7 @@ export function ValuePillarsCarousel({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
                   <div className="relative flex h-full items-end overflow-hidden p-6">
-                    <div className="w-full transition-[padding] duration-300 group-hover:pb-12">
+                    <div className="w-full transition-[padding] duration-300 group-hover:pb-20">
                       <h3 className="text-xl font-semibold tracking-tight text-white">
                         {title}
                       </h3>
