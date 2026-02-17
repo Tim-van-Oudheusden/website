@@ -37,9 +37,6 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
         )}
       >
         <div className="flex flex-1 flex-col gap-5">
-          <p className="text-sm font-medium tracking-wide uppercase text-white/70">
-            {section.label}
-          </p>
           <h2
             id={`${section.id}-heading`}
             className={cn(

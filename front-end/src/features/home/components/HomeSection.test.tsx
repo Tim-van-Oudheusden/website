@@ -54,6 +54,11 @@ describe("HomeSection", () => {
     expect(html).toContain('id="hero-heading"');
   });
 
+  test("does not render a redundant section indicator label above the heading", () => {
+    const html = renderToStaticMarkup(createElement(HomeSection, { section: COLUMN_SECTION }));
+    expect(html).not.toContain(">Hero<");
+  });
+
   test("column section uses flex-col for the content container", () => {
     const html = renderToStaticMarkup(createElement(HomeSection, { section: COLUMN_SECTION }));
     expect(html).toContain("flex-col");
