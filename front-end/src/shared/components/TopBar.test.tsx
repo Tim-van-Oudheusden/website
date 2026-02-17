@@ -26,4 +26,11 @@ describe("TopBar", () => {
     const html = renderTopBar();
     expect(html).toContain('data-scrolled="false"');
   });
+
+  test("uses an enlarged navbar height and larger text/icon sizing", () => {
+    const html = renderTopBar();
+    expect(html).toContain("h-[4.2rem]");
+    expect(html).toContain("text-[1.35rem]");
+    expect(html).toContain("size-6");
+  });
 });

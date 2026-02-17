@@ -1,6 +1,7 @@
 import * as React from "react";
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { cn } from "@/shared/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,15 +10,20 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import { useTheme } from "@/shared/hooks/use-theme";
 
-export function ThemeToggle(): React.JSX.Element {
+interface ThemeToggleProps {
+  triggerClassName?: string;
+  iconClassName?: string;
+}
+
+export function ThemeToggle({ triggerClassName, iconClassName }: ThemeToggleProps): React.JSX.Element {
   const { theme, setTheme } = useTheme();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <SunIcon className="size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <MoonIcon className="absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+        <Button variant="ghost" size="icon" className={triggerClassName}>
+          <SunIcon className={cn("scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90", iconClassName)} />
+          <MoonIcon className={cn("absolute scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0", iconClassName)} />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
