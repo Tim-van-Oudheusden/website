@@ -75,4 +75,10 @@ describe("HomeSection", () => {
     expect(html).toContain("md:max-w-3xl");
     expect(html).toContain("lg:max-w-5xl");
   });
+
+  test("hero section uses enlarged heading typography", () => {
+    const html = renderToStaticMarkup(createElement(HomeSection, { section: COLUMN_SECTION }));
+    expect(html).toContain("text-4xl");
+    expect(html).toContain("sm:text-5xl");
+  });
 });

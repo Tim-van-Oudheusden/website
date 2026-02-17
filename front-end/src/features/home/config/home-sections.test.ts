@@ -44,4 +44,9 @@ describe("HOME_SECTIONS", () => {
     expect(directions).toContain("row");
     expect(directions).toContain("column");
   });
+
+  test("sets hero content direction to row for desktop left-to-right composition", () => {
+    const hero = HOME_SECTIONS.find((section) => section.id === "hero");
+    expect(hero?.contentDirection).toBe("row");
+  });
 });

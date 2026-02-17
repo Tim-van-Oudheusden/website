@@ -11,6 +11,7 @@ interface HomeSectionProps {
 
 export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React.JSX.Element {
   const isRow = section.contentDirection === "row";
+  const isHero = section.id === "hero";
   const hasCta = section.ctaLabel != null && section.ctaTargetId != null;
 
   return (
@@ -39,7 +40,13 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
           <p className="text-sm font-medium tracking-wide uppercase text-white/70">
             {section.label}
           </p>
-          <h2 id={`${section.id}-heading`} className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+          <h2
+            id={`${section.id}-heading`}
+            className={cn(
+              "font-semibold tracking-tight text-white",
+              isHero ? "text-4xl sm:text-5xl" : "text-2xl sm:text-3xl",
+            )}
+          >
             {section.heading}
           </h2>
           <p className="leading-relaxed text-white/80">

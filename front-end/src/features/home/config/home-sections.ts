@@ -10,7 +10,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     bgImage: "/images/wave-blue.svg",
     ctaLabel: "Discover",
     ctaTargetId: "value-pillars",
-    contentDirection: "column",
+    contentDirection: "row",
   },
   {
     id: "value-pillars",
