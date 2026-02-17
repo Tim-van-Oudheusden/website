@@ -40,11 +40,13 @@ describe("HomePage", () => {
     expect(html).toContain('aria-label="Next cards"');
   });
 
-  test("renders the for-you carousel as full-width with responsive card-count classes", () => {
+  test("renders the for-you carousel with 3-up desktop density and portrait card proportions", () => {
     const html = renderToStaticMarkup(createElement(HomePage));
     expect(html).toContain("max-w-none");
     expect(html).toContain("basis-full");
     expect(html).toContain("sm:basis-1/3");
-    expect(html).toContain("lg:basis-1/4");
+    expect(html).toContain("lg:basis-1/3");
+    expect(html).toContain("w-4/5");
+    expect(html).toContain("aspect-[3/4]");
   });
 });

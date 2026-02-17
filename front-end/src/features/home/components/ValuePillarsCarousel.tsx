@@ -68,8 +68,8 @@ export function ValuePillarsCarousel({
         >
           <div className="flex min-w-full snap-x snap-mandatory gap-4">
             {VALUE_PILLAR_ITEMS.map((title, index) => (
-              <article key={title} className="basis-full shrink-0 snap-start sm:basis-1/3 lg:basis-1/4">
-                <Card className="group relative h-80 overflow-hidden border-white/30 bg-transparent p-0">
+              <article key={title} className="basis-full shrink-0 snap-start sm:basis-1/3 lg:basis-1/3">
+                <Card className="group relative mx-auto w-4/5 aspect-[3/4] overflow-hidden border-white/30 bg-transparent p-0">
                   <img
                     src={`https://placehold.co/960x640/png?text=Placeholder+${index + 1}`}
                     alt={`${title} placeholder`}
