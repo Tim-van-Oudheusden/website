@@ -28,4 +28,23 @@ describe("HomePage", () => {
     expect(html).toContain(">Discover<");
     expect(html).toContain('href="#value-pillars"');
   });
+
+  test("renders the for-you carousel with required card titles and navigation controls", () => {
+    const html = renderToStaticMarkup(createElement(HomePage));
+    expect(html).toContain("Mastering Office culture");
+    expect(html).toContain("Big Tech independence");
+    expect(html).toContain("Elevate your capabilities");
+    expect(html).toContain("Meditation Guides");
+    expect(html).toContain("Level Up Engineering");
+    expect(html).toContain('aria-label="Previous cards"');
+    expect(html).toContain('aria-label="Next cards"');
+  });
+
+  test("renders the for-you carousel as full-width with responsive card-count classes", () => {
+    const html = renderToStaticMarkup(createElement(HomePage));
+    expect(html).toContain("max-w-none");
+    expect(html).toContain("basis-full");
+    expect(html).toContain("sm:basis-1/3");
+    expect(html).toContain("lg:basis-1/4");
+  });
 });

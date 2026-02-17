@@ -20,6 +20,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     bgColor: "var(--adw-accent-teal)",
     bgImage: "/images/gradient-teal.svg",
     contentDirection: "row",
+    variant: "carousel",
   },
   {
     id: "feature-strips",

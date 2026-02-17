@@ -3,6 +3,7 @@ import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import type { HomeSectionId } from "../types/home-section";
 import type { HomeSectionDefinition } from "../types/home-section";
+import { ValuePillarsCarousel } from "./ValuePillarsCarousel";
 
 interface HomeSectionProps {
   section: HomeSectionDefinition;
@@ -10,6 +11,32 @@ interface HomeSectionProps {
 }
 
 export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React.JSX.Element {
+  if (section.variant === "carousel") {
+    return (
+      <section
+        id={section.id}
+        aria-labelledby={`${section.id}-heading`}
+        className="flex min-h-svh items-center justify-center px-4 py-12 sm:px-6 sm:py-16"
+        style={{
+          backgroundColor: section.bgColor,
+          ...(section.bgImage != null
+            ? {
+                backgroundImage: `url(${section.bgImage})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : {}),
+        }}
+      >
+        <ValuePillarsCarousel
+          headingId={`${section.id}-heading`}
+          heading={section.heading}
+          body={section.body}
+        />
+      </section>
+    );
+  }
+
   const isRow = section.contentDirection === "row";
   const isHero = section.id === "hero";
   const hasCta = section.ctaLabel != null && section.ctaTargetId != null;

@@ -8,6 +8,7 @@ export type HomeSectionId =
   | "footer";
 
 export type HomeSectionContentDirection = "row" | "column";
+export type HomeSectionVariant = "default" | "carousel";
 
 export interface HomeSectionDefinition {
   id: HomeSectionId;
@@ -19,4 +20,5 @@ export interface HomeSectionDefinition {
   ctaLabel?: string;
   ctaTargetId?: HomeSectionId;
   contentDirection: HomeSectionContentDirection;
+  variant?: HomeSectionVariant;
 }
