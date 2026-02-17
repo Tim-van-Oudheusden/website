@@ -46,7 +46,7 @@ describe("HomePage", () => {
     expect(html).toContain("basis-full");
     expect(html).toContain("sm:basis-1/3");
     expect(html).toContain("lg:basis-1/3");
-    expect(html).toContain("w-4/5");
+    expect(html).toContain("w-3/4");
     expect(html).toContain("aspect-[3/4]");
   });
 
