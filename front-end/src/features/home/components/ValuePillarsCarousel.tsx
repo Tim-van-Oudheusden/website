@@ -4,11 +4,26 @@ import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 
 const VALUE_PILLAR_ITEMS = [
-  "Mastering Office culture",
-  "Big Tech independence",
-  "Elevate your capabilities",
-  "Meditation Guides",
-  "Level Up Engineering",
+  {
+    title: "Mastering Office culture",
+    artworkPath: "/images/mastering_office_culture.png",
+  },
+  {
+    title: "Big Tech independence",
+    artworkPath: "/images/big_tech_independence.png",
+  },
+  {
+    title: "Elevate your capabilities",
+    artworkPath: "/images/elevate_your_capabilities.png",
+  },
+  {
+    title: "Meditation Guides",
+    artworkPath: "/images/meditation_guides.png",
+  },
+  {
+    title: "Level Up Engineering",
+    artworkPath: "/images/level_up_engineering.png",
+  },
 ] as const;
 
 const HOVER_DESCRIPTION =
@@ -67,12 +82,12 @@ export function ValuePillarsCarousel({
           className="overflow-x-auto px-12 pb-2 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           <div className="flex min-w-full snap-x snap-mandatory gap-4">
-            {VALUE_PILLAR_ITEMS.map((title, index) => (
+            {VALUE_PILLAR_ITEMS.map(({ title, artworkPath }) => (
               <article key={title} className="basis-full shrink-0 snap-start sm:basis-1/3 lg:basis-1/3">
                 <Card className="group relative mx-auto w-3/4 aspect-[3/4] overflow-hidden border-white/30 bg-transparent p-0">
                   <img
-                    src={`https://placehold.co/960x640/png?text=Placeholder+${index + 1}`}
-                    alt={`${title} placeholder`}
+                    src={artworkPath}
+                    alt={`${title} artwork`}
                     className="absolute inset-0 h-full w-full object-cover"
                     loading="lazy"
                   />

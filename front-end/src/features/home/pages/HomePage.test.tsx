@@ -40,6 +40,23 @@ describe("HomePage", () => {
     expect(html).toContain('aria-label="Next cards"');
   });
 
+  test("renders local artwork backgrounds for each for-you carousel card", () => {
+    const html = renderToStaticMarkup(createElement(HomePage));
+    const expectedArtworks = [
+      "/images/mastering_office_culture.png",
+      "/images/big_tech_independence.png",
+      "/images/elevate_your_capabilities.png",
+      "/images/meditation_guides.png",
+      "/images/level_up_engineering.png",
+    ];
+
+    for (const artworkPath of expectedArtworks) {
+      expect(html).toContain(`src="${artworkPath}"`);
+    }
+
+    expect(html).not.toContain("placehold.co");
+  });
+
   test("renders the for-you carousel with 3-up desktop density and portrait card proportions", () => {
     const html = renderToStaticMarkup(createElement(HomePage));
     expect(html).toContain("max-w-none");
