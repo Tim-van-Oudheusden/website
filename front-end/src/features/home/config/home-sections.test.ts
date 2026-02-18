@@ -49,4 +49,14 @@ describe("HOME_SECTIONS", () => {
     const hero = HOME_SECTIONS.find((section) => section.id === "hero");
     expect(hero?.contentDirection).toBe("row");
   });
+
+  test("swaps background styles between value-pillars and feature-strips", () => {
+    const valuePillars = HOME_SECTIONS.find((section) => section.id === "value-pillars");
+    const featureStrips = HOME_SECTIONS.find((section) => section.id === "feature-strips");
+
+    expect(valuePillars?.bgColor).toBe("var(--adw-accent-green)");
+    expect(valuePillars?.bgImage).toBe("/images/wave-green.svg");
+    expect(featureStrips?.bgColor).toBe("var(--adw-accent-teal)");
+    expect(featureStrips?.bgImage).toBe("/images/gradient-teal.svg");
+  });
 });
