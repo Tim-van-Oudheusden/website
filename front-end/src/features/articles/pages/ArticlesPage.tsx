@@ -25,9 +25,9 @@ interface ArticleData extends ArticleSummary {
 
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   container: "flex w-full flex-1 flex-col overflow-hidden lg:flex-row",
-  sidebar: "w-full lg:basis-[15%] lg:shrink-0",
+  sidebar: "w-full bg-muted dark:bg-card lg:basis-[15%] lg:shrink-0",
   divider: "hidden w-0.5 bg-border lg:block",
-  content: "min-h-[20rem] flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8",
+  content: "bg-muted dark:bg-card min-h-[20rem] flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8",
 } as const;
 
 const INITIAL_OPEN_CATEGORIES: Record<ArticleCategory, boolean> = {

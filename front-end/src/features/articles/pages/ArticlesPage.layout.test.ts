@@ -12,4 +12,11 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("bg-border");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("flex-1");
   });
+
+  test("uses darker-than-topbar surfaces for sidebar and content in light and dark themes", () => {
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("bg-muted");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("dark:bg-card");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("bg-muted");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("dark:bg-card");
+  });
 });
