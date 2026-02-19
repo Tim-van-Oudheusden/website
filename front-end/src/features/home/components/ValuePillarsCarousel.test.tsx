@@ -59,6 +59,6 @@ describe("ValuePillarsCarousel", () => {
     }));
 
     expect(html).toContain("overflow-x-auto");
-    expect(html).toContain("pt-1");
+    expect(html).toContain("pt-1.5");
   });
 });
