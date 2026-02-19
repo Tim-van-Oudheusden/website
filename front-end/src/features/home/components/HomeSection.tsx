@@ -5,6 +5,8 @@ import type { HomeSectionId } from "../types/home-section";
 import type { HomeSectionDefinition } from "../types/home-section";
 import { ValuePillarsCarousel } from "./ValuePillarsCarousel";
 
+const HERO_ANIMATION_PATH = "/animations/laptop_reboot.gif";
+
 interface HomeSectionProps {
   section: HomeSectionDefinition;
   onCtaActivate?: (sectionId: HomeSectionId, event: React.MouseEvent<HTMLAnchorElement>) => void;
@@ -91,9 +93,22 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
             </Button>
           )}
         </div>
-        <div className="flex flex-1 items-center justify-center rounded-2xl bg-white/10 p-8">
-          <p className="text-sm text-white/50">Media placeholder</p>
-        </div>
+        {isHero ? (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="aspect-video w-full overflow-hidden rounded-2xl border border-black/45 shadow-[0_20px_48px_-20px_rgba(0,0,0,0.85)]">
+              <img
+                src={HERO_ANIMATION_PATH}
+                alt="Laptop reboot animation"
+                className="h-full w-full object-cover"
+                loading="eager"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-1 items-center justify-center rounded-2xl bg-white/10 p-8">
+            <p className="text-sm text-white/50">Media placeholder</p>
+          </div>
+        )}
       </div>
     </section>
   );
