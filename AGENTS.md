@@ -91,6 +91,8 @@ For more details, see README.md and docs/QUICKSTART.md.
 
 - Work must always be committed after finishing a beads issue.
 - Commits must always follow the Conventional Commits specification.
+- After finishing all work, check if a .beads/issues.jsonl change is still pending. If it is commit it with "chore(beads): sync issue tracker".
+- After everything is committed, push it to the remote (oneshot, if any errors still pop up ask the user).
 
 ## Testing
 
