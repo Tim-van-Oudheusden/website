@@ -11,7 +11,7 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:basis-[15%]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:shrink-0");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("w-0.5");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("bg-border");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("bg-[var(--adw-light-4)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("flex-1");
   });
 
