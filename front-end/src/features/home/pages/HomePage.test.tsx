@@ -29,12 +29,12 @@ describe("HomePage", () => {
     expect(html).toContain('href="#value-pillars"');
   });
 
-  test("renders the for-you carousel with required card titles and navigation controls", () => {
+  test("renders the for-you carousel with current card titles and navigation controls", () => {
     const html = renderToStaticMarkup(createElement(HomePage));
     expect(html).toContain("Mastering Office culture");
     expect(html).toContain("Big Tech independence");
     expect(html).toContain("Elevate your capabilities");
-    expect(html).toContain("Meditation Guides");
+    expect(html).toContain("Managing Stress");
     expect(html).toContain("Level Up Engineering");
     expect(html).toContain('aria-label="Previous cards"');
     expect(html).toContain('aria-label="Next cards"');
@@ -46,7 +46,7 @@ describe("HomePage", () => {
       "/images/mastering_office_culture.png",
       "/images/big_tech_independence.png",
       "/images/elevate_your_capabilities.png",
-      "/images/meditation_guides.png",
+      "/images/managing_stress.png",
       "/images/level_up_engineering.png",
     ];
 
@@ -75,7 +75,7 @@ describe("HomePage", () => {
 
   test("adds explicit hover spacing between card title and revealed description text", () => {
     const html = renderToStaticMarkup(createElement(HomePage));
-    expect(html).toContain("group-hover:pb-20");
+    expect(html).toContain("group-hover:pb-18");
     expect(html).toContain("translate-y-[calc(100%+0.75rem)]");
   });
 });
