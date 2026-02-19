@@ -25,9 +25,9 @@ interface ArticleData extends ArticleSummary {
 }
 
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
-  container: "flex w-full flex-1 flex-col overflow-hidden lg:flex-row",
-  sidebar: "w-full bg-muted dark:bg-card lg:basis-[15%] lg:shrink-0",
-  divider: "hidden w-px bg-[var(--adw-light-4)] lg:block",
+  container: "flex w-full min-h-0 flex-1 flex-col overflow-hidden lg:h-[calc(100svh-4.2rem)] lg:flex-row",
+  sidebar: "w-full overflow-y-auto bg-muted dark:bg-card lg:basis-[15%] lg:shrink-0",
+  divider: "hidden w-[0.5px] bg-[var(--adw-light-5)] dark:bg-[var(--adw-dark-1)] lg:block",
   content: "bg-muted dark:bg-card min-h-[20rem] flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8",
 } as const;
 
@@ -179,7 +179,7 @@ export function ArticlesPage(): React.JSX.Element {
   return (
     <main className={ARTICLES_PAGE_LAYOUT_CLASSES.container}>
       <aside className={ARTICLES_PAGE_LAYOUT_CLASSES.sidebar}>
-        <div className="h-full overflow-y-auto p-3">
+        <div className="p-3">
           <h1 className="px-2 pb-2 text-3xl font-bold tracking-tight">Articles</h1>
           <div className="space-y-1">
             {ARTICLE_CATEGORIES.map((category) => {

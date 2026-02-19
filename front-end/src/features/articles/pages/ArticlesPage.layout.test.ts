@@ -9,14 +9,17 @@ import {
 } from "./ArticlesPage";
 
 describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
-  test("uses edge-to-edge split layout with 15% sidebar and 1px divider", () => {
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("flex w-full flex-1");
+  test("uses edge-to-edge split layout with 15% sidebar and 0.5px divider", () => {
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("flex w-full");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("flex-1");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("lg:h-[calc(100svh-4.2rem)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("mx-auto");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("max-w-screen-2xl");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:basis-[15%]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:shrink-0");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("w-px");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("bg-[var(--adw-light-4)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("overflow-y-auto");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("w-[0.5px]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("bg-[var(--adw-light-5)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("flex-1");
   });
 
