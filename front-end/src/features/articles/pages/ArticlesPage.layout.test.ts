@@ -56,6 +56,7 @@ describe("ArticleLocationTrail", () => {
     expect(html).toContain('href="/"');
     expect(html).toContain("lucide-house");
     expect(html).toContain("<button");
+    expect(html).toContain("cursor-pointer");
     expect(html).toContain("Articles");
     expect(html).toContain("My Article");
     expect(html).toContain("&gt;");

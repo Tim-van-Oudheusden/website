@@ -50,7 +50,11 @@ export function ArticleLocationTrail({ articleTitle, onArticlesActivate }: Artic
         <House className="size-4" />
       </Link>
       <span aria-hidden="true">&gt;</span>
-      <button type="button" onClick={onArticlesActivate} className="hover:text-foreground transition-colors">
+      <button
+        type="button"
+        onClick={onArticlesActivate}
+        className="cursor-pointer hover:text-foreground transition-colors"
+      >
         Articles
       </button>
       <span aria-hidden="true">&gt;</span>
