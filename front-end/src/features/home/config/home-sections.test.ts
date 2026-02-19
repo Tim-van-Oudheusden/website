@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { existsSync } from "node:fs";
 import { HOME_SECTIONS } from "./home-sections";
 
 describe("HOME_SECTIONS", () => {
@@ -58,5 +59,9 @@ describe("HOME_SECTIONS", () => {
     expect(valuePillars?.bgImage).toBe("/images/wave-green.svg");
     expect(featureStrips?.bgColor).toBe("var(--adw-accent-teal)");
     expect(featureStrips?.bgImage).toBe("/images/gradient-teal.svg");
+  });
+
+  test("includes the inverted blue wave asset used for seamless alternating transitions", () => {
+    expect(existsSync(new URL("../../../../../public/images/inverted-wave-blue.svg", import.meta.url))).toBe(true);
   });
 });
