@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { ChevronRight, FileText, Folder, House } from "lucide-react";
+import { Link } from "react-router";
 import { ARTICLE_CATEGORIES, ROUTES, type ArticleCategory } from "shared";
 import { apiGet, ApiError } from "@/shared/lib/api";
 import { Badge } from "@/shared/components/ui/badge";
@@ -32,17 +33,26 @@ export const ARTICLES_PAGE_LAYOUT_CLASSES = {
 
 interface ArticleLocationTrailProps {
   articleTitle: string;
+  onArticlesActivate: () => void;
 }
 
-export function ArticleLocationTrail({ articleTitle }: ArticleLocationTrailProps): React.JSX.Element {
+export function resolveArticlesTrailTargetSlug(articles: ArticleSummary[]): string | null {
+  return getDefaultArticleSlug(articles);
+}
+
+export function ArticleLocationTrail({ articleTitle, onArticlesActivate }: ArticleLocationTrailProps): React.JSX.Element {
   return (
     <nav
       aria-label="Current location"
       className="text-muted-foreground mb-4 flex items-center gap-2 text-sm"
     >
-      <House className="size-4" />
+      <Link to="/" aria-label="Home">
+        <House className="size-4" />
+      </Link>
       <span aria-hidden="true">&gt;</span>
-      <span>Articles</span>
+      <button type="button" onClick={onArticlesActivate} className="hover:text-foreground transition-colors">
+        Articles
+      </button>
       <span aria-hidden="true">&gt;</span>
       <span className="text-foreground truncate font-medium">{articleTitle}</span>
     </nav>
@@ -160,6 +170,7 @@ export function ArticlesPage(): React.JSX.Element {
   }
 
   const groupedArticles = groupArticlesByCategory(articles);
+  const trailTargetSlug = resolveArticlesTrailTargetSlug(articles);
 
   return (
     <main className={ARTICLES_PAGE_LAYOUT_CLASSES.container}>
@@ -239,7 +250,14 @@ export function ArticlesPage(): React.JSX.Element {
         )}
         {!loadingArticle && articleError === null && selectedArticle !== null && (
           <>
-            <ArticleLocationTrail articleTitle={selectedArticle.title} />
+            <ArticleLocationTrail
+              articleTitle={selectedArticle.title}
+              onArticlesActivate={() => {
+                if (trailTargetSlug !== null) {
+                  setSelectedSlug(trailTargetSlug);
+                }
+              }}
+            />
             <header className="mb-8">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{selectedArticle.title}</h2>
               <p className="text-muted-foreground mt-2">{selectedArticle.description}</p>

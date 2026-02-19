@@ -1,7 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ARTICLES_PAGE_LAYOUT_CLASSES, ArticleLocationTrail } from "./ArticlesPage";
+import { MemoryRouter } from "react-router";
+import {
+  ARTICLES_PAGE_LAYOUT_CLASSES,
+  ArticleLocationTrail,
+  resolveArticlesTrailTargetSlug,
+} from "./ArticlesPage";
 
 describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
   test("uses edge-to-edge split layout with 15% sidebar and 2px divider", () => {
@@ -24,10 +29,33 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
 });
 
 describe("ArticleLocationTrail", () => {
+  test("resolves the articles trail target to the default introduction slug", () => {
+    expect(resolveArticlesTrailTargetSlug([
+      { slug: "work-item", title: "Work", description: "w", date: "2024-02-01", tags: [], category: "Work" },
+      {
+        slug: "introduction",
+        title: "Intro",
+        description: "i",
+        date: "2024-01-01",
+        tags: [],
+        category: "Introduction",
+      },
+    ])).toBe("introduction");
+  });
+
   test("renders home icon and current location trail format", () => {
-    const html = renderToStaticMarkup(createElement(ArticleLocationTrail, { articleTitle: "My Article" }));
+    const html = renderToStaticMarkup(createElement(
+      MemoryRouter,
+      null,
+      createElement(ArticleLocationTrail, {
+        articleTitle: "My Article",
+        onArticlesActivate: () => {},
+      }),
+    ));
     expect(html).toContain('aria-label="Current location"');
+    expect(html).toContain('href="/"');
     expect(html).toContain("lucide-house");
+    expect(html).toContain("<button");
     expect(html).toContain("Articles");
     expect(html).toContain("My Article");
     expect(html).toContain("&gt;");
