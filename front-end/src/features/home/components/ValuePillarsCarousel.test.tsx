@@ -50,4 +50,15 @@ describe("ValuePillarsCarousel", () => {
     expect(html).toContain("transition-transform");
     expect(html).toContain("will-change-transform");
   });
+
+  test("adds slight top scroller spacing to prevent tilt clipping at the top edge", () => {
+    const html = renderToStaticMarkup(createElement(ValuePillarsCarousel, {
+      headingId: "value-pillars-heading",
+      heading: "Why this project exists",
+      body: "Test body",
+    }));
+
+    expect(html).toContain("overflow-x-auto");
+    expect(html).toContain("pt-1");
+  });
 });
