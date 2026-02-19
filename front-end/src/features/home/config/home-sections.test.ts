@@ -51,14 +51,13 @@ describe("HOME_SECTIONS", () => {
     expect(hero?.contentDirection).toBe("row");
   });
 
-  test("swaps background styles between value-pillars and feature-strips", () => {
-    const valuePillars = HOME_SECTIONS.find((section) => section.id === "value-pillars");
-    const featureStrips = HOME_SECTIONS.find((section) => section.id === "feature-strips");
+  test("alternates blue wave backgrounds by section parity", () => {
+    const expectedBackgroundImages = HOME_SECTIONS.map((_, index) => (
+      index % 2 === 0 ? "/images/wave-blue.svg" : "/images/inverted-wave-blue.svg"
+    ));
+    const actualBackgroundImages = HOME_SECTIONS.map((section) => section.bgImage);
 
-    expect(valuePillars?.bgColor).toBe("var(--adw-accent-green)");
-    expect(valuePillars?.bgImage).toBe("/images/wave-green.svg");
-    expect(featureStrips?.bgColor).toBe("var(--adw-accent-teal)");
-    expect(featureStrips?.bgImage).toBe("/images/gradient-teal.svg");
+    expect(actualBackgroundImages).toEqual(expectedBackgroundImages);
   });
 
   test("includes the inverted blue wave asset used for seamless alternating transitions", () => {
