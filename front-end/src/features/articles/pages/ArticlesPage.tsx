@@ -23,6 +23,13 @@ interface ArticleData extends ArticleSummary {
   body: string;
 }
 
+export const ARTICLES_PAGE_LAYOUT_CLASSES = {
+  container: "flex w-full flex-1 flex-col overflow-hidden lg:flex-row",
+  sidebar: "w-full lg:basis-[15%] lg:shrink-0",
+  divider: "hidden w-0.5 bg-border lg:block",
+  content: "min-h-[20rem] flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8",
+} as const;
+
 const INITIAL_OPEN_CATEGORIES: Record<ArticleCategory, boolean> = {
   Introduction: true,
   Linux: true,
@@ -136,9 +143,9 @@ export function ArticlesPage(): React.JSX.Element {
   const groupedArticles = groupArticlesByCategory(articles);
 
   return (
-    <main className="mx-auto flex w-full max-w-screen-2xl flex-1 flex-col gap-4 p-4 sm:p-6 lg:flex-row lg:p-8">
-      <aside className="w-full lg:max-w-sm lg:shrink-0">
-        <div className="bg-card rounded-lg border p-3">
+    <main className={ARTICLES_PAGE_LAYOUT_CLASSES.container}>
+      <aside className={ARTICLES_PAGE_LAYOUT_CLASSES.sidebar}>
+        <div className="h-full overflow-y-auto p-3">
           <h1 className="px-2 pb-2 text-3xl font-bold tracking-tight">Articles</h1>
           <div className="space-y-1">
             {ARTICLE_CATEGORIES.map((category) => {
@@ -202,7 +209,9 @@ export function ArticlesPage(): React.JSX.Element {
         </div>
       </aside>
 
-      <article className="bg-card min-h-[20rem] flex-1 rounded-lg border p-4 sm:p-6">
+      <div className={ARTICLES_PAGE_LAYOUT_CLASSES.divider} />
+
+      <article className={ARTICLES_PAGE_LAYOUT_CLASSES.content}>
         {loadingArticle && (
           <p className="text-muted-foreground">Loading article...</p>
         )}
