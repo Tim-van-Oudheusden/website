@@ -12,13 +12,15 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
   test("uses edge-to-edge split layout with 15% sidebar and 0.5px divider", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("flex w-full");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("flex-1");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("md:h-[calc(100dvh-4.2rem)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("overflow-hidden");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("md:flex-row");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("mx-auto");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("max-w-screen-2xl");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:basis-[clamp(13rem,15vw,18rem)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:min-w-[13rem]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:shrink-0");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:sticky");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:top-[4.2rem]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("overflow-y-auto");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("w-[0.5px]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("bg-[var(--adw-light-5)]");

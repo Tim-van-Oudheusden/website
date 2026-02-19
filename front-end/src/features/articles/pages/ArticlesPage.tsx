@@ -25,10 +25,10 @@ interface ArticleData extends ArticleSummary {
 }
 
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
-  container: "flex w-full min-h-0 flex-1 flex-col overflow-hidden md:h-[calc(100dvh-4.2rem)] md:flex-row",
-  sidebar: "w-full min-h-0 overflow-y-auto bg-muted dark:bg-card md:basis-[clamp(13rem,15vw,18rem)] md:min-w-[13rem] md:shrink-0",
+  container: "flex w-full min-h-0 flex-1 flex-col md:flex-row",
+  sidebar: "w-full min-h-0 overflow-y-auto bg-muted dark:bg-card md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[clamp(13rem,15vw,18rem)] md:min-w-[13rem] md:shrink-0",
   divider: "hidden w-[0.5px] bg-[var(--adw-light-5)] dark:bg-[var(--adw-dark-1)] md:block",
-  content: "bg-muted dark:bg-card min-h-[20rem] min-w-0 md:min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8",
+  content: "bg-muted dark:bg-card min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
 } as const;
 
 interface ArticleLocationTrailProps {
