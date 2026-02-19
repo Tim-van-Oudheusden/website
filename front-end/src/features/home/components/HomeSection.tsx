@@ -94,8 +94,8 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
           )}
         </div>
         {isHero ? (
-          <div className="flex flex-1 items-center justify-center">
-            <div className="aspect-video w-full overflow-hidden rounded-2xl border border-black/45 shadow-[0_20px_48px_-20px_rgba(0,0,0,0.85)]">
+          <div className="flex flex-1 items-center justify-center md:flex-[2]">
+            <div className="aspect-video w-full overflow-hidden rounded-2xl border border-black/45 shadow-[0_34px_72px_-24px_rgba(0,0,0,0.92)]">
               <img
                 src={HERO_ANIMATION_PATH}
                 alt="Laptop reboot animation"

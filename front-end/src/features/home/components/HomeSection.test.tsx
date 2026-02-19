@@ -87,12 +87,13 @@ describe("HomeSection", () => {
     expect(html).toContain("sm:text-5xl");
   });
 
-  test("hero section renders a 16:9 GIF media card with dark border and visible shadow", () => {
+  test("hero section renders a larger 16:9 GIF media card with dark border and deeper shadow", () => {
     const html = renderToStaticMarkup(createElement(HomeSection, { section: COLUMN_SECTION }));
     expect(html).toContain('src="/animations/laptop_reboot.gif"');
     expect(html).toContain("aspect-video");
+    expect(html).toContain("md:flex-[2]");
     expect(html).toContain("border-black/45");
-    expect(html).toContain("shadow-[0_20px_48px_-20px_rgba(0,0,0,0.85)]");
+    expect(html).toContain("shadow-[0_34px_72px_-24px_rgba(0,0,0,0.92)]");
     expect(html).not.toContain("Media placeholder");
   });
 });
