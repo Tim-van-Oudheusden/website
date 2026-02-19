@@ -7,27 +7,29 @@ const VALUE_PILLAR_ITEMS = [
   {
     title: "Mastering Office culture",
     artworkPath: "/images/mastering_office_culture.png",
+    description: "Dive deeper into topics about automation, note taking, work & life balance and managing colleague relations.",
   },
   {
     title: "Big Tech independence",
     artworkPath: "/images/big_tech_independence.png",
+    description: "Follow an up-to-date blog, featuring open source alternatives, self-hosting and Linux as an operating system.",
   },
   {
     title: "Elevate your capabilities",
     artworkPath: "/images/elevate_your_capabilities.png",
+    description: "My personal recommendations for rebooting your life, entering the driver seat and achieving your goals.",
   },
   {
-    title: "Meditation Guides",
-    artworkPath: "/images/meditation_guides.png",
+    title: "Managing Stress",
+    artworkPath: "/images/managing_stress.png",
+    description: "Learn to manage your stress at work and at home, with meditation, writing and focus excercises.",
   },
   {
     title: "Level Up Engineering",
     artworkPath: "/images/level_up_engineering.png",
+    description: "Navigate a world dominated by A.i. and agile, and level up with me to become the engineer you want to be.",
   },
 ] as const;
-
-const HOVER_DESCRIPTION =
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vitae justo non magna faucibus cursus.";
 
 interface ValuePillarsCarouselProps {
   headingId: string;
@@ -82,7 +84,7 @@ export function ValuePillarsCarousel({
           className="overflow-x-auto px-12 pb-2 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           <div className="flex min-w-full snap-x snap-mandatory gap-4">
-            {VALUE_PILLAR_ITEMS.map(({ title, artworkPath }) => (
+            {VALUE_PILLAR_ITEMS.map(({ title, artworkPath, description }) => (
               <article key={title} className="basis-full shrink-0 snap-start sm:basis-1/3 lg:basis-1/3">
                 <Card className="group relative mx-auto w-3/4 aspect-[3/4] overflow-hidden border-white/30 bg-transparent p-0">
                   <img
@@ -93,13 +95,13 @@ export function ValuePillarsCarousel({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
                   <div className="relative flex h-full items-end overflow-hidden p-6">
-                    <div className="w-full transition-[padding] duration-300 group-hover:pb-20">
+                    <div className="w-full transition-[padding] duration-300 group-hover:pb-18">
                       <h3 className="text-xl font-semibold tracking-tight text-white">
                         {title}
                       </h3>
                     </div>
                     <p className="pointer-events-none absolute right-6 bottom-6 left-6 translate-y-[calc(100%+0.75rem)] text-sm leading-relaxed text-white/90 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                      {HOVER_DESCRIPTION}
+                      {description}
                     </p>
                   </div>
                 </Card>

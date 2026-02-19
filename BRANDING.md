@@ -6,7 +6,7 @@ The core principle of the website and project, unfolding in various ways.
 The focus of this project lies on the following fields:
 
 ## Big Tech independence
-Featuring open source alternatives, Linux as an operating system and user friendliness.
+Follow an up-to-date blog, featuring open source alternatives, self-hosting and Linux as an operating system.
 A focus on technologies that work for the average Joe, and not complicated highly technical workflows.
 
 ## Meditations, inner peace and selfworth
