@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { ARTICLES_PAGE_LAYOUT_CLASSES } from "./ArticlesPage";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { ARTICLES_PAGE_LAYOUT_CLASSES, ArticleLocationTrail } from "./ArticlesPage";
 
 describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
   test("uses edge-to-edge split layout with 15% sidebar and 2px divider", () => {
@@ -18,5 +20,16 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("dark:bg-card");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("bg-muted");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("dark:bg-card");
+  });
+});
+
+describe("ArticleLocationTrail", () => {
+  test("renders home icon and current location trail format", () => {
+    const html = renderToStaticMarkup(createElement(ArticleLocationTrail, { articleTitle: "My Article" }));
+    expect(html).toContain('aria-label="Current location"');
+    expect(html).toContain("lucide-house");
+    expect(html).toContain("Articles");
+    expect(html).toContain("My Article");
+    expect(html).toContain("&gt;");
   });
 });

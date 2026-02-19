@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { ChevronRight, FileText, Folder } from "lucide-react";
+import { ChevronRight, FileText, Folder, House } from "lucide-react";
 import { ARTICLE_CATEGORIES, ROUTES, type ArticleCategory } from "shared";
 import { apiGet, ApiError } from "@/shared/lib/api";
 import { Badge } from "@/shared/components/ui/badge";
@@ -29,6 +29,25 @@ export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   divider: "hidden w-0.5 bg-border lg:block",
   content: "bg-muted dark:bg-card min-h-[20rem] flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8",
 } as const;
+
+interface ArticleLocationTrailProps {
+  articleTitle: string;
+}
+
+export function ArticleLocationTrail({ articleTitle }: ArticleLocationTrailProps): React.JSX.Element {
+  return (
+    <nav
+      aria-label="Current location"
+      className="text-muted-foreground mb-4 flex items-center gap-2 text-sm"
+    >
+      <House className="size-4" />
+      <span aria-hidden="true">&gt;</span>
+      <span>Articles</span>
+      <span aria-hidden="true">&gt;</span>
+      <span className="text-foreground truncate font-medium">{articleTitle}</span>
+    </nav>
+  );
+}
 
 const INITIAL_OPEN_CATEGORIES: Record<ArticleCategory, boolean> = {
   Introduction: true,
@@ -220,6 +239,7 @@ export function ArticlesPage(): React.JSX.Element {
         )}
         {!loadingArticle && articleError === null && selectedArticle !== null && (
           <>
+            <ArticleLocationTrail articleTitle={selectedArticle.title} />
             <header className="mb-8">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{selectedArticle.title}</h2>
               <p className="text-muted-foreground mt-2">{selectedArticle.description}</p>
