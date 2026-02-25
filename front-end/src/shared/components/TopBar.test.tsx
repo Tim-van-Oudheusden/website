@@ -11,15 +11,17 @@ function renderTopBar(): string {
 }
 
 describe("TopBar", () => {
-  test("uses a fully opaque background without transparency", () => {
+  test("uses the same brown background as homepage surfaces", () => {
     const html = renderTopBar();
-    expect(html).not.toContain("bg-background/80");
-    expect(html).toContain("bg-background");
+    expect(html).toContain("bg-[var(--adw-page-brown-bg)]");
+    expect(html).not.toContain("bg-background");
   });
 
-  test("does not render shadow in initial (unscrolled) state", () => {
+  test("has no border or shadow distinction from page content", () => {
     const html = renderTopBar();
+    expect(html).not.toContain("border-b");
     expect(html).not.toContain("shadow-md");
+    expect(html).not.toContain("transition-shadow");
   });
 
   test("exposes a data-scrolled attribute for scroll-aware styling", () => {

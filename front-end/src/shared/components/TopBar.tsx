@@ -2,7 +2,6 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { MenuIcon } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import {
   Sheet,
@@ -38,10 +37,7 @@ export function TopBar(): React.JSX.Element {
 
   return (
     <header
-      className={cn(
-        "bg-background sticky top-0 z-40 w-full border-b transition-shadow",
-        scrolled ? "shadow-md" : "",
-      )}
+      className="bg-[var(--adw-page-brown-bg)] sticky top-0 z-40 w-full"
       data-scrolled={String(scrolled)}
     >
       <div className="mx-auto flex h-[4.2rem] max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
