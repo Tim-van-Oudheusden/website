@@ -41,7 +41,7 @@ export function ProjectsPage(): React.JSX.Element {
 
   if (loading) {
     return (
-      <main className="flex flex-1 items-center justify-center p-4">
+      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
         <p className="text-muted-foreground">Loading projects...</p>
       </main>
     );
@@ -49,7 +49,7 @@ export function ProjectsPage(): React.JSX.Element {
 
   if (error !== null) {
     return (
-      <main className="flex flex-1 items-center justify-center p-4">
+      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
         <p className="text-destructive">{error}</p>
       </main>
     );
@@ -57,7 +57,7 @@ export function ProjectsPage(): React.JSX.Element {
 
   if (projects.length === 0) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-[var(--adw-page-brown-bg)] p-4">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Projects</h1>
         <p className="text-muted-foreground">No projects yet.</p>
       </main>
@@ -65,7 +65,7 @@ export function ProjectsPage(): React.JSX.Element {
   }
 
   return (
-    <main className="mx-auto w-full max-w-screen-xl flex-1 p-4 sm:p-6 lg:p-8">
+    <main className="mx-auto w-full max-w-screen-xl flex-1 bg-[var(--adw-page-brown-bg)] p-4 sm:p-6 lg:p-8">
       <h1 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl">Projects</h1>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (

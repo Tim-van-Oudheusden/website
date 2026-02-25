@@ -61,7 +61,7 @@ export function ProjectPage(): React.JSX.Element {
 
   if (loading) {
     return (
-      <main className="flex flex-1 items-center justify-center p-4">
+      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
         <p className="text-muted-foreground">Loading project...</p>
       </main>
     );
@@ -69,7 +69,7 @@ export function ProjectPage(): React.JSX.Element {
 
   if (notFound) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-[var(--adw-page-brown-bg)] p-4">
         <h1 className="text-3xl font-bold">Project not found</h1>
         <Link to="/projects" className="text-primary underline">
           Back to projects
@@ -80,14 +80,14 @@ export function ProjectPage(): React.JSX.Element {
 
   if (error !== null || project === null) {
     return (
-      <main className="flex flex-1 items-center justify-center p-4">
+      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
         <p className="text-destructive">{error ?? "Something went wrong"}</p>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto w-full max-w-screen-xl flex-1 p-4 sm:p-6 lg:p-8">
+    <main className="mx-auto w-full max-w-screen-xl flex-1 bg-[var(--adw-page-brown-bg)] p-4 sm:p-6 lg:p-8">
       <article>
         <header className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{project.title}</h1>

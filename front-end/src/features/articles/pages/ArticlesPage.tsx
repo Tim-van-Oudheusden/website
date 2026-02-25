@@ -25,10 +25,10 @@ interface ArticleData extends ArticleSummary {
 }
 
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
-  container: "flex w-full min-h-0 flex-1 flex-col md:flex-row",
-  sidebar: "w-full min-h-0 overflow-y-auto bg-muted dark:bg-card md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[clamp(13rem,15vw,18rem)] md:min-w-[13rem] md:shrink-0",
+  container: "flex w-full min-h-0 flex-1 flex-col bg-[var(--adw-page-brown-bg)] md:flex-row",
+  sidebar: "w-full min-h-0 overflow-y-auto bg-[var(--adw-page-brown-bg)] md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[clamp(13rem,15vw,18rem)] md:min-w-[13rem] md:shrink-0",
   divider: "hidden w-[0.5px] bg-[var(--adw-light-5)] dark:bg-[var(--adw-dark-1)] md:block",
-  content: "bg-muted dark:bg-card min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
+  content: "bg-[var(--adw-page-brown-bg)] min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
 } as const;
 
 interface ArticleLocationTrailProps {
@@ -150,7 +150,7 @@ export function ArticlesPage(): React.JSX.Element {
 
   if (loadingArticles) {
     return (
-      <main className="flex flex-1 items-center justify-center p-4">
+      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
         <p className="text-muted-foreground">Loading articles...</p>
       </main>
     );
@@ -158,7 +158,7 @@ export function ArticlesPage(): React.JSX.Element {
 
   if (listError !== null) {
     return (
-      <main className="flex flex-1 items-center justify-center p-4">
+      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
         <p className="text-destructive">{listError}</p>
       </main>
     );
@@ -166,7 +166,7 @@ export function ArticlesPage(): React.JSX.Element {
 
   if (articles.length === 0) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-[var(--adw-page-brown-bg)] p-4">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Articles</h1>
         <p className="text-muted-foreground">No articles yet.</p>
       </main>
