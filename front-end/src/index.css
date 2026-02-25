@@ -117,6 +117,7 @@
   --adw-accent-pink: #d56199;
   --adw-accent-purple: #9141ac;
   --adw-accent-slate: #6f8396;
+  --adw-brown-1: #cdab8f;
 
   /* Adwaita semantic colors (light) */
   --adw-accent-bg-color: var(--adw-accent-blue);
@@ -147,6 +148,7 @@
   --adw-sidebar-backdrop-color: #f2f2f4;
   --adw-sidebar-border-color: rgb(0 0 6 / 7%);
   --adw-sidebar-shade-color: rgb(0 0 6 / 7%);
+  --adw-page-brown-bg: var(--adw-brown-1);
 
   /* Project semantic mapping (shadcn tokens) */
   --background: var(--adw-window-bg-color);
@@ -219,6 +221,7 @@
   --adw-sidebar-backdrop-color: #28282c;
   --adw-sidebar-border-color: rgb(0 0 6 / 36%);
   --adw-sidebar-shade-color: rgb(0 0 6 / 25%);
+  --adw-page-brown-bg: var(--adw-brown-1);
 
   /* Project semantic mapping (shadcn tokens) */
   --background: var(--adw-window-bg-color);
