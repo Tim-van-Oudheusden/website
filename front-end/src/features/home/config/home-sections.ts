@@ -2,18 +2,18 @@ import type { HomeSectionDefinition } from "../types/home-section";
 
 export const HOME_SECTIONS: HomeSectionDefinition[] = [
   {
-    id: "hero",
-    label: "home",
+    id: "start",
+    label: "start",
     heading: "Reboot With Me",
     body: "A new-age way of saying: getting your life back on track. The core principle of the website and project, unfolding in various ways.",
     bgColor: "var(--adw-accent-blue)",
     bgImage: "/images/wave-blue.svg",
     ctaLabel: "Discover",
-    ctaTargetId: "value-pillars",
+    ctaTargetId: "for-you",
     contentDirection: "row",
   },
   {
-    id: "value-pillars",
+    id: "for-you",
     label: "for you",
     heading: "Why this project exists",
     body: "Placeholder pillar block for concise statements that explain product value.",
@@ -23,7 +23,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     variant: "carousel",
   },
   {
-    id: "feature-strips",
+    id: "for-devs",
     label: "for devs",
     heading: "Core capabilities at a glance",
     body: "Placeholder alternating feature rows for visuals, highlights, and context.",

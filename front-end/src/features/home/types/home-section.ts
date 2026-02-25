@@ -1,7 +1,7 @@
 export type HomeSectionId =
-  | "hero"
-  | "value-pillars"
-  | "feature-strips"
+  | "start"
+  | "for-you"
+  | "for-devs"
   | "proof"
   | "community-and-docs"
   | "secondary-cta"
