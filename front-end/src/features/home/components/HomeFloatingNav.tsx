@@ -21,9 +21,9 @@ interface HomeFloatingNavProps {
 }
 
 const HOME_NAV_ICONS: Record<HomeSectionId, LucideIcon> = {
-  hero: House,
-  "value-pillars": UserRound,
-  "feature-strips": CodeXml,
+  start: House,
+  "for-you": UserRound,
+  "for-devs": CodeXml,
   proof: Trophy,
   "community-and-docs": Dumbbell,
   "secondary-cta": ShieldCheck,
