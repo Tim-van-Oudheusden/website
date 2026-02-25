@@ -9,7 +9,7 @@ const ThemeContext = createContext<{
   theme: Theme;
   setTheme: (theme: Theme) => void;
 }>({
-  theme: "system",
+  theme: "light",
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   setTheme: () => {},
 });
@@ -26,11 +26,11 @@ function applyTheme(theme: Theme): void {
 export function ThemeProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const [theme, setThemeState] = useState<Theme>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === "light" || stored === "dark") {
+    if (stored === "light" || stored === "dark" || stored === "system") {
       return stored;
     }
 
-    return "system";
+    return "light";
   });
 
   const setTheme = (next: Theme): void => {
