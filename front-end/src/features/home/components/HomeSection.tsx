@@ -52,6 +52,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
   const isRow = section.contentDirection === "row";
   const isHero = section.id === "hero";
   const hasCta = section.ctaLabel != null && section.ctaTargetId != null;
+  const isDiscoverCta = section.ctaLabel?.toLowerCase() === "discover";
 
   return (
     <section
@@ -89,7 +90,15 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
             {section.body}
           </p>
           {hasCta && (
-            <Button asChild variant="secondary" size="lg" className="w-fit">
+            <Button
+              asChild
+              variant="secondary"
+              size="lg"
+              className={cn(
+                "w-fit",
+                isDiscoverCta ? "bg-[var(--adw-dark-5)] text-white hover:bg-black/90" : "",
+              )}
+            >
               <a
                 href={`#${section.ctaTargetId}`}
                 onClick={(event) => {
