@@ -2,6 +2,7 @@ import * as React from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
+import { cn } from "@/shared/lib/utils";
 
 interface CardTiltCalculationInput {
   pointerX: number;
@@ -129,12 +130,14 @@ interface ValuePillarsCarouselProps {
   headingId: string;
   heading: string;
   body: string;
+  inWhiteWell?: boolean;
 }
 
 export function ValuePillarsCarousel({
   headingId,
   heading,
   body,
+  inWhiteWell = false,
 }: ValuePillarsCarouselProps): React.JSX.Element {
   const scrollerRef = React.useRef<HTMLDivElement>(null);
 
@@ -153,10 +156,21 @@ export function ValuePillarsCarousel({
   return (
     <div className="mx-auto flex w-full max-w-none flex-col items-center gap-8">
       <div className="max-w-3xl text-center">
-        <h2 id={headingId} className="font-semibold tracking-tight text-white text-2xl sm:text-3xl">
+        <h2
+          id={headingId}
+          className={cn(
+            "font-semibold tracking-tight text-2xl sm:text-3xl",
+            inWhiteWell ? "text-[var(--adw-dark-4)]" : "text-white",
+          )}
+        >
           {heading}
         </h2>
-        <p className="mt-4 leading-relaxed text-white/80">
+        <p
+          className={cn(
+            "mt-4 leading-relaxed",
+            inWhiteWell ? "text-[var(--adw-dark-2)]" : "text-white/80",
+          )}
+        >
           {body}
         </p>
       </div>

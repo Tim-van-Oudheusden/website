@@ -9,6 +9,7 @@ export type HomeSectionId =
 
 export type HomeSectionContentDirection = "row" | "column";
 export type HomeSectionVariant = "default" | "carousel";
+export type HomeSectionSurfaceVariant = "default" | "white-well";
 
 export interface HomeSectionDefinition {
   id: HomeSectionId;
@@ -21,4 +22,5 @@ export interface HomeSectionDefinition {
   ctaTargetId?: HomeSectionId;
   contentDirection: HomeSectionContentDirection;
   variant?: HomeSectionVariant;
+  surfaceVariant?: HomeSectionSurfaceVariant;
 }

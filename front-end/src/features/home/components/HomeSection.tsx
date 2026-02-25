@@ -14,6 +14,8 @@ interface HomeSectionProps {
 
 export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React.JSX.Element {
   if (section.variant === "carousel") {
+    const inWhiteWell = section.surfaceVariant === "white-well";
+
     return (
       <section
         id={section.id}
@@ -30,11 +32,19 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
             : {}),
         }}
       >
-        <ValuePillarsCarousel
-          headingId={`${section.id}-heading`}
-          heading={section.heading}
-          body={section.body}
-        />
+        <div
+          className={cn(
+            "w-full",
+            inWhiteWell ? "max-w-6xl rounded-[2rem] bg-white px-5 py-8 shadow-[0_28px_65px_-45px_rgba(0,0,0,0.45)] sm:px-8 sm:py-10" : "",
+          )}
+        >
+          <ValuePillarsCarousel
+            headingId={`${section.id}-heading`}
+            heading={section.heading}
+            body={section.body}
+            inWhiteWell={inWhiteWell}
+          />
+        </div>
       </section>
     );
   }
