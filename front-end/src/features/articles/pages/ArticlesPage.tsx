@@ -48,8 +48,12 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   articleDescription: "text-muted-foreground mt-2 max-w-[65ch] text-base sm:text-lg leading-relaxed",
   articleBodyMeasure: "mx-auto w-full max-w-[75ch]",
   articleTagBadge: "bg-[var(--adw-dark-5)] text-[var(--adw-light-1)] font-medium [a&]:hover:bg-[var(--adw-dark-5)]/90 dark:bg-[var(--adw-light-1)] dark:text-[var(--adw-dark-5)] dark:[a&]:hover:bg-[var(--adw-light-1)]/90",
-  tocTitle: "text-sm font-semibold tracking-tight",
+  tocTitle: "text-[calc(0.875rem+2pt)] font-bold tracking-tight",
   tocLink: "text-muted-foreground block text-sm leading-relaxed hover:text-foreground transition-colors",
+} as const;
+
+export const ARTICLES_PAGE_TEXT = {
+  tocHeading: "In this article",
 } as const;
 
 interface ArticleLocationTrailProps {
@@ -408,7 +412,7 @@ export function ArticlesPage(): React.JSX.Element {
                     aria-label="Table of contents"
                     className="border-border bg-background/70 rounded-lg border px-4 py-3"
                   >
-                    <h3 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocTitle}>On this page</h3>
+                    <h3 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocTitle}>{ARTICLES_PAGE_TEXT.tocHeading}</h3>
                     <ol className="mt-3 space-y-2">
                       {articleTableOfContents.map((item) => (
                         <li key={item.id}>

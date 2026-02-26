@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
+  ARTICLES_PAGE_TEXT,
   ARTICLES_PAGE_TYPOGRAPHY_CLASSES,
   ArticleLocationTrail,
   extractArticleTableOfContents,
@@ -62,6 +63,8 @@ describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("dark:bg-[var(--adw-light-1)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("dark:text-[var(--adw-dark-5)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton).toContain("[&>svg]:shrink-0");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocTitle).toContain("text-[calc(0.875rem+2pt)] font-bold tracking-tight");
+    expect(ARTICLES_PAGE_TEXT.tocHeading).toBe("In this article");
   });
 });
 
