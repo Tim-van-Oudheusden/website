@@ -66,15 +66,20 @@ export function TopBar(): React.JSX.Element {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-10 px-4 text-[18px] font-medium rounded-none border-b-2",
-                  isActive
-                    ? "border-[var(--adw-dark-4)] dark:border-[var(--adw-light-4)]"
-                    : "border-transparent",
+                  "h-10 px-4 text-[18px] font-medium",
                 )}
                 asChild
               >
                 <Link to={link.href} data-active-nav={isActive ? "true" : "false"}>
-                  {link.label}
+                  <span
+                    data-active-nav-text={isActive ? "true" : "false"}
+                    className={cn(
+                      "inline-flex border-b-2 border-transparent leading-none pb-[1px]",
+                      isActive ? "border-[var(--adw-dark-4)] dark:border-[var(--adw-light-4)]" : "",
+                    )}
+                  >
+                    {link.label}
+                  </span>
                 </Link>
               </Button>
             );

@@ -48,6 +48,9 @@ describe("TopBar", () => {
     const activeCount = (html.match(/data-active-nav=\"true\"/g) ?? []).length;
 
     expect(activeCount).toBe(1);
+    expect(html).toContain("data-active-nav-text=\"true\"");
     expect(html).toContain("border-b-2");
+    expect(html).toContain("border-[var(--adw-dark-4)]");
+    expect(html).not.toContain("h-10 px-4 text-[18px] font-medium rounded-none border-b-2");
   });
 });
