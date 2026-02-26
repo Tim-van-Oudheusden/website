@@ -49,7 +49,9 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   articleBodyMeasure: "mx-auto w-full max-w-[75ch]",
   articleTagBadge: "bg-[var(--adw-dark-5)] text-[var(--adw-light-1)] font-medium [a&]:hover:bg-[var(--adw-dark-5)]/90 dark:bg-[var(--adw-light-1)] dark:text-[var(--adw-dark-5)] dark:[a&]:hover:bg-[var(--adw-light-1)]/90",
   tocTitle: "text-[calc(0.875rem+2pt)] font-bold tracking-tight",
-  tocLink: "text-muted-foreground block text-sm leading-relaxed hover:text-foreground transition-colors",
+  tocLink: "block text-sm font-medium leading-relaxed transition-colors hover:text-foreground",
+  tocLinkActive: "text-muted-foreground",
+  tocLinkInactive: "text-[var(--adw-toc-inactive)]",
 } as const;
 
 export const ARTICLES_PAGE_TEXT = {
@@ -179,6 +181,7 @@ export function ArticlesPage(): React.JSX.Element {
   const [listError, setListError] = useState<string | null>(null);
   const [articleError, setArticleError] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Record<ArticleCategory, boolean>>(INITIAL_OPEN_CATEGORIES);
+  const [visibleTocHeadingIds, setVisibleTocHeadingIds] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -268,6 +271,63 @@ export function ArticlesPage(): React.JSX.Element {
     };
   }, [selectedArticle]);
 
+  const articleTableOfContents = React.useMemo(
+    () => (selectedArticle == null ? [] : extractArticleTableOfContents(selectedArticle.body)),
+    [selectedArticle],
+  );
+  const visibleTocHeadingIdSet = React.useMemo(() => new Set(visibleTocHeadingIds), [visibleTocHeadingIds]);
+
+  useEffect(() => {
+    if (loadingArticle || selectedArticle == null || articleTableOfContents.length === 0) {
+      setVisibleTocHeadingIds([]);
+      return;
+    }
+
+    const headingVisibility = new Map<string, boolean>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        let visibilityChanged = false;
+
+        for (const entry of entries) {
+          const headingId = entry.target.id;
+          const isVisible = entry.isIntersecting;
+          if (headingVisibility.get(headingId) !== isVisible) {
+            headingVisibility.set(headingId, isVisible);
+            visibilityChanged = true;
+          }
+        }
+
+        if (!visibilityChanged) {
+          return;
+        }
+
+        const visibleHeadingIds = articleTableOfContents
+          .filter((heading) => headingVisibility.get(heading.id) === true)
+          .map((heading) => heading.id);
+        setVisibleTocHeadingIds(visibleHeadingIds);
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: "-84px 0px 0px 0px",
+      },
+    );
+
+    for (const heading of articleTableOfContents) {
+      const headingElement = document.getElementById(heading.id);
+      if (headingElement == null) {
+        continue;
+      }
+
+      headingVisibility.set(heading.id, false);
+      observer.observe(headingElement);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [loadingArticle, selectedArticle, articleTableOfContents]);
+
   if (loadingArticles) {
     return (
       <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
@@ -295,9 +355,6 @@ export function ArticlesPage(): React.JSX.Element {
 
   const groupedArticles = groupArticlesByCategory(articles);
   const trailTargetSlug = resolveArticlesTrailTargetSlug(articles);
-  const articleTableOfContents = selectedArticle == null
-    ? []
-    : extractArticleTableOfContents(selectedArticle.body);
 
   return (
     <main className={ARTICLES_PAGE_LAYOUT_CLASSES.container}>
@@ -420,6 +477,9 @@ export function ArticlesPage(): React.JSX.Element {
                             href={`#${item.id}`}
                             className={cn(
                               ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLink,
+                              visibleTocHeadingIdSet.has(item.id)
+                                ? ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkActive
+                                : ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkInactive,
                               resolveTocLinkIndentClass(item.depth),
                             )}
                           >

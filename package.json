@@ -15,7 +15,7 @@
     "lint": "eslint .",
     "test": "bun run --filter '*' test",
     "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed --project=firefox",
+    "test:e2e:headed": "playwright test --headed --project=chromium",
     "typecheck:root": "tsc -b --noEmit",
     "typecheck": "bun run --filter '*' typecheck && tsc -b --noEmit"
   },

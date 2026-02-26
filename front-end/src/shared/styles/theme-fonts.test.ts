@@ -8,6 +8,8 @@ const SOURCE_SANS_STACK = 'font-family: "Source Sans 3", "Source Sans Pro", "Seg
 const BEIGE_LIGHT_TOKEN = "--adw-beige-light: #f3efe5;";
 const BEIGE_DARK_TOKEN = "--adw-beige-dark: #1c1a17;";
 const PAGE_BG_BEIGE_MAPPING = "--adw-page-brown-bg: var(--adw-page-beige-bg);";
+const TOC_INACTIVE_LIGHT_TOKEN = "--adw-toc-inactive: #8a8376;";
+const TOC_INACTIVE_DARK_TOKEN = "--adw-toc-inactive: #8f877b;";
 
 describe("global font recommendation", () => {
   test("imports Source Sans 3 and applies it as the default font stack", () => {
@@ -28,5 +30,12 @@ describe("global font recommendation", () => {
     const css = readFileSync(INDEX_CSS_PATH, "utf8");
 
     expect(css).toContain(PAGE_BG_BEIGE_MAPPING);
+  });
+
+  test("defines beige-toned inactive TOC link colors for both themes", () => {
+    const css = readFileSync(INDEX_CSS_PATH, "utf8");
+
+    expect(css).toContain(TOC_INACTIVE_LIGHT_TOKEN);
+    expect(css).toContain(TOC_INACTIVE_DARK_TOKEN);
   });
 });

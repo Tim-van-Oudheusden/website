@@ -124,6 +124,7 @@
   /* Project beige variants */
   --adw-beige-light: #f3efe5;
   --adw-beige-dark: #1c1a17;
+  --adw-toc-inactive: #8a8376;
   --adw-page-beige-bg: var(--adw-beige-light);
 
   /* Adwaita semantic colors (light) */
@@ -228,6 +229,7 @@
   --adw-sidebar-backdrop-color: #28282c;
   --adw-sidebar-border-color: rgb(0 0 6 / 36%);
   --adw-sidebar-shade-color: rgb(0 0 6 / 25%);
+  --adw-toc-inactive: #8f877b;
   --adw-page-brown-bg: var(--adw-page-beige-bg);
   --adw-page-beige-bg: var(--adw-beige-dark);
 

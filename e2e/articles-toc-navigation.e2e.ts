@@ -1,4 +1,39 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+
+async function getTocLinkViewportDiagnostics(page: Page, headingId: string): Promise<{
+  linkColor: string | null;
+  inactiveColor: string;
+  normalColor: string;
+  headingInViewport: boolean;
+}> {
+  return page.evaluate((id) => {
+    const heading = document.getElementById(id);
+    const tocLink = document.querySelector(`nav[aria-label="Table of contents"] a[href="#${id}"]`);
+
+    function resolveColorValue(value: string): string {
+      const probe = document.createElement("span");
+      probe.style.color = value;
+      document.body.append(probe);
+      const resolved = getComputedStyle(probe).color;
+      probe.remove();
+      return resolved;
+    }
+
+    let headingInViewport = false;
+    if (heading != null) {
+      const rect = heading.getBoundingClientRect();
+      headingInViewport = rect.top < window.innerHeight && rect.bottom > 0;
+    }
+
+    return {
+      linkColor: tocLink == null ? null : getComputedStyle(tocLink).color,
+      inactiveColor: resolveColorValue("var(--adw-toc-inactive)"),
+      normalColor: resolveColorValue("var(--muted-foreground)"),
+      headingInViewport,
+    };
+  }, headingId);
+}
 
 test.describe("Articles TOC navigation", () => {
   test("renders the articles page with a visible TOC", async ({ page }) => {
@@ -74,5 +109,58 @@ test.describe("Articles TOC navigation", () => {
 
     expect(clickDiagnostics.targetByHashExists).toBe(true);
     expect(clickDiagnostics.shiftedIdExists).toBe(false);
+  });
+
+  test("greys out TOC items for headings outside the viewport and restores normal color in view", async ({ page }) => {
+    await page.goto("/articles", { waitUntil: "domcontentloaded" });
+    await page.setViewportSize({ width: 1280, height: 720 });
+
+    await page.getByRole("button", { name: /Apt-get out of my life, hello flatpak/i }).click();
+
+    const tableOfContents = page.getByRole("navigation", { name: "Table of contents" });
+    await expect(tableOfContents).toBeVisible();
+    await expect(tableOfContents.getByRole("link", { name: /A closing note/i })).toBeVisible();
+    await page.evaluate(() => { window.scrollTo({ top: 0, behavior: "instant" }); });
+
+    const targetHeadingId = await page.evaluate(() => {
+      const tocLinks = Array.from(document.querySelectorAll('nav[aria-label="Table of contents"] a[href^="#"]'));
+      for (const tocLink of tocLinks) {
+        const headingId = (tocLink.getAttribute("href") ?? "").slice(1);
+        if (headingId.length === 0) {
+          continue;
+        }
+
+        const heading = document.getElementById(headingId);
+        if (heading == null) {
+          continue;
+        }
+
+        const rect = heading.getBoundingClientRect();
+        const headingInViewport = rect.top < window.innerHeight && rect.bottom > 0;
+        if (!headingInViewport) {
+          return headingId;
+        }
+      }
+
+      return null;
+    });
+    expect(targetHeadingId).not.toBeNull();
+
+    const beforeDiagnostics = await getTocLinkViewportDiagnostics(page, targetHeadingId as string);
+    expect(beforeDiagnostics.headingInViewport).toBe(false);
+    expect(beforeDiagnostics.linkColor).toBe(beforeDiagnostics.inactiveColor);
+
+    await page.locator(`article #${targetHeadingId as string}`).scrollIntoViewIfNeeded();
+
+    await expect.poll(
+      async () => getTocLinkViewportDiagnostics(page, targetHeadingId as string),
+      { timeout: 5_000 },
+    ).toMatchObject({ headingInViewport: true });
+
+    const expectedNormalColor = (await getTocLinkViewportDiagnostics(page, targetHeadingId as string)).normalColor;
+    await expect.poll(
+      async () => (await getTocLinkViewportDiagnostics(page, targetHeadingId as string)).linkColor,
+      { timeout: 5_000 },
+    ).toBe(expectedNormalColor);
   });
 });
