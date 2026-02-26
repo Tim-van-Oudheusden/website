@@ -39,11 +39,11 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
   });
 
   test("uses a slimmer right-anchored TOC on tablet and desktop", () => {
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc).toContain("md:pr-[clamp(11rem,16vw,14rem)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc).toContain("md:pr-[clamp(13rem,19vw,17rem)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("hidden md:block");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:fixed");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:right-6");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:w-[clamp(10rem,14vw,13rem)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:w-[clamp(12rem,17vw,15.5rem)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:top-[5.25rem]");
   });
 });
