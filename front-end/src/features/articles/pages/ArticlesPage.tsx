@@ -27,7 +27,7 @@ interface ArticleData extends ArticleSummary {
 export interface ArticleTableOfContentsItem {
   id: string;
   text: string;
-  depth: 2 | 3;
+  depth: 1 | 2 | 3;
 }
 
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
@@ -74,7 +74,7 @@ function slugifyHeading(text: string): string {
 }
 
 export function extractArticleTableOfContents(markdownBody: string): ArticleTableOfContentsItem[] {
-  const headingMatches = markdownBody.matchAll(/^(#{2,3})\s+(.+?)\s*$/gm);
+  const headingMatches = markdownBody.matchAll(/^(#{1,3})\s+(.+?)\s*$/gm);
   const slugCounts = new Map<string, number>();
   const toc: ArticleTableOfContentsItem[] = [];
 
@@ -96,7 +96,7 @@ export function extractArticleTableOfContents(markdownBody: string): ArticleTabl
     toc.push({
       id,
       text,
-      depth: hashes.length as 2 | 3,
+      depth: hashes.length as 1 | 2 | 3,
     });
   }
 
@@ -107,7 +107,7 @@ export function resolveArticlesTrailTargetSlug(articles: ArticleSummary[]): stri
   return getDefaultArticleSlug(articles);
 }
 
-function resolveTocLinkIndentClass(depth: 2 | 3): string {
+function resolveTocLinkIndentClass(depth: 1 | 2 | 3): string {
   if (depth === 3) {
     return "pl-3";
   }

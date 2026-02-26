@@ -93,7 +93,7 @@ describe("ArticleLocationTrail", () => {
 });
 
 describe("extractArticleTableOfContents", () => {
-  test("extracts H2/H3 headings with stable, unique anchor ids", () => {
+  test("extracts H1/H2/H3 headings with stable, unique anchor ids", () => {
     const toc = extractArticleTableOfContents(`# Title
 
 ## Start Here
@@ -106,6 +106,7 @@ More text
 `);
 
     expect(toc).toEqual([
+      { id: "title", text: "Title", depth: 1 },
       { id: "start-here", text: "Start Here", depth: 2 },
       { id: "details", text: "Details", depth: 3 },
       { id: "start-here-1", text: "Start Here", depth: 2 },
