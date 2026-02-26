@@ -155,7 +155,7 @@
   --adw-sidebar-backdrop-color: #f2f2f4;
   --adw-sidebar-border-color: rgb(0 0 6 / 7%);
   --adw-sidebar-shade-color: rgb(0 0 6 / 7%);
-  --adw-page-brown-bg: var(--adw-brown-1);
+  --adw-page-brown-bg: var(--adw-page-beige-bg);
 
   /* Project semantic mapping (shadcn tokens) */
   --background: var(--adw-window-bg-color);
@@ -228,7 +228,7 @@
   --adw-sidebar-backdrop-color: #28282c;
   --adw-sidebar-border-color: rgb(0 0 6 / 36%);
   --adw-sidebar-shade-color: rgb(0 0 6 / 25%);
-  --adw-page-brown-bg: var(--adw-brown-1);
+  --adw-page-brown-bg: var(--adw-page-beige-bg);
   --adw-page-beige-bg: var(--adw-beige-dark);
 
   /* Project semantic mapping (shadcn tokens) */
