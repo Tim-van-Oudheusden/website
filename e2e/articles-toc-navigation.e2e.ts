@@ -6,7 +6,7 @@ test.describe("Articles TOC navigation", () => {
     await expect(page.getByRole("navigation", { name: "Table of contents" })).toBeVisible();
   });
 
-  test("reveals runtime TOC/heading id drift signature", async ({ page }) => {
+  test("keeps TOC ids aligned with rendered heading ids at runtime", async ({ page }) => {
     await page.goto("/articles", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("navigation", { name: "Table of contents" })).toBeVisible();
 
@@ -34,12 +34,11 @@ test.describe("Articles TOC navigation", () => {
     });
 
     expect(diagnostics.tocIds.length).toBeGreaterThan(0);
-    expect(diagnostics.missingTocIds.length).toBeGreaterThan(0);
-    expect(diagnostics.shiftedMatches.length).toBeGreaterThan(0);
-    expect(diagnostics.shiftedMatches).toEqual(diagnostics.missingTocIds);
+    expect(diagnostics.missingTocIds).toEqual([]);
+    expect(diagnostics.shiftedMatches).toEqual([]);
   });
 
-  test("shows click-path mismatch: hash updates but target heading id does not exist", async ({ page }) => {
+  test("navigates to an existing heading target when a TOC item is clicked", async ({ page }) => {
     await page.goto("/articles", { waitUntil: "domcontentloaded" });
 
     const tableOfContents = page.getByRole("navigation", { name: "Table of contents" });
@@ -73,7 +72,7 @@ test.describe("Articles TOC navigation", () => {
       };
     }, targetHeadingId);
 
-    expect(clickDiagnostics.targetByHashExists).toBe(false);
-    expect(clickDiagnostics.shiftedIdExists).toBe(true);
+    expect(clickDiagnostics.targetByHashExists).toBe(true);
+    expect(clickDiagnostics.shiftedIdExists).toBe(false);
   });
 });

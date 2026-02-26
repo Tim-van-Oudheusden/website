@@ -7,8 +7,9 @@ import type { Components } from "react-markdown";
 import "highlight.js/styles/github.css";
 import { cn } from "@/shared/lib/utils";
 import {
-  createHeadingIdResolver,
+  extractMarkdownHeadingsWithOffsets,
   normalizeMarkdownHeadingText,
+  slugifyHeadingText,
 } from "@/shared/lib/markdown-headings";
 
 export interface MarkdownRendererProps {
@@ -52,7 +53,7 @@ function formatCalloutTitle(type: string): string {
   return type
     .split(/[-_]+/)
     .filter((segment) => segment.length > 0)
-    .map((segment) => `${segment[0].toUpperCase()}${segment.slice(1)}`)
+    .map((segment) => `${segment.charAt(0).toUpperCase()}${segment.slice(1)}`)
     .join(" ");
 }
 
@@ -76,7 +77,12 @@ function parseObsidianCallout(children: React.ReactNode): ParsedObsidianCallout 
     return null;
   }
 
-  const type = markerMatch[1].toLowerCase();
+  const matchedType = markerMatch[1];
+  if (matchedType == null) {
+    return null;
+  }
+
+  const type = matchedType.toLowerCase();
   const title = markerMatch[2]?.trim() || formatCalloutTitle(type);
   const markerRemainder = markerMatch[3]?.trim() ?? "";
 
@@ -111,7 +117,43 @@ function parseObsidianCallout(children: React.ReactNode): ParsedObsidianCallout 
 export const MarkdownRenderer = memo(function MarkdownRenderer({
   content,
 }: MarkdownRendererProps): React.JSX.Element {
-  const resolveHeadingId = React.useMemo(() => createHeadingIdResolver(), [content]);
+  const headingIdByOffset = React.useMemo(() => {
+    const entries = extractMarkdownHeadingsWithOffsets(content, 3);
+    return {
+      byOffset: new Map(entries.map((entry) => [entry.startOffset, entry.id])),
+      byLineColumn: new Map(entries.map((entry) => [`${entry.startLine}:${entry.startColumn}`, entry.id])),
+    };
+  }, [content]);
+
+  function resolveHeadingIdFromPosition(
+    headingText: string,
+    position?: {
+      offset?: number | undefined;
+      line?: number | undefined;
+      column?: number | undefined;
+    },
+  ): string {
+    if (position?.offset != null) {
+      const resolvedId = headingIdByOffset.byOffset.get(position.offset);
+      if (resolvedId != null) {
+        return resolvedId;
+      }
+    }
+
+    if (position?.line != null && position.column != null) {
+      const resolvedId = headingIdByOffset.byLineColumn.get(`${position.line}:${position.column}`);
+      if (resolvedId != null) {
+        return resolvedId;
+      }
+    }
+
+    const baseSlug = slugifyHeadingText(headingText) || "section";
+    if (position?.line != null && position.column != null) {
+      return `${baseSlug}-${position.line}-${position.column}`;
+    }
+
+    return baseSlug;
+  }
 
   const components = React.useMemo<Components>(() => ({
     a({ href, children, ...rest }) {
@@ -134,27 +176,27 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
         </a>
       );
     },
-    h1({ children, className, ...rest }) {
+    h1({ children, className, node, ...rest }) {
       const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
-      const id = resolveHeadingId(headingText);
+      const id = resolveHeadingIdFromPosition(headingText, node?.position?.start);
       return (
         <h1 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
           {children}
         </h1>
       );
     },
-    h2({ children, className, ...rest }) {
+    h2({ children, className, node, ...rest }) {
       const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
-      const id = resolveHeadingId(headingText);
+      const id = resolveHeadingIdFromPosition(headingText, node?.position?.start);
       return (
         <h2 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
           {children}
         </h2>
       );
     },
-    h3({ children, className, ...rest }) {
+    h3({ children, className, node, ...rest }) {
       const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
-      const id = resolveHeadingId(headingText);
+      const id = resolveHeadingIdFromPosition(headingText, node?.position?.start);
       return (
         <h3 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
           {children}
@@ -203,7 +245,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
         </code>
       );
     },
-  }), [resolveHeadingId]);
+  }), [headingIdByOffset]);
 
   return (
     <article className="prose dark:prose-invert max-w-none text-base sm:text-lg leading-relaxed">

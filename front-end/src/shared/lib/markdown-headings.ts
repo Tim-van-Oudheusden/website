@@ -4,6 +4,12 @@ export interface MarkdownHeading {
   depth: 1 | 2 | 3 | 4 | 5 | 6;
 }
 
+export interface MarkdownHeadingWithOffset extends MarkdownHeading {
+  startOffset: number;
+  startLine: number;
+  startColumn: number;
+}
+
 const ATX_HEADING_PATTERN = /^(#{1,6})[ \t]+(.+?)(?:[ \t]+#+[ \t]*)?$/;
 const SETEXT_UNDERLINE_PATTERN = /^(=+|-+)[ \t]*$/;
 const FENCED_CODE_DELIMITER_PATTERN = /^[ \t]{0,3}([`~]{3,})/;
@@ -57,51 +63,79 @@ function toSetextDepth(underline: string): 1 | 2 {
   return 2;
 }
 
-export function extractMarkdownHeadings(
+function collectMarkdownHeadings(
   markdown: string,
   maxDepth: 1 | 2 | 3 | 4 | 5 | 6 = 6,
-): MarkdownHeading[] {
+): MarkdownHeadingWithOffset[] {
   const lines = markdown.split(/\r?\n/);
+  const lineStartOffsets: number[] = [];
+  let cursor = 0;
+  for (const line of lines) {
+    lineStartOffsets.push(cursor);
+    cursor += line.length;
+    if (markdown[cursor] === "\r" && markdown[cursor + 1] === "\n") {
+      cursor += 2;
+    } else if (markdown[cursor] === "\n") {
+      cursor += 1;
+    }
+  }
+
   const resolveHeadingId = createHeadingIdResolver();
-  const headings: MarkdownHeading[] = [];
+  const headings: MarkdownHeadingWithOffset[] = [];
   let fencedCodeDelimiter: string | null = null;
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
+    if (line == null) {
+      continue;
+    }
+
     const fencedCodeDelimiterMatch = line.match(FENCED_CODE_DELIMITER_PATTERN);
+    const fenceMarker = fencedCodeDelimiterMatch?.[1];
     if (fencedCodeDelimiter !== null) {
       if (
-        fencedCodeDelimiterMatch !== null
-        && fencedCodeDelimiterMatch[1][0] === fencedCodeDelimiter[0]
-        && fencedCodeDelimiterMatch[1].length >= fencedCodeDelimiter.length
+        fenceMarker != null
+        && fenceMarker[0] === fencedCodeDelimiter[0]
+        && fenceMarker.length >= fencedCodeDelimiter.length
       ) {
         fencedCodeDelimiter = null;
       }
       continue;
     }
 
-    if (fencedCodeDelimiterMatch !== null) {
-      fencedCodeDelimiter = fencedCodeDelimiterMatch[1];
+    if (fenceMarker != null) {
+      fencedCodeDelimiter = fenceMarker;
       continue;
     }
 
     const atxHeading = line.match(ATX_HEADING_PATTERN);
 
     if (atxHeading !== null) {
-      const depth = atxHeading[1].length as 1 | 2 | 3 | 4 | 5 | 6;
+      const headingHashes = atxHeading[1];
+      const rawHeadingText = atxHeading[2];
+      if (headingHashes == null || rawHeadingText == null) {
+        continue;
+      }
+
+      const depth = headingHashes.length as 1 | 2 | 3 | 4 | 5 | 6;
       if (depth > maxDepth) {
         continue;
       }
 
-      const text = normalizeMarkdownHeadingText(atxHeading[2]);
+      const text = normalizeMarkdownHeadingText(rawHeadingText);
       if (text.length === 0) {
         continue;
       }
+
+      const startOffset = lineStartOffsets[index] ?? 0;
 
       headings.push({
         id: resolveHeadingId(text),
         text,
         depth,
+        startOffset,
+        startLine: index + 1,
+        startColumn: 1,
       });
       continue;
     }
@@ -116,7 +150,13 @@ export function extractMarkdownHeadings(
       continue;
     }
 
-    const depth = toSetextDepth(setextUnderline[1]);
+    const underline = setextUnderline[1];
+    if (underline == null) {
+      continue;
+    }
+
+    const depth = toSetextDepth(underline);
+    const headingLineIndex = index;
     index += 1;
     if (depth > maxDepth) {
       continue;
@@ -127,12 +167,35 @@ export function extractMarkdownHeadings(
       continue;
     }
 
+    const startOffset = lineStartOffsets[headingLineIndex] ?? 0;
+
     headings.push({
       id: resolveHeadingId(text),
       text,
       depth,
+      startOffset,
+      startLine: headingLineIndex + 1,
+      startColumn: 1,
     });
   }
 
   return headings;
+}
+
+export function extractMarkdownHeadings(
+  markdown: string,
+  maxDepth: 1 | 2 | 3 | 4 | 5 | 6 = 6,
+): MarkdownHeading[] {
+  return collectMarkdownHeadings(markdown, maxDepth).map(({ id, text, depth }) => ({
+    id,
+    text,
+    depth,
+  }));
+}
+
+export function extractMarkdownHeadingsWithOffsets(
+  markdown: string,
+  maxDepth: 1 | 2 | 3 | 4 | 5 | 6 = 6,
+): MarkdownHeadingWithOffset[] {
+  return collectMarkdownHeadings(markdown, maxDepth);
 }
