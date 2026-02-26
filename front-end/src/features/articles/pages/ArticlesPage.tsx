@@ -32,10 +32,10 @@ export interface ArticleTableOfContentsItem {
 
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   container: "flex w-full min-h-0 flex-1 flex-col bg-[var(--adw-page-brown-bg)] md:flex-row",
-  sidebar: "w-full min-h-0 overflow-y-auto bg-[var(--adw-page-brown-bg)] md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[clamp(13rem,15vw,18rem)] md:min-w-[13rem] md:shrink-0",
+  sidebar: "w-full min-h-0 overflow-y-auto bg-[var(--adw-page-brown-bg)] md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[clamp(15rem,17.25vw,21rem)] md:min-w-[15rem] md:shrink-0",
   divider: "hidden w-[0.5px] bg-[var(--adw-light-5)] dark:bg-[var(--adw-dark-1)] md:block",
   content: "bg-[var(--adw-page-brown-bg)] min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
-  contentWithToc: "mx-auto w-full max-w-[120rem] md:pr-[clamp(13rem,19vw,17rem)]",
+  contentWithToc: "mx-auto w-full max-w-[120rem] md:pr-[clamp(12.5rem,18vw,16.25rem)]",
   toc: "hidden md:block md:fixed md:right-6 lg:right-8 md:top-[5.25rem] md:w-[clamp(12rem,17vw,15.5rem)] md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto",
 } as const;
 

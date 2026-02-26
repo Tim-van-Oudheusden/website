@@ -19,8 +19,8 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("md:flex-row");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("mx-auto");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("max-w-screen-2xl");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:basis-[clamp(13rem,15vw,18rem)]");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:min-w-[13rem]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:basis-[clamp(15rem,17.25vw,21rem)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:min-w-[15rem]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:shrink-0");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:sticky");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:top-[4.2rem]");
@@ -39,7 +39,7 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
   });
 
   test("uses a slimmer right-anchored TOC on tablet and desktop", () => {
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc).toContain("md:pr-[clamp(13rem,19vw,17rem)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc).toContain("md:pr-[clamp(12.5rem,18vw,16.25rem)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("hidden md:block");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:fixed");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:right-6");
