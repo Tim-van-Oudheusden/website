@@ -44,6 +44,7 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   pageTitle: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
   sidebarTriggerLabel: "truncate text-sm font-medium",
   sidebarArticleButton: "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium transition-colors [&>svg]:size-4 [&>svg]:shrink-0",
+  sidebarSelectedArticleState: "bg-accent text-accent-foreground shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.5)]",
   articleTitle: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
   articleDescription: "text-muted-foreground mt-2 max-w-[65ch] text-base sm:text-lg leading-relaxed",
   articleBodyMeasure: "mx-auto w-full max-w-[75ch]",
@@ -397,7 +398,7 @@ export function ArticlesPage(): React.JSX.Element {
                     {categoryArticles.map((article) => {
                       let articleStateClass = "text-muted-foreground";
                       if (article.slug === selectedSlug) {
-                        articleStateClass = "bg-accent text-accent-foreground";
+                        articleStateClass = ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState;
                       }
 
                       return (
