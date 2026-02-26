@@ -81,12 +81,12 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
             id={`${section.id}-heading`}
             className={cn(
               "font-semibold tracking-tight text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)]",
-              isHero ? "text-4xl sm:text-5xl" : "text-2xl sm:text-3xl",
+              isHero ? "text-4xl sm:text-5xl" : "text-[1.75rem] sm:text-[2rem]",
             )}
           >
             {section.heading}
           </h2>
-          <p className="leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80">
+          <p className="max-w-[65ch] text-base sm:text-lg leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80">
             {section.body}
           </p>
           {hasCta && (

@@ -51,4 +51,17 @@ describe("HomeSection", () => {
     expect(forYouHtml).toContain("px-4 py-12 sm:px-6 sm:py-16 lg:px-4");
     expect(forYouHtml).toContain("max-w-6xl lg:max-w-[83rem]");
   });
+
+  test("uses explicit body readability defaults for size, measure, and spacing", () => {
+    const html = renderStartSection();
+
+    expect(html).toContain("max-w-[65ch] text-base sm:text-lg leading-relaxed");
+  });
+
+  test("uses a clear section heading step for scan hierarchy", () => {
+    const html = renderStartSection();
+
+    expect(html).toContain("text-[1.75rem] sm:text-[2rem]");
+    expect(html).not.toContain("text-2xl sm:text-3xl");
+  });
 });

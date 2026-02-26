@@ -206,12 +206,12 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
       <div className="relative flex h-full flex-col justify-end overflow-hidden p-6">
-        <h3 className="text-xl font-semibold tracking-tight text-white">
+        <h3 className="text-[1.375rem] sm:text-2xl font-semibold tracking-tight text-white">
           {title}
         </h3>
         <p
           ref={descriptionRef}
-          className="pointer-events-none mt-3 overflow-hidden max-h-0 translate-y-1 text-sm leading-relaxed text-white/90 opacity-0 transition-[opacity,transform] duration-400 group-hover:max-h-[var(--value-pillar-description-height)] group-hover:translate-y-0 group-hover:opacity-100"
+          className="pointer-events-none mt-3 overflow-hidden max-h-0 translate-y-1 text-base leading-relaxed text-white/90 opacity-0 transition-[opacity,transform] duration-400 group-hover:max-h-[var(--value-pillar-description-height)] group-hover:translate-y-0 group-hover:opacity-100"
         >
           {description}
         </p>
@@ -271,7 +271,7 @@ export function ValuePillarsCarousel({
         <h2
           id={headingId}
           className={cn(
-            "font-semibold tracking-tight text-2xl sm:text-3xl",
+            "font-semibold tracking-tight text-[1.75rem] sm:text-[2rem]",
             inWhiteWell ? "text-[var(--adw-dark-4)]" : "text-white",
           )}
         >
@@ -279,7 +279,7 @@ export function ValuePillarsCarousel({
         </h2>
         <p
           className={cn(
-            "mt-4 leading-relaxed",
+            "mx-auto mt-4 max-w-[65ch] text-base sm:text-lg leading-relaxed",
             inWhiteWell ? "text-[var(--adw-dark-2)]" : "text-white/80",
           )}
         >

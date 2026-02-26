@@ -48,7 +48,7 @@ export function TopBar(): React.JSX.Element {
         {/* Desktop nav */}
         <nav className="hidden items-center gap-2 sm:flex">
           {navLinks.map((link) => (
-            <Button key={link.href} variant="ghost" size="sm" className="h-10 px-4 text-[18px] font-semibold" asChild>
+            <Button key={link.href} variant="ghost" size="sm" className="h-10 px-4 text-[18px] font-medium" asChild>
               <Link to={link.href}>{link.label}</Link>
             </Button>
           ))}
@@ -74,7 +74,7 @@ export function TopBar(): React.JSX.Element {
                   <Button
                     key={link.href}
                     variant="ghost"
-                    className="justify-start text-[18px] font-semibold"
+                    className="justify-start text-[18px] font-medium"
                     asChild
                     onClick={() => { setOpen(false); }}
                   >

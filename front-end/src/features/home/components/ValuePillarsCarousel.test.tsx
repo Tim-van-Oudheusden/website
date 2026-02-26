@@ -50,4 +50,19 @@ describe("ValuePillarsCarousel", () => {
       trackPaddingLeft: 48,
     })).toBe(0);
   });
+
+  test("uses readable heading and body typography defaults for the carousel intro", () => {
+    const html = renderCarousel();
+
+    expect(html).toContain("font-semibold tracking-tight text-[1.75rem] sm:text-[2rem]");
+    expect(html).toContain("max-w-[65ch] text-base sm:text-lg leading-relaxed");
+  });
+
+  test("uses card typography tuned for scan readability", () => {
+    const html = renderCarousel();
+
+    expect(html).toContain("text-[1.375rem] sm:text-2xl font-semibold tracking-tight");
+    expect(html).toContain("text-base leading-relaxed text-white/90");
+    expect(html).not.toContain("text-sm leading-relaxed text-white/90");
+  });
 });
