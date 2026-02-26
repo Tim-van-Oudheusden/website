@@ -13,7 +13,7 @@ import {
 } from "./ArticlesPage";
 
 describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
-  test("uses edge-to-edge split layout with 15% sidebar and 0.5px divider", () => {
+  test("uses edge-to-edge split layout with 15% sidebar and no divider line", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("flex w-full");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("flex-1");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("overflow-hidden");
@@ -26,8 +26,7 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:sticky");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:top-[4.2rem]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("overflow-y-auto");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("w-[0.5px]");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.divider).toContain("bg-[var(--adw-light-5)]");
+    expect(Object.hasOwn(ARTICLES_PAGE_LAYOUT_CLASSES, "divider")).toBe(false);
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("flex-1");
   });
 

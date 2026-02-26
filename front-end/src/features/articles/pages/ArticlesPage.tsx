@@ -34,7 +34,6 @@ export interface ArticleTableOfContentsItem {
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   container: "flex w-full min-h-0 flex-1 flex-col bg-[var(--adw-page-brown-bg)] md:flex-row",
   sidebar: "w-full min-h-0 overflow-y-auto bg-[var(--adw-page-brown-bg)] md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[clamp(16.5rem,19vw,23rem)] md:min-w-[16.5rem] md:shrink-0",
-  divider: "hidden w-[0.5px] bg-[var(--adw-light-5)] dark:bg-[var(--adw-dark-1)] md:block",
   content: "bg-[var(--adw-page-brown-bg)] min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
   contentWithToc: "mx-auto w-full max-w-[120rem] md:pr-[clamp(12rem,17.25vw,15.75rem)]",
   toc: "hidden md:block md:fixed md:right-6 lg:right-8 md:top-[5.25rem] md:w-[clamp(12rem,17vw,15.5rem)] md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto",
@@ -450,9 +449,6 @@ export function ArticlesPage(): React.JSX.Element {
           </div>
         </div>
       </aside>
-
-      <div className={ARTICLES_PAGE_LAYOUT_CLASSES.divider} />
-
       <article className={ARTICLES_PAGE_LAYOUT_CLASSES.content}>
         {loadingArticle && (
           <p className="text-muted-foreground">Loading article...</p>
