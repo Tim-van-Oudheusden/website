@@ -72,11 +72,12 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
           : {}),
       }}
     >
-      <div className={cn("w-full", isStart ? "max-w-6xl lg:max-w-[83rem] rounded-[2rem] bg-white px-5 py-8 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:px-8 sm:py-10 lg:px-6 overflow-visible" : "")}>
+      <div className={cn("w-full", isStart ? "max-w-6xl lg:max-w-[83rem] rounded-[2rem] bg-white px-5 py-8 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:px-8 sm:py-10 lg:px-6 overflow-x-hidden overflow-y-visible" : "")}>
         <div
           className={cn(
             "flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-[74rem]",
-            isRow ? "md:flex-row md:items-center" : "",
+            isStart ? "ml-auto md:flex-row md:items-end" : "",
+            !isStart && isRow ? "md:flex-row md:items-center" : "",
           )}
         >
           <div className="flex flex-1 flex-col gap-5">
@@ -127,11 +128,11 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
               </div>
             </div>
           ) : isStart ? (
-            <div className="relative flex flex-1 items-end justify-center overflow-visible">
+            <div className="relative flex flex-1 items-end justify-end overflow-visible">
               <img
                 src={START_SECTION_PORTRAIT_PATH}
                 alt="Portrait of Tim van Oudheusden"
-                className="relative z-10 h-auto w-full max-w-[20rem] -mt-8 sm:-mt-10 lg:-mt-12 object-contain"
+                className="relative z-10 h-auto w-full max-w-[40rem] -mt-16 sm:-mt-20 lg:-mt-24 object-contain"
                 loading="eager"
               />
             </div>
