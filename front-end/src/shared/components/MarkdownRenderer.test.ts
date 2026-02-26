@@ -67,4 +67,28 @@ describe("MarkdownRenderer", () => {
     expect(html).toContain('h2 id="déjà-vu-résumé"');
     expect(html).toContain('h2 id="你好-世界"');
   });
+
+  test("renders Obsidian quote callouts as a distinct callout block", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "> [!quote]\n> The future is image-based operating systems.",
+      }),
+    );
+
+    expect(html).toContain('data-callout-type="quote"');
+    expect(html).toContain(">Quote<");
+    expect(html).toContain("The future is image-based operating systems.");
+    expect(html).not.toContain("[!quote]");
+  });
+
+  test("keeps regular blockquotes as blockquotes", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "> This is a regular quote block.",
+      }),
+    );
+
+    expect(html).toContain("<blockquote");
+    expect(html).toContain("This is a regular quote block.");
+  });
 });
