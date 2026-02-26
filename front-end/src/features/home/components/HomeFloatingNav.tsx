@@ -100,7 +100,7 @@ export function HomeFloatingNav({
         <span
           aria-hidden="true"
           data-slot="active-indicator"
-          className="pointer-events-none absolute top-0 left-0 rounded-full bg-primary transition-[transform,width] duration-300 ease-out motion-reduce:transition-none"
+          className="pointer-events-none absolute top-0 left-0 rounded-full bg-[var(--adw-dark-5)] transition-[transform,width] duration-300 ease-out motion-reduce:transition-none"
           style={indicatorStyle}
         />
         {sections.map((section) => {
@@ -115,7 +115,7 @@ export function HomeFloatingNav({
                 className={cn(
                   "px-4 py-2 text-base uppercase tracking-[0.08em] transition-colors [a&]:hover:bg-transparent",
                   isActive
-                    ? "text-primary-foreground [a&]:hover:text-primary-foreground"
+                    ? "text-white [a&]:hover:text-white"
                     : "bg-transparent text-[var(--adw-headerbar-fg-color)] [a&]:hover:text-[var(--adw-headerbar-fg-color)]",
                 )}
               >
