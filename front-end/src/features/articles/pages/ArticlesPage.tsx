@@ -38,6 +38,7 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   articleTitle: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
   articleDescription: "text-muted-foreground mt-2 max-w-[65ch] text-base sm:text-lg leading-relaxed",
   articleBodyMeasure: "mx-auto w-full max-w-[75ch]",
+  articleTagBadge: "bg-[var(--adw-brown-1)] text-[var(--adw-dark-4)] [a&]:hover:bg-[var(--adw-brown-1)]/90",
 } as const;
 
 interface ArticleLocationTrailProps {
@@ -280,7 +281,7 @@ export function ArticlesPage(): React.JSX.Element {
                     {new Date(selectedArticle.date).toLocaleDateString()}
                   </time>
                   {selectedArticle.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
+                    <Badge key={tag} variant="secondary" className={cn("text-xs", ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge)}>
                       {tag}
                     </Badge>
                   ))}
