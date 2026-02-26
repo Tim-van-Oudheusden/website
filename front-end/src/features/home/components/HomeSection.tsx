@@ -20,7 +20,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
       <section
         id={section.id}
         aria-labelledby={`${section.id}-heading`}
-        className="flex min-h-svh items-center justify-center px-4 py-12 sm:px-6 sm:py-16"
+        className="flex min-h-svh items-center justify-center px-4 py-12 sm:px-6 sm:py-16 lg:px-4"
         style={{
           backgroundColor: section.bgColor,
           ...(section.bgImage != null
@@ -35,7 +35,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
         <div
           className={cn(
             "w-full",
-            inWhiteWell ? "max-w-6xl rounded-[2rem] bg-white px-5 py-8 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:px-8 sm:py-10" : "",
+            inWhiteWell ? "max-w-6xl lg:max-w-[83rem] rounded-[2rem] bg-white px-5 py-8 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:px-8 sm:py-10 lg:px-6" : "",
           )}
         >
           <ValuePillarsCarousel
@@ -58,7 +58,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
     <section
       id={section.id}
       aria-labelledby={`${section.id}-heading`}
-      className="flex min-h-svh items-center justify-center px-6 py-12 sm:px-10 sm:py-16"
+      className="flex min-h-svh items-center justify-center px-6 py-12 sm:px-10 sm:py-16 lg:px-6"
       style={{
         backgroundColor: section.bgColor,
         ...(section.bgImage != null
@@ -72,7 +72,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
     >
       <div
         className={cn(
-          "flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-5xl",
+          "flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-[74rem]",
           isRow ? "md:flex-row md:items-center" : "",
         )}
       >

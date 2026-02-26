@@ -41,4 +41,14 @@ describe("HomeSection", () => {
     expect(html).toContain("leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80");
     expect(html).toContain("text-sm text-[var(--adw-dark-5)]/50 dark:text-white/50");
   });
+
+  test("uses larger desktop content widths and smaller desktop margins", () => {
+    const startHtml = renderStartSection();
+    const forYouHtml = renderForYouSection();
+
+    expect(startHtml).toContain("px-6 py-12 sm:px-10 sm:py-16 lg:px-6");
+    expect(startHtml).toContain("lg:max-w-[74rem]");
+    expect(forYouHtml).toContain("px-4 py-12 sm:px-6 sm:py-16 lg:px-4");
+    expect(forYouHtml).toContain("max-w-6xl lg:max-w-[83rem]");
+  });
 });
