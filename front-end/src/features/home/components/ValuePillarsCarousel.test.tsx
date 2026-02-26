@@ -24,10 +24,10 @@ describe("ValuePillarsCarousel", () => {
     expect(html).not.toContain("translate-y-[calc(100%+0.75rem)]");
   });
 
-  test("uses fast non-staggered reveal animation at or below 0.5s", () => {
+  test("uses fast non-staggered reveal animation at doubled speed within 0.5s", () => {
     const html = renderCarousel();
 
-    expect(html).toContain("transition-[opacity,transform] duration-200");
+    expect(html).toContain("transition-[opacity,transform] duration-400");
     expect(html).not.toContain("transition-[max-height,margin-top,opacity]");
   });
 
