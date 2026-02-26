@@ -32,14 +32,13 @@ describe("HomeSection", () => {
 
     expect(html).toContain("rounded-[2rem] bg-white");
     expect(html).toContain("shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)]");
-    expect(html).toContain("overflow-x-hidden overflow-y-visible");
-    expect(html).toContain("md:items-end");
+    expect(html).toContain("overflow-visible");
+    expect(html).toContain("absolute right-0 bottom-0");
     expect(html).toContain("items-end");
     expect(html).toContain("justify-end");
     expect(html).toContain('src="/images/me.png"');
     expect(html).toContain("Portrait of Tim van Oudheusden");
-    expect(html).toContain("max-w-[40rem]");
-    expect(html).toContain("-mt-16 sm:-mt-20 lg:-mt-24");
+    expect(html).toContain("w-[clamp(18rem,36vw,40rem)]");
   });
 
   test("renders for-you white well with a tiny inset shadow", () => {
