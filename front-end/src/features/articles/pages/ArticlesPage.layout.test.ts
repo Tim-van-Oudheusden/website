@@ -7,6 +7,7 @@ import {
   ARTICLES_PAGE_TYPOGRAPHY_CLASSES,
   ArticleLocationTrail,
   extractArticleTableOfContents,
+  navigateToArticleHeadingById,
   resolveArticlesTrailTargetSlug,
 } from "./ArticlesPage";
 
@@ -113,5 +114,26 @@ More text
       { id: "details", text: "Details", depth: 3 },
       { id: "start-here-1", text: "Start Here", depth: 2 },
     ]);
+  });
+});
+
+describe("navigateToArticleHeadingById", () => {
+  test("scrolls to heading and updates URL hash when the heading exists", () => {
+    let receivedScrollOptions: ScrollIntoViewOptions | null = null;
+    let replacedUrl: string | null = null;
+
+    const didNavigate = navigateToArticleHeadingById("target-heading", {
+      getElementById: () => ({
+        scrollIntoView: (options: ScrollIntoViewOptions) => {
+          receivedScrollOptions = options;
+        },
+      }),
+      getCurrentPathWithQuery: () => "/articles?type=article",
+      replaceUrl: (url: string) => { replacedUrl = url; },
+    });
+
+    expect(didNavigate).toBe(true);
+    expect(receivedScrollOptions).toEqual({ behavior: "smooth", block: "start" });
+    expect(replacedUrl).toBe("/articles?type=article#target-heading");
   });
 });

@@ -56,6 +56,18 @@ interface ArticleLocationTrailProps {
   onArticlesActivate: () => void;
 }
 
+interface TocNavigationDependencies {
+  getElementById: (id: string) => { scrollIntoView: (options?: ScrollIntoViewOptions) => void; } | null;
+  getCurrentPathWithQuery: () => string;
+  replaceUrl: (url: string) => void;
+}
+
+const DEFAULT_TOC_NAVIGATION_DEPENDENCIES: TocNavigationDependencies = {
+  getElementById: (id) => document.getElementById(id),
+  getCurrentPathWithQuery: () => `${window.location.pathname}${window.location.search}`,
+  replaceUrl: (url) => { window.history.replaceState(null, "", url); },
+};
+
 function sanitizeHeadingText(rawText: string): string {
   return rawText
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
@@ -105,6 +117,20 @@ export function extractArticleTableOfContents(markdownBody: string): ArticleTabl
 
 export function resolveArticlesTrailTargetSlug(articles: ArticleSummary[]): string | null {
   return getDefaultArticleSlug(articles);
+}
+
+export function navigateToArticleHeadingById(
+  headingId: string,
+  dependencies: TocNavigationDependencies = DEFAULT_TOC_NAVIGATION_DEPENDENCIES,
+): boolean {
+  const targetHeading = dependencies.getElementById(headingId);
+  if (targetHeading == null) {
+    return false;
+  }
+
+  targetHeading.scrollIntoView({ behavior: "smooth", block: "start" });
+  dependencies.replaceUrl(`${dependencies.getCurrentPathWithQuery()}#${headingId}`);
+  return true;
 }
 
 function resolveTocLinkIndentClass(depth: 1 | 2 | 3): string {
@@ -222,6 +248,26 @@ export function ArticlesPage(): React.JSX.Element {
     void fetchArticle();
     return () => { cancelled = true; };
   }, [selectedSlug]);
+
+  useEffect(() => {
+    if (selectedArticle == null) {
+      return;
+    }
+
+    const hash = window.location.hash;
+    if (hash.length <= 1) {
+      return;
+    }
+
+    const headingId = decodeURIComponent(hash.slice(1));
+    const frameId = window.requestAnimationFrame(() => {
+      navigateToArticleHeadingById(headingId);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [selectedArticle]);
 
   if (loadingArticles) {
     return (
@@ -373,6 +419,14 @@ export function ArticlesPage(): React.JSX.Element {
                         <li key={item.id}>
                           <a
                             href={`#${item.id}`}
+                            onClick={(event) => {
+                              if (event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) {
+                                return;
+                              }
+
+                              event.preventDefault();
+                              navigateToArticleHeadingById(item.id);
+                            }}
                             className={cn(
                               ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLink,
                               resolveTocLinkIndentClass(item.depth),
