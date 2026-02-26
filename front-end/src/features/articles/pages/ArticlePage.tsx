@@ -16,6 +16,13 @@ interface ArticleData {
   body: string;
 }
 
+export const ARTICLE_PAGE_TYPOGRAPHY_CLASSES = {
+  mainMeasure: "mx-auto w-full max-w-[75ch]",
+  title: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
+  description: "text-muted-foreground mt-2 max-w-[65ch] text-base sm:text-lg leading-relaxed",
+  metaTime: "text-muted-foreground text-sm font-medium",
+} as const;
+
 export function ArticlePage(): React.JSX.Element {
   const { slug } = useParams<{ slug: string }>();
   const [article, setArticle] = useState<ArticleData | null>(null);
@@ -70,7 +77,7 @@ export function ArticlePage(): React.JSX.Element {
   if (notFound) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-[var(--adw-page-brown-bg)] p-4">
-        <h1 className="text-3xl font-bold">Article not found</h1>
+        <h1 className="text-3xl font-semibold">Article not found</h1>
         <Link to="/articles" className="text-primary underline">
           Back to articles
         </Link>
@@ -88,12 +95,12 @@ export function ArticlePage(): React.JSX.Element {
 
   return (
     <main className="mx-auto w-full max-w-screen-xl flex-1 bg-[var(--adw-page-brown-bg)] p-4 sm:p-6 lg:p-8">
-      <article>
+      <article className={ARTICLE_PAGE_TYPOGRAPHY_CLASSES.mainMeasure}>
         <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{article.title}</h1>
-          <p className="text-muted-foreground mt-2">{article.description}</p>
+          <h1 className={ARTICLE_PAGE_TYPOGRAPHY_CLASSES.title}>{article.title}</h1>
+          <p className={ARTICLE_PAGE_TYPOGRAPHY_CLASSES.description}>{article.description}</p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <time className="text-muted-foreground text-sm">
+            <time className={ARTICLE_PAGE_TYPOGRAPHY_CLASSES.metaTime}>
               {new Date(article.date).toLocaleDateString()}
             </time>
             {article.tags.map((tag) => (

@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
+  ARTICLES_PAGE_TYPOGRAPHY_CLASSES,
   ArticleLocationTrail,
   resolveArticlesTrailTargetSlug,
 } from "./ArticlesPage";
@@ -33,6 +34,17 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("bg-[var(--adw-page-brown-bg)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).not.toContain("dark:bg-card");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).not.toContain("dark:bg-card");
+  });
+});
+
+describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {
+  test("uses hierarchy and readability defaults from typography research", () => {
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.pageTitle).toContain("text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTitle).toContain("text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarTriggerLabel).toContain("font-medium");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton).toContain("text-base font-medium");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleDescription).toContain("max-w-[65ch] text-base sm:text-lg leading-relaxed");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleBodyMeasure).toContain("mx-auto w-full max-w-[75ch]");
   });
 });
 

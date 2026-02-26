@@ -21,4 +21,14 @@ describe("MarkdownRenderer", () => {
     expect(html).toContain("<img");
     expect(html).toContain('src="/content-assets/images/pixel.gif"');
   });
+
+  test("applies readable markdown body defaults for size and spacing", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "Hello world",
+      }),
+    );
+
+    expect(html).toContain("prose dark:prose-invert max-w-none text-base sm:text-lg leading-relaxed");
+  });
 });

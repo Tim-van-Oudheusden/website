@@ -63,7 +63,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
   content,
 }: MarkdownRendererProps): React.JSX.Element {
   return (
-    <article className="prose dark:prose-invert max-w-none">
+    <article className="prose dark:prose-invert max-w-none text-base sm:text-lg leading-relaxed">
       <Markdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight]}

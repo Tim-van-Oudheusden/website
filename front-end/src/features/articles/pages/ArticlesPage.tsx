@@ -31,6 +31,15 @@ export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   content: "bg-[var(--adw-page-brown-bg)] min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
 } as const;
 
+export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
+  pageTitle: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
+  sidebarTriggerLabel: "truncate font-medium",
+  sidebarArticleButton: "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-base font-medium transition-colors",
+  articleTitle: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
+  articleDescription: "text-muted-foreground mt-2 max-w-[65ch] text-base sm:text-lg leading-relaxed",
+  articleBodyMeasure: "mx-auto w-full max-w-[75ch]",
+} as const;
+
 interface ArticleLocationTrailProps {
   articleTitle: string;
   onArticlesActivate: () => void;
@@ -53,7 +62,7 @@ export function ArticleLocationTrail({ articleTitle, onArticlesActivate }: Artic
       <button
         type="button"
         onClick={onArticlesActivate}
-        className="cursor-pointer hover:text-foreground transition-colors"
+        className="cursor-pointer font-medium hover:text-foreground transition-colors"
       >
         Articles
       </button>
@@ -167,7 +176,7 @@ export function ArticlesPage(): React.JSX.Element {
   if (articles.length === 0) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-[var(--adw-page-brown-bg)] p-4">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Articles</h1>
+        <h1 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.pageTitle}>Articles</h1>
         <p className="text-muted-foreground">No articles yet.</p>
       </main>
     );
@@ -180,7 +189,7 @@ export function ArticlesPage(): React.JSX.Element {
     <main className={ARTICLES_PAGE_LAYOUT_CLASSES.container}>
       <aside className={ARTICLES_PAGE_LAYOUT_CLASSES.sidebar}>
         <div className="p-3">
-          <h1 className="px-2 pb-2 text-3xl font-bold tracking-tight">Articles</h1>
+          <h1 className={cn("px-2 pb-2", ARTICLES_PAGE_TYPOGRAPHY_CLASSES.pageTitle)}>Articles</h1>
           <div className="space-y-1">
             {ARTICLE_CATEGORIES.map((category) => {
               const isOpen = openCategories[category];
@@ -199,7 +208,7 @@ export function ArticlesPage(): React.JSX.Element {
                   }}
                 >
                   <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-start gap-2 px-2">
+                    <Button variant="ghost" className="w-full justify-start gap-2 px-2 text-base font-medium">
                       <ChevronRight
                         className={cn(
                           "size-4 transition-transform",
@@ -207,7 +216,7 @@ export function ArticlesPage(): React.JSX.Element {
                         )}
                       />
                       <Folder className="size-4" />
-                      <span className="truncate">{category}</span>
+                      <span className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarTriggerLabel}>{category}</span>
                       <span className="text-muted-foreground ml-auto text-xs">
                         {categoryArticles.length}
                       </span>
@@ -226,7 +235,7 @@ export function ArticlesPage(): React.JSX.Element {
                           type="button"
                           onClick={() => { setSelectedSlug(article.slug); }}
                           className={cn(
-                            "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
+                            ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton,
                             articleStateClass,
                           )}
                         >
@@ -262,23 +271,25 @@ export function ArticlesPage(): React.JSX.Element {
                 }
               }}
             />
-            <header className="mb-8">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{selectedArticle.title}</h2>
-              <p className="text-muted-foreground mt-2">{selectedArticle.description}</p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <time className="text-muted-foreground text-sm">
-                  {new Date(selectedArticle.date).toLocaleDateString()}
-                </time>
-                {selectedArticle.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </header>
-            <ErrorBoundary>
-              <MarkdownRenderer content={selectedArticle.body} />
-            </ErrorBoundary>
+            <div className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleBodyMeasure}>
+              <header className="mb-8">
+                <h2 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTitle}>{selectedArticle.title}</h2>
+                <p className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleDescription}>{selectedArticle.description}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <time className="text-muted-foreground text-sm font-medium">
+                    {new Date(selectedArticle.date).toLocaleDateString()}
+                  </time>
+                  {selectedArticle.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </header>
+              <ErrorBoundary>
+                <MarkdownRenderer content={selectedArticle.body} />
+              </ErrorBoundary>
+            </div>
           </>
         )}
       </article>
