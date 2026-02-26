@@ -211,7 +211,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
         </h3>
         <p
           ref={descriptionRef}
-          className="pointer-events-none mt-0 overflow-hidden max-h-0 text-sm leading-relaxed text-white/90 opacity-0 transition-[max-height,margin-top,opacity] duration-300 group-hover:mt-3 group-hover:max-h-[var(--value-pillar-description-height)] group-hover:opacity-100"
+          className="pointer-events-none mt-3 overflow-hidden max-h-0 translate-y-1 text-sm leading-relaxed text-white/90 opacity-0 transition-[opacity,transform] duration-200 group-hover:max-h-[var(--value-pillar-description-height)] group-hover:translate-y-0 group-hover:opacity-100"
         >
           {description}
         </p>

@@ -24,6 +24,13 @@ describe("ValuePillarsCarousel", () => {
     expect(html).not.toContain("translate-y-[calc(100%+0.75rem)]");
   });
 
+  test("uses fast non-staggered reveal animation at or below 0.5s", () => {
+    const html = renderCarousel();
+
+    expect(html).toContain("transition-[opacity,transform] duration-200");
+    expect(html).not.toContain("transition-[max-height,margin-top,opacity]");
+  });
+
   test("resolves next-page navigation to card-aligned offsets", () => {
     const cardOffsetLefts = [48, 378, 708, 1038, 1368];
 
