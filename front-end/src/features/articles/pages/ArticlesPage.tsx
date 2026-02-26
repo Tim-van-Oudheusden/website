@@ -49,8 +49,8 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   articleDescription: "text-muted-foreground mt-2 max-w-[65ch] text-base sm:text-lg leading-relaxed",
   articleBodyMeasure: "mx-auto w-full max-w-[75ch]",
   articleTagBadge: "bg-[var(--adw-dark-5)] text-[var(--adw-light-1)] font-bold [a&]:hover:bg-[var(--adw-dark-5)]/90 dark:bg-[var(--adw-light-1)] dark:text-[var(--adw-dark-5)] dark:[a&]:hover:bg-[var(--adw-light-1)]/90",
-  tocTitle: "text-[calc(0.875rem+2pt)] font-bold tracking-tight",
-  tocLink: "block text-sm font-semibold leading-relaxed transition-colors hover:text-foreground",
+  tocTitle: "text-[calc(0.875rem+4pt)] font-bold tracking-tight",
+  tocLink: "block text-sm font-medium leading-relaxed transition-colors hover:text-foreground",
   tocLinkActive: "text-[var(--adw-dark-4)] dark:text-[var(--adw-light-2)]",
   tocLinkInactive: "text-[var(--adw-toc-inactive)]",
 } as const;
