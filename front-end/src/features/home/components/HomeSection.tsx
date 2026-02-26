@@ -35,7 +35,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
         <div
           className={cn(
             "w-full",
-            inWhiteWell ? "max-w-6xl rounded-[2rem] bg-white px-5 py-8 shadow-[0_28px_65px_-45px_rgba(0,0,0,0.45)] sm:px-8 sm:py-10" : "",
+            inWhiteWell ? "max-w-6xl rounded-[2rem] bg-white px-5 py-8 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:px-8 sm:py-10" : "",
           )}
         >
           <ValuePillarsCarousel
