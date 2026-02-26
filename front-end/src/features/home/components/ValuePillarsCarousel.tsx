@@ -301,7 +301,7 @@ export function ValuePillarsCarousel({
 
         <div
           ref={scrollerRef}
-          className="overflow-x-auto px-12 pt-1.5 pb-2 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="overflow-x-auto px-12 pt-1.5 pb-6 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           <div className="flex min-w-full snap-x snap-mandatory gap-4">
             {VALUE_PILLAR_ITEMS.map(({ title, artworkPath, description }, index) => (

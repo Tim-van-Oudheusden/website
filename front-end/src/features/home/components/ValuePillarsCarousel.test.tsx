@@ -65,4 +65,11 @@ describe("ValuePillarsCarousel", () => {
     expect(html).toContain("text-base leading-relaxed text-white/90");
     expect(html).not.toContain("text-sm leading-relaxed text-white/90");
   });
+
+  test("adds extra bottom spacing so card shadows are not visually clipped", () => {
+    const html = renderCarousel();
+
+    expect(html).toContain("overflow-x-auto px-12 pt-1.5 pb-6");
+    expect(html).not.toContain("overflow-x-auto px-12 pt-1.5 pb-2");
+  });
 });
