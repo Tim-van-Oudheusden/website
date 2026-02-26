@@ -27,6 +27,16 @@ function renderStartSection(): string {
 }
 
 describe("HomeSection", () => {
+  test("renders the start section inside a white well with an overflow portrait image", () => {
+    const html = renderStartSection();
+
+    expect(html).toContain("rounded-[2rem] bg-white");
+    expect(html).toContain("shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)]");
+    expect(html).toContain('src="/images/me.png"');
+    expect(html).toContain("Portrait of Tim van Oudheusden");
+    expect(html).toContain("-mt-8 sm:-mt-10");
+  });
+
   test("renders for-you white well with a tiny inset shadow", () => {
     const html = renderForYouSection();
 
@@ -39,7 +49,7 @@ describe("HomeSection", () => {
 
     expect(html).toContain("font-semibold tracking-tight text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)]");
     expect(html).toContain("leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80");
-    expect(html).toContain("text-sm text-[var(--adw-dark-5)]/50 dark:text-white/50");
+    expect(html).toContain('src="/images/me.png"');
   });
 
   test("uses larger desktop content widths and smaller desktop margins", () => {
