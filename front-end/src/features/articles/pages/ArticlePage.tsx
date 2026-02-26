@@ -21,6 +21,7 @@ export const ARTICLE_PAGE_TYPOGRAPHY_CLASSES = {
   title: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
   description: "text-muted-foreground mt-2 max-w-[65ch] text-base sm:text-lg leading-relaxed",
   metaTime: "text-muted-foreground text-sm font-medium",
+  tagBadge: "text-xs font-bold",
 } as const;
 
 export function ArticlePage(): React.JSX.Element {
@@ -104,7 +105,7 @@ export function ArticlePage(): React.JSX.Element {
               {new Date(article.date).toLocaleDateString()}
             </time>
             {article.tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">
+              <Badge key={tag} variant="secondary" className={ARTICLE_PAGE_TYPOGRAPHY_CLASSES.tagBadge}>
                 {tag}
               </Badge>
             ))}

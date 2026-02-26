@@ -60,7 +60,7 @@ describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleBodyMeasure).toContain("mx-auto w-full max-w-[75ch]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("bg-[var(--adw-dark-5)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("text-[var(--adw-light-1)]");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("font-medium");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("font-bold");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("dark:bg-[var(--adw-light-1)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("dark:text-[var(--adw-dark-5)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton).toContain("[&>svg]:shrink-0");

@@ -7,5 +7,6 @@ describe("ARTICLE_PAGE_TYPOGRAPHY_CLASSES", () => {
     expect(ARTICLE_PAGE_TYPOGRAPHY_CLASSES.title).toContain("text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight");
     expect(ARTICLE_PAGE_TYPOGRAPHY_CLASSES.description).toContain("max-w-[65ch] text-base sm:text-lg leading-relaxed");
     expect(ARTICLE_PAGE_TYPOGRAPHY_CLASSES.metaTime).toContain("text-sm font-medium");
+    expect(ARTICLE_PAGE_TYPOGRAPHY_CLASSES.tagBadge).toContain("text-xs font-bold");
   });
 });
