@@ -80,13 +80,13 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
           <h2
             id={`${section.id}-heading`}
             className={cn(
-              "font-semibold tracking-tight text-white",
+              "font-semibold tracking-tight text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)]",
               isHero ? "text-4xl sm:text-5xl" : "text-2xl sm:text-3xl",
             )}
           >
             {section.heading}
           </h2>
-          <p className="leading-relaxed text-white/80">
+          <p className="leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80">
             {section.body}
           </p>
           {hasCta && (
@@ -125,7 +125,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
           </div>
         ) : (
           <div className="flex flex-1 items-center justify-center rounded-2xl bg-white/10 p-8">
-            <p className="text-sm text-white/50">Media placeholder</p>
+            <p className="text-sm text-[var(--adw-dark-5)]/50 dark:text-white/50">Media placeholder</p>
           </div>
         )}
       </div>
