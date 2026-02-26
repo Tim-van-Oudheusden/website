@@ -6,6 +6,7 @@ import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
   ARTICLES_PAGE_TYPOGRAPHY_CLASSES,
   ArticleLocationTrail,
+  extractArticleTableOfContents,
   resolveArticlesTrailTargetSlug,
 } from "./ArticlesPage";
 
@@ -34,6 +35,13 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("bg-[var(--adw-page-brown-bg)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).not.toContain("dark:bg-card");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).not.toContain("dark:bg-card");
+  });
+
+  test("provides a desktop sticky right-side TOC column", () => {
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc).toContain("lg:grid-cols-[minmax(0,75ch)_16rem]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("hidden lg:block");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("lg:sticky");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("lg:top-[5.25rem]");
   });
 });
 
@@ -81,5 +89,26 @@ describe("ArticleLocationTrail", () => {
     expect(html).toContain("Articles");
     expect(html).toContain("My Article");
     expect(html).toContain("&gt;");
+  });
+});
+
+describe("extractArticleTableOfContents", () => {
+  test("extracts H2/H3 headings with stable, unique anchor ids", () => {
+    const toc = extractArticleTableOfContents(`# Title
+
+## Start Here
+Paragraph
+
+### Details
+More text
+
+## Start Here
+`);
+
+    expect(toc).toEqual([
+      { id: "start-here", text: "Start Here", depth: 2 },
+      { id: "details", text: "Details", depth: 3 },
+      { id: "start-here-1", text: "Start Here", depth: 2 },
+    ]);
   });
 });

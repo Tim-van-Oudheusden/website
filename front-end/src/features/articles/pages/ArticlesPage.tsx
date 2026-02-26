@@ -24,11 +24,19 @@ interface ArticleData extends ArticleSummary {
   body: string;
 }
 
+export interface ArticleTableOfContentsItem {
+  id: string;
+  text: string;
+  depth: 2 | 3;
+}
+
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   container: "flex w-full min-h-0 flex-1 flex-col bg-[var(--adw-page-brown-bg)] md:flex-row",
   sidebar: "w-full min-h-0 overflow-y-auto bg-[var(--adw-page-brown-bg)] md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[clamp(13rem,15vw,18rem)] md:min-w-[13rem] md:shrink-0",
   divider: "hidden w-[0.5px] bg-[var(--adw-light-5)] dark:bg-[var(--adw-dark-1)] md:block",
   content: "bg-[var(--adw-page-brown-bg)] min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
+  contentWithToc: "mx-auto grid w-full max-w-[120rem] gap-8 lg:grid-cols-[minmax(0,75ch)_16rem]",
+  toc: "hidden lg:block lg:sticky lg:top-[5.25rem] lg:self-start",
 } as const;
 
 export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
@@ -39,6 +47,8 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   articleDescription: "text-muted-foreground mt-2 max-w-[65ch] text-base sm:text-lg leading-relaxed",
   articleBodyMeasure: "mx-auto w-full max-w-[75ch]",
   articleTagBadge: "bg-[var(--adw-brown-1)] text-[var(--adw-dark-4)] [a&]:hover:bg-[var(--adw-brown-1)]/90",
+  tocTitle: "text-sm font-semibold tracking-tight",
+  tocLink: "text-muted-foreground block text-sm leading-relaxed hover:text-foreground transition-colors",
 } as const;
 
 interface ArticleLocationTrailProps {
@@ -46,8 +56,63 @@ interface ArticleLocationTrailProps {
   onArticlesActivate: () => void;
 }
 
+function sanitizeHeadingText(rawText: string): string {
+  return rawText
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/[*_~]+/g, "")
+    .replace(/<\/?[^>]+>/g, "")
+    .trim();
+}
+
+function slugifyHeading(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function extractArticleTableOfContents(markdownBody: string): ArticleTableOfContentsItem[] {
+  const headingMatches = markdownBody.matchAll(/^(#{2,3})\s+(.+?)\s*$/gm);
+  const slugCounts = new Map<string, number>();
+  const toc: ArticleTableOfContentsItem[] = [];
+
+  for (const [, hashes, rawHeadingText] of headingMatches) {
+    const text = sanitizeHeadingText(rawHeadingText);
+    if (text.length === 0) {
+      continue;
+    }
+
+    const baseSlug = slugifyHeading(text);
+    if (baseSlug.length === 0) {
+      continue;
+    }
+
+    const currentCount = slugCounts.get(baseSlug) ?? 0;
+    slugCounts.set(baseSlug, currentCount + 1);
+    const id = currentCount === 0 ? baseSlug : `${baseSlug}-${currentCount}`;
+
+    toc.push({
+      id,
+      text,
+      depth: hashes.length as 2 | 3,
+    });
+  }
+
+  return toc;
+}
+
 export function resolveArticlesTrailTargetSlug(articles: ArticleSummary[]): string | null {
   return getDefaultArticleSlug(articles);
+}
+
+function resolveTocLinkIndentClass(depth: 2 | 3): string {
+  if (depth === 3) {
+    return "pl-3";
+  }
+
+  return "";
 }
 
 export function ArticleLocationTrail({ articleTitle, onArticlesActivate }: ArticleLocationTrailProps): React.JSX.Element {
@@ -185,6 +250,9 @@ export function ArticlesPage(): React.JSX.Element {
 
   const groupedArticles = groupArticlesByCategory(articles);
   const trailTargetSlug = resolveArticlesTrailTargetSlug(articles);
+  const articleTableOfContents = selectedArticle == null
+    ? []
+    : extractArticleTableOfContents(selectedArticle.body);
 
   return (
     <main className={ARTICLES_PAGE_LAYOUT_CLASSES.container}>
@@ -272,24 +340,52 @@ export function ArticlesPage(): React.JSX.Element {
                 }
               }}
             />
-            <div className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleBodyMeasure}>
-              <header className="mb-8">
-                <h2 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTitle}>{selectedArticle.title}</h2>
-                <p className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleDescription}>{selectedArticle.description}</p>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <time className="text-muted-foreground text-sm font-medium">
-                    {new Date(selectedArticle.date).toLocaleDateString()}
-                  </time>
-                  {selectedArticle.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className={cn("text-xs", ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge)}>
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </header>
-              <ErrorBoundary>
-                <MarkdownRenderer content={selectedArticle.body} />
-              </ErrorBoundary>
+            <div className={ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc}>
+              <div className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleBodyMeasure}>
+                <header className="mb-8">
+                  <h2 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTitle}>{selectedArticle.title}</h2>
+                  <p className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleDescription}>{selectedArticle.description}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <time className="text-muted-foreground text-sm font-medium">
+                      {new Date(selectedArticle.date).toLocaleDateString()}
+                    </time>
+                    {selectedArticle.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className={cn("text-xs", ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge)}>
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </header>
+                <ErrorBoundary>
+                  <MarkdownRenderer content={selectedArticle.body} />
+                </ErrorBoundary>
+              </div>
+
+              {articleTableOfContents.length > 0 && (
+                <aside className={ARTICLES_PAGE_LAYOUT_CLASSES.toc}>
+                  <nav
+                    aria-label="Table of contents"
+                    className="border-border bg-background/70 rounded-lg border px-4 py-3"
+                  >
+                    <h3 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocTitle}>On this page</h3>
+                    <ol className="mt-3 space-y-2">
+                      {articleTableOfContents.map((item) => (
+                        <li key={item.id}>
+                          <a
+                            href={`#${item.id}`}
+                            className={cn(
+                              ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLink,
+                              resolveTocLinkIndentClass(item.depth),
+                            )}
+                          >
+                            {item.text}
+                          </a>
+                        </li>
+                      ))}
+                    </ol>
+                  </nav>
+                </aside>
+              )}
             </div>
           </>
         )}

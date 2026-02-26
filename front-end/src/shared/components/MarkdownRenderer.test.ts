@@ -31,4 +31,17 @@ describe("MarkdownRenderer", () => {
 
     expect(html).toContain("prose dark:prose-invert max-w-none text-base sm:text-lg leading-relaxed");
   });
+
+  test("adds stable heading ids and heading scroll margin for in-page TOC links", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "## Start Here\n### Deep Dive\n## Start Here",
+      }),
+    );
+
+    expect(html).toContain('h2 id="start-here"');
+    expect(html).toContain('h3 id="deep-dive"');
+    expect(html).toContain('h2 id="start-here-1"');
+    expect(html).toContain("scroll-mt-[5.25rem]");
+  });
 });
