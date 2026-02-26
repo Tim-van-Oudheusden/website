@@ -6,6 +6,7 @@ import rehypeHighlight from "rehype-highlight";
 import type { Components } from "react-markdown";
 import "highlight.js/styles/github.css";
 import { cn } from "@/shared/lib/utils";
+import { createHeadingIdResolver } from "@/shared/lib/markdown-headings";
 
 export interface MarkdownRendererProps {
   /** Raw markdown string (frontmatter already stripped). */
@@ -29,14 +30,6 @@ function flattenNodeText(node: React.ReactNode): string {
   return "";
 }
 
-function slugifyHeading(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/['"]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 /**
  * Renders a markdown string to styled HTML using react-markdown.
  *
@@ -46,24 +39,7 @@ function slugifyHeading(text: string): string {
 export const MarkdownRenderer = memo(function MarkdownRenderer({
   content,
 }: MarkdownRendererProps): React.JSX.Element {
-  const resolveHeadingId = React.useMemo(() => {
-    const slugCounts = new Map<string, number>();
-
-    return (rawHeadingText: string): string => {
-      const baseSlug = slugifyHeading(rawHeadingText);
-      if (baseSlug.length === 0) {
-        return "";
-      }
-
-      const currentCount = slugCounts.get(baseSlug) ?? 0;
-      slugCounts.set(baseSlug, currentCount + 1);
-      if (currentCount === 0) {
-        return baseSlug;
-      }
-
-      return `${baseSlug}-${currentCount}`;
-    };
-  }, [content]);
+  const resolveHeadingId = React.useMemo(() => createHeadingIdResolver(), [content]);
 
   const components = React.useMemo<Components>(() => ({
     a({ href, children, ...rest }) {

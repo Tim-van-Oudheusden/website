@@ -55,4 +55,16 @@ describe("MarkdownRenderer", () => {
     expect(html).toContain('h1 id="overview"');
     expect(html).toContain('h2 id="details"');
   });
+
+  test("uses unicode-safe ids and supports setext headings", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "Section with *emphasis* and `code`\n---\n## Déjà vu & résumé\n## 你好 世界",
+      }),
+    );
+
+    expect(html).toContain('h2 id="section-with-emphasis-and-code"');
+    expect(html).toContain('h2 id="déjà-vu-résumé"');
+    expect(html).toContain('h2 id="你好-世界"');
+  });
 });

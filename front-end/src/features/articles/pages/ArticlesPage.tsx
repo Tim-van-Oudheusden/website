@@ -14,6 +14,7 @@ import { Button } from "@/shared/components/ui/button";
 import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
 import { MarkdownRenderer } from "@/shared/components/MarkdownRenderer";
 import { cn } from "@/shared/lib/utils";
+import { extractMarkdownHeadings } from "@/shared/lib/markdown-headings";
 import {
   getDefaultArticleSlug,
   groupArticlesByCategory,
@@ -60,59 +61,41 @@ interface TocNavigationDependencies {
   getElementById: (id: string) => { scrollIntoView: (options?: ScrollIntoViewOptions) => void; } | null;
   getCurrentPathWithQuery: () => string;
   replaceUrl: (url: string) => void;
+  setHash: (headingId: string) => void;
+  getScrollY: () => number;
+  logNavigation: (event: TocNavigationDebugEvent) => void;
+}
+
+interface TocNavigationDebugEvent {
+  headingId: string;
+  foundTarget: boolean;
+  stage: "fallback-hash" | "scroll";
+  scrollYBefore: number;
+  scrollYAfter: number;
 }
 
 const DEFAULT_TOC_NAVIGATION_DEPENDENCIES: TocNavigationDependencies = {
   getElementById: (id) => document.getElementById(id),
   getCurrentPathWithQuery: () => `${window.location.pathname}${window.location.search}`,
   replaceUrl: (url) => { window.history.replaceState(null, "", url); },
+  setHash: (headingId) => { window.location.hash = headingId; },
+  getScrollY: () => window.scrollY,
+  logNavigation: (event) => {
+    if ((window as Window & { __ADW_DEBUG_TOC__?: boolean }).__ADW_DEBUG_TOC__ !== true) {
+      return;
+    }
+
+    // Temporary debug hook for diagnosing browser-specific TOC navigation behavior.
+    console.info("[articles-toc]", event);
+  },
 };
 
-function sanitizeHeadingText(rawText: string): string {
-  return rawText
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/[*_~]+/g, "")
-    .replace(/<\/?[^>]+>/g, "")
-    .trim();
-}
-
-function slugifyHeading(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/['"]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 export function extractArticleTableOfContents(markdownBody: string): ArticleTableOfContentsItem[] {
-  const headingMatches = markdownBody.matchAll(/^(#{1,3})\s+(.+?)\s*$/gm);
-  const slugCounts = new Map<string, number>();
-  const toc: ArticleTableOfContentsItem[] = [];
-
-  for (const [, hashes, rawHeadingText] of headingMatches) {
-    const text = sanitizeHeadingText(rawHeadingText);
-    if (text.length === 0) {
-      continue;
-    }
-
-    const baseSlug = slugifyHeading(text);
-    if (baseSlug.length === 0) {
-      continue;
-    }
-
-    const currentCount = slugCounts.get(baseSlug) ?? 0;
-    slugCounts.set(baseSlug, currentCount + 1);
-    const id = currentCount === 0 ? baseSlug : `${baseSlug}-${currentCount}`;
-
-    toc.push({
-      id,
-      text,
-      depth: hashes.length as 1 | 2 | 3,
-    });
-  }
-
-  return toc;
+  return extractMarkdownHeadings(markdownBody, 3).map((heading) => ({
+    id: heading.id,
+    text: heading.text,
+    depth: heading.depth as 1 | 2 | 3,
+  }));
 }
 
 export function resolveArticlesTrailTargetSlug(articles: ArticleSummary[]): string | null {
@@ -123,13 +106,29 @@ export function navigateToArticleHeadingById(
   headingId: string,
   dependencies: TocNavigationDependencies = DEFAULT_TOC_NAVIGATION_DEPENDENCIES,
 ): boolean {
+  const scrollYBefore = dependencies.getScrollY();
   const targetHeading = dependencies.getElementById(headingId);
   if (targetHeading == null) {
+    dependencies.setHash(headingId);
+    dependencies.logNavigation({
+      headingId,
+      foundTarget: false,
+      stage: "fallback-hash",
+      scrollYBefore,
+      scrollYAfter: dependencies.getScrollY(),
+    });
     return false;
   }
 
   targetHeading.scrollIntoView({ behavior: "smooth", block: "start" });
   dependencies.replaceUrl(`${dependencies.getCurrentPathWithQuery()}#${headingId}`);
+  dependencies.logNavigation({
+    headingId,
+    foundTarget: true,
+    stage: "scroll",
+    scrollYBefore,
+    scrollYAfter: dependencies.getScrollY(),
+  });
   return true;
 }
 

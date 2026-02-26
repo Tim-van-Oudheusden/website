@@ -116,6 +116,24 @@ More text
       { id: "start-here-1", text: "Start Here", depth: 2 },
     ]);
   });
+
+  test("supports setext headings and complex heading text without id drift", () => {
+    const toc = extractArticleTableOfContents(`# Intro's [Guide](https://example.com)
+Section with *emphasis* and \`code\`
+---
+### Déjà vu & résumé
+## Intro's Guide
+## 你好 世界
+`);
+
+    expect(toc).toEqual([
+      { id: "intros-guide", text: "Intro's Guide", depth: 1 },
+      { id: "section-with-emphasis-and-code", text: "Section with emphasis and code", depth: 2 },
+      { id: "déjà-vu-résumé", text: "Déjà vu & résumé", depth: 3 },
+      { id: "intros-guide-1", text: "Intro's Guide", depth: 2 },
+      { id: "你好-世界", text: "你好 世界", depth: 2 },
+    ]);
+  });
 });
 
 describe("navigateToArticleHeadingById", () => {
@@ -131,10 +149,31 @@ describe("navigateToArticleHeadingById", () => {
       }),
       getCurrentPathWithQuery: () => "/articles?type=article",
       replaceUrl: (url: string) => { replacedUrl = url; },
+      setHash: () => {},
+      getScrollY: () => 200,
+      logNavigation: () => {},
     });
 
     expect(didNavigate).toBe(true);
     expect(receivedScrollOptions).toEqual({ behavior: "smooth", block: "start" });
     expect(replacedUrl).toBe("/articles?type=article#target-heading");
+  });
+
+  test("falls back to native hash updates when the heading target is missing", () => {
+    let replacedUrl: string | null = null;
+    let fallbackHash: string | null = null;
+
+    const didNavigate = navigateToArticleHeadingById("missing-heading", {
+      getElementById: () => null,
+      getCurrentPathWithQuery: () => "/articles?type=article",
+      replaceUrl: (url: string) => { replacedUrl = url; },
+      setHash: (hash: string) => { fallbackHash = hash; },
+      getScrollY: () => 0,
+      logNavigation: () => {},
+    });
+
+    expect(didNavigate).toBe(false);
+    expect(replacedUrl).toBeNull();
+    expect(fallbackHash).toBe("missing-heading");
   });
 });
