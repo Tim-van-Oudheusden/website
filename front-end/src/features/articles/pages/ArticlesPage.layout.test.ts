@@ -37,11 +37,13 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).not.toContain("dark:bg-card");
   });
 
-  test("provides a desktop sticky right-side TOC column", () => {
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc).toContain("lg:grid-cols-[minmax(0,75ch)_16rem]");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("hidden lg:block");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("lg:sticky");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("lg:top-[5.25rem]");
+  test("uses a slimmer right-anchored TOC on tablet and desktop", () => {
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc).toContain("md:pr-[clamp(11rem,16vw,14rem)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("hidden md:block");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:fixed");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:right-6");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:w-[clamp(10rem,14vw,13rem)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:top-[5.25rem]");
   });
 });
 

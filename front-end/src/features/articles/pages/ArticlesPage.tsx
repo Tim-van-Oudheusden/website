@@ -35,8 +35,8 @@ export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   sidebar: "w-full min-h-0 overflow-y-auto bg-[var(--adw-page-brown-bg)] md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[clamp(13rem,15vw,18rem)] md:min-w-[13rem] md:shrink-0",
   divider: "hidden w-[0.5px] bg-[var(--adw-light-5)] dark:bg-[var(--adw-dark-1)] md:block",
   content: "bg-[var(--adw-page-brown-bg)] min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
-  contentWithToc: "mx-auto grid w-full max-w-[120rem] gap-8 lg:grid-cols-[minmax(0,75ch)_16rem]",
-  toc: "hidden lg:block lg:sticky lg:top-[5.25rem] lg:self-start",
+  contentWithToc: "mx-auto w-full max-w-[120rem] md:pr-[clamp(11rem,16vw,14rem)]",
+  toc: "hidden md:block md:fixed md:right-6 lg:right-8 md:top-[5.25rem] md:w-[clamp(10rem,14vw,13rem)] md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto",
 } as const;
 
 export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
