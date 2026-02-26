@@ -29,7 +29,7 @@ async function getTocLinkViewportDiagnostics(page: Page, headingId: string): Pro
     return {
       linkColor: tocLink == null ? null : getComputedStyle(tocLink).color,
       inactiveColor: resolveColorValue("var(--adw-toc-inactive)"),
-      normalColor: resolveColorValue("var(--muted-foreground)"),
+      normalColor: resolveColorValue("var(--adw-dark-4)"),
       headingInViewport,
     };
   }, headingId);
