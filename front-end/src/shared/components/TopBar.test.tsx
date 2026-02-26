@@ -4,9 +4,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 import { TopBar } from "./TopBar";
 
-function renderTopBar(): string {
+function renderTopBar(pathname = "/"): string {
   return renderToStaticMarkup(
-    createElement(MemoryRouter, null, createElement(TopBar)),
+    createElement(MemoryRouter, { initialEntries: [pathname] }, createElement(TopBar)),
   );
 }
 
@@ -19,9 +19,9 @@ describe("TopBar", () => {
 
   test("has no border or shadow distinction from page content", () => {
     const html = renderTopBar();
-    expect(html).not.toContain("border-b");
-    expect(html).not.toContain("shadow-md");
-    expect(html).not.toContain("transition-shadow");
+    expect(html).not.toMatch(/<header class="[^"]*border-b/);
+    expect(html).not.toMatch(/<header class="[^"]*shadow-md/);
+    expect(html).not.toMatch(/<header class="[^"]*transition-shadow/);
   });
 
   test("exposes a data-scrolled attribute for scroll-aware styling", () => {
@@ -41,5 +41,13 @@ describe("TopBar", () => {
     expect(html).toContain("h-10 px-4 text-[18px] font-medium");
     expect(html).not.toContain("h-10 px-4 text-[18px] font-semibold");
     expect(html).not.toContain("font-bold");
+  });
+
+  test("underlines the currently active top navbar page", () => {
+    const html = renderTopBar("/articles");
+    const activeCount = (html.match(/data-active-nav=\"true\"/g) ?? []).length;
+
+    expect(activeCount).toBe(1);
+    expect(html).toContain("border-b-2");
   });
 });

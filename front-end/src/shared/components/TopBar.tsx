@@ -1,8 +1,9 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { MenuIcon } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { cn } from "@/shared/lib/utils";
 import {
   Sheet,
   SheetContent,
@@ -18,9 +19,18 @@ const navLinks = [
   { label: "Projects", href: "/projects" },
 ];
 
+function isActiveNavPath(pathname: string, href: string): boolean {
+  if (href === "/") {
+    return pathname === "/";
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function TopBar(): React.JSX.Element {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     function handleScroll(): void {
@@ -47,11 +57,28 @@ export function TopBar(): React.JSX.Element {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-2 sm:flex">
-          {navLinks.map((link) => (
-            <Button key={link.href} variant="ghost" size="sm" className="h-10 px-4 text-[18px] font-medium" asChild>
-              <Link to={link.href}>{link.label}</Link>
-            </Button>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = isActiveNavPath(location.pathname, link.href);
+
+            return (
+              <Button
+                key={link.href}
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "h-10 px-4 text-[18px] font-medium rounded-none border-b-2",
+                  isActive
+                    ? "border-[var(--adw-dark-4)] dark:border-[var(--adw-light-4)]"
+                    : "border-transparent",
+                )}
+                asChild
+              >
+                <Link to={link.href} data-active-nav={isActive ? "true" : "false"}>
+                  {link.label}
+                </Link>
+              </Button>
+            );
+          })}
           <ThemeToggle triggerClassName="size-11" iconClassName="size-5" />
         </nav>
 
