@@ -59,8 +59,6 @@ interface ArticleLocationTrailProps {
 
 interface TocNavigationDependencies {
   getElementById: (id: string) => { scrollIntoView: (options?: ScrollIntoViewOptions) => void; } | null;
-  getCurrentPathWithQuery: () => string;
-  replaceUrl: (url: string) => void;
   setHash: (headingId: string) => void;
   getScrollY: () => number;
   logNavigation: (event: TocNavigationDebugEvent) => void;
@@ -76,8 +74,6 @@ interface TocNavigationDebugEvent {
 
 const DEFAULT_TOC_NAVIGATION_DEPENDENCIES: TocNavigationDependencies = {
   getElementById: (id) => document.getElementById(id),
-  getCurrentPathWithQuery: () => `${window.location.pathname}${window.location.search}`,
-  replaceUrl: (url) => { window.history.replaceState(null, "", url); },
   setHash: (headingId) => { window.location.hash = headingId; },
   getScrollY: () => window.scrollY,
   logNavigation: (event) => {
@@ -121,7 +117,7 @@ export function navigateToArticleHeadingById(
   }
 
   targetHeading.scrollIntoView({ behavior: "smooth", block: "start" });
-  dependencies.replaceUrl(`${dependencies.getCurrentPathWithQuery()}#${headingId}`);
+  dependencies.setHash(headingId);
   dependencies.logNavigation({
     headingId,
     foundTarget: true,
@@ -418,14 +414,6 @@ export function ArticlesPage(): React.JSX.Element {
                         <li key={item.id}>
                           <a
                             href={`#${item.id}`}
-                            onClick={(event) => {
-                              if (event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) {
-                                return;
-                              }
-
-                              event.preventDefault();
-                              navigateToArticleHeadingById(item.id);
-                            }}
                             className={cn(
                               ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLink,
                               resolveTocLinkIndentClass(item.depth),

@@ -141,9 +141,9 @@ Section with *emphasis* and \`code\`
 });
 
 describe("navigateToArticleHeadingById", () => {
-  test("scrolls to heading and updates URL hash when the heading exists", () => {
+  test("scrolls to heading and updates hash via native fragment path when the heading exists", () => {
     let receivedScrollOptions: ScrollIntoViewOptions | null = null;
-    let replacedUrl: string | null = null;
+    let updatedHash: string | null = null;
     let loggedEvent: {
       headingId: string;
       foundTarget: boolean;
@@ -158,16 +158,14 @@ describe("navigateToArticleHeadingById", () => {
           receivedScrollOptions = options;
         },
       }),
-      getCurrentPathWithQuery: () => "/articles?type=article",
-      replaceUrl: (url: string) => { replacedUrl = url; },
-      setHash: () => {},
+      setHash: (headingId: string) => { updatedHash = headingId; },
       getScrollY: () => 200,
       logNavigation: (event) => { loggedEvent = event; },
     });
 
     expect(didNavigate).toBe(true);
     expect(receivedScrollOptions).toEqual({ behavior: "smooth", block: "start" });
-    expect(replacedUrl).toBe("/articles?type=article#target-heading");
+    expect(updatedHash).toBe("target-heading");
     expect(loggedEvent).toEqual({
       headingId: "target-heading",
       foundTarget: true,
@@ -178,7 +176,6 @@ describe("navigateToArticleHeadingById", () => {
   });
 
   test("falls back to native hash updates when the heading target is missing", () => {
-    let replacedUrl: string | null = null;
     let fallbackHash: string | null = null;
     let loggedEvent: {
       headingId: string;
@@ -190,15 +187,12 @@ describe("navigateToArticleHeadingById", () => {
 
     const didNavigate = navigateToArticleHeadingById("missing-heading", {
       getElementById: () => null,
-      getCurrentPathWithQuery: () => "/articles?type=article",
-      replaceUrl: (url: string) => { replacedUrl = url; },
       setHash: (hash: string) => { fallbackHash = hash; },
       getScrollY: () => 0,
       logNavigation: (event) => { loggedEvent = event; },
     });
 
     expect(didNavigate).toBe(false);
-    expect(replacedUrl).toBeNull();
     expect(fallbackHash).toBe("missing-heading");
     expect(loggedEvent).toEqual({
       headingId: "missing-heading",
