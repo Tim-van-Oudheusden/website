@@ -86,6 +86,15 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
         </a>
       );
     },
+    h1({ children, className, ...rest }) {
+      const headingText = flattenNodeText(children);
+      const id = resolveHeadingId(headingText);
+      return (
+        <h1 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
+          {children}
+        </h1>
+      );
+    },
     h2({ children, className, ...rest }) {
       const headingText = flattenNodeText(children);
       const id = resolveHeadingId(headingText);

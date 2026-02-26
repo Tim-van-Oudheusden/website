@@ -44,4 +44,15 @@ describe("MarkdownRenderer", () => {
     expect(html).toContain('h2 id="start-here-1"');
     expect(html).toContain("scroll-mt-[5.25rem]");
   });
+
+  test("adds heading ids for H1 so TOC links navigate correctly", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "# Overview\n## Details",
+      }),
+    );
+
+    expect(html).toContain('h1 id="overview"');
+    expect(html).toContain('h2 id="details"');
+  });
 });
