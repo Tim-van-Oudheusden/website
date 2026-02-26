@@ -33,17 +33,17 @@ export interface ArticleTableOfContentsItem {
 
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   container: "flex w-full min-h-0 flex-1 flex-col bg-[var(--adw-page-brown-bg)] md:flex-row",
-  sidebar: "w-full min-h-0 overflow-y-auto bg-[var(--adw-page-brown-bg)] md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[clamp(15rem,17.25vw,21rem)] md:min-w-[15rem] md:shrink-0",
+  sidebar: "w-full min-h-0 overflow-y-auto bg-[var(--adw-page-brown-bg)] md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[clamp(16.5rem,19vw,23rem)] md:min-w-[16.5rem] md:shrink-0",
   divider: "hidden w-[0.5px] bg-[var(--adw-light-5)] dark:bg-[var(--adw-dark-1)] md:block",
   content: "bg-[var(--adw-page-brown-bg)] min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
-  contentWithToc: "mx-auto w-full max-w-[120rem] md:pr-[clamp(12.5rem,18vw,16.25rem)]",
+  contentWithToc: "mx-auto w-full max-w-[120rem] md:pr-[clamp(12rem,17.25vw,15.75rem)]",
   toc: "hidden md:block md:fixed md:right-6 lg:right-8 md:top-[5.25rem] md:w-[clamp(12rem,17vw,15.5rem)] md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto",
 } as const;
 
 export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   pageTitle: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
-  sidebarTriggerLabel: "truncate font-medium",
-  sidebarArticleButton: "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-base font-medium transition-colors [&>svg]:size-4 [&>svg]:shrink-0",
+  sidebarTriggerLabel: "truncate text-sm font-medium",
+  sidebarArticleButton: "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium transition-colors [&>svg]:size-4 [&>svg]:shrink-0",
   articleTitle: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
   articleDescription: "text-muted-foreground mt-2 max-w-[65ch] text-base sm:text-lg leading-relaxed",
   articleBodyMeasure: "mx-auto w-full max-w-[75ch]",
@@ -322,7 +322,7 @@ export function ArticlesPage(): React.JSX.Element {
                   }}
                 >
                   <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-start gap-2 px-2 text-base font-medium">
+                    <Button variant="ghost" className="w-full justify-start gap-2 px-2 text-sm font-medium">
                       <ChevronRight
                         className={cn(
                           "size-4 transition-transform",

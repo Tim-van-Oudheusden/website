@@ -19,8 +19,8 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("md:flex-row");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("mx-auto");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("max-w-screen-2xl");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:basis-[clamp(15rem,17.25vw,21rem)]");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:min-w-[15rem]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:basis-[clamp(16.5rem,19vw,23rem)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:min-w-[16.5rem]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:shrink-0");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:sticky");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:top-[4.2rem]");
@@ -39,7 +39,7 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
   });
 
   test("uses a slimmer right-anchored TOC on tablet and desktop", () => {
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc).toContain("md:pr-[clamp(12.5rem,18vw,16.25rem)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc).toContain("md:pr-[clamp(12rem,17.25vw,15.75rem)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("hidden md:block");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:fixed");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:right-6");
@@ -52,8 +52,8 @@ describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {
   test("uses hierarchy and readability defaults from typography research", () => {
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.pageTitle).toContain("text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTitle).toContain("text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarTriggerLabel).toContain("font-medium");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton).toContain("text-base font-medium");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarTriggerLabel).toContain("text-sm font-medium");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton).toContain("text-sm font-medium");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleDescription).toContain("max-w-[65ch] text-base sm:text-lg leading-relaxed");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleBodyMeasure).toContain("mx-auto w-full max-w-[75ch]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("bg-[var(--adw-brown-1)]");
