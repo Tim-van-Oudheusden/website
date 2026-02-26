@@ -25,6 +25,61 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+interface PagedCarouselScrollInput {
+  currentScrollLeft: number;
+  direction: -1 | 1;
+  cardOffsetLefts: readonly number[];
+  viewportWidth: number;
+  trackPaddingLeft: number;
+}
+
+function findNearestCardIndex(cardOffsetLefts: readonly number[], targetLeft: number): number {
+  let nearestIndex = 0;
+  let nearestDistance = Number.POSITIVE_INFINITY;
+
+  for (let index = 0; index < cardOffsetLefts.length; index += 1) {
+    const distance = Math.abs(cardOffsetLefts[index] - targetLeft);
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearestIndex = index;
+    }
+  }
+
+  return nearestIndex;
+}
+
+export function resolvePagedCarouselScrollLeft({
+  currentScrollLeft,
+  direction,
+  cardOffsetLefts,
+  viewportWidth,
+  trackPaddingLeft,
+}: PagedCarouselScrollInput): number {
+  if (cardOffsetLefts.length === 0) {
+    return currentScrollLeft;
+  }
+
+  if (cardOffsetLefts.length === 1) {
+    return Math.max(0, cardOffsetLefts[0] - trackPaddingLeft);
+  }
+
+  const cardStep = Math.abs(cardOffsetLefts[1] - cardOffsetLefts[0]);
+  if (cardStep <= 0) {
+    return currentScrollLeft;
+  }
+
+  const cardsPerPage = Math.max(1, Math.floor((viewportWidth + 1) / cardStep));
+  const currentCardSpaceLeft = currentScrollLeft + trackPaddingLeft;
+  const currentIndex = findNearestCardIndex(cardOffsetLefts, currentCardSpaceLeft);
+  const targetIndex = clamp(
+    currentIndex + (direction * cardsPerPage),
+    0,
+    cardOffsetLefts.length - 1,
+  );
+
+  return Math.max(0, cardOffsetLefts[targetIndex] - trackPaddingLeft);
+}
+
 export function calculateCardTiltAngles({
   pointerX,
   pointerY,
@@ -179,6 +234,7 @@ export function ValuePillarsCarousel({
   inWhiteWell = false,
 }: ValuePillarsCarouselProps): React.JSX.Element {
   const scrollerRef = React.useRef<HTMLDivElement>(null);
+  const articleRefs = React.useRef<Array<HTMLElement | null>>([]);
 
   const scrollByViewport = React.useCallback((direction: -1 | 1): void => {
     const scroller = scrollerRef.current;
@@ -186,8 +242,25 @@ export function ValuePillarsCarousel({
       return;
     }
 
-    scroller.scrollBy({
-      left: direction * scroller.clientWidth,
+    const cardOffsetLefts = articleRefs.current
+      .map((article) => article?.offsetLeft)
+      .filter((offsetLeft): offsetLeft is number => offsetLeft != null);
+
+    let trackPaddingLeft = 0;
+    if (typeof window !== "undefined") {
+      trackPaddingLeft = Number.parseFloat(window.getComputedStyle(scroller).paddingLeft) || 0;
+    }
+
+    const targetLeft = resolvePagedCarouselScrollLeft({
+      currentScrollLeft: scroller.scrollLeft,
+      direction,
+      cardOffsetLefts,
+      viewportWidth: scroller.clientWidth,
+      trackPaddingLeft,
+    });
+
+    scroller.scrollTo({
+      left: targetLeft,
       behavior: "smooth",
     });
   }, []);
@@ -231,8 +304,12 @@ export function ValuePillarsCarousel({
           className="overflow-x-auto px-12 pt-1.5 pb-2 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           <div className="flex min-w-full snap-x snap-mandatory gap-4">
-            {VALUE_PILLAR_ITEMS.map(({ title, artworkPath, description }) => (
-              <article key={title} className="basis-full shrink-0 snap-start sm:basis-1/3 lg:basis-1/3">
+            {VALUE_PILLAR_ITEMS.map(({ title, artworkPath, description }, index) => (
+              <article
+                key={title}
+                ref={(element) => { articleRefs.current[index] = element; }}
+                className="basis-full shrink-0 snap-start sm:basis-1/3 lg:basis-1/3"
+              >
                 <ValuePillarCard title={title} artworkPath={artworkPath} description={description} />
               </article>
             ))}
