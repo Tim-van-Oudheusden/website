@@ -35,4 +35,10 @@ describe("TopBar", () => {
     expect(html).toContain("text-[1.35rem]");
     expect(html).toContain("size-6");
   });
+
+  test("uses thicker non-bold navbar labels with a +2px size bump", () => {
+    const html = renderTopBar();
+    expect(html).toContain("h-10 px-4 text-[18px] font-semibold");
+    expect(html).not.toContain("font-bold");
+  });
 });
