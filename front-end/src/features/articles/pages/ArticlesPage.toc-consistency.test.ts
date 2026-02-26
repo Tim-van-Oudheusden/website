@@ -21,7 +21,7 @@ function stripFrontmatter(markdown: string): string {
 
 describe("Articles TOC and rendered heading ids", () => {
   test("keeps TOC links aligned with rendered heading ids for all content markdown files", () => {
-    const contentDirectory = resolve(process.cwd(), "..", "content");
+    const contentDirectory = resolve(import.meta.dir, "../../../../../content");
     const markdownFiles = readdirSync(contentDirectory).filter((fileName) => fileName.endsWith(".md"));
 
     for (const markdownFile of markdownFiles) {
@@ -39,5 +39,33 @@ describe("Articles TOC and rendered heading ids", () => {
         expect(renderedHtml).toContain(`id="${tocItem.id}"`);
       }
     }
+  });
+
+  test("keeps TOC ids aligned with rendered heading ids for complex heading markdown", () => {
+    const markdownBody = `# Intro
+
+## [Reference style][ref]
+## Title with <span>inline html</span>
+## ![Alt label](/assets/logo.svg) plus text
+
+\`\`\`md
+# This code heading should not be in TOC
+\`\`\`
+
+### Final section
+
+[ref]: https://example.com
+`;
+    const tocItems = extractArticleTableOfContents(markdownBody);
+    const renderedHtml = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: markdownBody,
+      }),
+    );
+    const renderedHeadingIds = Array
+      .from(renderedHtml.matchAll(/<h[1-3][^>]*id="([^"]+)"/g))
+      .map((match) => match[1]);
+
+    expect(tocItems.map((item) => item.id)).toEqual(renderedHeadingIds);
   });
 });

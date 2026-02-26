@@ -6,7 +6,10 @@ import rehypeHighlight from "rehype-highlight";
 import type { Components } from "react-markdown";
 import "highlight.js/styles/github.css";
 import { cn } from "@/shared/lib/utils";
-import { createHeadingIdResolver } from "@/shared/lib/markdown-headings";
+import {
+  createHeadingIdResolver,
+  normalizeMarkdownHeadingText,
+} from "@/shared/lib/markdown-headings";
 
 export interface MarkdownRendererProps {
   /** Raw markdown string (frontmatter already stripped). */
@@ -31,7 +34,14 @@ function flattenNodeText(node: React.ReactNode): string {
   }
 
   if (React.isValidElement(node)) {
-    const elementProps = node.props as { children?: React.ReactNode };
+    const elementProps = node.props as { children?: React.ReactNode; alt?: string };
+    if (
+      (node.type === "img" || elementProps.children == null)
+      && typeof elementProps.alt === "string"
+      && elementProps.alt.length > 0
+    ) {
+      return elementProps.alt ?? "";
+    }
     return flattenNodeText(elementProps.children);
   }
 
@@ -125,7 +135,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
       );
     },
     h1({ children, className, ...rest }) {
-      const headingText = flattenNodeText(children);
+      const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
       const id = resolveHeadingId(headingText);
       return (
         <h1 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
@@ -134,7 +144,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
       );
     },
     h2({ children, className, ...rest }) {
-      const headingText = flattenNodeText(children);
+      const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
       const id = resolveHeadingId(headingText);
       return (
         <h2 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
@@ -143,7 +153,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
       );
     },
     h3({ children, className, ...rest }) {
-      const headingText = flattenNodeText(children);
+      const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
       const id = resolveHeadingId(headingText);
       return (
         <h3 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>

@@ -6,12 +6,15 @@ export interface MarkdownHeading {
 
 const ATX_HEADING_PATTERN = /^(#{1,6})[ \t]+(.+?)(?:[ \t]+#+[ \t]*)?$/;
 const SETEXT_UNDERLINE_PATTERN = /^(=+|-+)[ \t]*$/;
+const FENCED_CODE_DELIMITER_PATTERN = /^[ \t]{0,3}([`~]{3,})/;
 const ESCAPED_MARKDOWN_SYMBOL_PATTERN = /\\([\\`*_[\]{}()#+\-.!])/g;
 
-function normalizeMarkdownHeadingText(rawText: string): string {
+export function normalizeMarkdownHeadingText(rawText: string): string {
   return rawText
     .replace(/!\[([^\]]*)\]\(([^)]*)\)/g, "$1")
+    .replace(/!\[([^\]]*)\]\[[^\]]*\]/g, "$1")
     .replace(/\[([^\]]+)\]\(([^)]*)\)/g, "$1")
+    .replace(/\[([^\]]+)\]\[[^\]]*\]/g, "$1")
     .replace(/`([^`]+)`/g, "$1")
     .replace(/[*_~]+/g, "")
     .replace(/<\/?[^>]+>/g, "")
@@ -61,9 +64,27 @@ export function extractMarkdownHeadings(
   const lines = markdown.split(/\r?\n/);
   const resolveHeadingId = createHeadingIdResolver();
   const headings: MarkdownHeading[] = [];
+  let fencedCodeDelimiter: string | null = null;
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
+    const fencedCodeDelimiterMatch = line.match(FENCED_CODE_DELIMITER_PATTERN);
+    if (fencedCodeDelimiter !== null) {
+      if (
+        fencedCodeDelimiterMatch !== null
+        && fencedCodeDelimiterMatch[1][0] === fencedCodeDelimiter[0]
+        && fencedCodeDelimiterMatch[1].length >= fencedCodeDelimiter.length
+      ) {
+        fencedCodeDelimiter = null;
+      }
+      continue;
+    }
+
+    if (fencedCodeDelimiterMatch !== null) {
+      fencedCodeDelimiter = fencedCodeDelimiterMatch[1];
+      continue;
+    }
+
     const atxHeading = line.match(ATX_HEADING_PATTERN);
 
     if (atxHeading !== null) {

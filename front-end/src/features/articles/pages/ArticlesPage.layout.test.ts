@@ -144,6 +144,13 @@ describe("navigateToArticleHeadingById", () => {
   test("scrolls to heading and updates URL hash when the heading exists", () => {
     let receivedScrollOptions: ScrollIntoViewOptions | null = null;
     let replacedUrl: string | null = null;
+    let loggedEvent: {
+      headingId: string;
+      foundTarget: boolean;
+      stage: "fallback-hash" | "scroll";
+      scrollYBefore: number;
+      scrollYAfter: number;
+    } | null = null;
 
     const didNavigate = navigateToArticleHeadingById("target-heading", {
       getElementById: () => ({
@@ -155,17 +162,31 @@ describe("navigateToArticleHeadingById", () => {
       replaceUrl: (url: string) => { replacedUrl = url; },
       setHash: () => {},
       getScrollY: () => 200,
-      logNavigation: () => {},
+      logNavigation: (event) => { loggedEvent = event; },
     });
 
     expect(didNavigate).toBe(true);
     expect(receivedScrollOptions).toEqual({ behavior: "smooth", block: "start" });
     expect(replacedUrl).toBe("/articles?type=article#target-heading");
+    expect(loggedEvent).toEqual({
+      headingId: "target-heading",
+      foundTarget: true,
+      stage: "scroll",
+      scrollYBefore: 200,
+      scrollYAfter: 200,
+    });
   });
 
   test("falls back to native hash updates when the heading target is missing", () => {
     let replacedUrl: string | null = null;
     let fallbackHash: string | null = null;
+    let loggedEvent: {
+      headingId: string;
+      foundTarget: boolean;
+      stage: "fallback-hash" | "scroll";
+      scrollYBefore: number;
+      scrollYAfter: number;
+    } | null = null;
 
     const didNavigate = navigateToArticleHeadingById("missing-heading", {
       getElementById: () => null,
@@ -173,11 +194,18 @@ describe("navigateToArticleHeadingById", () => {
       replaceUrl: (url: string) => { replacedUrl = url; },
       setHash: (hash: string) => { fallbackHash = hash; },
       getScrollY: () => 0,
-      logNavigation: () => {},
+      logNavigation: (event) => { loggedEvent = event; },
     });
 
     expect(didNavigate).toBe(false);
     expect(replacedUrl).toBeNull();
     expect(fallbackHash).toBe("missing-heading");
+    expect(loggedEvent).toEqual({
+      headingId: "missing-heading",
+      foundTarget: false,
+      stage: "fallback-hash",
+      scrollYBefore: 0,
+      scrollYAfter: 0,
+    });
   });
 });
