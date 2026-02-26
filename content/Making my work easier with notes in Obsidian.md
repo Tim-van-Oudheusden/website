@@ -7,7 +7,7 @@ category: Work
 socialImage: images/cover.png
 publishDate: 2025-01-17
 tags:
-  - obsidian
+  - Obsidian
 ---
 # Introduction
 One of the first noticeable issues that arise from working at a big organization is the scale of it all. 

@@ -6,7 +6,7 @@ type: article
 category: Introduction
 publishDate: 2026-02-08
 tags:
-  - introduction
+  - Introduction
 ---
 # Welcome
 This is my corner of the internet for sharing articles about Linux, software engineering, and personal reflections.

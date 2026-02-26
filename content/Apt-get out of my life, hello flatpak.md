@@ -7,7 +7,7 @@ category: Linux
 socialImage: images/cover.png
 publishDate: 2025-07-02
 tags:
-  - flatpak
+  - Flatpak
 ---
 # No, don't embrace the terminal
 At the beginning of my software development career, long before I transitioned to Linux, I was introduced to the terminal. It started with some simple git command's and expanded into various other branches. As a developer you get used to it. Yet this is the very pitfall that has plagued the Linux desktop experience for the past few decades. 
