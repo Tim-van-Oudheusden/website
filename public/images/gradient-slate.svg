@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
-  <defs>
-    <radialGradient id="slate-gradient" cx="50%" cy="50%" r="35%" fx="50%" fy="50%">
-      <stop offset="0%" stop-color="#6f8396" />
-      <stop offset="100%" stop-color="#4f6170" />
-    </radialGradient>
-  </defs>
-  <rect width="400" height="400" fill="url(#slate-gradient)" />
-</svg>

@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
-  <defs>
-    <radialGradient id="pink-gradient" cx="100%" cy="100%" r="120%" fx="100%" fy="100%">
-      <stop offset="0%" stop-color="#d56199" />
-      <stop offset="100%" stop-color="#a4436f" />
-    </radialGradient>
-  </defs>
-  <rect width="400" height="400" fill="url(#pink-gradient)" />
-</svg>

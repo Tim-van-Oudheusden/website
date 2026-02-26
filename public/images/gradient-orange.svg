@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
-  <defs>
-    <radialGradient id="orange-gradient" cx="0%" cy="0%" r="100%" fx="0%" fy="0%">
-      <stop offset="0%" stop-color="#ed5b00" />
-      <stop offset="100%" stop-color="#b34400" />
-    </radialGradient>
-  </defs>
-  <rect width="400" height="400" fill="url(#orange-gradient)" />
-</svg>
