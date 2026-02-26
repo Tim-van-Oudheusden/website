@@ -42,7 +42,7 @@ export const ARTICLES_PAGE_LAYOUT_CLASSES = {
 export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   pageTitle: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
   sidebarTriggerLabel: "truncate font-medium",
-  sidebarArticleButton: "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-base font-medium transition-colors",
+  sidebarArticleButton: "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-base font-medium transition-colors [&>svg]:size-4 [&>svg]:shrink-0",
   articleTitle: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
   articleDescription: "text-muted-foreground mt-2 max-w-[65ch] text-base sm:text-lg leading-relaxed",
   articleBodyMeasure: "mx-auto w-full max-w-[75ch]",
