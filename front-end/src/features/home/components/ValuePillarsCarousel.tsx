@@ -81,6 +81,8 @@ interface ValuePillarItemProps {
 
 function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemProps): React.JSX.Element {
   const [tiltAngles, setTiltAngles] = React.useState<CardTiltAngles>({ rotateX: 0, rotateY: 0 });
+  const descriptionRef = React.useRef<HTMLParagraphElement | null>(null);
+  const [descriptionHeight, setDescriptionHeight] = React.useState(0);
 
   const handleMouseMove = React.useCallback((event: React.MouseEvent<HTMLDivElement>): void => {
     const bounds = event.currentTarget.getBoundingClientRect();
@@ -96,6 +98,41 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
     setTiltAngles({ rotateX: 0, rotateY: 0 });
   }, []);
 
+  const updateDescriptionHeight = React.useCallback((): void => {
+    const descriptionElement = descriptionRef.current;
+    if (descriptionElement == null) {
+      return;
+    }
+
+    setDescriptionHeight(descriptionElement.scrollHeight);
+  }, []);
+
+  React.useEffect(() => {
+    updateDescriptionHeight();
+
+    const descriptionElement = descriptionRef.current;
+    if (descriptionElement == null) {
+      return;
+    }
+
+    if (typeof ResizeObserver !== "undefined") {
+      const resizeObserver = new ResizeObserver(() => {
+        updateDescriptionHeight();
+      });
+      resizeObserver.observe(descriptionElement);
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", updateDescriptionHeight);
+      return () => {
+        window.removeEventListener("resize", updateDescriptionHeight);
+      };
+    }
+  }, [description, updateDescriptionHeight]);
+
   return (
     <Card
       className="group relative mx-auto w-3/4 aspect-[3/4] overflow-hidden border-white/30 bg-transparent p-0 shadow-[0_12px_28px_-16px_rgba(0,0,0,0.75)] transition-transform duration-200 ease-out will-change-transform"
@@ -103,6 +140,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
       onMouseLeave={handleMouseLeave}
       style={{
         transform: `perspective(900px) rotateX(${tiltAngles.rotateX}deg) rotateY(${tiltAngles.rotateY}deg)`,
+        "--value-pillar-description-height": `${descriptionHeight}px`,
       }}
     >
       <img
@@ -112,13 +150,14 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
         loading="lazy"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
-      <div className="relative flex h-full items-end overflow-hidden p-6">
-        <div className="w-full transition-[padding] duration-300 group-hover:pb-18">
-          <h3 className="text-xl font-semibold tracking-tight text-white">
-            {title}
-          </h3>
-        </div>
-        <p className="pointer-events-none absolute right-6 bottom-6 left-6 translate-y-[calc(100%+0.75rem)] text-sm leading-relaxed text-white/90 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+      <div className="relative flex h-full flex-col justify-end overflow-hidden p-6">
+        <h3 className="text-xl font-semibold tracking-tight text-white">
+          {title}
+        </h3>
+        <p
+          ref={descriptionRef}
+          className="pointer-events-none mt-0 overflow-hidden max-h-0 text-sm leading-relaxed text-white/90 opacity-0 transition-[max-height,margin-top,opacity] duration-300 group-hover:mt-3 group-hover:max-h-[var(--value-pillar-description-height)] group-hover:opacity-100"
+        >
           {description}
         </p>
       </div>
