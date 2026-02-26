@@ -6,6 +6,8 @@ async function getTocLinkViewportDiagnostics(page: Page, headingId: string): Pro
   inactiveColor: string;
   normalColor: string;
   headingInViewport: boolean;
+  headingAboveViewport: boolean;
+  headingBelowViewport: boolean;
 }> {
   return page.evaluate((id) => {
     const heading = document.getElementById(id);
@@ -21,9 +23,13 @@ async function getTocLinkViewportDiagnostics(page: Page, headingId: string): Pro
     }
 
     let headingInViewport = false;
+    let headingAboveViewport = false;
+    let headingBelowViewport = false;
     if (heading != null) {
       const rect = heading.getBoundingClientRect();
       headingInViewport = rect.top < window.innerHeight && rect.bottom > 0;
+      headingAboveViewport = rect.bottom <= 0;
+      headingBelowViewport = rect.top >= window.innerHeight;
     }
 
     return {
@@ -31,6 +37,8 @@ async function getTocLinkViewportDiagnostics(page: Page, headingId: string): Pro
       inactiveColor: resolveColorValue("var(--adw-toc-inactive)"),
       normalColor: resolveColorValue("var(--adw-dark-4)"),
       headingInViewport,
+      headingAboveViewport,
+      headingBelowViewport,
     };
   }, headingId);
 }
@@ -111,7 +119,7 @@ test.describe("Articles TOC navigation", () => {
     expect(clickDiagnostics.shiftedIdExists).toBe(false);
   });
 
-  test("greys out TOC items for headings outside the viewport and restores normal color in view", async ({ page }) => {
+  test("keeps passed headings active when scrolling down and re-greys headings that leave via bottom while scrolling up", async ({ page }) => {
     await page.goto("/articles", { waitUntil: "domcontentloaded" });
     await page.setViewportSize({ width: 1280, height: 720 });
 
@@ -122,7 +130,67 @@ test.describe("Articles TOC navigation", () => {
     await expect(tableOfContents.getByRole("link", { name: /A closing note/i })).toBeVisible();
     await page.evaluate(() => { window.scrollTo({ top: 0, behavior: "instant" }); });
 
-    const targetHeadingId = await page.evaluate(() => {
+    const headingIds = await page.evaluate(() => Array
+      .from(document.querySelectorAll('nav[aria-label="Table of contents"] a[href^="#"]'))
+      .map((link) => (link.getAttribute("href") ?? "").slice(1))
+      .filter((id) => id.length > 0));
+    expect(headingIds.length).toBeGreaterThan(2);
+
+    const firstHeadingId = headingIds[0] as string;
+    const middleHeadingId = headingIds[Math.floor(headingIds.length / 2)] as string;
+    const lastHeadingId = headingIds[headingIds.length - 1] as string;
+
+    await page.locator(`article #${middleHeadingId}`).scrollIntoViewIfNeeded();
+
+    await expect.poll(
+      async () => getTocLinkViewportDiagnostics(page, middleHeadingId),
+      { timeout: 5_000 },
+    ).toMatchObject({ headingInViewport: true });
+
+    const expectedMiddleNormalColor = (await getTocLinkViewportDiagnostics(page, middleHeadingId)).normalColor;
+    await expect.poll(
+      async () => (await getTocLinkViewportDiagnostics(page, middleHeadingId)).linkColor,
+      { timeout: 5_000 },
+    ).toBe(expectedMiddleNormalColor);
+
+    await page.locator(`article #${lastHeadingId}`).scrollIntoViewIfNeeded();
+
+    await expect.poll(
+      async () => getTocLinkViewportDiagnostics(page, middleHeadingId),
+      { timeout: 5_000 },
+    ).toMatchObject({ headingAboveViewport: true });
+
+    const middleDiagnosticsAfterScrollDown = await getTocLinkViewportDiagnostics(page, middleHeadingId);
+    expect(middleDiagnosticsAfterScrollDown.linkColor).toBe(middleDiagnosticsAfterScrollDown.normalColor);
+
+    await expect.poll(
+      async () => getTocLinkViewportDiagnostics(page, lastHeadingId),
+      { timeout: 5_000 },
+    ).toMatchObject({ headingInViewport: true });
+
+    const expectedLastNormalColor = (await getTocLinkViewportDiagnostics(page, lastHeadingId)).normalColor;
+    await expect.poll(
+      async () => (await getTocLinkViewportDiagnostics(page, lastHeadingId)).linkColor,
+      { timeout: 5_000 },
+    ).toBe(expectedLastNormalColor);
+
+    await page.locator(`article #${firstHeadingId}`).scrollIntoViewIfNeeded();
+
+    await expect.poll(
+      async () => getTocLinkViewportDiagnostics(page, lastHeadingId),
+      { timeout: 5_000 },
+    ).toMatchObject({ headingBelowViewport: true });
+
+    const expectedLastInactiveColor = (await getTocLinkViewportDiagnostics(page, lastHeadingId)).inactiveColor;
+    await expect.poll(
+      async () => (await getTocLinkViewportDiagnostics(page, lastHeadingId)).linkColor,
+      { timeout: 5_000 },
+    ).toBe(expectedLastInactiveColor);
+
+    const firstDiagnosticsAfterScrollUp = await getTocLinkViewportDiagnostics(page, firstHeadingId);
+    expect(firstDiagnosticsAfterScrollUp.linkColor).toBe(firstDiagnosticsAfterScrollUp.normalColor);
+
+    const offscreenHeadingId = await page.evaluate(() => {
       const tocLinks = Array.from(document.querySelectorAll('nav[aria-label="Table of contents"] a[href^="#"]'));
       for (const tocLink of tocLinks) {
         const headingId = (tocLink.getAttribute("href") ?? "").slice(1);
@@ -144,23 +212,10 @@ test.describe("Articles TOC navigation", () => {
 
       return null;
     });
-    expect(targetHeadingId).not.toBeNull();
+    expect(offscreenHeadingId).not.toBeNull();
 
-    const beforeDiagnostics = await getTocLinkViewportDiagnostics(page, targetHeadingId as string);
+    const beforeDiagnostics = await getTocLinkViewportDiagnostics(page, offscreenHeadingId as string);
     expect(beforeDiagnostics.headingInViewport).toBe(false);
     expect(beforeDiagnostics.linkColor).toBe(beforeDiagnostics.inactiveColor);
-
-    await page.locator(`article #${targetHeadingId as string}`).scrollIntoViewIfNeeded();
-
-    await expect.poll(
-      async () => getTocLinkViewportDiagnostics(page, targetHeadingId as string),
-      { timeout: 5_000 },
-    ).toMatchObject({ headingInViewport: true });
-
-    const expectedNormalColor = (await getTocLinkViewportDiagnostics(page, targetHeadingId as string)).normalColor;
-    await expect.poll(
-      async () => (await getTocLinkViewportDiagnostics(page, targetHeadingId as string)).linkColor,
-      { timeout: 5_000 },
-    ).toBe(expectedNormalColor);
   });
 });

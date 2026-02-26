@@ -79,6 +79,10 @@ interface TocNavigationDebugEvent {
   scrollYAfter: number;
 }
 
+interface TocHeadingRect {
+  top: number;
+}
+
 const DEFAULT_TOC_NAVIGATION_DEPENDENCIES: TocNavigationDependencies = {
   getElementById: (id) => document.getElementById(id),
   setHash: (headingId) => { window.location.hash = headingId; },
@@ -133,6 +137,23 @@ export function navigateToArticleHeadingById(
     scrollYAfter: dependencies.getScrollY(),
   });
   return true;
+}
+
+function resolveActiveTocHeadingIds(
+  tocItems: ArticleTableOfContentsItem[],
+  getHeadingRect: (headingId: string) => TocHeadingRect | null,
+  viewportHeight: number,
+): string[] {
+  return tocItems
+    .filter((heading) => {
+      const rect = getHeadingRect(heading.id);
+      if (rect == null) {
+        return false;
+      }
+
+      return rect.top < viewportHeight;
+    })
+    .map((heading) => heading.id);
 }
 
 function resolveTocLinkIndentClass(depth: 1 | 2 | 3): string {
@@ -283,49 +304,55 @@ export function ArticlesPage(): React.JSX.Element {
       setVisibleTocHeadingIds([]);
       return;
     }
+    let rafId: number | null = null;
 
-    const headingVisibility = new Map<string, boolean>();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        let visibilityChanged = false;
-
-        for (const entry of entries) {
-          const headingId = entry.target.id;
-          const isVisible = entry.isIntersecting;
-          if (headingVisibility.get(headingId) !== isVisible) {
-            headingVisibility.set(headingId, isVisible);
-            visibilityChanged = true;
+    const updateActiveTocHeadings = () => {
+      rafId = null;
+      const nextVisibleHeadingIds = resolveActiveTocHeadingIds(
+        articleTableOfContents,
+        (headingId) => {
+          const headingElement = document.getElementById(headingId);
+          if (headingElement == null) {
+            return null;
           }
+
+          return headingElement.getBoundingClientRect();
+        },
+        window.innerHeight,
+      );
+
+      setVisibleTocHeadingIds((currentVisibleHeadingIds) => {
+        if (
+          currentVisibleHeadingIds.length === nextVisibleHeadingIds.length
+          && currentVisibleHeadingIds.every((id, index) => id === nextVisibleHeadingIds[index])
+        ) {
+          return currentVisibleHeadingIds;
         }
 
-        if (!visibilityChanged) {
-          return;
-        }
+        return nextVisibleHeadingIds;
+      });
+    };
 
-        const visibleHeadingIds = articleTableOfContents
-          .filter((heading) => headingVisibility.get(heading.id) === true)
-          .map((heading) => heading.id);
-        setVisibleTocHeadingIds(visibleHeadingIds);
-      },
-      {
-        root: null,
-        threshold: 0,
-        rootMargin: "-84px 0px 0px 0px",
-      },
-    );
-
-    for (const heading of articleTableOfContents) {
-      const headingElement = document.getElementById(heading.id);
-      if (headingElement == null) {
-        continue;
+    const scheduleActiveTocHeadingUpdate = () => {
+      if (rafId != null) {
+        return;
       }
 
-      headingVisibility.set(heading.id, false);
-      observer.observe(headingElement);
-    }
+      rafId = window.requestAnimationFrame(updateActiveTocHeadings);
+    };
+
+    window.addEventListener("scroll", scheduleActiveTocHeadingUpdate, { passive: true });
+    document.addEventListener("scroll", scheduleActiveTocHeadingUpdate, { passive: true, capture: true });
+    window.addEventListener("resize", scheduleActiveTocHeadingUpdate);
+    scheduleActiveTocHeadingUpdate();
 
     return () => {
-      observer.disconnect();
+      window.removeEventListener("scroll", scheduleActiveTocHeadingUpdate);
+      document.removeEventListener("scroll", scheduleActiveTocHeadingUpdate, true);
+      window.removeEventListener("resize", scheduleActiveTocHeadingUpdate);
+      if (rafId != null) {
+        window.cancelAnimationFrame(rafId);
+      }
     };
   }, [loadingArticle, selectedArticle, articleTableOfContents]);
 
