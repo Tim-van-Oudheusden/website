@@ -32,3 +32,7 @@ docker-compose.override.yml
 
 # beads transient socket lock
 .beads/bd.sock.startlock
+
+# Playwright artifacts
+playwright-report/
+test-results/
