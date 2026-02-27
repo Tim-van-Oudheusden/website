@@ -51,6 +51,13 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
   test("defines a shared panel box class for both TOC and sidebar surfaces", () => {
     expect(Object.hasOwn(ARTICLES_PAGE_LAYOUT_CLASSES, "panelBox")).toBe(true);
   });
+
+  test("centers the location trail to the same measure as main article content", () => {
+    expect(Object.hasOwn(ARTICLES_PAGE_LAYOUT_CLASSES, "locationTrailAlign")).toBe(true);
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.locationTrailAlign).toContain("mx-auto");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.locationTrailAlign).toContain("w-full");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.locationTrailAlign).toContain("max-w-[75ch]");
+  });
 });
 
 describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {

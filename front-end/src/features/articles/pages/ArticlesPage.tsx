@@ -36,6 +36,7 @@ export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   sidebar: "w-full min-h-0 overflow-y-auto bg-[var(--adw-page-brown-bg)] md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[var(--articles-sidebar-width)] md:min-w-[var(--articles-sidebar-width)] md:shrink-0",
   content: "bg-[var(--adw-page-brown-bg)] min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
   contentWithToc: "mx-auto w-full max-w-[120rem] md:pr-[var(--articles-content-toc-gap)]",
+  locationTrailAlign: "mx-auto w-full max-w-[75ch]",
   toc: "hidden md:block rounded-lg md:fixed md:right-6 lg:right-8 md:top-[5.25rem] md:w-[clamp(12rem,17vw,15.5rem)] md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto bg-[var(--site-section-well-bg)]",
   panelBox: "border-border bg-[var(--site-section-well-bg)] rounded-lg border px-4 py-3",
 } as const;
@@ -461,15 +462,17 @@ export function ArticlesPage(): React.JSX.Element {
         )}
         {!loadingArticle && articleError === null && selectedArticle !== null && (
           <>
-            <ArticleLocationTrail
-              articleTitle={selectedArticle.title}
-              onArticlesActivate={() => {
-                if (trailTargetSlug !== null) {
-                  setSelectedSlug(trailTargetSlug);
-                }
-              }}
-            />
             <div className={ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc}>
+              <div className={ARTICLES_PAGE_LAYOUT_CLASSES.locationTrailAlign}>
+                <ArticleLocationTrail
+                  articleTitle={selectedArticle.title}
+                  onArticlesActivate={() => {
+                    if (trailTargetSlug !== null) {
+                      setSelectedSlug(trailTargetSlug);
+                    }
+                  }}
+                />
+              </div>
               <div className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleBodyMeasure}>
                 <header className="mb-8">
                   <h2 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTitle}>{selectedArticle.title}</h2>
