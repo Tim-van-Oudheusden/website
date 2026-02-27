@@ -82,11 +82,11 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
               <div className="flex flex-1 flex-col gap-5">
                 <h2
                   id={`${section.id}-heading`}
-                  className="font-semibold tracking-tight text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)] text-[1.75rem] sm:text-[2rem]"
+                  className="font-bold tracking-tight text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)] text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem] leading-[1.05]"
                 >
                   {section.heading}
                 </h2>
-                <p className="max-w-[65ch] text-base sm:text-lg leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80">
+                <p className="max-w-[60ch] text-lg sm:text-xl leading-[1.55] text-[var(--adw-dark-5)] dark:text-white/80">
                   {section.body}
                 </p>
                 {hasCta && (
@@ -95,7 +95,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
                     variant="secondary"
                     size="lg"
                     className={cn(
-                      "w-fit",
+                      "w-fit h-14 px-10 text-lg font-semibold tracking-wide",
                       isDiscoverCta ? "bg-[var(--adw-dark-5)] text-white hover:bg-black/90" : "",
                     )}
                   >

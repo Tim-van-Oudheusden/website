@@ -51,8 +51,8 @@ describe("HomeSection", () => {
   test("renders non-for-you section text in black for light mode", () => {
     const html = renderStartSection();
 
-    expect(html).toContain("font-semibold tracking-tight text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)]");
-    expect(html).toContain("leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80");
+    expect(html).toContain("font-bold tracking-tight text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)]");
+    expect(html).toContain("leading-[1.55] text-[var(--adw-dark-5)] dark:text-white/80");
     expect(html).toContain('src="/images/me.png"');
   });
 
@@ -69,13 +69,15 @@ describe("HomeSection", () => {
   test("uses explicit body readability defaults for size, measure, and spacing", () => {
     const html = renderStartSection();
 
-    expect(html).toContain("max-w-[65ch] text-base sm:text-lg leading-relaxed");
+    expect(html).toContain("max-w-[60ch] text-lg sm:text-xl leading-[1.55]");
   });
 
-  test("uses a clear section heading step for scan hierarchy", () => {
+  test("uses a bold, oversized start hierarchy with a larger Discover CTA", () => {
     const html = renderStartSection();
 
-    expect(html).toContain("text-[1.75rem] sm:text-[2rem]");
-    expect(html).not.toContain("text-2xl sm:text-3xl");
+    expect(html).toContain("font-bold");
+    expect(html).toContain("text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem]");
+    expect(html).toContain("max-w-[60ch] text-lg sm:text-xl");
+    expect(html).toContain("h-14 px-10 text-lg font-semibold");
   });
 });
