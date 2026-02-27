@@ -32,6 +32,12 @@ describe("HomeSection", () => {
 
     expect(html).toContain("rounded-[2rem] bg-white");
     expect(html).toContain("min-h-[29rem]");
+    expect(html).toContain("pl-[1.875rem]");
+    expect(html).toContain("pr-5");
+    expect(html).toContain("sm:pl-12");
+    expect(html).toContain("sm:pr-8");
+    expect(html).toContain("lg:pl-[2.25rem]");
+    expect(html).toContain("lg:pr-6");
     expect(html).toContain("shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)]");
     expect(html).toContain("overflow-visible");
     expect(html).toContain("absolute right-0 bottom-0");

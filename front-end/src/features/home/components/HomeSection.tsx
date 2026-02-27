@@ -77,7 +77,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
           data-testid="start-white-box"
           className="relative w-full max-w-6xl lg:max-w-[83rem] min-h-[29rem] rounded-[2rem] bg-white shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] overflow-visible"
         >
-          <div className="px-5 py-8 sm:px-8 sm:py-10 lg:px-6">
+          <div className="pl-[1.875rem] pr-5 py-8 sm:pl-12 sm:pr-8 sm:py-10 lg:pl-[2.25rem] lg:pr-6">
             <div className="flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-[74rem] md:pr-[clamp(14rem,30vw,30rem)]">
               <div className="flex flex-1 flex-col gap-5">
                 <h2
