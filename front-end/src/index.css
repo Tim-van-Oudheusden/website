@@ -233,7 +233,7 @@
   --adw-toc-inactive: #8f877b;
   --adw-page-brown-bg: var(--adw-page-beige-bg);
   --adw-page-beige-bg: var(--adw-beige-dark);
-  --home-section-well-bg: #684546;
+  --home-section-well-bg: #857555;
 
   /* Project semantic mapping (shadcn tokens) */
   --background: var(--adw-window-bg-color);
