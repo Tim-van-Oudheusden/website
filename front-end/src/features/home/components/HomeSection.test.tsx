@@ -31,7 +31,7 @@ describe("HomeSection", () => {
     const html = renderStartSection();
 
     expect(html).toContain("rounded-[2rem] bg-white");
-    expect(html).toContain("min-h-[33rem]");
+    expect(html).toContain("min-h-[29rem]");
     expect(html).toContain("shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)]");
     expect(html).toContain("overflow-visible");
     expect(html).toContain("absolute right-0 bottom-0");
