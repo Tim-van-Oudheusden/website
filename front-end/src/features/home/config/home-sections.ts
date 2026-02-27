@@ -14,8 +14,8 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
   {
     id: "for-you",
     label: "for you",
-    heading: "Why this project exists",
-    body: "Placeholder pillar block for concise statements that explain product value.",
+    heading: "For you",
+    body: "Whether it is increasing costs of living, being weary of Big Tech, or issues on the workfloor, I strive to help you become more independent and free.",
     bgColor: "var(--adw-page-brown-bg)",
     contentDirection: "row",
     variant: "carousel",
