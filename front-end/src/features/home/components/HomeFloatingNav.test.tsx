@@ -21,4 +21,10 @@ describe("HomeFloatingNav", () => {
     expect(html).toContain("bg-[var(--adw-dark-5)]");
     expect(html).not.toContain("bg-primary");
   });
+
+  test("matches the homepage background color in dark mode", () => {
+    const html = renderFloatingNav();
+
+    expect(html).toContain("dark:bg-[var(--adw-page-brown-bg)]");
+  });
 });
