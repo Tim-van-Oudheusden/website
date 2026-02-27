@@ -36,7 +36,7 @@ export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   sidebar: "w-full min-h-0 overflow-y-auto bg-[var(--adw-page-brown-bg)] md:sticky md:top-[4.2rem] md:h-[calc(100dvh-4.2rem)] md:basis-[clamp(16.5rem,19vw,23rem)] md:min-w-[16.5rem] md:shrink-0",
   content: "bg-[var(--adw-page-brown-bg)] min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
   contentWithToc: "mx-auto w-full max-w-[120rem] md:pr-[clamp(12rem,17.25vw,15.75rem)]",
-  toc: "hidden md:block md:fixed md:right-6 lg:right-8 md:top-[5.25rem] md:w-[clamp(12rem,17vw,15.5rem)] md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto bg-[var(--site-section-well-bg)]",
+  toc: "hidden md:block rounded-lg md:fixed md:right-6 lg:right-8 md:top-[5.25rem] md:w-[clamp(12rem,17vw,15.5rem)] md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto bg-[var(--site-section-well-bg)]",
   panelBox: "border-border bg-[var(--site-section-well-bg)] rounded-lg border px-4 py-3",
 } as const;
 
