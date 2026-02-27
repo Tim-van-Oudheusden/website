@@ -104,6 +104,7 @@ For more details, see README.md and docs/QUICKSTART.md.
 - **Run the full suite after every change** - Not just the new test. AI refactoring frequently breaks existing functionality
 - **Never modify tests to make them pass** - Fix the implementation, not the test. Never delete, skip, comment out, or weaken assertions. Never add `@pytest.mark.skip`, `@ts-expect-error`, `# type: ignore`, or similar suppressions to silence failures
 - **Don't over-implement** - If the test passes, the implementation is done. Do not add code that is not required by a failing test
+- **E2E with Docker** - Run docker compose up when kicking off Playwright tests, shutdown when finished.
 
 ## Dependency Management
 
