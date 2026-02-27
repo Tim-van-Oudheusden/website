@@ -41,7 +41,7 @@ describe("HomeSection", () => {
   test("renders the start section portrait larger, bottom-right anchored, with top-only overflow", () => {
     const html = renderStartSection();
 
-    expect(html).toContain("rounded-[2rem] bg-[var(--home-section-well-bg)]");
+    expect(html).toContain("rounded-[2rem] bg-[var(--site-section-well-bg)]");
     expect(html).toContain("min-h-[29rem]");
     expect(html).toContain("pl-[1.875rem]");
     expect(html).toContain("pr-5");
@@ -70,8 +70,8 @@ describe("HomeSection", () => {
     const startHtml = renderStartSection();
     const forYouHtml = renderForYouSection();
 
-    expect(startHtml).toContain("bg-[var(--home-section-well-bg)]");
-    expect(forYouHtml).toContain("bg-[var(--home-section-well-bg)]");
+    expect(startHtml).toContain("bg-[var(--site-section-well-bg)]");
+    expect(forYouHtml).toContain("bg-[var(--site-section-well-bg)]");
   });
 
   test("renders non-for-you section text in black for light mode", () => {

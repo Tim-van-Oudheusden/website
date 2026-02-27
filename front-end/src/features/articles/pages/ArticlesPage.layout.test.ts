@@ -44,6 +44,7 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:right-6");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:w-[clamp(12rem,17vw,15.5rem)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:top-[5.25rem]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("bg-[var(--site-section-well-bg)]");
   });
 });
 
