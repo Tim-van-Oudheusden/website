@@ -112,14 +112,14 @@ const VALUE_PILLAR_ITEMS = [
     description: "Follow an up-to-date blog, featuring open source alternatives, self-hosting and Linux as an operating system.",
   },
   {
+    title: "Meditation & Stress management",
+    artworkPath: "/images/managing_stress.png",
+    description: "Learn to manage your stress at work and at home, with meditation, writing and focus excercises.",
+  },
+  {
     title: "Curated Recommendations",
     artworkPath: "/images/curated_recommendations.png",
     description: "My personal recommendations for rebooting your life, entering the driver seat and achieving your goals.",
-  },
-  {
-    title: "Managing Stress",
-    artworkPath: "/images/managing_stress.png",
-    description: "Learn to manage your stress at work and at home, with meditation, writing and focus excercises.",
   },
   {
     title: "Level Up Engineering",
