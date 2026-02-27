@@ -272,7 +272,7 @@ export function ValuePillarsCarousel({
           id={headingId}
           className={cn(
             "font-semibold tracking-tight text-[1.75rem] sm:text-[2rem]",
-            inWhiteWell ? "text-[var(--adw-dark-4)]" : "text-white",
+            inWhiteWell ? "text-[var(--adw-dark-4)] dark:text-[var(--adw-light-1)]" : "text-white",
           )}
         >
           {heading}
@@ -280,7 +280,7 @@ export function ValuePillarsCarousel({
         <p
           className={cn(
             "mx-auto mt-4 max-w-[65ch] text-base sm:text-lg leading-relaxed",
-            inWhiteWell ? "text-[var(--adw-dark-2)]" : "text-white/80",
+            inWhiteWell ? "text-[var(--adw-dark-2)] dark:text-white/80" : "text-white/80",
           )}
         >
           {body}

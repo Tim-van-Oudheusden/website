@@ -41,7 +41,7 @@ describe("HomeSection", () => {
   test("renders the start section portrait larger, bottom-right anchored, with top-only overflow", () => {
     const html = renderStartSection();
 
-    expect(html).toContain("rounded-[2rem] bg-white");
+    expect(html).toContain("rounded-[2rem] bg-[var(--home-section-well-bg)]");
     expect(html).toContain("min-h-[29rem]");
     expect(html).toContain("pl-[1.875rem]");
     expect(html).toContain("pr-5");
@@ -59,11 +59,19 @@ describe("HomeSection", () => {
     expect(html).toContain("rounded-br-[2rem]");
   });
 
-  test("renders for-you white well with a tiny inset shadow", () => {
+  test("renders for-you well with a tiny inset shadow", () => {
     const html = renderForYouSection();
 
     expect(html).toContain("shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)]");
     expect(html).not.toContain("shadow-[0_28px_65px_-45px_rgba(0,0,0,0.45)]");
+  });
+
+  test("uses a shared themed well surface class for start and for-you boxes", () => {
+    const startHtml = renderStartSection();
+    const forYouHtml = renderForYouSection();
+
+    expect(startHtml).toContain("bg-[var(--home-section-well-bg)]");
+    expect(forYouHtml).toContain("bg-[var(--home-section-well-bg)]");
   });
 
   test("renders non-for-you section text in black for light mode", () => {

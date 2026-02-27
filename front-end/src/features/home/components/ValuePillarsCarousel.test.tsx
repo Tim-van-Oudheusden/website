@@ -66,6 +66,13 @@ describe("ValuePillarsCarousel", () => {
     expect(html).not.toContain("text-sm leading-relaxed text-white/90");
   });
 
+  test("supports dark-mode readable intro text inside the themed well", () => {
+    const html = renderCarousel();
+
+    expect(html).toContain("text-[var(--adw-dark-4)] dark:text-[var(--adw-light-1)]");
+    expect(html).toContain("text-[var(--adw-dark-2)] dark:text-white/80");
+  });
+
   test("adds extra bottom spacing so card shadows are not visually clipped", () => {
     const html = renderCarousel();
 
