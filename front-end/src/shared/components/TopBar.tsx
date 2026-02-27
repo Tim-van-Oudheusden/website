@@ -52,7 +52,7 @@ export function TopBar(): React.JSX.Element {
     >
       <div className="mx-auto flex h-[4.2rem] max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="text-[1.35rem] font-semibold tracking-tight">
-          Website
+          Tim V.O.
         </Link>
 
         {/* Desktop nav */}

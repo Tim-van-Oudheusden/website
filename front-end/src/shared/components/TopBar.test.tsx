@@ -11,6 +11,12 @@ function renderTopBar(pathname = "/"): string {
 }
 
 describe("TopBar", () => {
+  test("shows the updated brand label in the left navbar title", () => {
+    const html = renderTopBar();
+    expect(html).toContain("Tim V.O.");
+    expect(html).not.toContain(">Website<");
+  });
+
   test("uses the same brown background as homepage surfaces", () => {
     const html = renderTopBar();
     expect(html).toContain("bg-[var(--adw-page-brown-bg)]");
