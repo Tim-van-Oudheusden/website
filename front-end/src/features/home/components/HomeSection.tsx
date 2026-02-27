@@ -148,7 +148,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
       <div className="w-full">
         <div
           className={cn(
-            "flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-[74rem]",
+            "mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-[74rem]",
             isRow ? "md:flex-row md:items-center" : "",
           )}
         >

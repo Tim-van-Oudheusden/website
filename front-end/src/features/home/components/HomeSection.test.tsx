@@ -26,6 +26,17 @@ function renderStartSection(): string {
   );
 }
 
+function renderForDevsSection(): string {
+  const forDevsSection = HOME_SECTIONS.find((section) => section.id === "for-devs");
+  if (forDevsSection == null) {
+    throw new Error("Expected for-devs section in homepage config");
+  }
+
+  return renderToStaticMarkup(
+    createElement(HomeSection, { section: forDevsSection }),
+  );
+}
+
 describe("HomeSection", () => {
   test("renders the start section portrait larger, bottom-right anchored, with top-only overflow", () => {
     const html = renderStartSection();
@@ -67,11 +78,13 @@ describe("HomeSection", () => {
   test("uses larger desktop content widths and smaller desktop margins", () => {
     const startHtml = renderStartSection();
     const forYouHtml = renderForYouSection();
+    const forDevsHtml = renderForDevsSection();
 
     expect(startHtml).toContain("px-6 py-12 sm:px-10 sm:py-16 lg:px-6");
     expect(startHtml).toContain("lg:max-w-[74rem]");
     expect(forYouHtml).toContain("px-4 py-12 sm:px-6 sm:py-16 lg:px-4");
     expect(forYouHtml).toContain("max-w-6xl lg:max-w-[83rem]");
+    expect(forDevsHtml).toContain("mx-auto");
   });
 
   test("uses explicit body readability defaults for size, measure, and spacing", () => {
