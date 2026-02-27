@@ -102,8 +102,8 @@ export function calculateCardTiltAngles({
 
 const VALUE_PILLAR_ITEMS = [
   {
-    title: "Mastering Office culture",
-    artworkPath: "/images/mastering_office_culture.png",
+    title: "Managing Office culture",
+    artworkPath: "/images/managing_office_culture.png",
     description: "Dive deeper into topics about automation, note taking, work & life balance and managing colleague relations.",
   },
   {
@@ -112,8 +112,8 @@ const VALUE_PILLAR_ITEMS = [
     description: "Follow an up-to-date blog, featuring open source alternatives, self-hosting and Linux as an operating system.",
   },
   {
-    title: "Elevate your capabilities",
-    artworkPath: "/images/elevate_your_capabilities.png",
+    title: "Curated Recommendations",
+    artworkPath: "/images/curated_recommendations.png",
     description: "My personal recommendations for rebooting your life, entering the driver seat and achieving your goals.",
   },
   {
