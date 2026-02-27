@@ -120,7 +120,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
               data-testid="start-portrait"
               src={START_SECTION_PORTRAIT_PATH}
               alt="Portrait of Tim van Oudheusden"
-              className="h-auto w-[clamp(14.5rem,29vw,32rem)] object-contain"
+              className="h-auto w-[clamp(14.5rem,29vw,32rem)] rounded-br-[2rem] object-contain"
               loading="eager"
             />
           </div>
