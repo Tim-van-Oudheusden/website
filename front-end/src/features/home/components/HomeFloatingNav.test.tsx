@@ -27,4 +27,11 @@ describe("HomeFloatingNav", () => {
 
     expect(html).toContain("dark:bg-[var(--adw-page-brown-bg)]");
   });
+
+  test("keeps active nav text white in dark mode while indicator remains black", () => {
+    const html = renderFloatingNav();
+
+    expect(html).toContain("dark:text-[var(--adw-light-1)]");
+    expect(html).toContain("bg-[var(--adw-dark-5)]");
+  });
 });

@@ -115,7 +115,7 @@ export function HomeFloatingNav({
                 className={cn(
                   "px-4 py-2 text-base uppercase tracking-[0.08em] transition-colors [a&]:hover:bg-transparent",
                   isActive
-                    ? "text-white [a&]:hover:text-white"
+                    ? "text-white dark:text-[var(--adw-light-1)] [a&]:hover:text-white dark:[a&]:hover:text-[var(--adw-light-1)]"
                     : "bg-transparent text-[var(--adw-headerbar-fg-color)] [a&]:hover:text-[var(--adw-headerbar-fg-color)]",
                 )}
               >
