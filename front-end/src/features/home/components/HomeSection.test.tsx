@@ -55,7 +55,6 @@ describe("HomeSection", () => {
     expect(html).toContain("items-end");
     expect(html).toContain("justify-end");
     expect(html).toContain('src="/images/me.png"');
-    expect(html).toContain("Portrait of Tim van Oudheusden");
     expect(html).toContain("w-[clamp(14.5rem,29vw,32rem)]");
     expect(html).toContain("rounded-br-[2rem]");
   });

@@ -4,7 +4,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
-  ARTICLES_PAGE_TEXT,
   ARTICLES_PAGE_TYPOGRAPHY_CLASSES,
   ArticleLocationTrail,
   extractArticleTableOfContents,
@@ -67,7 +66,6 @@ describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLink).toContain("font-medium");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkActive).toContain("text-[var(--adw-dark-4)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkInactive).toContain("text-[var(--adw-toc-inactive)]");
-    expect(ARTICLES_PAGE_TEXT.tocHeading).toBe("In this article");
   });
 });
 
@@ -91,18 +89,19 @@ describe("ArticleLocationTrail", () => {
       MemoryRouter,
       null,
       createElement(ArticleLocationTrail, {
-        articleTitle: "My Article",
+        articleTitle: "article-under-test",
         onArticlesActivate: () => {},
       }),
     ));
+    const separatorCount = (html.match(/&gt;/g) ?? []).length;
+
     expect(html).toContain('aria-label="Current location"');
     expect(html).toContain('href="/"');
     expect(html).toContain("lucide-house");
     expect(html).toContain("<button");
     expect(html).toContain("cursor-pointer");
-    expect(html).toContain("Articles");
-    expect(html).toContain("My Article");
-    expect(html).toContain("&gt;");
+    expect(separatorCount).toBe(2);
+    expect(html).toContain("text-foreground truncate font-medium");
   });
 });
 

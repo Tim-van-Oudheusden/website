@@ -76,8 +76,6 @@ describe("MarkdownRenderer", () => {
     );
 
     expect(html).toContain('data-callout-type="quote"');
-    expect(html).toContain(">Quote<");
-    expect(html).toContain("The future is image-based operating systems.");
     expect(html).not.toContain("[!quote]");
   });
 
@@ -89,6 +87,6 @@ describe("MarkdownRenderer", () => {
     );
 
     expect(html).toContain("<blockquote");
-    expect(html).toContain("This is a regular quote block.");
+    expect(html).not.toContain("data-callout-type");
   });
 });

@@ -5,12 +5,12 @@ test.describe("Home start portrait layout", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    const portrait = page.getByRole("img", { name: "Portrait of Tim van Oudheusden" });
+    const portrait = page.locator('[data-testid="start-portrait"]');
     await expect(portrait).toBeVisible();
 
     const layout = await page.evaluate(() => {
       const whiteBox = document.querySelector("section#start > div");
-      const image = document.querySelector('section#start img[alt="Portrait of Tim van Oudheusden"]');
+      const image = document.querySelector("section#start [data-testid='start-portrait']");
       if (whiteBox == null || image == null) {
         return null;
       }
