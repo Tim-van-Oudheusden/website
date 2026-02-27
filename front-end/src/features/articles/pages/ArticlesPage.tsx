@@ -37,6 +37,7 @@ export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   content: "bg-[var(--adw-page-brown-bg)] min-h-[20rem] min-w-0 flex-1 p-4 sm:p-6 lg:p-8",
   contentWithToc: "mx-auto w-full max-w-[120rem] md:pr-[clamp(12rem,17.25vw,15.75rem)]",
   toc: "hidden md:block md:fixed md:right-6 lg:right-8 md:top-[5.25rem] md:w-[clamp(12rem,17vw,15.5rem)] md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto bg-[var(--site-section-well-bg)]",
+  panelBox: "border-border bg-[var(--site-section-well-bg)] rounded-lg border px-4 py-3",
 } as const;
 
 export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
@@ -387,65 +388,67 @@ export function ArticlesPage(): React.JSX.Element {
     <main className={ARTICLES_PAGE_LAYOUT_CLASSES.container}>
       <aside className={ARTICLES_PAGE_LAYOUT_CLASSES.sidebar}>
         <div className="p-3">
-          <h1 className={cn("px-2 pb-2", ARTICLES_PAGE_TYPOGRAPHY_CLASSES.pageTitle)}>Articles</h1>
-          <div className="space-y-1">
-            {ARTICLE_CATEGORIES.map((category) => {
-              const isOpen = openCategories[category];
-              const categoryArticles = groupedArticles[category];
-              let chevronRotationClass = "rotate-0";
-              if (isOpen) {
-                chevronRotationClass = "rotate-90";
-              }
+          <div className={ARTICLES_PAGE_LAYOUT_CLASSES.panelBox}>
+            <h1 className={cn("px-2 pb-2", ARTICLES_PAGE_TYPOGRAPHY_CLASSES.pageTitle)}>Articles</h1>
+            <div className="space-y-1">
+              {ARTICLE_CATEGORIES.map((category) => {
+                const isOpen = openCategories[category];
+                const categoryArticles = groupedArticles[category];
+                let chevronRotationClass = "rotate-0";
+                if (isOpen) {
+                  chevronRotationClass = "rotate-90";
+                }
 
-              return (
-                <Collapsible
-                  key={category}
-                  open={isOpen}
-                  onOpenChange={(open) => {
-                    setOpenCategories((current) => ({ ...current, [category]: open }));
-                  }}
-                >
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-start gap-2 px-2 text-sm font-medium">
-                      <ChevronRight
-                        className={cn(
-                          "size-4 transition-transform",
-                          chevronRotationClass,
-                        )}
-                      />
-                      <Folder className="size-4" />
-                      <span className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarTriggerLabel}>{category}</span>
-                      <span className="text-muted-foreground ml-auto text-xs">
-                        {categoryArticles.length}
-                      </span>
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-1 pt-1 pl-6">
-                    {categoryArticles.map((article) => {
-                      let articleStateClass = "text-muted-foreground";
-                      if (article.slug === selectedSlug) {
-                        articleStateClass = ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState;
-                      }
-
-                      return (
-                        <button
-                          key={article.slug}
-                          type="button"
-                          onClick={() => { setSelectedSlug(article.slug); }}
+                return (
+                  <Collapsible
+                    key={category}
+                    open={isOpen}
+                    onOpenChange={(open) => {
+                      setOpenCategories((current) => ({ ...current, [category]: open }));
+                    }}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-start gap-2 px-2 text-sm font-medium">
+                        <ChevronRight
                           className={cn(
-                            ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton,
-                            articleStateClass,
+                            "size-4 transition-transform",
+                            chevronRotationClass,
                           )}
-                        >
-                          <FileText className="size-4" />
-                          <span className="truncate">{article.title}</span>
-                        </button>
-                      );
-                    })}
-                  </CollapsibleContent>
-                </Collapsible>
-              );
-            })}
+                        />
+                        <Folder className="size-4" />
+                        <span className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarTriggerLabel}>{category}</span>
+                        <span className="text-muted-foreground ml-auto text-xs">
+                          {categoryArticles.length}
+                        </span>
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-1 pt-1 pl-6">
+                      {categoryArticles.map((article) => {
+                        let articleStateClass = "text-muted-foreground";
+                        if (article.slug === selectedSlug) {
+                          articleStateClass = ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState;
+                        }
+
+                        return (
+                          <button
+                            key={article.slug}
+                            type="button"
+                            onClick={() => { setSelectedSlug(article.slug); }}
+                            className={cn(
+                              ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton,
+                              articleStateClass,
+                            )}
+                          >
+                            <FileText className="size-4" />
+                            <span className="truncate">{article.title}</span>
+                          </button>
+                        );
+                      })}
+                    </CollapsibleContent>
+                  </Collapsible>
+                );
+              })}
+            </div>
           </div>
         </div>
       </aside>
@@ -491,7 +494,7 @@ export function ArticlesPage(): React.JSX.Element {
                 <aside className={ARTICLES_PAGE_LAYOUT_CLASSES.toc}>
                   <nav
                     aria-label="Table of contents"
-                    className="border-border rounded-lg border px-4 py-3"
+                    className={ARTICLES_PAGE_LAYOUT_CLASSES.panelBox}
                   >
                     <h3 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocTitle}>{ARTICLES_PAGE_TEXT.tocHeading}</h3>
                     <ol className="mt-3 space-y-2">
