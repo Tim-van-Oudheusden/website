@@ -93,8 +93,6 @@ const DEFAULT_TOC_NAVIGATION_DEPENDENCIES: TocNavigationDependencies = {
       return;
     }
 
-    // Temporary debug hook for diagnosing browser-specific TOC navigation behavior.
-    console.info("[articles-toc]", event);
   },
 };
 
