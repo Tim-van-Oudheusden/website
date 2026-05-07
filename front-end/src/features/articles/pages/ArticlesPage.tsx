@@ -88,7 +88,7 @@ const DEFAULT_TOC_NAVIGATION_DEPENDENCIES: TocNavigationDependencies = {
   getElementById: (id) => document.getElementById(id),
   setHash: (headingId) => { window.location.hash = headingId; },
   getScrollY: () => window.scrollY,
-  logNavigation: (event) => {
+  logNavigation: (_event) => {
     if ((window as Window & { __ADW_DEBUG_TOC__?: boolean }).__ADW_DEBUG_TOC__ !== true) {
       return;
     }
