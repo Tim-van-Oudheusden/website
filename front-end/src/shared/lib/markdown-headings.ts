@@ -93,17 +93,17 @@ function collectMarkdownHeadings(
     const fencedCodeDelimiterMatch = FENCED_CODE_DELIMITER_PATTERN.exec(line);
     const fenceMarker = fencedCodeDelimiterMatch?.[1];
     if (fencedCodeDelimiter !== null) {
-    if (
-       fenceMarker !== null
-        && fenceMarker[0] === fencedCodeDelimiter[0]
-        && fenceMarker.length >= fencedCodeDelimiter.length
-      ) {
+  if (
+       fenceMarker != null
+         && fenceMarker[0] === fencedCodeDelimiter[0]
+         && fenceMarker.length >= fencedCodeDelimiter.length
+       ) {
         fencedCodeDelimiter = null;
       }
       continue;
     }
 
-   if (fenceMarker !== null) {
+   if (fenceMarker != null) {
        fencedCodeDelimiter = fenceMarker;
        continue;
      }
