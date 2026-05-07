@@ -1,9 +1,10 @@
 {
-  "enabledPlugins": {
-    "beads@beads-marketplace": true
-  },
   "attribution": {
     "commit": "",
     "pr": ""
-  }
+  },
+  "enabledPlugins": {
+    "beads@beads-marketplace": true
+  },
+  "hooks": {}
 }
