@@ -6,11 +6,12 @@ import { HomeFloatingNav } from "./HomeFloatingNav";
 
 function renderFloatingNav(): string {
   return renderToStaticMarkup(
-    createElement(HomeFloatingNav, {
-      sections: HOME_SECTIONS,
-      activeSectionId: "start",
-      onAnchorActivate: () => {},
-    }),
+createElement(HomeFloatingNav, {
+       sections: HOME_SECTIONS,
+       activeSectionId: "start",
+       // eslint-disable-next-line @typescript-eslint/no-empty-function
+       onAnchorActivate: () => {},
+     }),
   );
 }
 

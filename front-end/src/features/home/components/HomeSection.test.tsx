@@ -6,7 +6,7 @@ import { HomeSection } from "./HomeSection";
 
 function renderForYouSection(): string {
   const forYouSection = HOME_SECTIONS.find((section) => section.id === "for-you");
-  if (forYouSection == null) {
+  if (forYouSection === null) {
     throw new Error("Expected for-you section in homepage config");
   }
 
@@ -17,7 +17,7 @@ function renderForYouSection(): string {
 
 function renderStartSection(): string {
   const startSection = HOME_SECTIONS.find((section) => section.id === "start");
-  if (startSection == null) {
+  if (startSection === null) {
     throw new Error("Expected start section in homepage config");
   }
 
@@ -28,7 +28,7 @@ function renderStartSection(): string {
 
 function renderForDevsSection(): string {
   const forDevsSection = HOME_SECTIONS.find((section) => section.id === "for-devs");
-  if (forDevsSection == null) {
+  if (forDevsSection === null) {
     throw new Error("Expected for-devs section in homepage config");
   }
 

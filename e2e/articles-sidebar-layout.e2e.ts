@@ -30,7 +30,7 @@ test.describe("Articles sidebar layout", () => {
       const sidebar = document.querySelector("main > aside");
       const contentWithToc = document.querySelector("main article > div");
       const toc = document.querySelector("main article aside");
-      if (sidebar == null || contentWithToc == null || toc == null) {
+      if (sidebar === null || contentWithToc === null || toc === null) {
         return null;
       }
 
@@ -57,8 +57,12 @@ test.describe("Articles sidebar layout", () => {
       };
     });
 
-    expect(snapshot).not.toBeNull();
-    expect(Math.abs((snapshot as SidebarLayoutSnapshot).sidebarWidth - (snapshot as SidebarLayoutSnapshot).expectedSidebarWidth)).toBeLessThanOrEqual(2);
-    expect(Math.abs((snapshot as SidebarLayoutSnapshot).contentPaddingRight - (snapshot as SidebarLayoutSnapshot).expectedContentPaddingRight)).toBeLessThanOrEqual(4);
+ const snapshotTyped = snapshot!;
+  expect(snapshotTyped.sidebarWidth).toBeDefined();
+    expect(snapshotTyped.expectedSidebarWidth).toBeDefined();
+    expect(Math.abs(snapshotTyped.sidebarWidth - snapshotTyped.expectedSidebarWidth)).toBeLessThanOrEqual(2);
+    expect(snapshotTyped.contentPaddingRight).toBeDefined();
+    expect(snapshotTyped.expectedContentPaddingRight).toBeDefined();
+    expect(Math.abs(snapshotTyped.contentPaddingRight - snapshotTyped.expectedContentPaddingRight)).toBeLessThanOrEqual(4);
   });
 });

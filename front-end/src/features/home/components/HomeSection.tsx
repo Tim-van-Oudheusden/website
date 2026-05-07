@@ -24,7 +24,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
         className="flex min-h-svh items-center justify-center px-4 py-12 sm:px-6 sm:py-16 lg:px-4"
         style={{
           backgroundColor: section.bgColor,
-          ...(section.bgImage != null
+          ...(section.bgImage !== null
             ? {
                 backgroundImage: `url(${section.bgImage})`,
                 backgroundSize: "cover",
@@ -53,7 +53,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
   const isRow = section.contentDirection === "row";
   const isHero = section.id === "hero";
   const isStart = section.id === "start";
-  const hasCta = section.ctaLabel != null && section.ctaTargetId != null;
+  const hasCta = section.ctaLabel !== null && section.ctaTargetId !== null;
   const isDiscoverCta = section.ctaLabel?.toLowerCase() === "discover";
 
   if (isStart) {
@@ -64,7 +64,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
         className="flex min-h-svh items-center justify-center px-6 py-12 sm:px-10 sm:py-16 lg:px-6"
         style={{
           backgroundColor: section.bgColor,
-          ...(section.bgImage != null
+          ...(section.bgImage !== null
             ? {
                 backgroundImage: `url(${section.bgImage})`,
                 backgroundSize: "cover",
@@ -102,7 +102,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
                     <a
                       href={`#${section.ctaTargetId}`}
                       onClick={(event) => {
-                        if (section.ctaTargetId != null && onCtaActivate != null) {
+                        if (section.ctaTargetId !== null && onCtaActivate !== null) {
                           onCtaActivate(section.ctaTargetId, event);
                         }
                       }}
@@ -135,8 +135,8 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
       aria-labelledby={`${section.id}-heading`}
       className="flex min-h-svh items-center justify-center px-6 py-12 sm:px-10 sm:py-16 lg:px-6"
       style={{
-        backgroundColor: section.bgColor,
-        ...(section.bgImage != null
+          backgroundColor: section.bgColor,
+           ...(section.bgImage !== null
           ? {
               backgroundImage: `url(${section.bgImage})`,
               backgroundSize: "cover",
@@ -178,9 +178,9 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
                 <a
                   href={`#${section.ctaTargetId}`}
                   onClick={(event) => {
-                    if (section.ctaTargetId != null && onCtaActivate != null) {
-                      onCtaActivate(section.ctaTargetId, event);
-                    }
+                    if (section.ctaTargetId !== null && onCtaActivate !== null) {
+                       onCtaActivate(section.ctaTargetId, event);
+                     }
                   }}
                 >
                   {section.ctaLabel}

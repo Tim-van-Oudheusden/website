@@ -107,6 +107,7 @@ describe("ArticleLocationTrail", () => {
       null,
       createElement(ArticleLocationTrail, {
         articleTitle: "article-under-test",
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         onArticlesActivate: () => {},
       }),
     ));

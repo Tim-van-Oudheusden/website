@@ -86,15 +86,15 @@ function collectMarkdownHeadings(
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
-    if (line == null) {
-      continue;
-    }
+  if (line === null) {
+     continue;
+   }
 
-    const fencedCodeDelimiterMatch = line.match(FENCED_CODE_DELIMITER_PATTERN);
+    const fencedCodeDelimiterMatch = FENCED_CODE_DELIMITER_PATTERN.exec(line);
     const fenceMarker = fencedCodeDelimiterMatch?.[1];
     if (fencedCodeDelimiter !== null) {
-      if (
-        fenceMarker != null
+    if (
+       fenceMarker !== null
         && fenceMarker[0] === fencedCodeDelimiter[0]
         && fenceMarker.length >= fencedCodeDelimiter.length
       ) {
@@ -103,19 +103,19 @@ function collectMarkdownHeadings(
       continue;
     }
 
-    if (fenceMarker != null) {
-      fencedCodeDelimiter = fenceMarker;
-      continue;
-    }
+   if (fenceMarker !== null) {
+       fencedCodeDelimiter = fenceMarker;
+       continue;
+     }
 
-    const atxHeading = line.match(ATX_HEADING_PATTERN);
+    const atxHeading = ATX_HEADING_PATTERN.exec(line);
 
     if (atxHeading !== null) {
       const headingHashes = atxHeading[1];
       const rawHeadingText = atxHeading[2];
-      if (headingHashes == null || rawHeadingText == null) {
-        continue;
-      }
+      if (headingHashes === null || rawHeadingText === null) {
+         continue;
+       }
 
       const depth = headingHashes.length as 1 | 2 | 3 | 4 | 5 | 6;
       if (depth > maxDepth) {
@@ -141,19 +141,19 @@ function collectMarkdownHeadings(
     }
 
     const nextLine = lines[index + 1];
-    if (nextLine == null || line.trim().length === 0) {
-      continue;
-    }
+  if (nextLine === null || line.trim().length === 0) {
+     continue;
+   }
 
-    const setextUnderline = nextLine.match(SETEXT_UNDERLINE_PATTERN);
+    const setextUnderline = SETEXT_UNDERLINE_PATTERN.exec(nextLine);
     if (setextUnderline === null) {
       continue;
     }
 
     const underline = setextUnderline[1];
-    if (underline == null) {
-      continue;
-    }
+  if (underline === null) {
+     continue;
+   }
 
     const depth = toSetextDepth(underline);
     const headingLineIndex = index;

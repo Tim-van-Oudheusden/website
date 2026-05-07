@@ -155,7 +155,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
 
   const updateDescriptionHeight = React.useCallback((): void => {
     const descriptionElement = descriptionRef.current;
-    if (descriptionElement == null) {
+    if (descriptionElement === null) {
       return;
     }
 
@@ -166,7 +166,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
     updateDescriptionHeight();
 
     const descriptionElement = descriptionRef.current;
-    if (descriptionElement == null) {
+    if (descriptionElement === null) {
       return;
     }
 
@@ -234,17 +234,17 @@ export function ValuePillarsCarousel({
   inWhiteWell = false,
 }: ValuePillarsCarouselProps): React.JSX.Element {
   const scrollerRef = React.useRef<HTMLDivElement>(null);
-  const articleRefs = React.useRef<Array<HTMLElement | null>>([]);
+  const articleRefs = React.useRef<(HTMLElement | null)[]>([]);
 
   const scrollByViewport = React.useCallback((direction: -1 | 1): void => {
     const scroller = scrollerRef.current;
-    if (scroller == null) {
+    if (scroller === null) {
       return;
     }
 
     const cardOffsetLefts = articleRefs.current
       .map((article) => article?.offsetLeft)
-      .filter((offsetLeft): offsetLeft is number => offsetLeft != null);
+      .filter((offsetLeft): offsetLeft is number => offsetLeft !== null);
 
     let trackPaddingLeft = 0;
     if (typeof window !== "undefined") {

@@ -45,7 +45,7 @@ describe("TopBar", () => {
 
   test("underlines the currently active top navbar page", () => {
     const html = renderTopBar("/articles");
-    const activeCount = (html.match(/data-active-nav=\"true\"/g) ?? []).length;
+    const activeCount = (html.match(/data-active-nav="true"/g) ?? []).length;
 
     expect(activeCount).toBe(1);
     expect(html).toContain("data-active-nav-text=\"true\"");
