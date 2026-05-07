@@ -94,8 +94,8 @@ function collectMarkdownHeadings(
     const fenceMarker = fencedCodeDelimiterMatch?.[1];
     if (fencedCodeDelimiter !== null) {
   if (
-       fenceMarker != null
-         && fenceMarker[0] === fencedCodeDelimiter[0]
+       fenceMarker !== null && fenceMarker !== undefined
+         && fenceMarker.startsWith(fencedCodeDelimiter[0])
          && fenceMarker.length >= fencedCodeDelimiter.length
        ) {
         fencedCodeDelimiter = null;
@@ -103,7 +103,7 @@ function collectMarkdownHeadings(
       continue;
     }
 
-   if (fenceMarker != null) {
+   if (fenceMarker !== null && fenceMarker !== undefined) {
        fencedCodeDelimiter = fenceMarker;
        continue;
      }
