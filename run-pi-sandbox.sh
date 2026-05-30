@@ -50,6 +50,7 @@ do_run() {
   # Build podman args
   PODMAN_ARGS=(
     run "${tty_args[@]}" --rm
+    --userns=keep-id
     -v "$PROJECT_DIR:/workspace:rw,Z"
     -v "$SANDBOX_STATE_DIR:/workspace/.pi-sandbox:rw,Z"
     -v "$BUN_CACHE:/home/bun/.cache/bun:rw,Z"

@@ -28,6 +28,7 @@ chmod +x "$BIN_DIR/podman"
 output="$(HOME="$TMP_DIR/home" TERM=xterm-256color COLORTERM=truecolor PATH="$BIN_DIR:$PATH" bash "$SCRIPT" --version 2>&1)"
 printf '%s\n' "$output"
 
+[[ "$output" == *"--userns=keep-id"* ]]
 [[ "$output" == *"PI_CODING_AGENT_DIR=/workspace/.pi-sandbox/agent"* ]]
 [[ "$output" == *"PI_CODING_AGENT_SESSION_DIR=/workspace/.pi-sandbox/agent/sessions"* ]]
 [[ "$output" == *":/workspace/.pi-sandbox:rw,Z"* ]]
