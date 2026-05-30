@@ -21,4 +21,10 @@ describe("docker dependency installs are deterministic", () => {
 
     expect(frontendDockerfile).not.toContain("RUN bun add serve");
   });
+
+  test("pi sandbox image includes npm for configured pi packages", () => {
+    const sandboxDockerfile = readDockerfile("Dockerfile.sandbox");
+
+    expect(sandboxDockerfile).toContain("npm");
+  });
 });

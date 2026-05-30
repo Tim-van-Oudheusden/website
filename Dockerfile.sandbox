@@ -2,7 +2,7 @@ FROM oven/bun:1
 
 # Install host tools pi commonly needs for repository work.
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends bash ca-certificates git && \
+    apt-get install -y --no-install-recommends bash ca-certificates git npm && \
     rm -rf /var/lib/apt/lists/*
 
 # Install pi as the non-root bun user. The oven/bun image sets
@@ -17,4 +17,4 @@ RUN mkdir -p /home/bun/.bun/bin /home/bun/.pi/agent /home/bun/.cache/bun && \
 
 WORKDIR /workspace
 
-CMD ["pi"]
+CMD ["bun", "/home/bun/.bun/bin/pi"]

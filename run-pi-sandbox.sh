@@ -16,6 +16,21 @@ PROJECT_DIR="$SCRIPT_DIR"
 SANDBOX_STATE_DIR="$PROJECT_DIR/.pi-sandbox"
 PI_DIR="$SANDBOX_STATE_DIR/agent"
 BUN_CACHE="$SANDBOX_STATE_DIR/bun-cache"
+HOST_PI_DIR="$HOME/.pi/agent"
+
+# --- Sync host pi config into sandbox ---
+sync_pi_config() {
+  local file
+  for file in settings.json models.json auth.json; do
+    if [[ -f "$HOST_PI_DIR/$file" ]]; then
+      cp "$HOST_PI_DIR/$file" "$PI_DIR/$file"
+    fi
+  done
+
+  if [[ -f "$PI_DIR/auth.json" ]]; then
+    chmod 600 "$PI_DIR/auth.json"
+  fi
+}
 
 # --- Build the image ---
 do_build() {
@@ -41,6 +56,7 @@ do_run() {
   fi
 
   mkdir -p "$PI_DIR/sessions" "$BUN_CACHE"
+  sync_pi_config
 
   local tty_args=(-i)
   if [[ -t 0 && -t 1 ]]; then
@@ -62,7 +78,8 @@ do_run() {
     -e COLORTERM="${COLORTERM:-truecolor}"
     --hostname pi-sandbox
     "$IMAGE_NAME"
-    pi
+    bun
+    /home/bun/.bun/bin/pi
   )
 
   # Pass through any extra args as pi flags
