@@ -1,0 +1,20 @@
+FROM oven/bun:1
+
+# Install host tools pi commonly needs for repository work.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends bash ca-certificates git && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install pi as the non-root bun user. The oven/bun image sets
+# BUN_INSTALL_BIN=/usr/local/bin, which the bun user cannot write to, so use a
+# user-owned global bin directory and put it on PATH.
+ENV BUN_INSTALL_BIN=/home/bun/.bun/bin
+ENV PATH=/home/bun/.bun/bin:$PATH
+
+USER bun
+RUN mkdir -p /home/bun/.bun/bin /home/bun/.pi/agent /home/bun/.cache/bun && \
+    bun install -g @earendil-works/pi-coding-agent
+
+WORKDIR /workspace
+
+CMD ["pi"]

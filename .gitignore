@@ -23,6 +23,10 @@ content/.obsidian/
 .DS_Store
 Thumbs.db
 
+# Local sandbox/test state
+.pi-sandbox/
+.tmp/
+
 # Docker
 docker-compose.override.yml
 
