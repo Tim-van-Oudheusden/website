@@ -127,7 +127,7 @@
   --adw-toc-inactive: #8a8376;
   --adw-page-beige-bg: var(--adw-beige-light);
   --site-section-well-bg: #ffffff;
-  --articles-sidebar-width: clamp(18.5rem, calc(19vw + 2rem), 25rem);
+  --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   --articles-content-toc-gap: clamp(10rem, calc(17.25vw - 2rem), 13.75rem);
 
   /* Adwaita semantic colors (light) */
@@ -236,7 +236,7 @@
   --adw-page-brown-bg: var(--adw-page-beige-bg);
   --adw-page-beige-bg: var(--adw-beige-dark);
   --site-section-well-bg: #857555;
-  --articles-sidebar-width: clamp(18.5rem, calc(19vw + 2rem), 25rem);
+  --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   --articles-content-toc-gap: clamp(10rem, calc(17.25vw - 2rem), 13.75rem);
 
   /* Project semantic mapping (shadcn tokens) */

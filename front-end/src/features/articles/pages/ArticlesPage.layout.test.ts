@@ -12,7 +12,7 @@ import {
 } from "./ArticlesPage";
 
 describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
-  test("uses edge-to-edge split layout with 15% sidebar and no divider line", () => {
+  test("uses edge-to-edge split layout with a tokenized desktop sidebar and no divider line", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("flex w-full");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("flex-1");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("overflow-hidden");

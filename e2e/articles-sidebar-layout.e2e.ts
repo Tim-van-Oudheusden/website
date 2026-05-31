@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 interface SidebarLayoutSnapshot {
   sidebarWidth: number;
   expectedSidebarWidth: number;
+  minimumReadableSidebarWidth: number;
   contentPaddingRight: number;
   expectedContentPaddingRight: number;
 }
@@ -52,15 +53,21 @@ test.describe("Articles sidebar layout", () => {
       return {
         sidebarWidth: sidebarRect.width,
         expectedSidebarWidth,
+        minimumReadableSidebarWidth: 360,
         contentPaddingRight,
         expectedContentPaddingRight: expectedContentTocGap,
       };
     });
 
- const snapshotTyped = snapshot!;
-  expect(snapshotTyped.sidebarWidth).toBeDefined();
+    if (snapshot === null) {
+      throw new Error("Expected articles sidebar layout elements to be present");
+    }
+
+    const snapshotTyped = snapshot;
+    expect(snapshotTyped.sidebarWidth).toBeDefined();
     expect(snapshotTyped.expectedSidebarWidth).toBeDefined();
     expect(Math.abs(snapshotTyped.sidebarWidth - snapshotTyped.expectedSidebarWidth)).toBeLessThanOrEqual(2);
+    expect(snapshotTyped.sidebarWidth).toBeGreaterThanOrEqual(snapshotTyped.minimumReadableSidebarWidth);
     expect(snapshotTyped.contentPaddingRight).toBeDefined();
     expect(snapshotTyped.expectedContentPaddingRight).toBeDefined();
     expect(Math.abs(snapshotTyped.contentPaddingRight - snapshotTyped.expectedContentPaddingRight)).toBeLessThanOrEqual(4);
