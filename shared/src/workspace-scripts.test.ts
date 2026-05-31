@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 
 interface RootPackageJson {
   scripts?: {
+    "typecheck:root"?: string;
     typecheck?: string;
   };
 }
@@ -23,8 +24,10 @@ describe("workspace scripts", () => {
   test("root typecheck script includes a non-vacuous root TypeScript build check", () => {
     const packageJson = readRootPackageJson();
     const typecheckScript = packageJson.scripts?.typecheck;
+    const rootTypecheckScript = packageJson.scripts?.["typecheck:root"];
 
-    expect(typecheckScript).toContain("tsc -b --noEmit");
+    expect(rootTypecheckScript).toContain("tsc -p tsconfig.eslint.json --noEmit");
+    expect(typecheckScript).toContain("bun run typecheck:root");
   });
 
   test("eslint ignores generated pi sandbox state", () => {

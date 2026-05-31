@@ -42,7 +42,7 @@ export function HomeFloatingNav({
   const updateIndicatorMetrics = React.useCallback(() => {
     const navListElement = navListRef.current;
     const activeNavItemElement = navItemRefs.current[activeSectionId];
-    if (navListElement === null || activeNavItemElement === null) {
+    if (navListElement === null || activeNavItemElement === null || activeNavItemElement === undefined) {
       setIndicatorMetrics(null);
       return;
     }

@@ -38,7 +38,12 @@ function findNearestCardIndex(cardOffsetLefts: readonly number[], targetLeft: nu
   let nearestDistance = Number.POSITIVE_INFINITY;
 
   for (let index = 0; index < cardOffsetLefts.length; index += 1) {
-    const distance = Math.abs(cardOffsetLefts[index] - targetLeft);
+    const cardOffsetLeft = cardOffsetLefts[index];
+    if (cardOffsetLeft === undefined) {
+      continue;
+    }
+
+    const distance = Math.abs(cardOffsetLeft - targetLeft);
     if (distance < nearestDistance) {
       nearestDistance = distance;
       nearestIndex = index;
@@ -60,10 +65,19 @@ export function resolvePagedCarouselScrollLeft({
   }
 
   if (cardOffsetLefts.length === 1) {
-    return Math.max(0, cardOffsetLefts[0] - trackPaddingLeft);
+    const onlyCardOffsetLeft = cardOffsetLefts[0];
+    return onlyCardOffsetLeft === undefined
+      ? currentScrollLeft
+      : Math.max(0, onlyCardOffsetLeft - trackPaddingLeft);
   }
 
-  const cardStep = Math.abs(cardOffsetLefts[1] - cardOffsetLefts[0]);
+  const firstCardOffsetLeft = cardOffsetLefts[0];
+  const secondCardOffsetLeft = cardOffsetLefts[1];
+  if (firstCardOffsetLeft === undefined || secondCardOffsetLeft === undefined) {
+    return currentScrollLeft;
+  }
+
+  const cardStep = Math.abs(secondCardOffsetLeft - firstCardOffsetLeft);
   if (cardStep <= 0) {
     return currentScrollLeft;
   }
@@ -77,7 +91,10 @@ export function resolvePagedCarouselScrollLeft({
     cardOffsetLefts.length - 1,
   );
 
-  return Math.max(0, cardOffsetLefts[targetIndex] - trackPaddingLeft);
+  const targetCardOffsetLeft = cardOffsetLefts[targetIndex];
+  return targetCardOffsetLeft === undefined
+    ? currentScrollLeft
+    : Math.max(0, targetCardOffsetLeft - trackPaddingLeft);
 }
 
 export function calculateCardTiltAngles({
@@ -196,7 +213,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
       style={{
         transform: `perspective(900px) rotateX(${tiltAngles.rotateX}deg) rotateY(${tiltAngles.rotateY}deg)`,
         "--value-pillar-description-height": `${descriptionHeight}px`,
-      }}
+      } as React.CSSProperties & { "--value-pillar-description-height": string }}
     >
       <img
         src={artworkPath}
@@ -244,7 +261,7 @@ export function ValuePillarsCarousel({
 
     const cardOffsetLefts = articleRefs.current
       .map((article) => article?.offsetLeft)
-      .filter((offsetLeft): offsetLeft is number => offsetLeft !== null);
+      .filter((offsetLeft): offsetLeft is number => offsetLeft !== undefined);
 
     let trackPaddingLeft = 0;
     if (typeof window !== "undefined") {

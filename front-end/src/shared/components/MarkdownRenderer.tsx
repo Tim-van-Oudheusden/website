@@ -78,9 +78,9 @@ function parseObsidianCallout(children: React.ReactNode): ParsedObsidianCallout 
   }
 
   const matchedType = markerMatch[1];
-  if (matchedType === null) {
-     return null;
-   }
+  if (matchedType === undefined) {
+    return null;
+  }
 
   const type = matchedType.toLowerCase();
   const title = markerMatch[2]?.trim() ?? formatCalloutTitle(type);
@@ -133,22 +133,22 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
       column?: number | undefined;
     },
  ): string {
-     if (position?.offset !== null) {
-       const resolvedId = headingIdByOffset.byOffset.get(position.offset);
-       if (resolvedId !== null) {
-         return resolvedId;
-       }
-     }
+    if (position?.offset !== undefined) {
+      const resolvedId = headingIdByOffset.byOffset.get(position.offset);
+      if (resolvedId !== undefined) {
+        return resolvedId;
+      }
+    }
 
-     if (position?.line !== null && position?.column !== null) {
+    if (position?.line !== undefined && position.column !== undefined) {
       const resolvedId = headingIdByOffset.byLineColumn.get(`${position.line}:${position.column}`);
-      if (resolvedId !== null) {
-         return resolvedId;
-       }
+      if (resolvedId !== undefined) {
+        return resolvedId;
+      }
     }
 
     const baseSlug = slugifyHeadingText(headingText) || "section";
-    if (position?.line !== null && position?.column !== null) {
+    if (position?.line !== undefined && position.column !== undefined) {
       return `${baseSlug}-${position.line}-${position.column}`;
     }
 
