@@ -14,11 +14,22 @@ function readRootPackageJson(): RootPackageJson {
   return JSON.parse(packageJsonText) as RootPackageJson;
 }
 
+function readRootFile(relativePath: string): string {
+  const filePath = resolve(import.meta.dirname, "../..", relativePath);
+  return readFileSync(filePath, "utf8");
+}
+
 describe("workspace scripts", () => {
   test("root typecheck script includes a non-vacuous root TypeScript build check", () => {
     const packageJson = readRootPackageJson();
     const typecheckScript = packageJson.scripts?.typecheck;
 
     expect(typecheckScript).toContain("tsc -b --noEmit");
+  });
+
+  test("eslint ignores generated pi sandbox state", () => {
+    const eslintConfig = readRootFile("eslint.config.js");
+
+    expect(eslintConfig).toContain("**/.pi-sandbox/**");
   });
 });

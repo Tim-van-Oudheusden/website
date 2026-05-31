@@ -22,9 +22,22 @@ describe("docker dependency installs are deterministic", () => {
     expect(frontendDockerfile).not.toContain("RUN bun add serve");
   });
 
-  test("pi sandbox image includes npm for configured pi packages", () => {
+  test("pi sandbox image includes common agent command line tools", () => {
     const sandboxDockerfile = readDockerfile("Dockerfile.sandbox");
 
-    expect(sandboxDockerfile).toContain("npm");
+    for (const packageName of [
+      "curl",
+      "jq",
+      "less",
+      "npm",
+      "openssh-client",
+      "procps",
+      "ripgrep",
+    ]) {
+      expect(sandboxDockerfile).toContain(packageName);
+    }
+
+    expect(sandboxDockerfile).toContain("@beads/bd@1.0.5");
+    expect(sandboxDockerfile).toContain("ln -sf /home/bun/.bun/bin/bd /usr/local/bin/bd");
   });
 });
