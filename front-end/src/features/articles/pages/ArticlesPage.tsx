@@ -66,7 +66,7 @@ interface ArticleLocationTrailProps {
 }
 
 interface TocNavigationDependencies {
-  getElementById: (id: string) => { scrollIntoView: (options?: ScrollIntoViewOptions) => void; } | null;
+  getElementById: (id: string) => { scrollIntoView: (options?: ScrollIntoViewOptions) => void } | null;
   setHash: (headingId: string) => void;
   getScrollY: () => number;
   logNavigation: (event: TocNavigationDebugEvent) => void;
@@ -88,13 +88,11 @@ const DEFAULT_TOC_NAVIGATION_DEPENDENCIES: TocNavigationDependencies = {
   getElementById: (id) => document.getElementById(id),
   setHash: (headingId) => { window.location.hash = headingId; },
   getScrollY: () => window.scrollY,
-  logNavigation: (event) => {
+  logNavigation: (_event) => {
     if ((window as Window & { __ADW_DEBUG_TOC__?: boolean }).__ADW_DEBUG_TOC__ !== true) {
       return;
     }
 
-    // Temporary debug hook for diagnosing browser-specific TOC navigation behavior.
-    console.info("[articles-toc]", event);
   },
 };
 
@@ -116,7 +114,7 @@ export function navigateToArticleHeadingById(
 ): boolean {
   const scrollYBefore = dependencies.getScrollY();
   const targetHeading = dependencies.getElementById(headingId);
-  if (targetHeading == null) {
+  if (targetHeading === null) {
     dependencies.setHash(headingId);
     dependencies.logNavigation({
       headingId,
@@ -147,13 +145,13 @@ function resolveActiveTocHeadingIds(
 ): string[] {
   return tocItems
     .filter((heading) => {
-      const rect = getHeadingRect(heading.id);
-      if (rect == null) {
-        return false;
-      }
+       const rect = getHeadingRect(heading.id);
+       if (rect === null) {
+         return false;
+       }
 
-      return rect.top < viewportHeight;
-    })
+       return rect.top < viewportHeight;
+     })
     .map((heading) => heading.id);
 }
 
@@ -165,7 +163,10 @@ function resolveTocLinkIndentClass(depth: 1 | 2 | 3): string {
   return "";
 }
 
-export function ArticleLocationTrail({ articleTitle, onArticlesActivate }: ArticleLocationTrailProps): React.JSX.Element {
+export function ArticleLocationTrail({ articleTitle, onArticlesActivate }: ArticleLocationTrailProps): React.JSX.Element | null {
+  if (!articleTitle) {
+    return null;
+  }
   return (
     <nav
       aria-label="Current location"
@@ -275,7 +276,7 @@ export function ArticlesPage(): React.JSX.Element {
   }, [selectedSlug]);
 
   useEffect(() => {
-    if (selectedArticle == null) {
+    if (selectedArticle === null) {
       return;
     }
 
@@ -294,28 +295,28 @@ export function ArticlesPage(): React.JSX.Element {
     };
   }, [selectedArticle]);
 
-  const articleTableOfContents = React.useMemo(
-    () => (selectedArticle == null ? [] : extractArticleTableOfContents(selectedArticle.body)),
+   const articleTableOfContents = React.useMemo(
+    () => (selectedArticle === null ? [] : extractArticleTableOfContents(selectedArticle.body)),
     [selectedArticle],
   );
   const visibleTocHeadingIdSet = React.useMemo(() => new Set(visibleTocHeadingIds), [visibleTocHeadingIds]);
 
   useEffect(() => {
-    if (loadingArticle || selectedArticle == null || articleTableOfContents.length === 0) {
+    if (loadingArticle || selectedArticle === null || articleTableOfContents.length === 0) {
       setVisibleTocHeadingIds([]);
       return;
     }
     let rafId: number | null = null;
 
-    const updateActiveTocHeadings = () => {
+    const updateActiveTocHeadings = (): void => {
       rafId = null;
       const nextVisibleHeadingIds = resolveActiveTocHeadingIds(
         articleTableOfContents,
         (headingId) => {
           const headingElement = document.getElementById(headingId);
-          if (headingElement == null) {
-            return null;
-          }
+           if (headingElement === null) {
+             return null;
+           }
 
           return headingElement.getBoundingClientRect();
         },
@@ -334,27 +335,27 @@ export function ArticlesPage(): React.JSX.Element {
       });
     };
 
-    const scheduleActiveTocHeadingUpdate = () => {
-      if (rafId != null) {
-        return;
-      }
+   const scheduleActiveTocHeadingUpdate = (): void => {
+       if (rafId !== null) {
+         return;
+       }
 
-      rafId = window.requestAnimationFrame(updateActiveTocHeadings);
-    };
+       rafId = window.requestAnimationFrame(updateActiveTocHeadings);
+     };
 
     window.addEventListener("scroll", scheduleActiveTocHeadingUpdate, { passive: true });
     document.addEventListener("scroll", scheduleActiveTocHeadingUpdate, { passive: true, capture: true });
     window.addEventListener("resize", scheduleActiveTocHeadingUpdate);
     scheduleActiveTocHeadingUpdate();
 
-    return () => {
-      window.removeEventListener("scroll", scheduleActiveTocHeadingUpdate);
-      document.removeEventListener("scroll", scheduleActiveTocHeadingUpdate, true);
-      window.removeEventListener("resize", scheduleActiveTocHeadingUpdate);
-      if (rafId != null) {
-        window.cancelAnimationFrame(rafId);
-      }
-    };
+   return () => {
+       window.removeEventListener("scroll", scheduleActiveTocHeadingUpdate);
+       document.removeEventListener("scroll", scheduleActiveTocHeadingUpdate, true);
+       window.removeEventListener("resize", scheduleActiveTocHeadingUpdate);
+       if (rafId !== null) {
+         window.cancelAnimationFrame(rafId);
+       }
+     };
   }, [loadingArticle, selectedArticle, articleTableOfContents]);
 
   if (loadingArticles) {

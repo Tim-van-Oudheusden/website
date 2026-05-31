@@ -31,13 +31,13 @@ function flattenNodeText(node: React.ReactNode): string {
   }
 
   if (Array.isArray(node)) {
-    return node.map((child) => flattenNodeText(child)).join("");
-  }
+     return node.map((child: React.ReactNode) => flattenNodeText(child)).join("");
+   }
 
   if (React.isValidElement(node)) {
     const elementProps = node.props as { children?: React.ReactNode; alt?: string };
-    if (
-      (node.type === "img" || elementProps.children == null)
+  if (
+       (node.type === "img" || elementProps.children === null)
       && typeof elementProps.alt === "string"
       && elementProps.alt.length > 0
     ) {
@@ -72,18 +72,18 @@ function parseObsidianCallout(children: React.ReactNode): ParsedObsidianCallout 
     return null;
   }
 
-  const markerMatch = firstParagraphChildren[0].match(OBSIDIAN_CALLOUT_MARKER_PATTERN);
-  if (markerMatch == null) {
+  const markerMatch = OBSIDIAN_CALLOUT_MARKER_PATTERN.exec(firstParagraphChildren[0]);
+  if (markerMatch === null) {
     return null;
   }
 
   const matchedType = markerMatch[1];
-  if (matchedType == null) {
+  if (matchedType === undefined) {
     return null;
   }
 
   const type = matchedType.toLowerCase();
-  const title = markerMatch[2]?.trim() || formatCalloutTitle(type);
+  const title = markerMatch[2]?.trim() ?? formatCalloutTitle(type);
   const markerRemainder = markerMatch[3]?.trim() ?? "";
 
   const adjustedFirstParagraphChildren = firstParagraphChildren.slice(1);
@@ -132,23 +132,23 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
       line?: number | undefined;
       column?: number | undefined;
     },
-  ): string {
-    if (position?.offset != null) {
+ ): string {
+    if (position?.offset !== undefined) {
       const resolvedId = headingIdByOffset.byOffset.get(position.offset);
-      if (resolvedId != null) {
+      if (resolvedId !== undefined) {
         return resolvedId;
       }
     }
 
-    if (position?.line != null && position.column != null) {
+    if (position?.line !== undefined && position.column !== undefined) {
       const resolvedId = headingIdByOffset.byLineColumn.get(`${position.line}:${position.column}`);
-      if (resolvedId != null) {
+      if (resolvedId !== undefined) {
         return resolvedId;
       }
     }
 
     const baseSlug = slugifyHeadingText(headingText) || "section";
-    if (position?.line != null && position.column != null) {
+    if (position?.line !== undefined && position.column !== undefined) {
       return `${baseSlug}-${position.line}-${position.column}`;
     }
 
@@ -204,9 +204,9 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
       );
     },
     blockquote({ children, className, ...rest }) {
-      const callout = parseObsidianCallout(children);
-      if (callout == null) {
-        return (
+const callout = parseObsidianCallout(children);
+  if (callout === null) {
+    return (
           <blockquote className={className} {...rest}>
             {children}
           </blockquote>

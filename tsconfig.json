@@ -1,6 +1,5 @@
 {
   "files": [],
-  "include": [],
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -31,6 +30,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
+  "include": ["playwright.config.ts"],
   "references": [
     { "path": "./front-end" },
     { "path": "./back-end" },

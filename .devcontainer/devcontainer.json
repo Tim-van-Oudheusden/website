@@ -1,0 +1,61 @@
+{
+  "name": "website-bun-devcontainer",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "containerEnv": {
+    "BUN_INSTALL": "/home/vscode/.bun",
+    "PATH": "/home/vscode/.bun/bin:${containerEnv:PATH}"
+  },
+
+  "postCreateCommand": "curl -fsSL https://bun.sh/install | bash && /home/vscode/.bun/bin/bun install && /home/vscode/.bun/bin/bunx playwright install --with-deps",
+
+  "postAttachCommand": "bun --version",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "oven.bun-vscode",
+        "ms-playwright.playwright",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next"
+      ],
+      "settings": {
+        // "typescript.tsdk": "node_modules/typescript/lib",
+        "eslint.useFlatConfig": true,
+        "eslint.workingDirectories": [
+          {
+            "mode": "auto"
+          }
+        ],
+
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[javascriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
+      }
+    }
+  },
+
+  "remoteUser": "vscode"
+}

@@ -42,7 +42,7 @@ export function HomeFloatingNav({
   const updateIndicatorMetrics = React.useCallback(() => {
     const navListElement = navListRef.current;
     const activeNavItemElement = navItemRefs.current[activeSectionId];
-    if (navListElement == null || activeNavItemElement == null) {
+    if (navListElement === null || activeNavItemElement === null || activeNavItemElement === undefined) {
       setIndicatorMetrics(null);
       return;
     }
@@ -74,7 +74,7 @@ export function HomeFloatingNav({
     };
   }, [updateIndicatorMetrics]);
 
-  const indicatorStyle: React.CSSProperties = indicatorMetrics == null
+  const indicatorStyle: React.CSSProperties = indicatorMetrics === null
     ? {
         opacity: 0,
         transform: "translate3d(0px, 0px, 0px)",

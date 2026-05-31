@@ -86,16 +86,16 @@ function collectMarkdownHeadings(
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
-    if (line == null) {
+    if (line === undefined) {
       continue;
     }
 
-    const fencedCodeDelimiterMatch = line.match(FENCED_CODE_DELIMITER_PATTERN);
+    const fencedCodeDelimiterMatch = FENCED_CODE_DELIMITER_PATTERN.exec(line);
     const fenceMarker = fencedCodeDelimiterMatch?.[1];
     if (fencedCodeDelimiter !== null) {
       if (
-        fenceMarker != null
-        && fenceMarker[0] === fencedCodeDelimiter[0]
+        fenceMarker !== undefined
+        && fenceMarker.startsWith(fencedCodeDelimiter.charAt(0))
         && fenceMarker.length >= fencedCodeDelimiter.length
       ) {
         fencedCodeDelimiter = null;
@@ -103,17 +103,17 @@ function collectMarkdownHeadings(
       continue;
     }
 
-    if (fenceMarker != null) {
+    if (fenceMarker !== undefined) {
       fencedCodeDelimiter = fenceMarker;
       continue;
     }
 
-    const atxHeading = line.match(ATX_HEADING_PATTERN);
+    const atxHeading = ATX_HEADING_PATTERN.exec(line);
 
     if (atxHeading !== null) {
       const headingHashes = atxHeading[1];
       const rawHeadingText = atxHeading[2];
-      if (headingHashes == null || rawHeadingText == null) {
+      if (headingHashes === undefined || rawHeadingText === undefined) {
         continue;
       }
 
@@ -141,17 +141,17 @@ function collectMarkdownHeadings(
     }
 
     const nextLine = lines[index + 1];
-    if (nextLine == null || line.trim().length === 0) {
+    if (nextLine === undefined || line.trim().length === 0) {
       continue;
     }
 
-    const setextUnderline = nextLine.match(SETEXT_UNDERLINE_PATTERN);
+    const setextUnderline = SETEXT_UNDERLINE_PATTERN.exec(nextLine);
     if (setextUnderline === null) {
       continue;
     }
 
     const underline = setextUnderline[1];
-    if (underline == null) {
+    if (underline === undefined) {
       continue;
     }
 

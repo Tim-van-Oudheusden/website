@@ -12,7 +12,7 @@ test.describe("Articles TOC navigation", () => {
 
     const diagnostics = await page.evaluate(() => {
       const tocNav = document.querySelector("article aside nav");
-      const tocIds = tocNav == null
+      const tocIds = tocNav === null
         ? []
         : Array.from(tocNav.querySelectorAll('a[href^="#"]'))
           .map((link) => (link.getAttribute("href") ?? "").slice(1))
@@ -53,7 +53,7 @@ test.describe("Articles TOC navigation", () => {
     expect(targetHref).not.toBeNull();
     expect(targetHref).toMatch(/^#.+/);
 
-    const targetHeadingId = (targetHref as string).slice(1);
+    const targetHeadingId = targetHref!.slice(1);
 
     await targetLink.click();
 
@@ -66,7 +66,7 @@ test.describe("Articles TOC navigation", () => {
         .map((heading) => heading.id);
 
       return {
-        targetByHashExists: targetByHash != null,
+        targetByHashExists: targetByHash !== null,
         shiftedIdExists: headingIds.includes(`${clickedId}-1`),
         headingIds,
       };

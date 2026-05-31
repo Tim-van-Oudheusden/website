@@ -3,12 +3,19 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { HOME_SECTIONS } from "../config/home-sections";
 import { HomeSection } from "./HomeSection";
+import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
+
+function findHomeSection(sectionId: HomeSectionId): HomeSectionDefinition {
+  const section = HOME_SECTIONS.find((candidateSection) => candidateSection.id === sectionId);
+  if (section === undefined) {
+    throw new Error(`Expected ${sectionId} section in homepage config`);
+  }
+
+  return section;
+}
 
 function renderForYouSection(): string {
-  const forYouSection = HOME_SECTIONS.find((section) => section.id === "for-you");
-  if (forYouSection == null) {
-    throw new Error("Expected for-you section in homepage config");
-  }
+  const forYouSection = findHomeSection("for-you");
 
   return renderToStaticMarkup(
     createElement(HomeSection, { section: forYouSection }),
@@ -16,10 +23,7 @@ function renderForYouSection(): string {
 }
 
 function renderStartSection(): string {
-  const startSection = HOME_SECTIONS.find((section) => section.id === "start");
-  if (startSection == null) {
-    throw new Error("Expected start section in homepage config");
-  }
+  const startSection = findHomeSection("start");
 
   return renderToStaticMarkup(
     createElement(HomeSection, { section: startSection }),
@@ -27,10 +31,7 @@ function renderStartSection(): string {
 }
 
 function renderForDevsSection(): string {
-  const forDevsSection = HOME_SECTIONS.find((section) => section.id === "for-devs");
-  if (forDevsSection == null) {
-    throw new Error("Expected for-devs section in homepage config");
-  }
+  const forDevsSection = findHomeSection("for-devs");
 
   return renderToStaticMarkup(
     createElement(HomeSection, { section: forDevsSection }),

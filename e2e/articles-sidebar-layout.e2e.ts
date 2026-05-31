@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 interface SidebarLayoutSnapshot {
   sidebarWidth: number;
   expectedSidebarWidth: number;
+  minimumReadableSidebarWidth: number;
   contentPaddingRight: number;
   expectedContentPaddingRight: number;
 }
@@ -30,7 +31,7 @@ test.describe("Articles sidebar layout", () => {
       const sidebar = document.querySelector("main > aside");
       const contentWithToc = document.querySelector("main article > div");
       const toc = document.querySelector("main article aside");
-      if (sidebar == null || contentWithToc == null || toc == null) {
+      if (sidebar === null || contentWithToc === null || toc === null) {
         return null;
       }
 
@@ -52,13 +53,23 @@ test.describe("Articles sidebar layout", () => {
       return {
         sidebarWidth: sidebarRect.width,
         expectedSidebarWidth,
+        minimumReadableSidebarWidth: 360,
         contentPaddingRight,
         expectedContentPaddingRight: expectedContentTocGap,
       };
     });
 
-    expect(snapshot).not.toBeNull();
-    expect(Math.abs((snapshot as SidebarLayoutSnapshot).sidebarWidth - (snapshot as SidebarLayoutSnapshot).expectedSidebarWidth)).toBeLessThanOrEqual(2);
-    expect(Math.abs((snapshot as SidebarLayoutSnapshot).contentPaddingRight - (snapshot as SidebarLayoutSnapshot).expectedContentPaddingRight)).toBeLessThanOrEqual(4);
+    if (snapshot === null) {
+      throw new Error("Expected articles sidebar layout elements to be present");
+    }
+
+    const snapshotTyped = snapshot;
+    expect(snapshotTyped.sidebarWidth).toBeDefined();
+    expect(snapshotTyped.expectedSidebarWidth).toBeDefined();
+    expect(Math.abs(snapshotTyped.sidebarWidth - snapshotTyped.expectedSidebarWidth)).toBeLessThanOrEqual(2);
+    expect(snapshotTyped.sidebarWidth).toBeGreaterThanOrEqual(snapshotTyped.minimumReadableSidebarWidth);
+    expect(snapshotTyped.contentPaddingRight).toBeDefined();
+    expect(snapshotTyped.expectedContentPaddingRight).toBeDefined();
+    expect(Math.abs(snapshotTyped.contentPaddingRight - snapshotTyped.expectedContentPaddingRight)).toBeLessThanOrEqual(4);
   });
 });

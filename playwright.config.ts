@@ -8,10 +8,10 @@ export default defineConfig({
     timeout: 5_000,
   },
   fullyParallel: false,
-  retries: process.env.CI != null ? 2 : 0,
+  retries: process.env["CI"] !== undefined ? 2 : 0,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? "http://localhost:5173",
+    baseURL: process.env["E2E_BASE_URL"] ?? "http://localhost:5173",
     headless: true,
     trace: "on-first-retry",
     screenshot: "only-on-failure",

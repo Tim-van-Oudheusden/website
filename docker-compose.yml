@@ -7,11 +7,11 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ./front-end:/app/front-end
-      - ./shared:/app/shared
-      - ./public:/app/public:ro
-      - ./package.json:/app/package.json:ro
-      - ./bun.lock:/app/bun.lock
+      - ./front-end:/app/front-end:z
+      - ./shared:/app/shared:z
+      - ./public:/app/public:ro,z
+      - ./package.json:/app/package.json:ro,z
+      - ./bun.lock:/app/bun.lock:z
       - /app/node_modules
     environment:
       - NODE_ENV=development
@@ -31,11 +31,11 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      - ./back-end:/app/back-end
-      - ./shared:/app/shared
-      - ./content:/app/content:ro
-      - ./package.json:/app/package.json:ro
-      - ./bun.lock:/app/bun.lock
+      - ./back-end:/app/back-end:z
+      - ./shared:/app/shared:z
+      - ./content:/app/content:ro,z
+      - ./package.json:/app/package.json:ro,z
+      - ./bun.lock:/app/bun.lock:z
       - /app/node_modules
     environment:
       - NODE_ENV=development

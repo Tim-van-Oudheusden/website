@@ -11,7 +11,7 @@ test.describe("Home start portrait layout", () => {
     const layout = await page.evaluate(() => {
       const whiteBox = document.querySelector("section#start > div");
       const image = document.querySelector("section#start [data-testid='start-portrait']");
-      if (whiteBox == null || image == null) {
+      if (whiteBox === null || image === null) {
         return null;
       }
 

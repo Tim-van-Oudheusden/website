@@ -13,9 +13,12 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         project: [
+          "./tsconfig.eslint.json",
           "./front-end/tsconfig.eslint.json",
           "./back-end/tsconfig.eslint.json",
           "./shared/tsconfig.eslint.json",
+          "./e2e/tsconfig.eslint.json",
+          "./playwright/tsconfig.eslint.json",
         ],
         tsconfigRootDir: import.meta.dirname,
       },
@@ -70,16 +73,17 @@ export default tseslint.config(
   },
   {
     /* Relax type-aware safety rules for test files (excluded from tsconfig composite builds) */
-    files: ["**/*.test.ts", "**/*.test.tsx"],
+    files: ["**/*.test.ts", "**/*.test.tsx", "**/*.e2e.ts"],
     rules: {
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
     },
   },
   {
-    ignores: ["**/dist/", "**/node_modules/", "**/*.config.js"],
+    ignores: ["**/dist/", "**/node_modules/", "**/.pi-sandbox/**", "**/*.config.js"],
   },
 );
