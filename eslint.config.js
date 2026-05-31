@@ -1,6 +1,21 @@
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import stylistic from "@stylistic/eslint-plugin";
+import { resolve } from "node:path";
+
+const projectPaths = [
+  "./tsconfig.eslint.json",
+  "./front-end/tsconfig.eslint.json",
+  "./back-end/tsconfig.eslint.json",
+  "./shared/tsconfig.eslint.json",
+  "./e2e/tsconfig.eslint.json",
+  "./playwright/tsconfig.eslint.json",
+];
+
+const workspaceAliasRootDir = import.meta.dirname.replace(/^\/var\/home\//, "/home/");
+const projectAliases = workspaceAliasRootDir === import.meta.dirname
+  ? []
+  : projectPaths.map((projectPath) => resolve(workspaceAliasRootDir, projectPath));
 
 export default tseslint.config(
   eslint.configs.recommended,
@@ -12,14 +27,7 @@ export default tseslint.config(
     },
     languageOptions: {
       parserOptions: {
-        project: [
-          "./tsconfig.eslint.json",
-          "./front-end/tsconfig.eslint.json",
-          "./back-end/tsconfig.eslint.json",
-          "./shared/tsconfig.eslint.json",
-          "./e2e/tsconfig.eslint.json",
-          "./playwright/tsconfig.eslint.json",
-        ],
+        project: [...projectPaths, ...projectAliases],
         tsconfigRootDir: import.meta.dirname,
       },
     },

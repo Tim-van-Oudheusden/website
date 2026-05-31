@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -20,6 +21,14 @@ function readRootFile(relativePath: string): string {
   return readFileSync(filePath, "utf8");
 }
 
+function rootPath(): string {
+  return resolve(import.meta.dirname, "../..");
+}
+
+function editorAliasPath(relativePath: string): string {
+  return resolve(rootPath().replace(/^\/var\/home\//, "/home/"), relativePath);
+}
+
 describe("workspace scripts", () => {
   test("root typecheck script includes a non-vacuous root TypeScript build check", () => {
     const packageJson = readRootPackageJson();
@@ -34,5 +43,19 @@ describe("workspace scripts", () => {
     const eslintConfig = readRootFile("eslint.config.js");
 
     expect(eslintConfig).toContain("**/.pi-sandbox/**");
+  });
+
+  test("eslint can lint backend files from the editor workspace path alias", () => {
+    const result = spawnSync(
+      "bun",
+      ["run", "eslint", editorAliasPath("back-end/src/app.ts")],
+      {
+        cwd: rootPath(),
+        encoding: "utf8",
+      },
+    );
+
+    expect(result.stderr).not.toContain("The file was not found in any of the provided project");
+    expect(result.status).toBe(0);
   });
 });
