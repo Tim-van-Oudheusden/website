@@ -27,6 +27,11 @@ sync_pi_config() {
     fi
   done
 
+  if [[ -d "$HOST_PI_DIR/extensions" ]]; then
+    rm -rf "$PI_DIR/extensions"
+    cp -a "$HOST_PI_DIR/extensions" "$PI_DIR/extensions"
+  fi
+
   if [[ -f "$PI_DIR/auth.json" ]]; then
     chmod 600 "$PI_DIR/auth.json"
   fi

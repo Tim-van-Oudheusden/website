@@ -27,11 +27,14 @@ ENV PATH=/home/bun/.bun/bin:$PATH
 USER bun
 RUN mkdir -p /home/bun/.bun/bin /home/bun/.pi/agent /home/bun/.cache/bun && \
     bun install -g @earendil-works/pi-coding-agent && \
-    bun install -g --trust @beads/bd@1.0.5
+    bun install -g --trust @beads/bd@1.0.5 && \
+    bun install -g superlocalmemory@3.5.5
 
 USER root
 RUN ln -sf /home/bun/.bun/bin/bd /usr/local/bin/bd && \
-    ln -sf /home/bun/.bun/bin/pi /usr/local/bin/pi
+    ln -sf /home/bun/.bun/bin/pi /usr/local/bin/pi && \
+    ln -sf /home/bun/.bun/bin/slm /usr/local/bin/slm && \
+    ln -sf /home/bun/.bun/bin/superlocalmemory /usr/local/bin/superlocalmemory
 
 USER bun
 

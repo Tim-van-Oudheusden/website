@@ -40,4 +40,12 @@ describe("docker dependency installs are deterministic", () => {
     expect(sandboxDockerfile).toContain("@beads/bd@1.0.5");
     expect(sandboxDockerfile).toContain("ln -sf /home/bun/.bun/bin/bd /usr/local/bin/bd");
   });
+
+  test("pi sandbox image installs the superlocalmemory CLI used by the extension", () => {
+    const sandboxDockerfile = readDockerfile("Dockerfile.sandbox");
+
+    expect(sandboxDockerfile).toContain("superlocalmemory@3.5.5");
+    expect(sandboxDockerfile).toContain("ln -sf /home/bun/.bun/bin/slm /usr/local/bin/slm");
+    expect(sandboxDockerfile).toContain("ln -sf /home/bun/.bun/bin/superlocalmemory /usr/local/bin/superlocalmemory");
+  });
 });
