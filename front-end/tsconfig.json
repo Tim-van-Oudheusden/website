@@ -37,9 +37,8 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
 
     /* Paths */
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"],
