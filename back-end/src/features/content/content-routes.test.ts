@@ -51,6 +51,18 @@ describe("content API routes", () => {
         "type: project",
         "draft: false",
         `slug: ${PROJECT_SLUG}`,
+        "coverImage: /images/projects/route-test-project.svg",
+        "coverImageAlt: Abstract route test project artwork.",
+        "featured: true",
+        "projectOrder: 5",
+        "status: Shipped",
+        "role: Test developer",
+        "timeframe: 2026",
+        "links:",
+        "  - type: repo",
+        "    label: Source",
+        "    href: https://example.com/route-test-project",
+        "outcome: Route output includes project metadata.",
         "---",
         "",
         "# Route Test Project",
@@ -134,6 +146,17 @@ describe("content API routes", () => {
     expect(body).toHaveLength(1);
     expect(body[0]).toHaveProperty("slug", PROJECT_SLUG);
     expect(body[0]).toHaveProperty("type", "project");
+    expect(body[0]).toHaveProperty("coverImage", "/images/projects/route-test-project.svg");
+    expect(body[0]).toHaveProperty("coverImageAlt", "Abstract route test project artwork.");
+    expect(body[0]).toHaveProperty("featured", true);
+    expect(body[0]).toHaveProperty("projectOrder", 5);
+    expect(body[0]).toHaveProperty("status", "Shipped");
+    expect(body[0]).toHaveProperty("role", "Test developer");
+    expect(body[0]).toHaveProperty("timeframe", "2026");
+    expect(body[0]).toHaveProperty("links", [
+      { type: "repo", label: "Source", href: "https://example.com/route-test-project" },
+    ]);
+    expect(body[0]).toHaveProperty("outcome", "Route output includes project metadata.");
   });
 
   test("GET /content-assets/images/pixel.gif returns image bytes", async () => {

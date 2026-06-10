@@ -52,6 +52,75 @@ function articleMarkdown(
   ].join("\n");
 }
 
+function projectMarkdown(
+  overrides: Partial<{
+    title: string;
+    description: string;
+    date: string;
+    slug: string;
+    tags: string[];
+    body: string;
+    draft: boolean;
+    coverImage: string;
+    coverImageAlt: string;
+    featured: boolean;
+    projectOrder: number;
+    status: string;
+    role: string;
+    timeframe: string;
+    links: { type: string; label: string; href: string }[];
+    outcome: string;
+  }> = {},
+): string {
+  const title = overrides.title ?? "Sample Project";
+  const description = overrides.description ?? "Sample project description";
+  const date = overrides.date ?? "2026-02-08T12:00:00Z";
+  const slug = overrides.slug ?? "sample-project";
+  const tags = overrides.tags ?? ["sample", "project"];
+  const body = overrides.body ?? "# Sample Project\n\nProject body";
+  const draft = overrides.draft ?? false;
+  const coverImage = overrides.coverImage ?? "/images/projects/sample-project.svg";
+  const coverImageAlt = overrides.coverImageAlt ?? "Abstract project artwork.";
+  const featured = overrides.featured ?? false;
+  const projectOrder = overrides.projectOrder ?? 0;
+  const status = overrides.status ?? "Shipped";
+  const role = overrides.role ?? "Developer";
+  const timeframe = overrides.timeframe ?? "2026";
+  const links = overrides.links ?? [
+    { type: "repo", label: "Source", href: "https://example.com/repo" },
+  ];
+  const outcome = overrides.outcome ?? "Demonstrates the project metadata contract.";
+
+  return [
+    "---",
+    `title: ${title}`,
+    `description: ${description}`,
+    `date: ${date}`,
+    "tags:",
+    ...tags.map((tag) => `  - ${tag}`),
+    "type: project",
+    `draft: ${draft}`,
+    `slug: ${slug}`,
+    `coverImage: ${coverImage}`,
+    `coverImageAlt: ${coverImageAlt}`,
+    `featured: ${featured}`,
+    `projectOrder: ${projectOrder}`,
+    `status: ${status}`,
+    `role: ${role}`,
+    `timeframe: ${timeframe}`,
+    "links:",
+    ...links.flatMap((link) => [
+      `  - type: ${link.type}`,
+      `    label: ${link.label}`,
+      `    href: ${link.href}`,
+    ]),
+    `outcome: ${outcome}`,
+    "---",
+    "",
+    body,
+  ].join("\n");
+}
+
 describe("content service", () => {
   test("listContent returns items with frontmatter but no body", async () => {
     const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
@@ -125,10 +194,9 @@ describe("content service", () => {
       );
       await writeFile(
         resolve(tempContentDir, "sample-project.md"),
-        articleMarkdown({
+        projectMarkdown({
           title: "Sample Project",
           slug: "sample-project",
-          type: "project",
         }),
       );
 
@@ -153,11 +221,101 @@ describe("content service", () => {
       await writeFile(resolve(tempContentDir, "sample-article.md"), articleMarkdown());
       await writeFile(
         resolve(tempContentDir, "sample-project.md"),
-        articleMarkdown({ slug: "sample-project", type: "project" }),
+        projectMarkdown({ slug: "sample-project" }),
       );
 
       const all = await listContent(tempContentDir);
       expect(all).toHaveLength(2);
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
+  test("listContent normalizes project metadata", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "sample-project.md"),
+        projectMarkdown({ featured: true, projectOrder: 20 }),
+      );
+
+      const projects = await listContent(tempContentDir, { type: "project" });
+      expect(projects).toHaveLength(1);
+      expect(projects[0]).toMatchObject({
+        title: "Sample Project",
+        type: "project",
+        coverImage: "/images/projects/sample-project.svg",
+        coverImageAlt: "Abstract project artwork.",
+        featured: true,
+        projectOrder: 20,
+        status: "Shipped",
+        role: "Developer",
+        timeframe: "2026",
+        outcome: "Demonstrates the project metadata contract.",
+      });
+      expect(projects[0]).toHaveProperty("links", [
+        { type: "repo", label: "Source", href: "https://example.com/repo" },
+      ]);
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
+  test("getContentBySlug returns project metadata with body", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "sample-project.md"),
+        projectMarkdown({ body: "# Sample Project\n\n## Outcome\n\nResult text" }),
+      );
+
+      const project = await getContentBySlug("sample-project", tempContentDir);
+      expect(project).not.toBeNull();
+      if (project === null) {
+        throw new Error("Expected sample-project content item");
+      }
+      expect(project.type).toBe("project");
+      expect(project.coverImage).toBe("/images/projects/sample-project.svg");
+      expect(project.links).toEqual([
+        { type: "repo", label: "Source", href: "https://example.com/repo" },
+      ]);
+      expect(project.body).toContain("## Outcome");
+    } finally {
+      await rm(tempContentDir, { recursive: true, force: true });
+    }
+  });
+
+  test("listContent fails when a project is missing cover artwork metadata", async () => {
+    const tempContentDir = await mkdtemp(resolve(tmpdir(), "website-content-"));
+
+    try {
+      await writeFile(
+        resolve(tempContentDir, "missing-project-cover.md"),
+        [
+          "---",
+          "title: Missing Project Cover",
+          "date: 2026-02-08T12:00:00Z",
+          "type: project",
+          "draft: false",
+          "slug: missing-project-cover",
+          "---",
+          "",
+          "# Missing Project Cover",
+        ].join("\n"),
+      );
+
+      let thrownError: unknown;
+      try {
+        await listContent(tempContentDir, { type: "project" });
+      } catch (error) {
+        thrownError = error;
+      }
+      expect(thrownError).toBeInstanceOf(Error);
+      expect((thrownError as Error).message).toBe(
+        'Project "missing-project-cover.md" is missing coverImage or coverImageAlt',
+      );
     } finally {
       await rm(tempContentDir, { recursive: true, force: true });
     }

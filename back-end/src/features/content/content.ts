@@ -1,8 +1,8 @@
 import { readdir, readFile } from "fs/promises";
 import { join, basename } from "path";
 import matter from "gray-matter";
-import { ARTICLE_CATEGORIES } from "shared";
-import type { ArticleCategory, ContentFrontmatter, ContentType } from "shared";
+import { ARTICLE_CATEGORIES, PROJECT_LINK_TYPES, PROJECT_STATUSES } from "shared";
+import type { ArticleCategory, ContentFrontmatter, ContentType, ProjectLink, ProjectStatus } from "shared";
 import { rewriteObsidianImageEmbeds } from "./obsidian";
 
 /** Content item with frontmatter only (for listing pages). */
@@ -26,6 +26,79 @@ function normalizeDate(value: unknown): string | undefined {
   }
 
   return undefined;
+}
+
+function normalizeString(value: unknown): string | undefined {
+  if (typeof value === "string" && value.trim() !== "") {
+    return value;
+  }
+
+  return undefined;
+}
+
+function normalizeTimeframe(value: unknown): string | undefined {
+  const stringValue = normalizeString(value);
+  if (stringValue !== undefined) {
+    return stringValue;
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  return undefined;
+}
+
+function normalizeBoolean(value: unknown, fallback: boolean): boolean {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  return fallback;
+}
+
+function normalizeNumber(value: unknown, fallback: number): number {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  return fallback;
+}
+
+function normalizeProjectStatus(value: unknown): ProjectStatus | undefined {
+  if (typeof value === "string" && (PROJECT_STATUSES as readonly string[]).includes(value)) {
+    return value as ProjectStatus;
+  }
+
+  return undefined;
+}
+
+function normalizeProjectLinks(value: unknown): ProjectLink[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item): ProjectLink[] => {
+    if (typeof item !== "object" || item === null) {
+      return [];
+    }
+
+    const rawLink = item as Record<string, unknown>;
+    const type = rawLink["type"];
+    const label = normalizeString(rawLink["label"]);
+    const href = normalizeString(rawLink["href"]);
+
+    if (
+      typeof type !== "string"
+      || !(PROJECT_LINK_TYPES as readonly string[]).includes(type)
+      || label === undefined
+      || href === undefined
+    ) {
+      return [];
+    }
+
+    return [{ type: type as ProjectLink["type"], label, href }];
+  });
 }
 
 function normalizeFrontmatter(file: string, value: unknown): ContentFrontmatter | null {
@@ -85,7 +158,30 @@ function normalizeFrontmatter(file: string, value: unknown): ContentFrontmatter 
     return { title, description, date, tags, type, draft, category, slug };
   }
 
-  return { title, description, date, tags, type, draft, slug };
+  const coverImage = normalizeString(raw["coverImage"]);
+  const coverImageAlt = normalizeString(raw["coverImageAlt"]);
+  if (coverImage === undefined || coverImageAlt === undefined) {
+    throw new Error(`Project "${file}" is missing coverImage or coverImageAlt`);
+  }
+
+  return {
+    title,
+    description,
+    date,
+    tags,
+    type,
+    draft,
+    slug,
+    coverImage,
+    coverImageAlt,
+    featured: normalizeBoolean(raw["featured"], false),
+    projectOrder: normalizeNumber(raw["projectOrder"], 0),
+    status: normalizeProjectStatus(raw["status"]),
+    role: normalizeString(raw["role"]),
+    timeframe: normalizeTimeframe(raw["timeframe"]),
+    links: normalizeProjectLinks(raw["links"]),
+    outcome: normalizeString(raw["outcome"]),
+  };
 }
 
 /**
