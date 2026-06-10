@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Personal website platform artwork</title>
+  <desc id="desc">Abstract Adwaita editorial illustration with a browser window, content cards, and blue-green accent shapes.</desc>
+  <rect width="1200" height="800" rx="72" fill="#f3efe5"/>
+  <circle cx="220" cy="190" r="120" fill="#3584e4"/>
+  <circle cx="980" cy="650" r="150" fill="#2190a4"/>
+  <rect x="210" y="170" width="780" height="460" rx="42" fill="#ffffff" stroke="#deddda" stroke-width="6"/>
+  <rect x="210" y="170" width="780" height="72" rx="42" fill="#f6f5f4"/>
+  <circle cx="262" cy="206" r="13" fill="#e62d42"/>
+  <circle cx="304" cy="206" r="13" fill="#c88800"/>
+  <circle cx="346" cy="206" r="13" fill="#3a944a"/>
+  <rect x="288" y="304" width="250" height="210" rx="28" fill="#3584e4"/>
+  <rect x="588" y="304" width="260" height="74" rx="22" fill="#241f31"/>
+  <rect x="588" y="414" width="300" height="28" rx="14" fill="#9a9996"/>
+  <rect x="588" y="468" width="230" height="28" rx="14" fill="#c0bfbc"/>
+  <path d="M338 464c64-108 109-145 162-145 63 0 101 53 101 145z" fill="#81d0ff" opacity="0.95"/>
+</svg>
