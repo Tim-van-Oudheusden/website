@@ -26,6 +26,7 @@ Thumbs.db
 # Local sandbox/test state
 .pi-sandbox/
 .tmp/
+.superpowers/
 
 # Docker
 docker-compose.override.yml
