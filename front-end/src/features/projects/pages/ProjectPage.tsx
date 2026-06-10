@@ -1,19 +1,92 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
-import { ROUTES } from "shared";
+import { ROUTES, type ContentFrontmatter, type ProjectFrontmatter } from "shared";
 import { apiGet, ApiError } from "@/shared/lib/api";
 import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
 import { MarkdownRenderer } from "@/shared/components/MarkdownRenderer";
 import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
 
-interface ProjectData {
-  title: string;
-  description: string;
-  date: string;
-  tags: string[];
-  slug: string;
-  body: string;
+export type ProjectData = ProjectFrontmatter & { body: string };
+type ContentData = ContentFrontmatter & { body: string };
+
+export const PROJECT_PAGE_LAYOUT_CLASSES = {
+  main: "w-full flex-1 bg-[var(--adw-page-brown-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8",
+  articleMeasure: "mx-auto w-full max-w-[75ch]",
+  coverFrame: "mb-8 aspect-[16/10] overflow-hidden rounded-[2rem] bg-[var(--site-section-well-bg)] shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)]",
+  metadataPanel: "mb-8 rounded-[2rem] bg-[var(--site-section-well-bg)] p-5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:p-6",
+} as const;
+
+export const PROJECT_PAGE_TYPOGRAPHY_CLASSES = {
+  title: "text-[1.75rem] font-semibold tracking-tight sm:text-[2rem]",
+  description: "text-muted-foreground mt-2 max-w-[65ch] text-base leading-relaxed sm:text-lg",
+  metaLabel: "text-muted-foreground text-xs font-bold uppercase tracking-[0.16em]",
+  metaValue: "text-sm font-medium",
+  tagBadge: "text-xs font-bold",
+} as const;
+
+export function isProjectData(value: ContentData): value is ProjectData {
+  return value.type === "project";
+}
+
+interface ProjectMetaHeaderProps {
+  project: ProjectData;
+}
+
+export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): React.JSX.Element {
+  return (
+    <header className="mb-8">
+      <Link to="/projects" className="text-primary mb-6 inline-flex text-sm font-semibold underline-offset-4 hover:underline">
+        Back to projects
+      </Link>
+      <div className={PROJECT_PAGE_LAYOUT_CLASSES.coverFrame}>
+        <img src={project.coverImage} alt={project.coverImageAlt} className="h-full w-full object-cover" loading="eager" />
+      </div>
+      <h1 className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.title}>{project.title}</h1>
+      <p className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.description}>{project.description}</p>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <time className="text-muted-foreground text-sm font-medium">{new Date(project.date).toLocaleDateString()}</time>
+        {project.status !== undefined && <Badge variant="secondary" className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.tagBadge}>{project.status}</Badge>}
+        {project.tags.map((tag) => (
+          <Badge key={tag} variant="outline" className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.tagBadge}>{tag}</Badge>
+        ))}
+      </div>
+      <div className={PROJECT_PAGE_LAYOUT_CLASSES.metadataPanel}>
+        <dl className="grid gap-4 sm:grid-cols-3">
+          {project.role !== undefined && (
+            <div>
+              <dt className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaLabel}>Role</dt>
+              <dd className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaValue}>{project.role}</dd>
+            </div>
+          )}
+          {project.timeframe !== undefined && (
+            <div>
+              <dt className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaLabel}>Timeframe</dt>
+              <dd className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaValue}>{project.timeframe}</dd>
+            </div>
+          )}
+          {project.outcome !== undefined && (
+            <div className="sm:col-span-3">
+              <dt className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaLabel}>Outcome</dt>
+              <dd className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaValue}>{project.outcome}</dd>
+            </div>
+          )}
+        </dl>
+        {project.links.length > 0 && (
+          <div className="mt-5 flex flex-wrap gap-2">
+            {project.links.map((link) => (
+              <Button key={`${link.type}-${link.href}`} asChild variant="secondary" size="sm">
+                <a href={link.href} target={link.href.startsWith("http") ? "_blank" : undefined} rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}>
+                  {link.label}
+                </a>
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
+    </header>
+  );
 }
 
 export function ProjectPage(): React.JSX.Element {
@@ -32,8 +105,13 @@ export function ProjectPage(): React.JSX.Element {
     async function fetchProject(): Promise<void> {
       try {
         const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", contentSlug);
-        const data = await apiGet<ProjectData>(path);
+        const data = await apiGet<ContentData>(path);
         if (!cancelled) {
+          if (!isProjectData(data)) {
+            setNotFound(true);
+            setProject(null);
+            return;
+          }
           setProject(data);
         }
       } catch (err) {
@@ -70,7 +148,7 @@ export function ProjectPage(): React.JSX.Element {
   if (notFound) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-[var(--adw-page-brown-bg)] p-4">
-        <h1 className="text-3xl font-bold">Project not found</h1>
+        <h1 className="text-3xl font-semibold">Project not found</h1>
         <Link to="/projects" className="text-primary underline">
           Back to projects
         </Link>
@@ -87,22 +165,9 @@ export function ProjectPage(): React.JSX.Element {
   }
 
   return (
-    <main className="mx-auto w-full max-w-screen-xl flex-1 bg-[var(--adw-page-brown-bg)] p-4 sm:p-6 lg:p-8">
-      <article>
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{project.title}</h1>
-          <p className="text-muted-foreground mt-2">{project.description}</p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <time className="text-muted-foreground text-sm">
-              {new Date(project.date).toLocaleDateString()}
-            </time>
-            {project.tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        </header>
+    <main className={PROJECT_PAGE_LAYOUT_CLASSES.main}>
+      <article className={PROJECT_PAGE_LAYOUT_CLASSES.articleMeasure}>
+        <ProjectMetaHeader project={project} />
         <ErrorBoundary>
           <MarkdownRenderer content={project.body} />
         </ErrorBoundary>
