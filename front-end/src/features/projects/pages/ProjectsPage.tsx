@@ -6,7 +6,7 @@ import { apiGet, ApiError } from "@/shared/lib/api";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
-import { resolveFeaturedProject, resolveGalleryProjects } from "../project-display";
+import { resolvePriorityProjects, resolveGalleryProjects } from "../project-display";
 
 export const PROJECTS_PAGE_LAYOUT_CLASSES = {
   main: "w-full flex-1 bg-[var(--adw-page-brown-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8",
@@ -40,8 +40,8 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, featured = false }: ProjectCardProps): React.JSX.Element {
   return (
-    <Card className="group h-full overflow-hidden border-border bg-card p-0 transition-colors hover:border-primary">
-      <Link to={`/projects/${project.slug}`} className="flex h-full flex-col">
+    <Card className="group h-full overflow-hidden border-border bg-[var(--site-section-well-bg)] p-0 transition-colors hover:border-primary">
+      <Link to={`/projects/${project.slug}`} className="flex h-full flex-col gap-6">
         <div className={featured ? "aspect-[16/10] overflow-hidden" : "aspect-[4/3] overflow-hidden"}>
           <img
             src={project.coverImage}
@@ -134,7 +134,9 @@ export function ProjectsPage(): React.JSX.Element {
     );
   }
 
-  const featuredProject = resolveFeaturedProject(projects);
+  const priorityProjects = resolvePriorityProjects(projects);
+  const primaryProject = priorityProjects[0] ?? null;
+  const secondaryProjects = priorityProjects.slice(1);
   const galleryProjects = resolveGalleryProjects(projects);
 
   return (
@@ -146,19 +148,26 @@ export function ProjectsPage(): React.JSX.Element {
           <p className={PROJECTS_PAGE_TYPOGRAPHY_CLASSES.description}>{PROJECTS_PAGE_TEXT.description}</p>
         </section>
 
-        {featuredProject !== null && (
+        {primaryProject !== null && (
           <section aria-labelledby="featured-project-heading" className="flex flex-col gap-4">
             <h2 id="featured-project-heading" className={PROJECTS_PAGE_TYPOGRAPHY_CLASSES.sectionTitle}>{PROJECTS_PAGE_TEXT.featuredHeading}</h2>
             <div className={PROJECTS_PAGE_LAYOUT_CLASSES.featuredGrid}>
-              <ProjectCard project={featuredProject} featured />
-              <div className="rounded-[2rem] bg-[var(--site-section-well-bg)] p-5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:p-6">
-                <p className="text-muted-foreground text-sm font-bold uppercase tracking-[0.18em]">Why this matters</p>
-                <p className="mt-4 text-lg leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80">
-                  {featuredProject.outcome ?? featuredProject.description}
-                </p>
-                <Button asChild className="mt-6 w-fit">
-                  <Link to={`/projects/${featuredProject.slug}`}>Read the case study</Link>
-                </Button>
+              <ProjectCard project={primaryProject} featured />
+              <div className="flex flex-col gap-4">
+                {secondaryProjects.map((project) => (
+                  <ProjectCard key={project.slug} project={project} />
+                ))}
+                {secondaryProjects.length === 0 && (
+                  <div className="rounded-[2rem] bg-[var(--site-section-well-bg)] p-5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:p-6">
+                    <p className="text-muted-foreground text-sm font-bold uppercase tracking-[0.18em]">Why this matters</p>
+                    <p className="mt-4 text-lg leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80">
+                      {primaryProject.outcome ?? primaryProject.description}
+                    </p>
+                    <Button asChild className="mt-6 w-fit">
+                      <Link to={`/projects/${primaryProject.slug}`}>Read the case study</Link>
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </section>

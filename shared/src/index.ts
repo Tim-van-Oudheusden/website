@@ -105,6 +105,8 @@ export interface ProjectFrontmatter extends BaseContentFrontmatter {
   coverImageAlt: string;
   featured: boolean;
   projectOrder: number;
+  /** Optional priority slot (1, 2, or 3) for prominent placement on the Projects page. */
+  prioritySlot?: 1 | 2 | 3 | undefined;
   status?: ProjectStatus | undefined;
   role?: string | undefined;
   timeframe?: string | undefined;

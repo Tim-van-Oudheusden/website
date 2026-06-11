@@ -198,6 +198,10 @@ describe("navigateToArticleHeadingById", () => {
     });
   });
 
+  test("sidebar article button class does not include cursor-pointer, indicating Link-based navigation", () => {
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton).not.toContain("cursor-pointer");
+  });
+
   test("falls back to native hash updates when the heading target is missing", () => {
     let fallbackHash: string | null = null;
     let loggedEvent: {

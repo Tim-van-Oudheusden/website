@@ -3,6 +3,7 @@ import type { ProjectFrontmatter } from "shared";
 import {
   resolveFeaturedProject,
   resolveGalleryProjects,
+  resolvePriorityProjects,
   sortProjectsForDisplay,
 } from "./project-display";
 
@@ -66,5 +67,60 @@ describe("project-display helpers", () => {
     ];
 
     expect(resolveGalleryProjects(projects).map((item) => item.slug)).toEqual(["gallery-a", "gallery-b"]);
+  });
+
+  describe("resolvePriorityProjects", () => {
+    test("returns projects in priority slot order when all three are set", () => {
+      const projects = [
+        project({ slug: "third", prioritySlot: 3 }),
+        project({ slug: "first", prioritySlot: 1 }),
+        project({ slug: "second", prioritySlot: 2 }),
+      ];
+
+      expect(resolvePriorityProjects(projects).map((item) => item.slug)).toEqual(["first", "second", "third"]);
+    });
+
+    test("returns partial results when fewer than three priority slots are set", () => {
+      const projects = [
+        project({ slug: "first", prioritySlot: 1 }),
+        project({ slug: "gallery", prioritySlot: undefined }),
+      ];
+
+      expect(resolvePriorityProjects(projects).map((item) => item.slug)).toEqual(["first"]);
+    });
+
+    test("falls back to first sorted project when no priority slots or featured flag", () => {
+      const projects = [
+        project({ slug: "a", projectOrder: 10 }),
+        project({ slug: "b", projectOrder: 20 }),
+      ];
+
+      const result = resolvePriorityProjects(projects);
+      expect(result.length).toBe(1);
+      expect(result[0].slug).toBe("a");
+    });
+
+    test("fallback uses featured project as slot 1 when no priority slots are set", () => {
+      const projects = [
+        project({ slug: "featured", featured: true, projectOrder: 10 }),
+        project({ slug: "other", projectOrder: 20 }),
+      ];
+
+      const result = resolvePriorityProjects(projects);
+      expect(result.length).toBe(1);
+      expect(result[0].slug).toBe("featured");
+    });
+
+    test("duplicate prevention excludes priority projects from gallery", () => {
+      const projects = [
+        project({ slug: "first", prioritySlot: 1 }),
+        project({ slug: "second", prioritySlot: 2 }),
+        project({ slug: "gallery-a", projectOrder: 20 }),
+        project({ slug: "gallery-b", projectOrder: 30 }),
+      ];
+
+      const gallery = resolveGalleryProjects(projects);
+      expect(gallery.map((item) => item.slug)).toEqual(["gallery-a", "gallery-b"]);
+    });
   });
 });

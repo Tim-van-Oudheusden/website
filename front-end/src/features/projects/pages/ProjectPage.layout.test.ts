@@ -59,6 +59,14 @@ describe("ProjectPage exports", () => {
 });
 
 describe("ProjectMetaHeader", () => {
+  test("uses themed well surface for metadata panel", () => {
+    expect(PROJECT_PAGE_LAYOUT_CLASSES.metadataPanel).toContain("site-section-well-bg");
+  });
+
+  test("has top margin on metadata panel for separation from header metadata", () => {
+    expect(PROJECT_PAGE_LAYOUT_CLASSES.metadataPanel).toMatch(/mt-/);
+  });
+
   test("renders breadcrumb, artwork, metadata, and external links", () => {
     const html = renderToStaticMarkup(createElement(
       MemoryRouter,

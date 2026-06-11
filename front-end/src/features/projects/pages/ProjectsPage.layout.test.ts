@@ -47,6 +47,28 @@ describe("PROJECTS_PAGE layout constants", () => {
 });
 
 describe("ProjectCard", () => {
+  test("has vertical gap between artwork and header labels", () => {
+    const html = renderToStaticMarkup(createElement(
+      MemoryRouter,
+      null,
+      createElement(ProjectCard, { project: sampleProject }),
+    ));
+
+    const linkMatch = html.match(/<a class="([^"]*)"/);
+    expect(linkMatch).not.toBeNull();
+    expect(linkMatch![1]).toMatch(/gap-(\d+)/);
+  });
+
+  test("uses themed well surface instead of default card background", () => {
+    const html = renderToStaticMarkup(createElement(
+      MemoryRouter,
+      null,
+      createElement(ProjectCard, { project: sampleProject }),
+    ));
+
+    expect(html).toContain("site-section-well-bg");
+  });
+
   test("renders image-led project metadata and internal destination", () => {
     const html = renderToStaticMarkup(createElement(
       MemoryRouter,
