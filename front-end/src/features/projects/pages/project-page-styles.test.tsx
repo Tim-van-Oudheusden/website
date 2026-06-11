@@ -53,9 +53,22 @@ describe("project page styling", () => {
     }
 
     const discoverHtml = renderToStaticMarkup(createElement(HomeSection, { section: startSection }));
+    const renderedCaseStudyButtonClass = PROJECTS_PAGE_TYPOGRAPHY_CLASSES.caseStudyButton.replace("bg-[var(--adw-dark-5)]", "bg-(--adw-dark-5)");
 
-    expect(discoverHtml).toContain(PROJECTS_PAGE_TYPOGRAPHY_CLASSES.caseStudyButton);
+    expect(discoverHtml).toContain(renderedCaseStudyButtonClass);
     expect(PROJECTS_PAGE_SOURCE).toContain("variant=\"secondary\" size=\"lg\"");
     expect(PROJECTS_PAGE_SOURCE).toContain("PROJECTS_PAGE_TYPOGRAPHY_CLASSES.caseStudyButton");
+  });
+
+  test("renders project cards with an inverted two-pixel hover outline and keeps image zoom", () => {
+    const html = renderWithRouter(createElement(ProjectCard, { project: project() }));
+
+    expect(html).toContain("hover:border-[var(--adw-dark-5)]");
+    expect(html).toContain("dark:hover:border-[var(--adw-light-1)]");
+    expect(html).toContain("hover:ring-1");
+    expect(html).toContain("hover:ring-[var(--adw-dark-5)]");
+    expect(html).toContain("dark:hover:ring-[var(--adw-light-1)]");
+    expect(html).toContain("group-hover:scale-[1.03]");
+    expect(html).not.toContain("hover:border-primary");
   });
 });

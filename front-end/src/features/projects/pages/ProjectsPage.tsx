@@ -42,7 +42,7 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, featured = false }: ProjectCardProps): React.JSX.Element {
   return (
-    <Card className="group h-full overflow-hidden border-border bg-(--site-section-well-bg) p-0 transition-colors hover:border-primary">
+    <Card className="group h-full overflow-hidden border-border bg-(--site-section-well-bg) p-0 transition-[border-color,box-shadow] hover:border-[var(--adw-dark-5)] hover:ring-1 hover:ring-[var(--adw-dark-5)] dark:hover:border-[var(--adw-light-1)] dark:hover:ring-[var(--adw-light-1)]">
       <Link to={`/projects/${project.slug}`} className="flex h-full flex-col gap-6">
         <div className={featured ? "aspect-16/10 overflow-hidden" : "aspect-4/3 overflow-hidden"}>
           <img
