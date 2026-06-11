@@ -1025,7 +1025,7 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps): Re
   return (
     <Card className="group h-full overflow-hidden border-border bg-card p-0 transition-colors hover:border-primary">
       <Link to={`/projects/${project.slug}`} className="flex h-full flex-col">
-        <div className={featured ? "aspect-[16/10] overflow-hidden" : "aspect-[4/3] overflow-hidden"}>
+        <div className={featured ? "aspect-16/10 overflow-hidden" : "aspect-4/3 overflow-hidden"}>
           <img
             src={project.coverImage}
             alt={project.coverImageAlt}
@@ -1043,7 +1043,7 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps): Re
         </CardHeader>
         <CardContent className="mt-auto flex flex-col gap-4 pb-6">
           {project.outcome !== undefined && (
-            <p className="text-sm font-medium text-[var(--adw-dark-4)] dark:text-[var(--adw-light-2)]">{project.outcome}</p>
+            <p className="text-sm font-medium text-(--adw-dark-4) dark:text-(--adw-light-2)">{project.outcome}</p>
           )}
           <div className="flex flex-wrap gap-1.5">
             {project.tags.map((tag) => (
@@ -1092,9 +1092,9 @@ Replace the loaded `return` JSX with:
             <h2 id="featured-project-heading" className={PROJECTS_PAGE_TYPOGRAPHY_CLASSES.sectionTitle}>{PROJECTS_PAGE_TEXT.featuredHeading}</h2>
             <div className={PROJECTS_PAGE_LAYOUT_CLASSES.featuredGrid}>
               <ProjectCard project={featuredProject} featured />
-              <div className="rounded-[2rem] bg-[var(--site-section-well-bg)] p-5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:p-6">
+              <div className="rounded-[2rem] bg-(--site-section-well-bg) p-5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:p-6">
                 <p className="text-muted-foreground text-sm font-bold uppercase tracking-[0.18em]">Why this matters</p>
-                <p className="mt-4 text-lg leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80">
+                <p className="mt-4 text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80">
                   {featuredProject.outcome ?? featuredProject.description}
                 </p>
                 <Button asChild className="mt-6 w-fit">

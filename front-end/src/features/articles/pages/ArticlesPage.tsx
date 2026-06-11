@@ -367,7 +367,7 @@ export function ArticlesPage(): React.JSX.Element {
 
   if (loadingArticles) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-muted-foreground">Loading articles...</p>
       </main>
     );
@@ -375,7 +375,7 @@ export function ArticlesPage(): React.JSX.Element {
 
   if (listError !== null) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-destructive">{listError}</p>
       </main>
     );
@@ -383,7 +383,7 @@ export function ArticlesPage(): React.JSX.Element {
 
   if (articles.length === 0) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--adw-page-brown-bg) p-4">
         <h1 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.pageTitle}>Articles</h1>
         <p className="text-muted-foreground">No articles yet.</p>
       </main>
