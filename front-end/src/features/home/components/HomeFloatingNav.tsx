@@ -95,7 +95,7 @@ export function HomeFloatingNav({
     >
       <ul
         ref={navListRef}
-        className="relative flex gap-2 rounded-2xl border border-(--adw-light-4) bg-background dark:bg-(--adw-page-brown-bg) p-3 shadow-lg backdrop-blur-md"
+        className="relative flex gap-2 rounded-2xl border border-(--adw-light-4) bg-background dark:bg-(--site-section-well-bg) p-3 shadow-lg backdrop-blur-md"
       >
         <span
           aria-hidden="true"
