@@ -69,7 +69,7 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps): Re
               </Badge>
             ))}
           </div>
-          <span className="text-primary text-sm font-semibold">View project</span>
+          <span className="text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)] text-sm font-semibold">View project</span>
         </CardContent>
       </Link>
     </Card>

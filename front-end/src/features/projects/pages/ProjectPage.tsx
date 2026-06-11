@@ -37,7 +37,7 @@ interface ProjectMetaHeaderProps {
 export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): React.JSX.Element {
   return (
     <header className="mb-8">
-      <Link to="/projects" className="text-primary mb-6 inline-flex text-sm font-semibold underline-offset-4 hover:underline">
+      <Link to="/projects" className="text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)] mb-6 inline-flex text-sm font-semibold underline-offset-4 hover:underline">
         Back to projects
       </Link>
       <div className={PROJECT_PAGE_LAYOUT_CLASSES.coverFrame}>
@@ -149,7 +149,7 @@ export function ProjectPage(): React.JSX.Element {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--adw-page-brown-bg) p-4">
         <h1 className="text-3xl font-semibold">Project not found</h1>
-        <Link to="/projects" className="text-primary underline">
+        <Link to="/projects" className="text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)] underline">
           Back to projects
         </Link>
       </main>
