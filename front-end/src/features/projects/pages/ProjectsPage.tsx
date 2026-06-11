@@ -69,7 +69,7 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps): Re
               </Badge>
             ))}
           </div>
-          <span className="text-primary text-sm font-semibold">View case study</span>
+          <span className="text-primary text-sm font-semibold">View project</span>
         </CardContent>
       </Link>
     </Card>

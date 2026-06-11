@@ -960,7 +960,7 @@ describe("ProjectCard", () => {
     expect(html).toContain("Shipped");
     expect(html).toContain("Full-stack developer");
     expect(html).toContain("Built a maintainable home");
-    expect(html).toContain("View case study");
+    expect(html).toContain("View project");
   });
 });
 ```
@@ -1052,7 +1052,7 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps): Re
               </Badge>
             ))}
           </div>
-          <span className="text-primary text-sm font-semibold">View case study</span>
+          <span className="text-primary text-sm font-semibold">View project</span>
         </CardContent>
       </Link>
     </Card>
