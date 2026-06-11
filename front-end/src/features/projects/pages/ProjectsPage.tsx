@@ -40,9 +40,9 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, featured = false }: ProjectCardProps): React.JSX.Element {
   return (
-    <Card className="group h-full overflow-hidden border-border bg-[var(--site-section-well-bg)] p-0 transition-colors hover:border-primary">
+    <Card className="group h-full overflow-hidden border-border bg-(--site-section-well-bg) p-0 transition-colors hover:border-primary">
       <Link to={`/projects/${project.slug}`} className="flex h-full flex-col gap-6">
-        <div className={featured ? "aspect-[16/10] overflow-hidden" : "aspect-[4/3] overflow-hidden"}>
+        <div className={featured ? "aspect-16/10 overflow-hidden" : "aspect-4/3 overflow-hidden"}>
           <img
             src={project.coverImage}
             alt={project.coverImageAlt}
@@ -53,14 +53,14 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps): Re
         <CardHeader className="gap-3">
           <div className="flex flex-wrap items-center gap-2">
             {project.status !== undefined && <Badge variant="secondary">{project.status}</Badge>}
-            {project.timeframe !== undefined && <span className="text-muted-foreground text-xs font-medium">{project.timeframe}</span>}
+            {project.created !== undefined && <span className="text-muted-foreground text-xs font-medium">{project.created}</span>}
           </div>
           <CardTitle className={PROJECTS_PAGE_TYPOGRAPHY_CLASSES.cardTitle}>{project.title}</CardTitle>
           <CardDescription className={PROJECTS_PAGE_TYPOGRAPHY_CLASSES.cardDescription}>{project.description}</CardDescription>
         </CardHeader>
         <CardContent className="mt-auto flex flex-col gap-4 pb-6">
-          {project.outcome !== undefined && (
-            <p className="text-sm font-medium text-[var(--adw-dark-4)] dark:text-[var(--adw-light-2)]">{project.outcome}</p>
+          {project.info !== undefined && (
+            <p className="text-sm font-medium text-(--adw-dark-4) dark:text-(--adw-light-2)">{project.info}</p>
           )}
           <div className="flex flex-wrap gap-1.5">
             {project.tags.map((tag) => (
@@ -111,7 +111,7 @@ export function ProjectsPage(): React.JSX.Element {
 
   if (loading) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-muted-foreground">Loading projects...</p>
       </main>
     );
@@ -119,7 +119,7 @@ export function ProjectsPage(): React.JSX.Element {
 
   if (error !== null) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-destructive">{error}</p>
       </main>
     );
@@ -127,7 +127,7 @@ export function ProjectsPage(): React.JSX.Element {
 
   if (projects.length === 0) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--adw-page-brown-bg) p-4">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Projects</h1>
         <p className="text-muted-foreground">Project case studies are being prepared.</p>
       </main>
@@ -158,10 +158,10 @@ export function ProjectsPage(): React.JSX.Element {
                   <ProjectCard key={project.slug} project={project} />
                 ))}
                 {secondaryProjects.length === 0 && (
-                  <div className="rounded-[2rem] bg-[var(--site-section-well-bg)] p-5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:p-6">
+                  <div className="rounded-[2rem] bg-(--site-section-well-bg) p-5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:p-6">
                     <p className="text-muted-foreground text-sm font-bold uppercase tracking-[0.18em]">Why this matters</p>
-                    <p className="mt-4 text-lg leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80">
-                      {primaryProject.outcome ?? primaryProject.description}
+                    <p className="mt-4 text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80">
+                      {primaryProject.info ?? primaryProject.description}
                     </p>
                     <Button asChild className="mt-6 w-fit">
                       <Link to={`/projects/${primaryProject.slug}`}>Read the case study</Link>

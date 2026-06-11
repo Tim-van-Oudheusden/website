@@ -16,12 +16,12 @@ featured: false
 projectOrder: 30
 status: Shipped
 role: Developer
-timeframe: 2026
+created: 2026
 links:
   - type: repo
     label: Repository scripts
     href: https://github.com/Tim-van-Oudheusden/website
-outcome: Captured sandbox assumptions in scripts and tests so local automation remains easier to inspect and maintain.
+info: Captured sandbox assumptions in scripts and tests so local automation remains easier to inspect and maintain.
 ---
 
 # Pi Sandbox Automation

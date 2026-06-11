@@ -60,16 +60,16 @@ export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): React.JS
               <dd className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaValue}>{project.role}</dd>
             </div>
           )}
-          {project.timeframe !== undefined && (
+          {project.created !== undefined && (
             <div>
-              <dt className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaLabel}>Timeframe</dt>
-              <dd className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaValue}>{project.timeframe}</dd>
+              <dt className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaLabel}>Created</dt>
+              <dd className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaValue}>{project.created}</dd>
             </div>
           )}
-          {project.outcome !== undefined && (
+          {project.info !== undefined && (
             <div className="sm:col-span-3">
-              <dt className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaLabel}>Outcome</dt>
-              <dd className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaValue}>{project.outcome}</dd>
+              <dt className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaLabel}>Info</dt>
+              <dd className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaValue}>{project.info}</dd>
             </div>
           )}
         </dl>
@@ -139,7 +139,7 @@ export function ProjectPage(): React.JSX.Element {
 
   if (loading) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-muted-foreground">Loading project...</p>
       </main>
     );
@@ -147,7 +147,7 @@ export function ProjectPage(): React.JSX.Element {
 
   if (notFound) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--adw-page-brown-bg) p-4">
         <h1 className="text-3xl font-semibold">Project not found</h1>
         <Link to="/projects" className="text-primary underline">
           Back to projects
@@ -158,7 +158,7 @@ export function ProjectPage(): React.JSX.Element {
 
   if (error !== null || project === null) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-destructive">{error ?? "Something went wrong"}</p>
       </main>
     );

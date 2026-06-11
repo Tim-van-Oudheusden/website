@@ -1,27 +1,25 @@
 ---
-title: Personal Website Platform
+title: Minimal Android Launcher
 description: A full-stack personal website for articles, projects, and long-form markdown content.
 date: 2026-06-10
 tags:
-  - React
-  - Fastify
-  - Tailwind CSS
-  - Content
+  - Android
+  - Launcher
 type: project
 draft: false
-slug: personal-website-platform
-coverImage: /images/projects/personal-website-platform.svg
-coverImageAlt: Abstract Adwaita editorial artwork showing a browser window, content cards, and blue-green accent shapes.
+slug: minimal-android-launcher
+coverImage: /images/projects/placeholder_phone_project.png
+coverImageAlt: Yet to be decided
 featured: true
 projectOrder: 10
-status: Shipped
+status: In development
 role: Full-stack developer
-timeframe: 2026
+created: 2026
 links:
   - type: repo
     label: Source repository
     href: https://github.com/Tim-van-Oudheusden/website
-outcome: Built a maintainable home for articles, projects, and experiments with shared route and content contracts.
+info: A new launcher heavily inspired by MinUI for various retro handhelds
 ---
 
 # Personal Website Platform

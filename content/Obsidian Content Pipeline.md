@@ -16,12 +16,12 @@ featured: false
 projectOrder: 20
 status: Shipped
 role: Developer and content author
-timeframe: 2026
+created: 2026
 links:
   - type: article
     label: Notes article
     href: /articles/making-my-work-easier-with-notes-in-obsidian
-outcome: Made markdown authoring predictable enough to support articles and project case studies from one content folder.
+info: Made markdown authoring predictable enough to support articles and project case studies from one content folder.
 ---
 
 # Obsidian Content Pipeline

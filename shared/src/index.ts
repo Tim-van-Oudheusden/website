@@ -109,9 +109,9 @@ export interface ProjectFrontmatter extends BaseContentFrontmatter {
   prioritySlot?: 1 | 2 | 3 | undefined;
   status?: ProjectStatus | undefined;
   role?: string | undefined;
-  timeframe?: string | undefined;
+  created?: string | undefined;
   links: ProjectLink[];
-  outcome?: string | undefined;
+  info?: string | undefined;
 }
 
 export type ContentFrontmatter = ArticleFrontmatter | ProjectFrontmatter;

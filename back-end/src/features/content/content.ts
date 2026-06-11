@@ -178,9 +178,9 @@ function normalizeFrontmatter(file: string, value: unknown): ContentFrontmatter 
     projectOrder: normalizeNumber(raw["projectOrder"], 0),
     status: normalizeProjectStatus(raw["status"]),
     role: normalizeString(raw["role"]),
-    timeframe: normalizeTimeframe(raw["timeframe"]),
+    created: normalizeTimeframe(raw["timeframe"]),
     links: normalizeProjectLinks(raw["links"]),
-    outcome: normalizeString(raw["outcome"]),
+    info: normalizeString(raw["outcome"]),
   };
 }
 
