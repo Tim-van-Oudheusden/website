@@ -69,7 +69,7 @@ export function ArticlePage(): React.JSX.Element {
 
   if (loading) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-muted-foreground">Loading article...</p>
       </main>
     );
@@ -77,7 +77,7 @@ export function ArticlePage(): React.JSX.Element {
 
   if (notFound) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--adw-page-brown-bg) p-4">
         <h1 className="text-3xl font-semibold">Article not found</h1>
         <Link to="/articles" className="text-primary underline">
           Back to articles
@@ -88,14 +88,14 @@ export function ArticlePage(): React.JSX.Element {
 
   if (error !== null || article === null) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-destructive">{error ?? "Something went wrong"}</p>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto w-full max-w-screen-xl flex-1 bg-[var(--adw-page-brown-bg)] p-4 sm:p-6 lg:p-8">
+    <main className="mx-auto w-full max-w-7xl flex-1 bg-(--adw-page-brown-bg) p-4 sm:p-6 lg:p-8">
       <article className={ARTICLE_PAGE_TYPOGRAPHY_CLASSES.mainMeasure}>
         <header className="mb-8">
           <h1 className={ARTICLE_PAGE_TYPOGRAPHY_CLASSES.title}>{article.title}</h1>
