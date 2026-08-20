@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { ChevronRight, FileText, Folder, House } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
 import { ARTICLE_CATEGORIES, ROUTES, type ArticleCategory } from "shared";
 import { apiGet, ApiError } from "@/shared/lib/api";
 import { Badge } from "@/shared/components/ui/badge";
@@ -197,6 +197,7 @@ const INITIAL_OPEN_CATEGORIES: Record<ArticleCategory, boolean> = {
 };
 
 export function ArticlesPage(): React.JSX.Element {
+  const { slug } = useParams<{ slug: string }>();
   const [articles, setArticles] = useState<ArticleSummary[]>([]);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<ArticleData | null>(null);
@@ -206,6 +207,12 @@ export function ArticlesPage(): React.JSX.Element {
   const [articleError, setArticleError] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Record<ArticleCategory, boolean>>(INITIAL_OPEN_CATEGORIES);
   const [visibleTocHeadingIds, setVisibleTocHeadingIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (slug !== undefined && slug !== selectedSlug) {
+      setSelectedSlug(slug);
+    }
+  }, [slug, selectedSlug]);
 
   useEffect(() => {
     let cancelled = false;
@@ -360,7 +367,7 @@ export function ArticlesPage(): React.JSX.Element {
 
   if (loadingArticles) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-muted-foreground">Loading articles...</p>
       </main>
     );
@@ -368,7 +375,7 @@ export function ArticlesPage(): React.JSX.Element {
 
   if (listError !== null) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-destructive">{listError}</p>
       </main>
     );
@@ -376,7 +383,7 @@ export function ArticlesPage(): React.JSX.Element {
 
   if (articles.length === 0) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-[var(--adw-page-brown-bg)] p-4">
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--adw-page-brown-bg) p-4">
         <h1 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.pageTitle}>Articles</h1>
         <p className="text-muted-foreground">No articles yet.</p>
       </main>
@@ -432,10 +439,9 @@ export function ArticlesPage(): React.JSX.Element {
                         }
 
                         return (
-                          <button
+                          <Link
                             key={article.slug}
-                            type="button"
-                            onClick={() => { setSelectedSlug(article.slug); }}
+                            to={`/articles/${article.slug}`}
                             className={cn(
                               ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton,
                               articleStateClass,
@@ -443,7 +449,7 @@ export function ArticlesPage(): React.JSX.Element {
                           >
                             <FileText className="size-4" />
                             <span className="truncate">{article.title}</span>
-                          </button>
+                          </Link>
                         );
                       })}
                     </CollapsibleContent>

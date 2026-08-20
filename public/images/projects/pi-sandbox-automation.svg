@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Pi sandbox automation artwork</title>
+  <desc id="desc">Abstract Adwaita editorial illustration with a small computer board, automation path, and container blocks.</desc>
+  <rect width="1200" height="800" rx="72" fill="#f3efe5"/>
+  <circle cx="220" cy="220" r="130" fill="#3a944a"/>
+  <circle cx="960" cy="610" r="150" fill="#ed5b00"/>
+  <rect x="265" y="210" width="430" height="330" rx="44" fill="#ffffff" stroke="#deddda" stroke-width="6"/>
+  <rect x="338" y="285" width="110" height="110" rx="24" fill="#241f31"/>
+  <circle cx="560" cy="340" r="44" fill="#3584e4"/>
+  <circle cx="600" cy="450" r="22" fill="#c88800"/>
+  <circle cx="514" cy="450" r="22" fill="#2190a4"/>
+  <path d="M700 376c130 0 160-120 280-120" stroke="#3584e4" stroke-width="24" stroke-linecap="round" fill="none"/>
+  <rect x="832" y="198" width="170" height="120" rx="30" fill="#ffffff" stroke="#deddda" stroke-width="6"/>
+  <rect x="870" y="238" width="94" height="18" rx="9" fill="#241f31"/>
+  <rect x="870" y="278" width="64" height="18" rx="9" fill="#9a9996"/>
+  <path d="M330 566c80 58 190 58 270 0" stroke="#26a269" stroke-width="22" stroke-linecap="round" fill="none"/>
+</svg>

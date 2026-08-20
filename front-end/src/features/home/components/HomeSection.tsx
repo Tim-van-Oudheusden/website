@@ -35,7 +35,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
         <div
           className={cn(
             "w-full",
-            inWhiteWell ? "max-w-6xl lg:max-w-[83rem] rounded-[2rem] bg-[var(--site-section-well-bg)] px-5 py-8 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:px-8 sm:py-10 lg:px-6" : "",
+            inWhiteWell ? "max-w-6xl lg:max-w-332 rounded-[2rem] bg-(--site-section-well-bg) px-5 py-8 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:px-8 sm:py-10 lg:px-6" : "",
           )}
         >
           <ValuePillarsCarousel
@@ -75,18 +75,18 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
       >
         <div
           data-testid="start-white-box"
-          className="relative w-full max-w-6xl lg:max-w-[83rem] min-h-[29rem] rounded-[2rem] bg-[var(--site-section-well-bg)] shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] overflow-visible"
+          className="relative w-full max-w-6xl lg:max-w-332 min-h-116 rounded-[2rem] bg-(--site-section-well-bg) shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] overflow-visible"
         >
-          <div className="pl-[1.875rem] pr-5 py-8 sm:pl-12 sm:pr-8 sm:py-10 lg:pl-[2.25rem] lg:pr-6">
-            <div className="flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-[74rem] md:pr-[clamp(14rem,30vw,30rem)]">
+          <div className="pl-7.5 pr-5 py-8 sm:pl-12 sm:pr-8 sm:py-10 lg:pl-9 lg:pr-6">
+            <div className="flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296 md:pr-[clamp(14rem,30vw,30rem)]">
               <div className="flex flex-1 flex-col gap-5">
                 <h2
                   id={`${section.id}-heading`}
-                  className="font-bold tracking-tight text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)] text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem] leading-[1.05]"
+                  className="font-bold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem] leading-[1.05]"
                 >
                   {section.heading}
                 </h2>
-                <p className="max-w-[60ch] text-lg sm:text-xl leading-[1.55] text-[var(--adw-dark-5)] dark:text-white/80">
+                <p className="max-w-[60ch] text-lg sm:text-xl leading-[1.55] text-(--adw-dark-5) dark:text-white/80">
                   {section.body}
                 </p>
                 {hasCta && (
@@ -96,7 +96,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
                     size="lg"
                     className={cn(
                       "w-fit h-14 px-10 text-lg font-semibold tracking-wide",
-                      isDiscoverCta ? "bg-[var(--adw-dark-5)] text-white hover:bg-black/90" : "",
+                      isDiscoverCta ? "bg-(--adw-dark-5) text-white hover:bg-black/90" : "",
                     )}
                   >
                     <a
@@ -148,18 +148,18 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
       <div className="w-full">
         <div
           className={cn(
-            "mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-[74rem]",
+            "mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296",
             isRow ? "md:flex-row md:items-center" : "",
           )}
         >
           <div className="flex flex-1 flex-col gap-5">
             <h2
               id={`${section.id}-heading`}
-              className="font-semibold tracking-tight text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)] text-[1.75rem] sm:text-[2rem]"
+              className="font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]"
             >
               {section.heading}
             </h2>
-            <p className="max-w-[65ch] text-base sm:text-lg leading-relaxed text-[var(--adw-dark-5)] dark:text-white/80">
+            <p className="max-w-[65ch] text-base sm:text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80">
               {section.body}
             </p>
             {hasCta && (
@@ -169,7 +169,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
                 size="lg"
                 className={cn(
                   "w-fit",
-                  isDiscoverCta ? "bg-[var(--adw-dark-5)] text-white hover:bg-black/90" : "",
+                  isDiscoverCta ? "bg-(--adw-dark-5) text-white hover:bg-black/90" : "",
                 )}
               >
                 <a
@@ -186,7 +186,7 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
             )}
           </div>
           <div className="flex flex-1 items-center justify-center rounded-2xl bg-white/10 p-8">
-            <p className="text-sm text-[var(--adw-dark-5)]/50 dark:text-white/50">Media placeholder</p>
+            <p className="text-sm text-(--adw-dark-5)/50 dark:text-white/50">Media placeholder</p>
           </div>
         </div>
       </div>

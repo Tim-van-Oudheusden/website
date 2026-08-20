@@ -51,6 +51,10 @@ export const ROUTES = {
 /** The valid content types for Obsidian frontmatter entries. */
 export const CONTENT_TYPES = ["article", "project"] as const;
 
+export const PROJECT_STATUSES = ["Planned", "In Progress", "Shipped", "Archived"] as const;
+
+export const PROJECT_LINK_TYPES = ["demo", "repo", "docs", "article", "external"] as const;
+
 /** Canonical slug for the introduction article shown by default on /articles. */
 export const DEFAULT_ARTICLE_SLUG = "introduction";
 
@@ -59,6 +63,10 @@ export const ARTICLE_CATEGORIES = ["Introduction", "Linux", "Work", "Personal Li
 
 /** Union type of valid content types. */
 export type ContentType = (typeof CONTENT_TYPES)[number];
+
+export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
+
+export type ProjectLinkType = (typeof PROJECT_LINK_TYPES)[number];
 
 /** Union type of valid article categories. */
 export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
@@ -85,8 +93,25 @@ export interface ArticleFrontmatter extends BaseContentFrontmatter {
   category: ArticleCategory;
 }
 
+export interface ProjectLink {
+  type: ProjectLinkType;
+  label: string;
+  href: string;
+}
+
 export interface ProjectFrontmatter extends BaseContentFrontmatter {
   type: "project";
+  coverImage: string;
+  coverImageAlt: string;
+  featured: boolean;
+  projectOrder: number;
+  /** Optional priority slot (1, 2, or 3) for prominent placement on the Projects page. */
+  prioritySlot?: 1 | 2 | 3 | undefined;
+  status?: ProjectStatus | undefined;
+  role?: string | undefined;
+  created?: string | undefined;
+  links: ProjectLink[];
+  info?: string | undefined;
 }
 
 export type ContentFrontmatter = ArticleFrontmatter | ProjectFrontmatter;

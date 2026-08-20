@@ -4,7 +4,6 @@ import { TopBar } from "@/shared/components/TopBar";
 import { HomePage } from "@/features/home/pages/HomePage";
 import { ProjectsPage } from "@/features/projects/pages/ProjectsPage";
 import { ArticlesPage } from "@/features/articles/pages/ArticlesPage";
-import { ArticlePage } from "@/features/articles/pages/ArticlePage";
 import { ProjectPage } from "@/features/projects/pages/ProjectPage";
 
 export function App(): React.JSX.Element {
@@ -17,7 +16,7 @@ export function App(): React.JSX.Element {
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/projects/:slug" element={<ProjectPage />} />
           <Route path="/articles" element={<ArticlesPage />} />
-          <Route path="/articles/:slug" element={<ArticlePage />} />
+          <Route path="/articles/:slug" element={<ArticlesPage />} />
         </Routes>
       </div>
     </BrowserRouter>

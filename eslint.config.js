@@ -1,7 +1,10 @@
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import stylistic from "@stylistic/eslint-plugin";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const configDir = dirname(fileURLToPath(import.meta.url));
 
 const projectPaths = [
   "./tsconfig.eslint.json",
@@ -12,8 +15,8 @@ const projectPaths = [
   "./playwright/tsconfig.eslint.json",
 ];
 
-const workspaceAliasRootDir = import.meta.dirname.replace(/^\/var\/home\//, "/home/");
-const projectAliases = workspaceAliasRootDir === import.meta.dirname
+const workspaceAliasRootDir = configDir.replace(/^\/var\/home\//, "/home/");
+const projectAliases = workspaceAliasRootDir === configDir
   ? []
   : projectPaths.map((projectPath) => resolve(workspaceAliasRootDir, projectPath));
 
@@ -28,7 +31,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         project: [...projectPaths, ...projectAliases],
-        tsconfigRootDir: import.meta.dirname,
+        tsconfigRootDir: configDir,
       },
     },
     rules: {

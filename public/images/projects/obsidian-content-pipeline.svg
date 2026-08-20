@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Obsidian content pipeline artwork</title>
+  <desc id="desc">Abstract Adwaita editorial illustration with markdown documents flowing into organized content cards.</desc>
+  <rect width="1200" height="800" rx="72" fill="#f3efe5"/>
+  <circle cx="230" cy="610" r="145" fill="#9141ac"/>
+  <circle cx="1000" cy="190" r="120" fill="#d56199"/>
+  <rect x="190" y="150" width="300" height="430" rx="34" fill="#ffffff" stroke="#deddda" stroke-width="6"/>
+  <rect x="260" y="240" width="160" height="24" rx="12" fill="#241f31"/>
+  <rect x="250" y="310" width="180" height="18" rx="9" fill="#9a9996"/>
+  <rect x="250" y="360" width="140" height="18" rx="9" fill="#c0bfbc"/>
+  <path d="M530 370h140" stroke="#3584e4" stroke-width="26" stroke-linecap="round"/>
+  <path d="M650 330l62 40-62 40z" fill="#3584e4"/>
+  <rect x="730" y="190" width="300" height="390" rx="38" fill="#ffffff" stroke="#deddda" stroke-width="6"/>
+  <rect x="790" y="260" width="180" height="78" rx="24" fill="#2190a4"/>
+  <rect x="790" y="382" width="180" height="22" rx="11" fill="#241f31"/>
+  <rect x="790" y="438" width="132" height="22" rx="11" fill="#9a9996"/>
+  <path d="M210 612c120-80 220-80 338 0" stroke="#ffc252" stroke-width="24" stroke-linecap="round" fill="none"/>
+</svg>
