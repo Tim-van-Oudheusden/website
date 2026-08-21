@@ -42,13 +42,13 @@ describe("HomeSection", () => {
   test("renders the start section portrait larger, bottom-right anchored, with top-only overflow", () => {
     const html = renderStartSection();
 
-    expect(html).toContain("rounded-[2rem] bg-[var(--site-section-well-bg)]");
-    expect(html).toContain("min-h-[29rem]");
-    expect(html).toContain("pl-[1.875rem]");
+    expect(html).toContain("rounded-[2rem] bg-(--site-section-well-bg)");
+    expect(html).toContain("min-h-116");
+    expect(html).toContain("pl-7.5");
     expect(html).toContain("pr-5");
     expect(html).toContain("sm:pl-12");
     expect(html).toContain("sm:pr-8");
-    expect(html).toContain("lg:pl-[2.25rem]");
+    expect(html).toContain("lg:pl-9");
     expect(html).toContain("lg:pr-6");
     expect(html).toContain("shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)]");
     expect(html).toContain("overflow-visible");
@@ -71,15 +71,15 @@ describe("HomeSection", () => {
     const startHtml = renderStartSection();
     const forYouHtml = renderForYouSection();
 
-    expect(startHtml).toContain("bg-[var(--site-section-well-bg)]");
-    expect(forYouHtml).toContain("bg-[var(--site-section-well-bg)]");
+    expect(startHtml).toContain("bg-(--site-section-well-bg)");
+    expect(forYouHtml).toContain("bg-(--site-section-well-bg)");
   });
 
   test("renders non-for-you section text in black for light mode", () => {
     const html = renderStartSection();
 
-    expect(html).toContain("font-bold tracking-tight text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)]");
-    expect(html).toContain("leading-[1.55] text-[var(--adw-dark-5)] dark:text-white/80");
+    expect(html).toContain("font-bold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1)");
+    expect(html).toContain("leading-[1.55] text-(--adw-dark-5) dark:text-white/80");
     expect(html).toContain('src="/images/me.png"');
   });
 
@@ -89,9 +89,9 @@ describe("HomeSection", () => {
     const forDevsHtml = renderForDevsSection();
 
     expect(startHtml).toContain("px-6 py-12 sm:px-10 sm:py-16 lg:px-6");
-    expect(startHtml).toContain("lg:max-w-[74rem]");
+    expect(startHtml).toContain("lg:max-w-296");
     expect(forYouHtml).toContain("px-4 py-12 sm:px-6 sm:py-16 lg:px-4");
-    expect(forYouHtml).toContain("max-w-6xl lg:max-w-[83rem]");
+    expect(forYouHtml).toContain("max-w-6xl lg:max-w-332");
     expect(forDevsHtml).toContain("mx-auto");
   });
 
