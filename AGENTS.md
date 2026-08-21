@@ -36,6 +36,7 @@ bd close <id>         # Complete work
    git push
    git status  # MUST show "up to date with origin"
    ```
+   (No separate `bd sync` / issues.jsonl commit step is needed; see `bd prime` for the current protocol.)
 5. **Clean up** - Clear stashes, prune remote branches
 6. **Verify** - All changes committed AND pushed
 7. **Hand off** - Provide context for next session
@@ -51,7 +52,7 @@ bd close <id>         # Complete work
 
 - Work must always be committed after finishing a beads issue.
 - Commits must always follow the Conventional Commits specification.
-- After finishing all work, check if a .beads/issues.jsonl change is still pending. If it is commit it with "chore(beads): sync issue tracker".
+- No separate beads sync step is needed: close issues with `bd close`, then commit, `bd dolt push`, and `git push` (run `bd prime` for the current session-close protocol).
 - After everything is committed, push it to the remote (oneshot, if any errors still pop up ask the user).
 
 ## Testing
