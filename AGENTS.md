@@ -51,7 +51,7 @@ bd close <id>         # Complete work
 
 - Work must always be committed after finishing a beads issue.
 - Commits must always follow the Conventional Commits specification.
-- After finishing all work, check if a .beads/issues.jsonl change is still pending. If it is commit it with "chore(beads): sync issue tracker".
+- Bead data lives in the Dolt database (`.beads/embeddeddolt/`, gitignored). Sync it to the remote with `bd dolt push` / `bd dolt pull` against `refs/dolt/data` on the git remote (already part of the Session Completion workflow). `.beads/issues.jsonl` is only an optional export/interchange file — not the source of truth — so do not commit it as a sync step.
 - After everything is committed, push it to the remote (oneshot, if any errors still pop up ask the user).
 
 ## Testing
