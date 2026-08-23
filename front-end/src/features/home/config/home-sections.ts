@@ -56,9 +56,10 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
   {
     id: "footer",
     label: "inner peace",
-    heading: "Everything else",
-    body: "Placeholder footer surface for legal pages, social links, and contact paths.",
+    heading: "Reboot With Me",
+    body: "Getting your life back on track — from Big Tech independence to inner peace.",
     bgColor: "var(--adw-page-brown-bg)",
     contentDirection: "column",
+    variant: "footer",
   },
 ];

@@ -38,6 +38,14 @@ function renderForDevsSection(): string {
   );
 }
 
+function renderFooterSection(): string {
+  const footerSection = findHomeSection("footer");
+
+  return renderToStaticMarkup(
+    createElement(HomeSection, { section: footerSection }),
+  );
+}
+
 describe("HomeSection", () => {
   test("renders the start section portrait larger, bottom-right anchored, with top-only overflow", () => {
     const html = renderStartSection();
@@ -108,5 +116,29 @@ describe("HomeSection", () => {
     expect(html).toContain("text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem]");
     expect(html).toContain("max-w-[60ch] text-lg sm:text-xl");
     expect(html).toContain("h-14 px-10 text-lg font-semibold");
+  });
+
+  test("renders the footer as a semantic footer with site identification", () => {
+    const html = renderFooterSection();
+
+    expect(html).toContain('<footer');
+    expect(html).toContain("Reboot With Me");
+  });
+
+  test("renders a copyright line in the footer", () => {
+    const html = renderFooterSection();
+
+    expect(html).toMatch(/©/);
+    expect(html).toContain(String(new Date().getFullYear()));
+  });
+
+  test("renders a genuine social link (GitHub) without invented channels", () => {
+    const html = renderFooterSection();
+
+    expect(html).toContain("https://github.com/Tim-van-Oudheusden/website");
+    expect(html).not.toContain("privacy");
+    expect(html).not.toContain("terms");
+    expect(html).not.toContain("mastodon");
+    expect(html).not.toContain("linkedin");
   });
 });

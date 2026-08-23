@@ -8,7 +8,7 @@ export type HomeSectionId =
   | "footer";
 
 export type HomeSectionContentDirection = "row" | "column";
-export type HomeSectionVariant = "default" | "carousel";
+export type HomeSectionVariant = "default" | "carousel" | "footer";
 export type HomeSectionSurfaceVariant = "default" | "white-well";
 
 export interface HomeSectionDefinition {
