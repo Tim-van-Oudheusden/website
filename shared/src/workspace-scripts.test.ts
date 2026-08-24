@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 
 interface RootPackageJson {
@@ -38,6 +38,22 @@ describe("workspace scripts", () => {
     expect(rootTypecheckScript).toContain("tsc -p tsconfig.eslint.json --noEmit");
     expect(typecheckScript).toContain("bun run typecheck:root");
   });
+
+  test("root typecheck passes from a clean checkout (shared is built on demand)", () => {
+    // Simulate a fresh clone: shared's build artifacts do not exist yet.
+    rmSync(resolve(rootPath(), "shared/dist"), { recursive: true, force: true });
+    rmSync(resolve(rootPath(), "shared/tsconfig.tsbuildinfo"), { force: true });
+
+    const result = spawnSync("bun", ["run", "typecheck"], {
+      cwd: rootPath(),
+      encoding: "utf8",
+    });
+
+    expect(
+      result.status,
+      `root typecheck failed from a clean checkout:\n${(result.stdout + result.stderr).slice(-3000)}`,
+    ).toBe(0);
+  }, 180_000);
 
   test("eslint ignores generated pi sandbox state", () => {
     const eslintConfig = readRootFile("eslint.config.js");
