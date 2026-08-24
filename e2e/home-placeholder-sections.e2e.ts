@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
-function scrollToSection(page: import("@playwright/test").Page, sectionId: string): void {
+function scrollToSection(page: Page, sectionId: string): void {
   void page.evaluate((id) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ block: "start" });
