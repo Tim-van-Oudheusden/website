@@ -51,3 +51,6 @@ test-results/
 
 # Superpowers
 .superpowers/*
+
+# Worktrees
+worktrees/*
