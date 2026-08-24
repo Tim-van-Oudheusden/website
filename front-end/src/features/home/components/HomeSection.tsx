@@ -4,6 +4,10 @@ import { Button } from "@/shared/components/ui/button";
 import type { HomeSectionId } from "../types/home-section";
 import type { HomeSectionDefinition } from "../types/home-section";
 import { ValuePillarsCarousel } from "./ValuePillarsCarousel";
+import { HomeTrustStrip } from "./HomeTrustStrip";
+import { HomeWorkflowRows } from "./HomeWorkflowRows";
+import { HomeRecentPosts } from "./HomeRecentPosts";
+import { HomeStartHere } from "./HomeStartHere";
 
 const START_SECTION_PORTRAIT_PATH = "/images/me.png";
 const SITE_GITHUB_HREF = "https://github.com/Tim-van-Oudheusden/website";
@@ -56,6 +60,56 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React
           </div>
         </div>
       </footer>
+    );
+  }
+
+  if (section.variant === "workflow") {
+    return (
+      <HomeWorkflowRows
+        sectionId={section.id}
+        headingId={`${section.id}-heading`}
+        heading={section.heading}
+        body={section.body}
+        bgColor={section.bgColor}
+        features={section.features ?? []}
+      />
+    );
+  }
+
+  if (section.variant === "trust") {
+    return (
+      <HomeTrustStrip
+        sectionId={section.id}
+        headingId={`${section.id}-heading`}
+        heading={section.heading}
+        body={section.body}
+        bgColor={section.bgColor}
+        items={section.trustItems ?? []}
+      />
+    );
+  }
+
+  if (section.variant === "recent-posts") {
+    return (
+      <HomeRecentPosts
+        sectionId={section.id}
+        headingId={`${section.id}-heading`}
+        heading={section.heading}
+        body={section.body}
+        bgColor={section.bgColor}
+      />
+    );
+  }
+
+  if (section.variant === "start-here") {
+    return (
+      <HomeStartHere
+        sectionId={section.id}
+        headingId={`${section.id}-heading`}
+        heading={section.heading}
+        body={section.body}
+        bgColor={section.bgColor}
+      />
     );
   }
 
