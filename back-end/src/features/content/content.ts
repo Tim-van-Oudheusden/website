@@ -1,6 +1,6 @@
 import { readdir, readFile } from "fs/promises";
 import { join, basename } from "path";
-import matter from "gray-matter";
+import { parseFrontmatter } from "./frontmatter";
 import { ARTICLE_CATEGORIES, PROJECT_LINK_TYPES, PROJECT_STATUSES } from "shared";
 import type { ArticleCategory, ContentFrontmatter, ContentType, ProjectLink, ProjectStatus } from "shared";
 import { rewriteObsidianImageEmbeds } from "./obsidian";
@@ -197,8 +197,11 @@ export async function listContent(contentDir: string, options?: ListContentOptio
 
   for (const file of mdFiles) {
     const raw = await readFile(join(contentDir, file), "utf-8");
-    const { data } = matter(raw);
-    const frontmatter = normalizeFrontmatter(file, data);
+    const parsed = parseFrontmatter(raw);
+    if (parsed === null) {
+      continue;
+    }
+    const frontmatter = normalizeFrontmatter(file, parsed.data);
     if (frontmatter === null) {
       continue;
     }
@@ -231,8 +234,11 @@ export async function getContentBySlug(
 
   for (const file of mdFiles) {
     const raw = await readFile(join(contentDir, file), "utf-8");
-    const { data, content } = matter(raw);
-    const frontmatter = normalizeFrontmatter(file, data);
+    const parsed = parseFrontmatter(raw);
+    if (parsed === null) {
+      continue;
+    }
+    const frontmatter = normalizeFrontmatter(file, parsed.data);
     if (frontmatter === null) {
       continue;
     }
@@ -243,7 +249,7 @@ export async function getContentBySlug(
       return null;
     }
 
-    return { ...frontmatter, body: rewriteObsidianImageEmbeds(content) };
+    return { ...frontmatter, body: rewriteObsidianImageEmbeds(parsed.content) };
   }
 
   return null;

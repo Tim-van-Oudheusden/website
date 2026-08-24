@@ -23,10 +23,11 @@ describe("HomeFloatingNav", () => {
     expect(html).not.toContain("bg-primary");
   });
 
-  test("matches the homepage background color in dark mode", () => {
+  test("uses the section well surface in dark mode to match the light scheme", () => {
     const html = renderFloatingNav();
 
     expect(html).toContain("dark:bg-(--site-section-well-bg)");
+    expect(html).not.toContain("dark:bg-(--adw-page-brown-bg)");
   });
 
   test("keeps active nav text white in dark mode while indicator remains black", () => {

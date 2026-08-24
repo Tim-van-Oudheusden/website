@@ -36,6 +36,7 @@ bd close <id>         # Complete work
    git push
    git status  # MUST show "up to date with origin"
    ```
+   (No separate `bd sync` / issues.jsonl commit step is needed; see `bd prime` for the current protocol.)
 5. **Clean up** - Clear stashes, prune remote branches
 6. **Verify** - All changes committed AND pushed
 7. **Hand off** - Provide context for next session

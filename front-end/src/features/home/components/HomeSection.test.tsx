@@ -97,7 +97,7 @@ describe("HomeSection", () => {
     const forDevsHtml = renderForDevsSection();
 
     expect(startHtml).toContain("px-6 py-12 sm:px-10 sm:py-16 lg:px-6");
-    expect(startHtml).toContain("lg:max-w-332");
+    expect(startHtml).toContain("lg:max-w-296");
     expect(forYouHtml).toContain("px-4 py-12 sm:px-6 sm:py-16 lg:px-4");
     expect(forYouHtml).toContain("max-w-6xl lg:max-w-332");
     expect(forDevsHtml).toContain("mx-auto");
