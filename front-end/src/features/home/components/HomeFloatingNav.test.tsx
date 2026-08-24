@@ -19,20 +19,20 @@ describe("HomeFloatingNav", () => {
   test("uses the discover-button black for its active indicator highlight", () => {
     const html = renderFloatingNav();
 
-    expect(html).toContain("bg-[var(--adw-dark-5)]");
+    expect(html).toContain("bg-(--adw-dark-5)");
     expect(html).not.toContain("bg-primary");
   });
 
   test("matches the homepage background color in dark mode", () => {
     const html = renderFloatingNav();
 
-    expect(html).toContain("dark:bg-[var(--adw-page-brown-bg)]");
+    expect(html).toContain("dark:bg-(--site-section-well-bg)");
   });
 
   test("keeps active nav text white in dark mode while indicator remains black", () => {
     const html = renderFloatingNav();
 
-    expect(html).toContain("dark:text-[var(--adw-light-1)]");
-    expect(html).toContain("bg-[var(--adw-dark-5)]");
+    expect(html).toContain("dark:text-(--adw-light-1)");
+    expect(html).toContain("bg-(--adw-dark-5)");
   });
 });
