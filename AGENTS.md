@@ -1,5 +1,41 @@
 # Agent Instructions
 
+## Issue Tracking
+
+### GitHub Issues — Primary Source
+
+GitHub issues are the **primary source of truth** for issue information. All issue content (requirements, acceptance criteria, discussion, links to PRs/commits) lives in GitHub. Access, read, address, and implement issues **exclusively through the GitHub API** — never through beads alone.
+
+- Repository: `Tim-van-Oudheusden/website` (remote `origin`, git@github.com)
+- Use the `gh` CLI when available; otherwise call the REST API with `GITHUB_TOKEN`, e.g. `curl -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/repos/Tim-van-Oudheusden/website/issues`
+- Beads only mirrors tracking state (see below); it is not a source of issue information
+- The beads block below predates this change; where it conflicts with this section, this section wins
+
+Quick reference:
+
+```bash
+gh issue list -S "is:open"      # Find available work
+gh issue view <number>          # Read issue, comments, acceptance criteria
+gh issue create --title "Summary" --body "Why and what"   # File remaining/follow-up work
+gh issue comment <number> --body "Progress / links"       # Report progress
+gh issue close <number>         # Close completed work
+```
+
+### Beads — Tracking Layer
+
+Beads continues to track every issue locally (status, dependencies, blocking, history) and mirrors GitHub issues:
+
+```bash
+bd github sync               # Bidirectional sync GitHub <-> beads (use --pull-only after GitHub-only changes)
+bd github status             # Show sync state
+bd prime                     # Full beads workflow reference
+```
+
+## Sessions with GitHub issues
+
+- Before working an issue: read it with `gh issue view <number>` (or the API); claim/assign it there
+- When done: close it via the API and link the commit/PR; then run `bd github sync` to mirror the state into beads
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 
@@ -26,9 +62,9 @@ bd close <id>         # Complete work
 
 **MANDATORY WORKFLOW:**
 
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
+1. **File issues for remaining work** - Create GitHub issues via the API (`gh issue create`) for anything that needs follow-up
 2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
+3. **Update issue status** - Close completed GitHub issues via the API (`gh issue close`), comment progress, and run `bd github sync` to mirror state into beads
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
    git pull --rebase
@@ -50,8 +86,9 @@ bd close <id>         # Complete work
 
 ## Git and Version Management
 
-- Work must always be committed after finishing a beads issue.
+- Work must always be committed after finishing a GitHub issue.
 - Commits must always follow the Conventional Commits specification.
+- GitHub issues are the primary source of issue information; issue changes happen via the API and are mirrored into beads by `bd github sync`.
 - Bead data lives in the Dolt database (`.beads/embeddeddolt/`, gitignored). Sync it to the remote with `bd dolt push` / `bd dolt pull` against `refs/dolt/data` on the git remote (already part of the Session Completion workflow). `.beads/issues.jsonl` is only an optional export/interchange file — not the source of truth — so do not commit it as a sync step.
 - After everything is committed, push it to the remote (oneshot, if any errors still pop up ask the user).
 
