@@ -31,6 +31,8 @@ bd github status             # Show sync state
 bd prime                     # Full beads workflow reference
 ```
 
+> Agent shells (non-interactive) don't source `~/.bashrc`, so `GITHUB_TOKEN` is unset by default. Before any `bd github` command, run `export GITHUB_TOKEN="$(gh auth token)"` (gh keyring holds the token).
+
 ## Sessions with GitHub issues
 
 - Before working an issue: read it with `gh issue view <number>` (or the API); claim/assign it there
