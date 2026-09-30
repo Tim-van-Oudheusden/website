@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { ARTICLE_PAGE_TYPOGRAPHY_CLASSES } from "../../../../../../front-end/src/features/articles/pages/ArticlePage";
+import { ARTICLE_PAGE_TYPOGRAPHY_CLASSES } from "../../../../../../front-end/src/features/articles/pages/article-page";
 
 describe("ARTICLE_PAGE_TYPOGRAPHY_CLASSES", () => {
   test("uses readable article hierarchy and measure defaults", () => {

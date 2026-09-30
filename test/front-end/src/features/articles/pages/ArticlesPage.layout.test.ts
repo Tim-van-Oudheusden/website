@@ -9,7 +9,7 @@ import {
   extractArticleTableOfContents,
   navigateToArticleHeadingById,
   resolveArticlesTrailTargetSlug,
-} from "../../../../../../front-end/src/features/articles/pages/ArticlesPage";
+} from "../../../../../../front-end/src/features/articles/pages/articles-page";
 
 describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
   test("uses edge-to-edge split layout with a tokenized desktop sidebar and no divider line", () => {

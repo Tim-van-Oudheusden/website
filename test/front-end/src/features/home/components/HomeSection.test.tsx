@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
-import { HomeSection } from "../../../../../../front-end/src/features/home/components/HomeSection";
+import { HomeSection } from "../../../../../../front-end/src/features/home/components/home-section";
 import type { HomeSectionDefinition, HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
 
 function findHomeSection(sectionId: HomeSectionId): HomeSectionDefinition {

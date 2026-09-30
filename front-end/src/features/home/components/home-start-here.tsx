@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router";
-import type { ArticleSummary } from "@/features/articles/articles-sidebar";
+import type { ArticleSummary } from "@/features/articles/lib/articles-sidebar";
 import { fetchHomeArticlesAsync } from "../lib/home-articles";
 
 /**

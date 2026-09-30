@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { MemoryRouter } from "react-router";
 import { renderToStaticMarkup } from "react-dom/server";
-import { RecentPostsList, selectRecentPosts } from "../../../../../../front-end/src/features/home/components/HomeRecentPosts";
-import type { ArticleSummary } from "@/features/articles/articles-sidebar";
+import { RecentPostsList, selectRecentPosts } from "../../../../../../front-end/src/features/home/components/home-recent-posts";
+import type { ArticleSummary } from "@/features/articles/lib/articles-sidebar";
 
 const FIXTURE_POSTS: ArticleSummary[] = [
   {

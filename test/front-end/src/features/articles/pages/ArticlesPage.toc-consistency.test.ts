@@ -3,8 +3,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { MarkdownRenderer } from "@/shared/components/MarkdownRenderer";
-import { extractArticleTableOfContents } from "../../../../../../front-end/src/features/articles/pages/ArticlesPage";
+import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
+import { extractArticleTableOfContents } from "../../../../../../front-end/src/features/articles/pages/articles-page";
 
 function stripFrontmatter(markdown: string): string {
   if (!markdown.startsWith("---\n")) {

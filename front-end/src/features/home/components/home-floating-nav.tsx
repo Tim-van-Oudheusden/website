@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/shared/components/ui/badge";
 import { cn } from "@/shared/lib/utils";
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
-import { calculateIndicatorMetrics, type IndicatorMetrics } from "./home-floating-nav-indicator";
+import { calculateIndicatorMetrics, type IndicatorMetrics } from "../lib/home-floating-nav-indicator";
 
 interface HomeFloatingNavProps {
   sections: readonly HomeSectionDefinition[];

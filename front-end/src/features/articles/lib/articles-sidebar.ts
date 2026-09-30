@@ -12,6 +12,11 @@ export interface ArticleSummary {
   slug: string;
 }
 
+/** A full article: the summary fields plus the markdown body. */
+export interface ArticleData extends ArticleSummary {
+  body: string;
+}
+
 function compareArticles(a: ArticleSummary, b: ArticleSummary): number {
   const dateA = Date.parse(a.date);
   const dateB = Date.parse(b.date);
@@ -36,6 +41,11 @@ export function getDefaultArticleSlug(articles: ArticleSummary[]): string | null
 
   const sorted = [...articles].sort(compareArticles);
   return sorted[0]?.slug ?? null;
+}
+
+/** Resolve the article the location trail jumps to when "Articles" is clicked. */
+export function resolveArticlesTrailTargetSlug(articles: ArticleSummary[]): string | null {
+  return getDefaultArticleSlug(articles);
 }
 
 export function groupArticlesByCategory(

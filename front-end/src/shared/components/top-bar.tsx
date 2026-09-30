@@ -11,7 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
-import { ThemeToggle } from "@/shared/components/ThemeToggle";
+import { ThemeToggle } from "@/shared/components/theme-toggle";
 
 const navLinks = [
   { label: "Home", href: "/" },

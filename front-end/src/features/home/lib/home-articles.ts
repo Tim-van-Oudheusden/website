@@ -1,5 +1,5 @@
 import { ROUTES } from "shared";
-import type { ArticleSummary } from "@/features/articles/articles-sidebar";
+import type { ArticleSummary } from "@/features/articles/lib/articles-sidebar";
 import { apiGet } from "@/shared/lib/api";
 
 /**

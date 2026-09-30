@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
-import { ProjectMetaHeader, type ProjectData } from "../../../../../../front-end/src/features/projects/pages/ProjectPage";
-import { ProjectCard } from "../../../../../../front-end/src/features/projects/pages/ProjectsPage";
+import { ProjectMetaHeader, type ProjectData } from "../../../../../../front-end/src/features/projects/pages/project-page";
+import { ProjectCard } from "../../../../../../front-end/src/features/projects/pages/projects-page";
 
 const PROJECT_LINK_TEXT_CLASSES = "text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)]";
 

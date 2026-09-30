@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
-import { TopBar } from "../../../../../front-end/src/shared/components/TopBar";
+import { TopBar } from "../../../../../front-end/src/shared/components/top-bar";
 
 function renderTopBar(pathname = "/"): string {
   return renderToStaticMarkup(

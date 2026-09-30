@@ -4,7 +4,7 @@ import {
   getDefaultArticleSlug,
   groupArticlesByCategory,
   type ArticleSummary,
-} from "../../../../../front-end/src/features/articles/articles-sidebar";
+} from "../../../../../front-end/src/features/articles/lib/articles-sidebar";
 
 describe("article sidebar helpers", () => {
   test("getDefaultArticleSlug prefers the introduction slug regardless of API order", () => {

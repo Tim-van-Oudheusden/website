@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { MemoryRouter } from "react-router";
 import { renderToStaticMarkup } from "react-dom/server";
-import { StartHereLinks, resolveStartHere, HOME_START_HERE_SLUGS } from "../../../../../../front-end/src/features/home/components/HomeStartHere";
-import type { ArticleSummary } from "@/features/articles/articles-sidebar";
+import { StartHereLinks, resolveStartHere, HOME_START_HERE_SLUGS } from "../../../../../../front-end/src/features/home/components/home-start-here";
+import type { ArticleSummary } from "@/features/articles/lib/articles-sidebar";
 
 const FIXTURE_ARTICLES: ArticleSummary[] = [
   {

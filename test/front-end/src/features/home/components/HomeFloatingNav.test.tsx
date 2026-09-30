@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
-import { HomeFloatingNav } from "../../../../../../front-end/src/features/home/components/HomeFloatingNav";
+import { HomeFloatingNav } from "../../../../../../front-end/src/features/home/components/home-floating-nav";
 
 function renderFloatingNav(): string {
   return renderToStaticMarkup(

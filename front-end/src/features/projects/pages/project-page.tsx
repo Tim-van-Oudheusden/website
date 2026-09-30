@@ -5,8 +5,8 @@ import { ROUTES, type ContentFrontmatter, type ProjectFrontmatter } from "shared
 import { apiGet, ApiError } from "@/shared/lib/api";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { MarkdownRenderer } from "@/shared/components/MarkdownRenderer";
-import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
+import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
+import { ErrorBoundary } from "@/shared/components/error-boundary";
 
 export type ProjectData = ProjectFrontmatter & { body: string };
 type ContentData = ContentFrontmatter & { body: string };

@@ -5,12 +5,12 @@ import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 import type { ProjectFrontmatter } from "shared";
-import { ARTICLES_PAGE_TYPOGRAPHY_CLASSES } from "@/features/articles/pages/ArticlesPage";
+import { ARTICLES_PAGE_TYPOGRAPHY_CLASSES } from "@/features/articles/pages/articles-page";
 import { HOME_SECTIONS } from "@/features/home/config/home-sections";
-import { HomeSection } from "@/features/home/components/HomeSection";
-import { PROJECTS_PAGE_TYPOGRAPHY_CLASSES, ProjectCard } from "../../../../../../front-end/src/features/projects/pages/ProjectsPage";
+import { HomeSection } from "@/features/home/components/home-section";
+import { PROJECTS_PAGE_TYPOGRAPHY_CLASSES, ProjectCard } from "../../../../../../front-end/src/features/projects/pages/projects-page";
 
-const PROJECTS_PAGE_SOURCE = readFileSync(resolve(import.meta.dir, "../../../../../../front-end/src/features/projects/pages/ProjectsPage.tsx"), "utf8");
+const PROJECTS_PAGE_SOURCE = readFileSync(resolve(import.meta.dir, "../../../../../../front-end/src/features/projects/pages/projects-page.tsx"), "utf8");
 
 function project(overrides: Partial<ProjectFrontmatter> = {}): ProjectFrontmatter {
   return {

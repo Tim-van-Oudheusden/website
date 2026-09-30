@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { MarkdownRenderer } from "../../../../../front-end/src/shared/components/MarkdownRenderer";
+import { MarkdownRenderer } from "../../../../../front-end/src/shared/components/markdown-renderer";
 
 describe("MarkdownRenderer", () => {
   test("is exported as a memoized React component", () => {

@@ -1,10 +1,10 @@
 import * as React from "react";
 import type { HomeSectionId } from "../types/home-section";
 import { HOME_SECTIONS } from "../config/home-sections";
-import { HomeSection } from "../components/HomeSection";
-import { HomeFloatingNav } from "../components/HomeFloatingNav";
-import { resolveAnchorScrollBehavior } from "../components/home-section-nav-scroll";
-import { useActiveHomeSection } from "../hooks/useActiveHomeSection";
+import { HomeSection } from "../components/home-section";
+import { HomeFloatingNav } from "../components/home-floating-nav";
+import { resolveAnchorScrollBehavior } from "../lib/home-section-nav-scroll";
+import { useActiveHomeSection } from "../hooks/use-active-home-section";
 
 function activateSectionAnchor(sectionId: HomeSectionId, event: React.MouseEvent<HTMLAnchorElement>): void {
   if (typeof document === "undefined") {

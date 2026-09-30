@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router";
-import type { ArticleSummary } from "@/features/articles/articles-sidebar";
+import type { ArticleSummary } from "@/features/articles/lib/articles-sidebar";
 import { sortArticleSummariesDesc, fetchHomeArticlesAsync } from "../lib/home-articles";
 
 export const RECENT_POSTS_COUNT = 4;

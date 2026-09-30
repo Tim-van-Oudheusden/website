@@ -5,7 +5,7 @@ import {
   resolveGalleryProjects,
   resolvePriorityProjects,
   sortProjectsForDisplay,
-} from "../../../../../front-end/src/features/projects/project-display";
+} from "../../../../../front-end/src/features/projects/lib/project-display";
 
 function project(overrides: Partial<ProjectFrontmatter>): ProjectFrontmatter {
   return {

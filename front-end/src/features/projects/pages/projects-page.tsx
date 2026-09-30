@@ -6,7 +6,7 @@ import { apiGet, ApiError } from "@/shared/lib/api";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
-import { resolvePriorityProjects, resolveGalleryProjects } from "../project-display";
+import { resolvePriorityProjects, resolveGalleryProjects } from "../lib/project-display";
 
 export const PROJECTS_PAGE_LAYOUT_CLASSES = {
   main: "w-full flex-1 bg-[var(--adw-page-brown-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8",

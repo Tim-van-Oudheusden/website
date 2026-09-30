@@ -1,20 +1,12 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
-import { ROUTES } from "shared";
-import { apiGet, ApiError } from "@/shared/lib/api";
+import { ApiError } from "@/shared/lib/api";
 import { Badge } from "@/shared/components/ui/badge";
-import { MarkdownRenderer } from "@/shared/components/MarkdownRenderer";
-import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
-
-interface ArticleData {
-  title: string;
-  description: string;
-  date: string;
-  tags: string[];
-  slug: string;
-  body: string;
-}
+import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
+import { ErrorBoundary } from "@/shared/components/error-boundary";
+import { fetchArticleBySlug } from "../lib/article-fetch";
+import type { ArticleData } from "../lib/articles-sidebar";
 
 export const ARTICLE_PAGE_TYPOGRAPHY_CLASSES = {
   mainMeasure: "mx-auto w-full max-w-[75ch]",
@@ -24,49 +16,20 @@ export const ARTICLE_PAGE_TYPOGRAPHY_CLASSES = {
   tagBadge: "text-xs font-bold",
 } as const;
 
-export function ArticlePage(): React.JSX.Element {
-  const { slug } = useParams<{ slug: string }>();
-  const [article, setArticle] = useState<ArticleData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+interface ArticlePageViewProps {
+  loading: boolean;
+  notFound: boolean;
+  error: string | null;
+  article: ArticleData | null;
+}
 
-  useEffect(() => {
-    if (!slug) return;
-    const contentSlug = slug;
-
-    let cancelled = false;
-
-    async function fetchArticle(): Promise<void> {
-      try {
-        const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", contentSlug);
-        const data = await apiGet<ArticleData>(path);
-        if (!cancelled) {
-          setArticle(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          if (err instanceof ApiError && err.status === 404) {
-            setNotFound(true);
-          } else {
-            let message = "Failed to load article";
-            if (err instanceof ApiError) {
-              message = err.message;
-            }
-            setError(message);
-          }
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void fetchArticle();
-    return () => { cancelled = true; };
-  }, [slug]);
-
+/** Presentational shell for the standalone article page render states. */
+export function ArticlePageView({
+  loading,
+  notFound,
+  error,
+  article,
+}: ArticlePageViewProps): React.JSX.Element {
   if (loading) {
     return (
       <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
@@ -116,5 +79,57 @@ export function ArticlePage(): React.JSX.Element {
         </ErrorBoundary>
       </article>
     </main>
+  );
+}
+
+export function ArticlePage(): React.JSX.Element {
+  const { slug } = useParams<{ slug: string }>();
+  const [article, setArticle] = useState<ArticleData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!slug) return;
+    const contentSlug = slug;
+
+    let cancelled = false;
+
+    async function fetchArticle(): Promise<void> {
+      try {
+        const data = await fetchArticleBySlug(contentSlug);
+        if (!cancelled) {
+          setArticle(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          if (err instanceof ApiError && err.status === 404) {
+            setNotFound(true);
+          } else {
+            let message = "Failed to load article";
+            if (err instanceof ApiError) {
+              message = err.message;
+            }
+            setError(message);
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void fetchArticle();
+    return () => { cancelled = true; };
+  }, [slug]);
+
+  return (
+    <ArticlePageView
+      loading={loading}
+      notFound={notFound}
+      error={error}
+      article={article}
+    />
   );
 }

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { HomeWorkflowRows } from "../../../../../../front-end/src/features/home/components/HomeWorkflowRows";
+import { HomeWorkflowRows } from "../../../../../../front-end/src/features/home/components/home-workflow-rows";
 import type { HomeFeatureRow } from "../../../../../../front-end/src/features/home/types/home-section";
 
 const FIXTURE_ROWS: HomeFeatureRow[] = [

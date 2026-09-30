@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { resolvePagedCarouselScrollLeft, ValuePillarsCarousel } from "../../../../../../front-end/src/features/home/components/ValuePillarsCarousel";
+import { resolvePagedCarouselScrollLeft, ValuePillarsCarousel } from "../../../../../../front-end/src/features/home/components/value-pillars-carousel";
 
 function renderCarousel(): string {
   return renderToStaticMarkup(
