@@ -26,22 +26,8 @@ jobs:
       - name: Build
         run: bun run build
 
-  build-images:
-    name: Build production images (podman)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Podman
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y podman
-      - name: Build front-end image
-        run: podman build -f front-end/Dockerfile --target prod -t website/front-end:ci .
-      - name: Build back-end image
-        run: podman build -f back-end/Dockerfile --target prod -t website/back-end:ci .
-
   e2e:
-    name: E2E (podman)
+    name: E2E (podman kube play)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,11 +39,16 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Install Podman
         run: |
-          sudo apt-get install -y podman podman-compose
+          sudo apt-get update
+          sudo apt-get install -y podman
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
-      - name: Start stack
-        run: podman compose up -d
+      - name: Build dev images
+        run: |
+          podman build -f front-end/Dockerfile --target dev -t localhost/website/front-end:dev .
+          podman build -f back-end/Dockerfile --target dev -t localhost/website/back-end:dev .
+      - name: Start dev pod
+        run: podman kube play deploy/kube/dev.yaml
       - name: Wait for services
         run: |
           for _ in $(seq 1 60); do
@@ -67,11 +58,47 @@ jobs:
             fi
             sleep 5
           done
-          podman compose ps
-          podman compose logs --tail 100
+          podman pod logs website
           exit 1
       - name: Run e2e tests
         run: bun run test:e2e
-      - name: Stop stack
+      - name: Stop dev pod
         if: always()
-        run: podman compose down
+        run: podman kube down deploy/kube/dev.yaml
+
+  release:
+    name: Publish GHCR images
+    needs: [check, e2e]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+      - name: Draft leak guard
+        run: |
+          if grep -RIl '^draft:[[:space:]]*true[[:space:]]*$' content/; then
+            echo "::error::draft: true found in content/; refusing to release"
+            exit 1
+          fi
+      - name: Build production images
+        run: |
+          podman build -f front-end/Dockerfile --target prod \
+            -t ghcr.io/tim-van-oudheusden/website/front-end:${{ github.sha }} \
+            -t ghcr.io/tim-van-oudheusden/website/front-end:latest .
+          podman build -f back-end/Dockerfile --target prod \
+            -t ghcr.io/tim-van-oudheusden/website/back-end:${{ github.sha }} \
+            -t ghcr.io/tim-van-oudheusden/website/back-end:latest .
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Push images
+        run: |
+          podman push ghcr.io/tim-van-oudheusden/website/front-end:${{ github.sha }}
+          podman push ghcr.io/tim-van-oudheusden/website/front-end:latest
+          podman push ghcr.io/tim-van-oudheusden/website/back-end:${{ github.sha }}
+          podman push ghcr.io/tim-van-oudheusden/website/back-end:latest
