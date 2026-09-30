@@ -1,12 +1,13 @@
 import { describe, expect, test, beforeAll, afterAll } from "bun:test";
 import type { FastifyInstance } from "fastify";
-import { APP_NAME, ROUTES } from "shared";
+import { API_BASE, APP_NAME, ROUTES } from "shared";
 import { buildApp } from "../../../back-end/src/app";
 
-/**
- * Build the same Fastify app used in index.ts without calling listen().
- * Fastify's `.inject()` method lets us test routes in-process.
- */
+/** JSON API routes live under API_BASE; only /health stays at the root. */
+function apiUrl(path: string): string {
+  return `${API_BASE}${path}`;
+}
+
 describe("back-end routes use shared ROUTES constants", () => {
   let app: FastifyInstance | null = null;
 
@@ -21,7 +22,7 @@ describe("back-end routes use shared ROUTES constants", () => {
     }
   });
 
-  test(`GET ${ROUTES.HEALTH} returns 200 with HealthCheckResponse`, async () => {
+  test(`GET ${ROUTES.HEALTH} returns 200 with HealthCheckResponse at the root`, async () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
@@ -34,11 +35,11 @@ describe("back-end routes use shared ROUTES constants", () => {
     expect(typeof body.uptime).toBe("number");
   });
 
-  test(`GET ${ROUTES.HELLO} returns 200 with HelloResponse`, async () => {
+  test(`GET ${API_BASE}${ROUTES.HELLO} returns 200 with HelloResponse`, async () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
-    const res = await app.inject({ method: "GET", url: ROUTES.HELLO });
+    const res = await app.inject({ method: "GET", url: apiUrl(ROUTES.HELLO) });
     expect(res.statusCode).toBe(200);
 
     const body = res.json();
@@ -46,16 +47,24 @@ describe("back-end routes use shared ROUTES constants", () => {
     expect(typeof body.timestamp).toBe("string");
   });
 
-  test(`GET ${ROUTES.ROOT} returns 200 with app info`, async () => {
+  test(`GET ${API_BASE}${ROUTES.ROOT} returns 200 with app info`, async () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
-    const res = await app.inject({ method: "GET", url: ROUTES.ROOT });
+    const res = await app.inject({ method: "GET", url: apiUrl(ROUTES.ROOT) });
     expect(res.statusCode).toBe(200);
 
     const body = res.json();
     expect(body.name).toBe(APP_NAME);
     expect(typeof body.version).toBe("string");
+  });
+
+  test("hello/root are no longer served at the root (moved under API_BASE)", async () => {
+    if (app === null) {
+      throw new Error("App not initialized");
+    }
+    expect((await app.inject({ method: "GET", url: ROUTES.HELLO })).statusCode).toBe(404);
+    expect((await app.inject({ method: "GET", url: ROUTES.ROOT })).statusCode).toBe(404);
   });
 
   test("no route registered at hardcoded string that differs from ROUTES", async () => {
@@ -87,13 +96,13 @@ describe("back-end routes use shared ROUTES constants", () => {
     }
     let finalResponse = await app.inject({
       method: "GET",
-      url: ROUTES.HELLO,
+      url: apiUrl(ROUTES.HELLO),
       remoteAddress: "127.0.0.1",
     });
     for (let i = 0; i < 60; i += 1) {
       finalResponse = await app.inject({
         method: "GET",
-        url: ROUTES.HELLO,
+        url: apiUrl(ROUTES.HELLO),
         remoteAddress: "127.0.0.1",
       });
     }
@@ -112,7 +121,6 @@ describe("back-end routes use shared ROUTES constants", () => {
       url: "/totally-missing",
       remoteAddress: "127.0.0.99",
     });
-
     for (let i = 0; i < 20; i += 1) {
       finalResponse = await app.inject({
         method: "GET",
@@ -123,5 +131,53 @@ describe("back-end routes use shared ROUTES constants", () => {
 
     expect(finalResponse.statusCode).toBe(429);
     expect(finalResponse.headers["retry-after"]).toBeDefined();
+  });
+
+  test("distinct CF-Connecting-IP values get distinct rate-limit keys", async () => {
+    if (app === null) {
+      throw new Error("App not initialized");
+    }
+    // Behind Cloudflare Tunnel the peer is always 127.0.0.1; the real client
+    // identity arrives in CF-Connecting-IP, so each client must get its own bucket.
+    const requestAs = (ip: string): Promise<{ statusCode: number }> => app!.inject({
+      method: "GET",
+      url: apiUrl(ROUTES.HELLO),
+      remoteAddress: "127.0.0.1",
+      headers: { "CF-Connecting-IP": ip },
+    });
+
+    let last: { statusCode: number } | null = null;
+    for (let i = 0; i < 51; i += 1) {
+      last = await requestAs("198.51.100.10");
+    }
+    expect(last?.statusCode).toBe(429);
+
+    const otherClient = await requestAs("198.51.100.11");
+    expect(otherClient.statusCode).toBe(200);
+  });
+
+  test("direct requests cannot spoof client identity via CF-Connecting-IP", async () => {
+    if (app === null) {
+      throw new Error("App not initialized");
+    }
+    // A non-loopback peer (arbitrary caller) can set CF-Connecting-IP freely;
+    // the limiter must key on the socket IP, ignoring the spoofable header.
+    const requestAs = (ip: string): Promise<{ statusCode: number }> => app!.inject({
+      method: "GET",
+      url: apiUrl(ROUTES.HELLO),
+      remoteAddress: "203.0.113.9",
+      headers: { "CF-Connecting-IP": ip },
+    });
+
+    let last: { statusCode: number } | null = null;
+    for (let i = 0; i < 30; i += 1) {
+      last = await requestAs("198.51.100.1");
+    }
+    for (let i = 0; i < 30; i += 1) {
+      // Rotating the spoofed header must not reset the limit (same socket key).
+      last = await requestAs("198.51.100.2");
+    }
+
+    expect(last?.statusCode).toBe(429);
   });
 });

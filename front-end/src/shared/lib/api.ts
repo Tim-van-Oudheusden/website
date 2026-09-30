@@ -1,9 +1,9 @@
 /**
  * Lightweight API client for communicating with the back-end.
  *
- * In development, Vite proxies `/api/*` to the Fastify server.
- * The proxy rewrites the path, stripping the `/api` prefix,
- * so `/api/hello` → `http://localhost:3001/hello`.
+ * In development, Vite proxies `/api/*` to the Fastify server unchanged.
+ * The back-end serves the `/api` prefix itself, so dev and prod
+ * (Cloudflare Tunnel ingress) share the same request paths.
  */
 
 import { API_BASE } from "shared";

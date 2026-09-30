@@ -46,15 +46,6 @@ describe("front-end API client uses shared constants", () => {
     expect(url).toBe(`${API_BASE}${ROUTES.HEALTH}`);
   });
 
-  test("constructed URL matches the expected proxy pattern", async () => {
-    await apiGet(ROUTES.HELLO);
-
-    const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
-    // The Vite proxy strips API_BASE, leaving just ROUTES.HELLO for the back-end
-    const backendPath = url.replace(API_BASE, "");
-    expect(backendPath).toBe(ROUTES.HELLO);
-  });
-
   test("throws ApiError on non-ok response", async () => {
     globalThis.fetch = mock(() =>
       Promise.resolve(

@@ -27,16 +27,17 @@ export const BACKEND_HOST = "localhost";
 /**
  * Base path prefix used by the front-end API client.
  *
- * In development the Vite dev proxy rewrites `/api/*` → `http://<backend-host>:<PORT>/*`,
- * stripping this prefix before forwarding to the back-end.
+ * The back-end registers its JSON routes under this prefix and the Vite dev
+ * proxy forwards `/api/*` unchanged, so dev and prod share the same paths.
  */
 export const API_BASE = "/api";
 
 /**
  * Canonical route paths used by both front-end and back-end.
  *
- * - The **back-end** registers handlers at these exact paths.
  * - The **front-end** prefixes them with `API_BASE` before fetching.
+ * - The **back-end** registers these paths inside a plugin scoped with
+ *   `prefix: API_BASE`, so the handler for `HELLO` answers at `/api/hello`.
  */
 export const ROUTES = {
   HELLO: "/hello",

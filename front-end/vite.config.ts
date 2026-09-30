@@ -31,10 +31,11 @@ export default defineConfig({
     host: true, // Listen on all interfaces (needed for Docker)
     strictPort: true,
     proxy: {
+      // Forward /api/* unchanged so dev paths match prod (cloudflared) paths;
+      // the back-end serves the /api prefix itself.
       [API_BASE]: {
         target: proxyTarget,
         changeOrigin: true,
-        rewrite: (p) => p.replace(new RegExp(`^${API_BASE}`), ""),
       },
     },
   },

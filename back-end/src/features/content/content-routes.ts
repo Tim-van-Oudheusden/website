@@ -23,17 +23,42 @@ function isPathInsideRoot(candidatePath: string, rootPath: string): boolean {
 }
 
 /**
- * Register content API routes on a Fastify instance.
+ * Register content JSON API routes on a Fastify instance scoped under API_BASE.
  *
  * - GET /content       — list all content items (frontmatter only), optional ?type= filter
  * - GET /content/:slug — get a single content item (frontmatter + body)
  */
 export function registerContentRoutes(app: FastifyInstance, contentDir: string): void {
+  app.get<{ Querystring: { type?: string } }>(ROUTES.CONTENT, async (request) => {
+    const { type } = request.query;
+    const typeFilter = type !== undefined && (CONTENT_TYPES as readonly string[]).includes(type)
+      ? (type as ContentType)
+      : undefined;
+    return listContent(contentDir, { type: typeFilter });
+  });
+
+  app.get<{ Params: { slug: string } }>(ROUTES.CONTENT_BY_SLUG, async (request, reply) => {
+    const item = await getContentBySlug(request.params.slug, contentDir);
+
+    if (item === null) {
+      return reply.status(404).send({ error: "Content not found" });
+    }
+
+    return item;
+  });
+}
+
+/**
+ * Register the static content image route at the root.
+ *
+ * Image embeds use /content-assets/images/* — an asset path, not an API call,
+ * so it stays at the root (cloudflared routes it to the back-end on 3001).
+ */
+export function registerContentImageRoutes(app: FastifyInstance, contentDir: string): void {
   const imageRoot = resolve(contentDir, "images");
 
-  app.get(`${CONTENT_IMAGE_ROUTE_PREFIX}*`, async (request, reply) => {
-    const imagePath = (request.params as { "*": string })["*"];
-    const decodedImagePath = decodeURIComponent(imagePath);
+  app.get<{ Params: { "*": string } }>(`${CONTENT_IMAGE_ROUTE_PREFIX}*`, async (request, reply) => {
+    const decodedImagePath = decodeURIComponent(request.params["*"]);
     const fullPath = resolve(imageRoot, decodedImagePath);
 
     if (!isPathInsideRoot(fullPath, imageRoot)) {
@@ -63,24 +88,5 @@ export function registerContentRoutes(app: FastifyInstance, contentDir: string):
 
       throw error;
     }
-  });
-
-  app.get(ROUTES.CONTENT, async (request) => {
-    const { type } = request.query as { type?: string };
-    const typeFilter = type !== undefined && (CONTENT_TYPES as readonly string[]).includes(type)
-      ? (type as ContentType)
-      : undefined;
-    return listContent(contentDir, { type: typeFilter });
-  });
-
-  app.get(ROUTES.CONTENT_BY_SLUG, async (request, reply) => {
-    const { slug } = request.params as { slug: string };
-    const item = await getContentBySlug(slug, contentDir);
-
-    if (item === null) {
-      return reply.status(404).send({ error: "Content not found" });
-    }
-
-    return item;
   });
 }
