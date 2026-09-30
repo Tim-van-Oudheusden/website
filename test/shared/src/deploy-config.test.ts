@@ -94,6 +94,12 @@ describe("podman-kube@ prod pod template", () => {
     expect(template).toContain("WantedBy=default.target");
   });
 
+  test("locates the manifest via WEBSITE_REPO, not a hardcoded clone path", () => {
+    const template = readDeploy("deploy/systemd/podman-kube@.service");
+    expect(template).toContain("Environment=WEBSITE_REPO=");
+    expect(template).toContain("${WEBSITE_REPO}/deploy/kube/prod.yaml");
+  });
+
   test("update-timer restart target instance matches the prod pod name", () => {
     const script = readDeploy("deploy/systemd/website-update.sh");
     const prod = readDeploy("deploy/kube/prod.yaml");

@@ -33,7 +33,23 @@ it and start the pod:
 ```bash
 mkdir -p ~/.config/systemd/user
 cp deploy/systemd/podman-kube@.service ~/.config/systemd/user/
+```
 
+The unit locates the manifest via `WEBSITE_REPO` (default `%h/website` — the
+repository at `~/website`). If the repository lives elsewhere, set the variable
+once with a drop-in:
+
+```bash
+mkdir -p ~/.config/systemd/user/podman-kube@.service.d
+cat > ~/.config/systemd/user/podman-kube@.service.d/override.conf <<'EOF'
+[Service]
+Environment=WEBSITE_REPO=%h/Git/website
+EOF
+```
+
+Then enable and start the pod:
+
+```bash
 systemctl --user daemon-reload
 systemctl --user enable --now podman-kube@website.service
 curl -fsS http://localhost:3001/health   # {"status":"ok",...}
