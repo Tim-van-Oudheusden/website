@@ -1,8 +1,8 @@
-# Pull the latest images the prod pod runs, then replay the pod.
-#
-# `podman auto-update` re-pulls images but does NOT re-apply Kube YAML, so we
-# pull explicitly and restart podman-kube@website to make a new :latest take
-# effect with no SSH/push (the server pulls outbound-only).
+# Pull the latest images the prod pod runs, then replay the pod ONLY when an
+# image actually changed (see website-update.sh). `podman auto-update` re-pulls
+# images but does NOT re-apply Kube YAML; the conditional restart here makes a
+# new :latest take effect with no SSH/push (the server pulls outbound-only) and
+# without tearing the pod down on the common no-new-image cycle.
 #
 # The image refs below must match deploy/kube/prod.yaml exactly.
 #
@@ -13,10 +13,8 @@
 #   systemctl --user restart podman-kube@website.service
 
 [Unit]
-Description=Pull latest website images and replay the prod pod
+Description=Pull latest website images and replay the prod pod when they change
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/podman pull ghcr.io/tim-van-oudheusden/website/front-end:latest
-ExecStart=/usr/bin/podman pull ghcr.io/tim-van-oudheusden/website/back-end:latest
-ExecStart=/usr/bin/systemctl --user restart podman-kube@website.service
+ExecStart=%h/website/deploy/systemd/website-update.sh

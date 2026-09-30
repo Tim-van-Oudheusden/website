@@ -49,22 +49,29 @@ describe("cloudflared quadlet", () => {
 });
 
 describe("website image update timer", () => {
-  test("pulls the exact images the prod pod manifest runs", () => {
-    const service = readDeploy("deploy/systemd/website-update.service");
+  test("helper script pulls the exact images the prod pod manifest runs", () => {
+    const script = readDeploy("deploy/systemd/website-update.sh");
     const prod = readDeploy("deploy/kube/prod.yaml");
 
     for (const ref of [
       "ghcr.io/tim-van-oudheusden/website/front-end:latest",
       "ghcr.io/tim-van-oudheusden/website/back-end:latest",
     ]) {
-      expect(service).toContain(`podman pull ${ref}`);
+      expect(script).toContain(`podman pull ${ref}`);
       expect(prod).toContain(ref);
     }
   });
 
-  test("restarts the kube pod after pulling", () => {
+  test("replays the kube pod only when an image digest changed", () => {
+    const script = readDeploy("deploy/systemd/website-update.sh");
+    expect(script).toContain("podman image inspect");
+    expect(script).toContain(".Digest");
+    expect(script).toContain("restart podman-kube@website");
+  });
+
+  test("service unit delegates to the helper script", () => {
     const service = readDeploy("deploy/systemd/website-update.service");
-    expect(service).toContain("restart podman-kube@website");
+    expect(service).toContain("website-update.sh");
   });
 
   test("timer fires every 5 minutes and is persistent", () => {
