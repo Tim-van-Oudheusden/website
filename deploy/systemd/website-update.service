@@ -1,0 +1,22 @@
+# Pull the latest images the prod pod runs, then replay the pod.
+#
+# `podman auto-update` re-pulls images but does NOT re-apply Kube YAML, so we
+# pull explicitly and restart podman-kube@website to make a new :latest take
+# effect with no SSH/push (the server pulls outbound-only).
+#
+# The image refs below must match deploy/kube/prod.yaml exactly.
+#
+# Rollback:
+#   podman pull ghcr.io/tim-van-oudheusden/website/front-end:<git-sha>
+#   podman pull ghcr.io/tim-van-oudheusden/website/back-end:<git-sha>
+#   # point the pod manifest at <git-sha>, then:
+#   systemctl --user restart podman-kube@website.service
+
+[Unit]
+Description=Pull latest website images and replay the prod pod
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman pull ghcr.io/tim-van-oudheusden/website/front-end:latest
+ExecStart=/usr/bin/podman pull ghcr.io/tim-van-oudheusden/website/back-end:latest
+ExecStart=/usr/bin/systemctl --user restart podman-kube@website.service
