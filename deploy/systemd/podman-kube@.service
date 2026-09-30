@@ -7,11 +7,11 @@
 #   systemctl --user enable --now podman-kube@website.service
 #
 # WEBSITE_REPO is the repository root on the host. The default below assumes
-# ~/website; set it once per host with a drop-in matching the real clone, e.g.
-# ~/.config/systemd/user/podman-kube@.service.d/override.conf:
+# ~/Git/website; override it once per host with a drop-in if the repository
+# lives elsewhere, e.g. ~/.config/systemd/user/podman-kube@.service.d/override.conf:
 #
 #   [Service]
-#   Environment=WEBSITE_REPO=%h/Git/website
+#   Environment=WEBSITE_REPO=/srv/website
 #
 # website-update.service/.timer restart this unit (podman-kube@website) so a
 # newly-pulled :latest image takes effect with no SSH/push from CI. The one-shot
@@ -26,7 +26,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-Environment=WEBSITE_REPO=%h/website
+Environment=WEBSITE_REPO=%h/Git/website
 ExecStart=/usr/bin/podman kube play --replace ${WEBSITE_REPO}/deploy/kube/prod.yaml
 ExecStop=/usr/bin/podman kube down ${WEBSITE_REPO}/deploy/kube/prod.yaml
 
