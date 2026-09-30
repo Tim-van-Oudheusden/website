@@ -1,0 +1,38 @@
+# Rootless Quadlet for the Cloudflare Tunnel connector.
+#
+# The tunnel must be LOCALLY managed for config.yml's ingress rules to apply:
+# create it with `cloudflared tunnel create <name>`. A dashboard-created
+# "remotely managed" tunnel fetches its config from the edge and silently
+# ignores config.yml. Obtain the token with `cloudflared tunnel token <name>`
+# and store it in the env file below (host-side, 0600) — never in the repo or
+# an image.
+#
+# Install (as the service user):
+#   mkdir -p ~/.config/containers/systemd ~/.cloudflared
+#   cp deploy/cloudflared/cloudflared.container ~/.config/containers/systemd/
+#   cp deploy/cloudflared/config.yml ~/.cloudflared/config.yml
+#   printf 'TUNNEL_TOKEN=...' > ~/.cloudflared/cloudflared.env && chmod 600 ~/.cloudflared/cloudflared.env
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now cloudflared.service
+
+[Unit]
+Description=Cloudflare Tunnel (cloudflared)
+
+[Container]
+Image=docker.io/cloudflare/cloudflared:latest
+AutoUpdate=registry
+ContainerName=cloudflared
+# cloudflared reaches the kube pod's published ports via the host's loopback.
+Network=host
+EnvironmentFile=%h/.cloudflared/cloudflared.env
+Volume=%h/.cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+# The image ENTRYPOINT is `cloudflared --no-autoupdate`; these args override
+# its default CMD (`version`) to run the tunnel with our local ingress rules.
+Exec=tunnel --config /etc/cloudflared/config.yml run
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,18 @@
+# Cloudflare Tunnel ingress rules — checked in, contains no secrets.
+#
+# These rules only take effect for a LOCALLY managed tunnel (created via
+# `cloudflared tunnel create`). A dashboard-created remotely managed tunnel
+# fetches its config from the edge and ignores this file.
+#
+# cloudflared matches rules top-to-bottom; `path` is a Go regexp tested against
+# the request path. The final rule must be a catch-all (no hostname/path). The
+# tunnel token never lives here — it is injected from a host-only 0600 env file
+# at run time (see cloudflared.container).
+ingress:
+  # JSON API and content images → back-end (Fastify, port 3001).
+  - path: "^/api(/.*)?$"
+    service: http://localhost:3001
+  - path: "^/content-assets(/.*)?$"
+    service: http://localhost:3001
+  # Everything else (the site and its static assets) → front-end (port 3000).
+  - service: http://localhost:3000
