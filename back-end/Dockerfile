@@ -1,4 +1,4 @@
-FROM oven/bun:1 AS base
+FROM docker.io/oven/bun:1.3.14 AS base
 WORKDIR /app
 
 # Install all workspace dependencies from the monorepo root

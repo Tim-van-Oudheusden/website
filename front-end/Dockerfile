@@ -1,4 +1,4 @@
-FROM oven/bun:1 AS base
+FROM docker.io/oven/bun:1.3.14 AS base
 WORKDIR /app
 
 # Install all workspace dependencies from the monorepo root
@@ -35,5 +35,6 @@ FROM base AS prod
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/front-end/node_modules ./front-end/node_modules
 COPY --from=build /app/front-end/dist ./dist
+WORKDIR /app/front-end
 EXPOSE 3000
-CMD ["./node_modules/.bin/serve", "-s", "dist", "-l", "3000"]
+CMD ["./node_modules/.bin/serve", "-s", "../dist", "-l", "3000"]
