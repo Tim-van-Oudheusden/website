@@ -1,9 +1,74 @@
 import { describe, expect, test } from "bun:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { ErrorBoundary } from "../../../../../front-end/src/shared/components/error-boundary";
 
+const HEALTHY_CHILD = createElement("span", null, "healthy content");
+
+/**
+ * Harness note: react-dom's server renderers do not invoke
+ * `getDerivedStateFromError` (verified experimentally), so a throwing child
+ * cannot be rendered through the boundary with `renderToStaticMarkup`. These
+ * tests drive the boundary through the same state contract React's client
+ * reconciler applies: `getDerivedStateFromError` for the error state, and an
+ * updater that applies `setState` the way the reconciler would on mount (the
+ * never-mounted default updater is a no-op).
+ */
+function applyErrorState(instance: ErrorBoundary): void {
+  instance.state = ErrorBoundary.getDerivedStateFromError();
+}
+
+function mountUpdater(instance: ErrorBoundary): void {
+  instance.updater = {
+    enqueueSetState(inst, partialState, callback) {
+      inst.state = typeof partialState === "function"
+        ? partialState(inst.state, inst.props)
+        : { ...inst.state, ...partialState };
+      if (callback !== undefined) {
+        callback();
+      }
+    },
+  };
+}
+
 describe("ErrorBoundary", () => {
-  test("is exported as a class component", () => {
-    expect(typeof ErrorBoundary).toBe("function");
-    expect(ErrorBoundary.prototype).toHaveProperty("render");
+  test("renders children normally when no error has occurred", () => {
+    const instance = new ErrorBoundary({ children: HEALTHY_CHILD });
+
+    expect(renderToStaticMarkup(instance.render())).toContain("healthy content");
+  });
+
+  test("computes the captured-error state via getDerivedStateFromError", () => {
+    expect(ErrorBoundary.getDerivedStateFromError()).toEqual({ hasError: true });
+  });
+
+  test("renders the default fallback with a retry control after a child error", () => {
+    const instance = new ErrorBoundary({ children: HEALTHY_CHILD });
+    applyErrorState(instance);
+    const html = renderToStaticMarkup(instance.render());
+
+    expect(html).toContain("Failed to render content.");
+    expect(html).toContain("Try again");
+    expect(html).toContain("button");
+    expect(html).not.toContain("healthy content");
+  });
+
+  test("renders the provided custom fallback instead of the default", () => {
+    const instance = new ErrorBoundary({ children: HEALTHY_CHILD, fallback: createElement("div", null, "custom fallback") });
+    applyErrorState(instance);
+    const html = renderToStaticMarkup(instance.render());
+
+    expect(html).toContain("custom fallback");
+    expect(html).not.toContain("Failed to render content.");
+  });
+
+  test("recovers to children when retry() clears the captured error", () => {
+    const instance = new ErrorBoundary({ children: HEALTHY_CHILD });
+    applyErrorState(instance);
+    mountUpdater(instance);
+    expect(renderToStaticMarkup(instance.render())).toContain("Failed to render content.");
+
+    instance.retry();
+    expect(renderToStaticMarkup(instance.render())).toContain("healthy content");
   });
 });

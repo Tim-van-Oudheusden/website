@@ -24,11 +24,23 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true };
   }
 
+  /** Re-render children after a captured failure (wired to the fallback retry button). */
+  retry = (): void => {
+    this.setState({ hasError: false });
+  };
+
   override render(): React.ReactNode {
     if (this.state.hasError) {
       return this.props.fallback ?? (
         <div className="rounded-md border border-destructive bg-destructive/10 p-4">
           <p className="text-destructive font-medium">Failed to render content.</p>
+          <button
+            type="button"
+            onClick={this.retry}
+            className="mt-2 text-sm font-medium text-(--adw-dark-5) underline-offset-4 hover:underline dark:text-white/80"
+          >
+            Try again
+          </button>
         </div>
       );
     }

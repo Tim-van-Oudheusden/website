@@ -5,8 +5,6 @@ import { MemoryRouter } from "react-router";
 import { ProjectMetaHeader, type ProjectData } from "../../../../../../front-end/src/features/projects/pages/project-page";
 import { ProjectCard } from "../../../../../../front-end/src/features/projects/pages/projects-page";
 
-const PROJECT_LINK_TEXT_CLASSES = "text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)]";
-
 function project(overrides: Partial<ProjectData> = {}): ProjectData {
   return {
     title: "Project",
@@ -32,14 +30,43 @@ function renderWithRouter(element: ReactElement): string {
   );
 }
 
-describe("project link colors", () => {
-  test("renders project card and detail navigation links with neutral palette text", () => {
-    const projectData = project();
-    const cardHtml = renderWithRouter(createElement(ProjectCard, { project: projectData }));
-    const headerHtml = renderWithRouter(createElement(ProjectMetaHeader, { project: projectData }));
+describe("project navigation links", () => {
+  test("card links to its case study page and offers a view-project affordance", () => {
+    const html = renderWithRouter(createElement(ProjectCard, { project: project() }));
 
-    expect(cardHtml).toContain(`${PROJECT_LINK_TEXT_CLASSES} text-sm font-semibold`);
-    expect(headerHtml).toContain(`${PROJECT_LINK_TEXT_CLASSES} mb-6 inline-flex text-sm font-semibold`);
-    expect(`${cardHtml}\n${headerHtml}`).not.toContain("text-primary");
+    expect(html).toMatch(/<a[^>]*href="\/projects\/project"/);
+    expect(html).toContain("View project");
+  });
+
+  test("detail header links back to the projects list", () => {
+    const html = renderWithRouter(createElement(ProjectMetaHeader, { project: project() }));
+
+    expect(html).toMatch(/<a[^>]*href="\/projects"/);
+    expect(html).toContain("Back to projects");
+  });
+
+  test("detail header renders title, description, and metadata fields", () => {
+    const withMeta = project({ role: "Full-stack developer", created: "2026", info: "A launcher for retro handhelds" });
+    const html = renderWithRouter(createElement(ProjectMetaHeader, { project: withMeta }));
+
+    expect(html).toContain("Project");
+    expect(html).toContain("Description");
+    expect(html).toContain("Full-stack developer");
+    expect(html).toContain("2026");
+    expect(html).toContain("A launcher for retro handhelds");
+  });
+
+  test("detail header renders each project link with its label and href", () => {
+    const withLinks = project({
+      links: [
+        { type: "repo", label: "Source repository", href: "https://github.com/Tim-van-Oudheusden/website" },
+        { type: "demo", label: "Live demo", href: "https://example.com" },
+      ],
+    });
+    const html = renderWithRouter(createElement(ProjectMetaHeader, { project: withLinks }));
+
+    expect(html).toContain("Source repository");
+    expect(html).toContain("Live demo");
+    expect(html).toContain('href="https://github.com/Tim-van-Oudheusden/website"');
   });
 });

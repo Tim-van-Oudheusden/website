@@ -14,7 +14,8 @@ const ThemeContext = createContext<{
   setTheme: () => {},
 });
 
-function applyTheme(theme: Theme): void {
+/** Toggle the document-level theme class for the given theme selection. */
+export function applyTheme(theme: Theme): void {
   const root = document.documentElement;
   const isDark =
     theme === "dark" ||
