@@ -15,10 +15,9 @@ export const FRONTEND_PORT = 5173;
 /**
  * Default hostname for the back-end when reached from the front-end dev proxy.
  *
- * - On the **host** machine: `localhost` (both processes share the same network)
- * - In **Docker**: overridden via `VITE_BACKEND_HOST` env var to the Docker
- *   service name (e.g. `back-end`) since each container has its own network
- *   namespace and `localhost` refers to the front-end container itself.
+ * In the kube-play dev pod both containers share one network namespace, so
+ * `localhost` reaches the back-end directly. Separate host processes (or any
+ * non-pod setup) can override this via `VITE_BACKEND_HOST`.
  */
 export const BACKEND_HOST = "localhost";
 

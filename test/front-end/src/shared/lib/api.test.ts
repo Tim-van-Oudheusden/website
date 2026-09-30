@@ -64,7 +64,7 @@ describe("front-end API client uses shared constants", () => {
   });
 });
 
-describe("shared network constants for Docker proxy", () => {
+describe("shared network constants for the dev proxy", () => {
   test("BACKEND_HOST defaults to localhost for host-machine development", () => {
     expect(BACKEND_HOST).toBe("localhost");
   });
@@ -78,12 +78,10 @@ describe("shared network constants for Docker proxy", () => {
     expect(target).toBe("http://localhost:3001");
   });
 
-  test("VITE_BACKEND_HOST env var can override the proxy target for Docker", () => {
-    // Simulate what docker-compose does: VITE_BACKEND_HOST=back-end
-    const dockerHost = "back-end";
-    const target = `http://${dockerHost}:${BACKEND_PORT}`;
+  test("BACKEND_HOST can be overridden for non-pod deployments", () => {
+    // The escape hatch documented in front-end/vite.config.ts (VITE_BACKEND_HOST).
+    const target = `http://back-end:${BACKEND_PORT}`;
     expect(target).toBe("http://back-end:3001");
-    // This is the Docker service name, resolvable within the compose network
     expect(target).not.toContain("localhost");
   });
 });

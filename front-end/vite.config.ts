@@ -7,12 +7,10 @@ import { API_BASE, BACKEND_HOST, BACKEND_PORT, FRONTEND_PORT } from "../shared/s
 /**
  * Resolve the back-end proxy target.
  *
- * On the host machine both dev servers share `localhost`, so the default
- * `BACKEND_HOST` ("localhost") works fine. Inside Docker the front-end
- * container's `localhost` is itself — the back-end lives in a separate
- * container reachable by the Docker service name.
- *
- * Set `VITE_BACKEND_HOST` in docker-compose to override (e.g. "back-end").
+ * The kube-play dev pod runs front-end and back-end in the same network
+ * namespace, so the front-end reaches the back-end at `localhost:$BACKEND_PORT`
+ * — the default. `VITE_BACKEND_HOST` remains an escape hatch for non-pod
+ * setups (e.g. the two servers running as separate host processes).
  */
 const backendHost = process.env["VITE_BACKEND_HOST"] ?? BACKEND_HOST;
 const proxyTarget = `http://${backendHost}:${BACKEND_PORT}`;
@@ -28,7 +26,7 @@ export default defineConfig({
   },
   server: {
     port: FRONTEND_PORT,
-    host: true, // Listen on all interfaces (needed for Docker)
+    host: true, // Listen on all interfaces (publishes the pod's dev port)
     strictPort: true,
     proxy: {
       // Forward /api/* unchanged so dev paths match prod (cloudflared) paths;
