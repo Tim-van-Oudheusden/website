@@ -104,7 +104,7 @@ bd close <id>         # Complete work
 - **Run the full suite after every change** - Not just the new test. AI refactoring frequently breaks existing functionality
 - **Never modify tests to make them pass** - Fix the implementation, not the test. Never delete, skip, comment out, or weaken assertions. Never add `@pytest.mark.skip`, `@ts-expect-error`, `# type: ignore`, or similar suppressions to silence failures
 - **Don't over-implement** - If the test passes, the implementation is done. Do not add code that is not required by a failing test
-- **E2E with Docker** - Run docker compose up when kicking off Playwright tests, shutdown when finished.
+- **E2E with Podman** - Run `scripts/dev.sh` (kube-play dev pod) when kicking off Playwright tests, `scripts/dev-down.sh` when finished.
 
 ## Dependency Management
 
