@@ -7,6 +7,6 @@
   "scripts": {
     "build": "tsc -b .",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test ../test/shared"
   }
 }
