@@ -26,32 +26,23 @@ Prerequisites: Podman 5.x, the `cloudflared` binary, and this repo cloned at
 
 ## 1. Deploy the app pod (`prod.yaml`)
 
-The pod is managed by the `podman-kube@.service` systemd **user** template so it
-reboots with the machine. Create the template at
-`~/.config/systemd/user/podman-kube@.service`:
-
-```ini
-[Unit]
-Description=Run the website production pod
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-WorkingDirectory=%h/website
-ExecStart=/usr/bin/podman kube play --replace deploy/kube/prod.yaml
-ExecStop=/usr/bin/podman kube down deploy/kube/prod.yaml
-```
-
-The instance name `website` is the pod's name in `deploy/kube/prod.yaml`; the
-template always plays that manifest. Enable it and start the pod:
+The pod is managed by the `podman-kube@.service` systemd **user** template
+(`deploy/systemd/podman-kube@.service`) so it reboots with the machine. Install
+it and start the pod:
 
 ```bash
+mkdir -p ~/.config/systemd/user
+cp deploy/systemd/podman-kube@.service ~/.config/systemd/user/
+
 systemctl --user daemon-reload
 systemctl --user enable --now podman-kube@website.service
 curl -fsS http://localhost:3001/health   # {"status":"ok",...}
 ```
+
+The instance name `website` is the pod's name in `deploy/kube/prod.yaml`; the
+template always plays that manifest. `RemainAfterExit=yes` keeps the one-shot
+"active" so `website-update.service` can `restart` it to activate a new image,
+and `WantedBy=default.target` makes `enable` rebuild the pod on session start.
 
 ---
 

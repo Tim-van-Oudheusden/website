@@ -80,3 +80,24 @@ describe("website image update timer", () => {
     expect(timer).toContain("Persistent=true");
   });
 });
+
+describe("podman-kube@ prod pod template", () => {
+  test("plays deploy/kube/prod.yaml and tears it down on stop", () => {
+    const template = readDeploy("deploy/systemd/podman-kube@.service");
+    expect(template).toContain("podman kube play --replace");
+    expect(template).toContain("deploy/kube/prod.yaml");
+    expect(template).toContain("podman kube down");
+  });
+
+  test("has an [Install] section so systemctl --user enable works", () => {
+    const template = readDeploy("deploy/systemd/podman-kube@.service");
+    expect(template).toContain("WantedBy=default.target");
+  });
+
+  test("update-timer restart target instance matches the prod pod name", () => {
+    const script = readDeploy("deploy/systemd/website-update.sh");
+    const prod = readDeploy("deploy/kube/prod.yaml");
+    expect(script).toContain("restart podman-kube@website.service");
+    expect(prod).toContain("name: website");
+  });
+});

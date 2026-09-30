@@ -1,0 +1,26 @@
+# Rootless systemd template unit that runs the production pod via
+# `podman kube play`. Install to ~/.config/systemd/user/podman-kube@.service;
+# the instance name is the pod's name ("website"):
+#
+#   cp deploy/systemd/podman-kube@.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now podman-kube@website.service
+#
+# website-update.service/.timer restart this unit (podman-kube@website) so a
+# newly-pulled :latest image takes effect with no SSH/push from CI. The one-shot
+# form + RemainAfterExit=yes keeps the unit "active" so `restart` (ExecStop
+# then ExecStart) and reboot persistence both behave.
+
+[Unit]
+Description=Run the website production pod (podman kube play)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/podman kube play --replace %h/website/deploy/kube/prod.yaml
+ExecStop=/usr/bin/podman kube down %h/website/deploy/kube/prod.yaml
+
+[Install]
+WantedBy=default.target
