@@ -95,6 +95,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["**/dist/", "**/node_modules/", "**/.pi-sandbox/**", "**/*.config.js"],
+    ignores: ["**/dist/", "**/node_modules/", "**/.pi-sandbox/**", "**/worktrees/**", "**/*.config.js"],
   },
 );
