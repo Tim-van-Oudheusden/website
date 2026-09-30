@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: website
+  labels:
+    app: website
+
+spec:
+  containers:
+    - name: front-end
+      image: localhost/website/front-end:dev
+      env:
+        - name: NODE_ENV
+          value: development
+      ports:
+        - containerPort: 5173
+          hostPort: 5173
+      volumeMounts:
+        - name: front-end-src
+          mountPath: /app/front-end
+        - name: shared-src
+          mountPath: /app/shared
+        - name: public
+          mountPath: /app/public
+          readOnly: true
+        - name: root-package-json
+          mountPath: /app/package.json
+          readOnly: true
+        - name: bun-lock
+          mountPath: /app/bun.lock
+
+    - name: back-end
+      image: localhost/website/back-end:dev
+      env:
+        - name: NODE_ENV
+          value: development
+        - name: HOST
+          value: "0.0.0.0"
+      ports:
+        - containerPort: 3001
+          hostPort: 3001
+      volumeMounts:
+        - name: back-end-src
+          mountPath: /app/back-end
+        - name: shared-src
+          mountPath: /app/shared
+        - name: content
+          mountPath: /app/content
+          readOnly: true
+        - name: root-package-json
+          mountPath: /app/package.json
+          readOnly: true
+        - name: bun-lock
+          mountPath: /app/bun.lock
+
+  volumes:
+    - name: front-end-src
+      hostPath:
+        path: ./front-end
+        type: Directory
+    - name: back-end-src
+      hostPath:
+        path: ./back-end
+        type: Directory
+    - name: shared-src
+      hostPath:
+        path: ./shared
+        type: Directory
+    - name: content
+      hostPath:
+        path: ./content
+        type: Directory
+    - name: public
+      hostPath:
+        path: ./public
+        type: Directory
+    - name: root-package-json
+      hostPath:
+        path: ./package.json
+        type: File
+    - name: bun-lock
+      hostPath:
+        path: ./bun.lock
+        type: File

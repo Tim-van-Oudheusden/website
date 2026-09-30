@@ -6,7 +6,7 @@ Personal website repository
 The Fastify server defaults to `HOST=127.0.0.1` for least-privilege local runs.
 
 - Local development on the host machine: no override needed.
-- Containers (Docker Compose / Docker run): set `HOST=0.0.0.0` explicitly so
+- Containers (`podman kube play` / `podman run`): set `HOST=0.0.0.0` explicitly so
   published ports and peer containers can reach the API.
 
 ## Obsidian Content Authoring
