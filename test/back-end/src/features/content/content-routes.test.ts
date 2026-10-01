@@ -32,6 +32,17 @@ describe("content routes mount JSON under /api and images at the root", () => {
     await writeFile(join(contentDir, "images", "notes.txt"), "not an image");
     await writeFile(join(contentDir, "escape.png"), "outside-root-image");
     await writeFile(join(contentDir, "hello-world.md"), ARTICLE_MARKDOWN);
+    await writeFile(join(contentDir, "bad-status.md"), [
+      "---",
+      "title: Bad Status",
+      "date: 2026-01-01",
+      "type: project",
+      "coverImage: /img.png",
+      "coverImageAlt: img",
+      "status: In development",
+      "---",
+      "# Bad Status",
+    ].join("\n"));
 
     app = await buildApp({ logger: false, contentDir });
     await app.ready();
@@ -114,6 +125,18 @@ describe("content routes mount JSON under /api and images at the root", () => {
 
   test("unknown file extensions are not served", async () => {
     const res = await app!.inject({ method: "GET", url: "/content-assets/images/notes.txt" });
+    expect(res.statusCode).toBe(404);
+  });
+
+  test("invalid documents are skipped, not fatal to the list route", async () => {
+    const res = await app!.inject({ method: "GET", url: `${API_BASE}${ROUTES.CONTENT}` });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().map((item: { slug: string }) => item.slug)).toEqual(["hello-world"]);
+  });
+
+  test("invalid documents resolve to 404 by slug", async () => {
+    const url = `${API_BASE}${ROUTES.CONTENT_BY_SLUG.replace(":slug", "bad-status")}`;
+    const res = await app!.inject({ method: "GET", url });
     expect(res.statusCode).toBe(404);
   });
 });

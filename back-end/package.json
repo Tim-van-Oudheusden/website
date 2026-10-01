@@ -12,6 +12,7 @@
     "dev": "bun run --watch src/index.ts",
     "build": "bun build src/index.ts --outdir dist --target bun",
     "start": "bun run src/index.ts",
+    "validate:content": "bun run src/scripts/validate-content.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test ../test/back-end"
   },

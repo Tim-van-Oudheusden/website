@@ -2,7 +2,7 @@ import { describe, expect, test, beforeAll, afterAll, beforeEach, afterEach } fr
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { listContent, getContentBySlug } from "../../../../../back-end/src/features/content/content";
+import { listContent, getContentBySlug, validateContentDir } from "../../../../../back-end/src/features/content/content";
 
 // Resolve the repo-root content dir from the module location, not CWD, so the
 // test works both standalone and via `bun run test` (workspace filter).
@@ -104,8 +104,8 @@ const FIXTURES: Record<string, string> = {
   "no-frontmatter.md": "# Plain markdown body",
 };
 
-/** Fixtures that make listContent throw; kept out of the main fixture dir. */
-const THROWING_FIXTURES: Record<string, string> = {
+/** Fixtures that make listContent skip the document; kept out of the main fixture dir. */
+const INVALID_FIXTURES: Record<string, string> = {
   "no-category.md": [
     "---",
     "title: No Category",
@@ -126,26 +126,26 @@ const THROWING_FIXTURES: Record<string, string> = {
 
 describe("content normalization against controlled fixtures", () => {
   let contentDir: string;
-  let categoryThrowDir: string;
-  let coverThrowDir: string;
+  let invalidCategoryDir: string;
+  let invalidCoverDir: string;
   let originalNodeEnv: string | undefined;
 
   beforeAll(async () => {
     contentDir = await mkdtemp(join(tmpdir(), "website-content-normalize-"));
-    categoryThrowDir = await mkdtemp(join(tmpdir(), "website-content-category-"));
-    coverThrowDir = await mkdtemp(join(tmpdir(), "website-content-cover-"));
+    invalidCategoryDir = await mkdtemp(join(tmpdir(), "website-content-category-"));
+    invalidCoverDir = await mkdtemp(join(tmpdir(), "website-content-cover-"));
 
     for (const [fileName, content] of Object.entries(FIXTURES)) {
       await writeFile(join(contentDir, fileName), content);
     }
-    await writeFile(join(categoryThrowDir, "no-category.md"), THROWING_FIXTURES["no-category.md"]);
-    await writeFile(join(coverThrowDir, "no-cover.md"), THROWING_FIXTURES["no-cover.md"]);
+    await writeFile(join(invalidCategoryDir, "no-category.md"), INVALID_FIXTURES["no-category.md"]);
+    await writeFile(join(invalidCoverDir, "no-cover.md"), INVALID_FIXTURES["no-cover.md"]);
   });
 
   afterAll(async () => {
     await rm(contentDir, { recursive: true, force: true });
-    await rm(categoryThrowDir, { recursive: true, force: true });
-    await rm(coverThrowDir, { recursive: true, force: true });
+    await rm(invalidCategoryDir, { recursive: true, force: true });
+    await rm(invalidCoverDir, { recursive: true, force: true });
   });
 
   beforeEach(() => {
@@ -216,13 +216,21 @@ describe("content normalization against controlled fixtures", () => {
     expect(items.some((item) => item.slug === "no-title")).toBe(false);
   });
 
-  test("drops invalid project status and role values", async () => {
+  test("skips documents with an invalid status and drops blank roles", async () => {
     const items = await listContent(contentDir);
-    const badStatus = items.find((item) => item.slug === "bad-status");
-    const badLinks = items.find((item) => item.slug === "bad-links");
 
-    expect(badStatus?.status).toBeUndefined();
+    expect(items.some((item) => item.slug === "bad-status")).toBe(false);
+    const badLinks = items.find((item) => item.slug === "bad-links");
     expect(badLinks?.role).toBeUndefined();
+  });
+
+  test("reports invalid and untitled documents via the directory audit", async () => {
+    const errors = await validateContentDir(contentDir);
+
+    expect(errors.map((error) => [error.file, error.field]).sort()).toEqual([
+      ["bad-status.md", "status"],
+      ["no-title.md", "title"],
+    ]);
   });
 
   test("keeps valid links and drops invalid link entries", async () => {
@@ -250,32 +258,18 @@ describe("content normalization against controlled fixtures", () => {
     expect(item?.body).toContain("# Launcher");
   });
 
-  test("throws for an article without a valid category", async () => {
-    let caught: unknown = null;
-    try {
-      await listContent(categoryThrowDir);
-    } catch (error) {
-      caught = error;
-    }
-
-    expect(caught).toBeInstanceOf(Error);
-    if (caught instanceof Error) {
-      expect(caught.message).toMatch(/Article "no-category.md" is missing a valid category/);
-    }
+  test("skips an article without a valid category and audits it", async () => {
+    expect(await listContent(invalidCategoryDir)).toEqual([]);
+    expect(await validateContentDir(invalidCategoryDir)).toMatchObject([
+      { file: "no-category.md", field: "category" },
+    ]);
   });
 
-  test("throws for a project missing coverImage and coverImageAlt", async () => {
-    let caught: unknown = null;
-    try {
-      await listContent(coverThrowDir);
-    } catch (error) {
-      caught = error;
-    }
-
-    expect(caught).toBeInstanceOf(Error);
-    if (caught instanceof Error) {
-      expect(caught.message).toMatch(/Project "no-cover.md" is missing coverImage or coverImageAlt/);
-    }
+  test("skips a project missing coverImage and coverImageAlt and audits it", async () => {
+    expect(await listContent(invalidCoverDir)).toEqual([]);
+    expect(await validateContentDir(invalidCoverDir)).toMatchObject([
+      { file: "no-cover.md", field: "coverImage" },
+    ]);
   });
 });
 

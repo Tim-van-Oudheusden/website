@@ -80,6 +80,8 @@ interface BaseContentFrontmatter {
   draft: boolean;
   /** Derived from filename if absent. */
   slug?: string | undefined;
+  /** Optional social/cover image path used by article listing surfaces. */
+  socialImage?: string | undefined;
 }
 
 /**

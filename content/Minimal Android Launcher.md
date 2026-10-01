@@ -12,7 +12,7 @@ coverImage: /images/projects/placeholder_phone_project.png
 coverImageAlt: Yet to be decided
 featured: true
 projectOrder: 10
-status: In development
+status: In Progress
 role: Full-stack developer
 created: 2026
 links:
