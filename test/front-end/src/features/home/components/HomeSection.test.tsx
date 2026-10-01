@@ -1,9 +1,19 @@
-import { describe, expect, test } from "bun:test";
-import { createElement } from "react";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { act, createElement } from "react";
+import type { MouseEvent } from "react";
+import type { Root, createRoot as CreateRootFn } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { headingIdFor, HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
 import { HomeSection } from "../../../../../../front-end/src/features/home/components/home-section";
+import { HomeSectionDefault } from "../../../../../../front-end/src/features/home/components/home-section-default";
+import { HomeSectionShell } from "../../../../../../front-end/src/features/home/components/home-section-shell";
 import type { HomeSectionDefinition, HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
+import {
+  installFakeDom,
+  queryFakeElements,
+  uninstallFakeDom,
+  type FakeElement,
+} from "../../../test/fake-dom";
 
 function findHomeSection(sectionId: HomeSectionId): HomeSectionDefinition {
   const section = HOME_SECTIONS.find((candidateSection) => candidateSection.id === sectionId);
@@ -28,6 +38,45 @@ function countOccurrences(haystack: string, needle: string): number {
     index += needle.length;
   }
   return count;
+}
+
+// react-dom/client is the only deferred import: react-dom captures `canUseDOM`
+// at module load, so the fake DOM globals must be installed before it evaluates
+// (module loading boundary, not a runtime-selected specifier).
+let createRoot: CreateRootFn;
+
+beforeAll(async () => {
+  installFakeDom();
+  ({ createRoot } = await import("react-dom/client"));
+});
+
+afterAll(() => {
+  uninstallFakeDom();
+});
+
+function renderDefaultSectionContainer(
+  section: HomeSectionDefinition,
+  onCtaActivate: ((sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void) | undefined,
+): { container: FakeElement; root: Root } {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  act(() => {
+    root.render(createElement(HomeSectionDefault, { section, onCtaActivate }));
+  });
+  return { container, root };
+}
+
+function clickElement(container: FakeElement, target: FakeElement): void {
+  act(() => {
+    container.dispatch("click", {
+      type: "click",
+      target,
+      currentTarget: target,
+      preventDefault: () => undefined,
+      stopPropagation: () => undefined,
+    });
+  });
 }
 
 describe("HomeSection", () => {
@@ -127,5 +176,125 @@ describe("HomeSection", () => {
       expect(html).toContain(`aria-labelledby="${headingId}"`);
       expect(countOccurrences(html, `id="${headingId}"`)).toBe(1);
     }
+  });
+  test("renders the shell background image when the section defines one", () => {
+    const html = renderToStaticMarkup(
+      createElement(
+        HomeSectionShell,
+        {
+          section: {
+            id: "proof",
+            label: "Proof",
+            heading: "Proof",
+            body: "Body",
+            bgColor: "white",
+            bgImage: "/images/proof-bg.png",
+            contentDirection: "column",
+          },
+        },
+        "content",
+      ),
+    );
+
+    expect(html).toContain("background-image:url(/images/proof-bg.png)");
+    expect(html).toContain("background-size:cover");
+    expect(html).toContain("background-position:center");
+  });
+
+  test("omits the background image styles when the section has no bgImage", () => {
+    const html = renderToStaticMarkup(
+      createElement(
+        HomeSectionShell,
+        {
+          section: {
+            id: "proof",
+            label: "Proof",
+            heading: "Proof",
+            body: "Body",
+            bgColor: "white",
+            contentDirection: "column",
+          },
+        },
+        "content",
+      ),
+    );
+
+    expect(html).not.toContain("background-image");
+  });
+
+  test("renders the default variant CTA as an anchor to its target section", () => {
+    const html = renderToStaticMarkup(
+      createElement(HomeSectionDefault, {
+        section: {
+          id: "for-devs",
+          label: "For devs",
+          heading: "For devs",
+          body: "Body",
+          bgColor: "white",
+          ctaLabel: "See the tools",
+          ctaTargetId: "for-you",
+          contentDirection: "column",
+        },
+      }),
+    );
+
+    expect(html).toContain('href="#for-you"');
+    expect(html).toContain("See the tools");
+  });
+
+  test("omits the CTA when either the label or the target is missing", () => {
+    const base = {
+      id: "for-devs" as HomeSectionId,
+      label: "For devs",
+      heading: "For devs",
+      body: "Body",
+      bgColor: "white",
+      contentDirection: "column" as const,
+    };
+
+    const labelOnly = renderToStaticMarkup(
+      createElement(HomeSectionDefault, { section: { ...base, ctaLabel: "See the tools" } }),
+    );
+    expect(labelOnly).not.toContain("<a ");
+
+    const targetOnly = renderToStaticMarkup(
+      createElement(HomeSectionDefault, { section: { ...base, ctaTargetId: "for-you" } }),
+    );
+    expect(targetOnly).not.toContain("<a ");
+  });
+});
+
+describe("HomeSectionDefault interaction", () => {
+  test("invokes onCtaActivate with the target section id and the anchor element on CTA click", () => {
+    const ctaActivations: { sectionId: HomeSectionId; targetTag: string; href: string | null }[] = [];
+    const { container } = renderDefaultSectionContainer(
+      {
+        id: "start",
+        label: "Start",
+        heading: "Start",
+        body: "Body text",
+        bgColor: "white",
+        contentDirection: "row",
+        ctaLabel: "Get started",
+        ctaTargetId: "for-you",
+      },
+      (sectionId, event) => {
+        ctaActivations.push({
+          sectionId,
+          targetTag: event.currentTarget.tagName,
+          href: event.currentTarget.getAttribute("href"),
+        });
+      },
+    );
+
+    const anchors = queryFakeElements(container, (element) => element.tagName === "A");
+    expect(anchors.length).toBe(1);
+    const anchor = anchors[0];
+    if (anchor === undefined) {
+      throw new Error("Expected a CTA anchor");
+    }
+
+    clickElement(container, anchor);
+    expect(ctaActivations).toEqual([{ sectionId: "for-you", targetTag: "A", href: "#for-you" }]);
   });
 });
