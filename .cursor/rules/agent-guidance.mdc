@@ -1,4 +1,7 @@
-# Cursor Rules
+---
+description: "Repository-wide guidance for Cursor agents in this workspace."
+alwaysApply: true
+---
 
 Guidance for Cursor agents working in this repository.
 **`AGENTS.md` at the repo root is the authoritative agent instructions file —
