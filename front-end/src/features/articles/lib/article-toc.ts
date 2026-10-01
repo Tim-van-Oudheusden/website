@@ -1,4 +1,4 @@
-import { extractMarkdownHeadings } from "@/shared/lib/markdown-headings";
+import { extractMarkdownHeadings, TOC_MAX_DEPTH } from "@/shared/lib/markdown-headings";
 
 export interface ArticleTableOfContentsItem {
   id: string;
@@ -37,7 +37,7 @@ export const DEFAULT_TOC_NAVIGATION_DEPENDENCIES: TocNavigationDependencies = {
 };
 
 export function extractArticleTableOfContents(markdownBody: string): ArticleTableOfContentsItem[] {
-  return extractMarkdownHeadings(markdownBody, 3).map((heading) => ({
+  return extractMarkdownHeadings(markdownBody, TOC_MAX_DEPTH).map((heading) => ({
     id: heading.id,
     text: heading.text,
     depth: heading.depth as 1 | 2 | 3,

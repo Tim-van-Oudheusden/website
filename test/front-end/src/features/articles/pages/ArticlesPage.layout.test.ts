@@ -5,11 +5,13 @@ import { MemoryRouter } from "react-router";
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
   ARTICLES_PAGE_TYPOGRAPHY_CLASSES,
-  ArticleLocationTrail,
+} from "../../../../../../front-end/src/features/articles/lib/articles-page-styles";
+import { ArticleLocationTrail } from "../../../../../../front-end/src/features/articles/components/article-location-trail";
+import { resolveArticlesTrailTargetSlug } from "../../../../../../front-end/src/features/articles/lib/articles-sidebar";
+import {
   extractArticleTableOfContents,
   navigateToArticleHeadingById,
-  resolveArticlesTrailTargetSlug,
-} from "../../../../../../front-end/src/features/articles/pages/articles-page";
+} from "../../../../../../front-end/src/features/articles/lib/article-toc";
 
 describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
   test("uses edge-to-edge split layout with a tokenized desktop sidebar and no divider line", () => {

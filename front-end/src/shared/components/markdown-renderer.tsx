@@ -10,6 +10,7 @@ import {
   extractMarkdownHeadingsWithOffsets,
   normalizeMarkdownHeadingText,
   slugifyHeadingText,
+  TOC_MAX_DEPTH,
 } from "@/shared/lib/markdown-headings";
 
 export interface MarkdownRendererProps {
@@ -118,7 +119,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
   content,
 }: MarkdownRendererProps): React.JSX.Element {
   const headingIdByOffset = React.useMemo(() => {
-    const entries = extractMarkdownHeadingsWithOffsets(content, 3);
+    const entries = extractMarkdownHeadingsWithOffsets(content, TOC_MAX_DEPTH);
     return {
       byOffset: new Map(entries.map((entry) => [entry.startOffset, entry.id])),
       byLineColumn: new Map(entries.map((entry) => [`${entry.startLine}:${entry.startColumn}`, entry.id])),
@@ -147,12 +148,13 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
       }
     }
 
-    const baseSlug = slugifyHeadingText(headingText) || "section";
-    if (position?.line !== undefined && position.column !== undefined) {
-      return `${baseSlug}-${position.line}-${position.column}`;
-    }
-
-    return baseSlug;
+    // A lookup miss means this rendered heading was not part of the extracted
+    // set, so the TOC has no link for it; inventing a position-suffixed id
+    // here would silently diverge. Stay deterministic and make it loud.
+    console.error(
+      `[markdown-renderer] heading id lookup missed for "${headingText}"; TOC link may be absent.`,
+    );
+    return slugifyHeadingText(headingText) || "section";
   }
 
   const components = React.useMemo<Components>(() => ({

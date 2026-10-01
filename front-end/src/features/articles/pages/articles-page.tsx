@@ -9,17 +9,6 @@ import { ArticlesSidebar } from "../components/articles-sidebar";
 import { ArticleContent } from "../components/article-content";
 import { ARTICLES_PAGE_LAYOUT_CLASSES, ARTICLES_PAGE_TYPOGRAPHY_CLASSES } from "../lib/articles-page-styles";
 
-// Compatibility re-exports: these symbols previously lived in this page and are
-// still imported from it by the colocated tests.
-export { ArticleLocationTrail } from "../components/article-location-trail";
-export { extractArticleTableOfContents, navigateToArticleHeadingById } from "../lib/article-toc";
-export { resolveArticlesTrailTargetSlug } from "../lib/articles-sidebar";
-export {
-  ARTICLES_PAGE_LAYOUT_CLASSES,
-  ARTICLES_PAGE_TEXT,
-  ARTICLES_PAGE_TYPOGRAPHY_CLASSES,
-} from "../lib/articles-page-styles";
-
 export function ArticlesPage(): React.JSX.Element {
   const { slug } = useParams<{ slug: string }>();
   const {

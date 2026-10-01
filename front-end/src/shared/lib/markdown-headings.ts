@@ -15,6 +15,9 @@ const SETEXT_UNDERLINE_PATTERN = /^(=+|-+)[ \t]*$/;
 const FENCED_CODE_DELIMITER_PATTERN = /^[ \t]{0,3}([`~]{3,})/;
 const ESCAPED_MARKDOWN_SYMBOL_PATTERN = /\\([\\`*_[\]{}()#+\-.!])/g;
 
+/** Deepest heading level that participates in table-of-contents ids. */
+export const TOC_MAX_DEPTH = 3;
+
 export function normalizeMarkdownHeadingText(rawText: string): string {
   return rawText
     .replace(/!\[([^\]]*)\]\(([^)]*)\)/g, "$1")
