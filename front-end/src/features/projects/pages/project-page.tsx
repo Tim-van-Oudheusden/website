@@ -1,15 +1,15 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
-import { ROUTES, type ContentFrontmatter, type ProjectFrontmatter } from "shared";
-import { apiGet, ApiError } from "@/shared/lib/api";
+import type { ProjectFrontmatter } from "shared";
+import { ApiError } from "@/shared/lib/api";
+import { httpContentLoader } from "@/shared/lib/content-loader";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
 import { ErrorBoundary } from "@/shared/components/error-boundary";
 
 export type ProjectData = ProjectFrontmatter & { body: string };
-type ContentData = ContentFrontmatter & { body: string };
 
 export const PROJECT_PAGE_LAYOUT_CLASSES = {
   main: "w-full flex-1 bg-[var(--adw-page-brown-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8",
@@ -25,10 +25,6 @@ export const PROJECT_PAGE_TYPOGRAPHY_CLASSES = {
   metaValue: "text-sm font-medium",
   tagBadge: "text-xs font-bold",
 } as const;
-
-export function isProjectData(value: ContentData): value is ProjectData {
-  return value.type === "project";
-}
 
 interface ProjectMetaHeaderProps {
   project: ProjectData;
@@ -104,14 +100,8 @@ export function ProjectPage(): React.JSX.Element {
 
     async function fetchProject(): Promise<void> {
       try {
-        const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", contentSlug);
-        const data = await apiGet<ContentData>(path);
+        const data = await httpContentLoader.getProject(contentSlug);
         if (!cancelled) {
-          if (!isProjectData(data)) {
-            setNotFound(true);
-            setProject(null);
-            return;
-          }
           setProject(data);
         }
       } catch (err) {

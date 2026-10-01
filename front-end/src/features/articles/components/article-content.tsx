@@ -3,7 +3,7 @@ import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/components/ui/badge";
 import { ErrorBoundary } from "@/shared/components/error-boundary";
 import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
-import type { ArticleData } from "../lib/articles-sidebar";
+import type { ArticleData } from "shared";
 import type { ArticleTableOfContentsItem } from "../lib/article-toc";
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,

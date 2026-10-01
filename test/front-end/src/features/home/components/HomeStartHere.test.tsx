@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { MemoryRouter } from "react-router";
 import { renderToStaticMarkup } from "react-dom/server";
-import { StartHereLinks, resolveStartHere, HOME_START_HERE_SLUGS } from "../../../../../../front-end/src/features/home/components/home-start-here";
-import type { ArticleSummary } from "@/features/articles/lib/articles-sidebar";
+import { HOME_START_HERE_SLUGS, resolveStartHere, StartHereContent, StartHereLinks } from "../../../../../../front-end/src/features/home/components/home-start-here";
+import type { ArticleSummary } from "shared";
 
 const FIXTURE_ARTICLES: ArticleSummary[] = [
   {
@@ -41,6 +41,12 @@ const FIXTURE_ARTICLES: ArticleSummary[] = [
 function renderStartHere(items: ArticleSummary[]): string {
   return renderToStaticMarkup(
     createElement(MemoryRouter, null, createElement(StartHereLinks, { items })),
+  );
+}
+
+function renderContent(items: ArticleSummary[] | null, loadError: boolean): string {
+  return renderToStaticMarkup(
+    createElement(MemoryRouter, null, createElement(StartHereContent, { items, loadError })),
   );
 }
 
@@ -85,5 +91,30 @@ describe("StartHereLinks", () => {
     expect(html).not.toMatch(/newsletter/i);
     expect(html).not.toMatch(/shop/i);
     expect(html).not.toMatch(/subscribe/i);
+  });
+});
+
+describe("StartHereContent", () => {
+  test("renders an error note instead of an empty list when the loader rejects", () => {
+    const html = renderContent(null, true);
+
+    expect(html).toContain('role="alert"');
+    expect(html).toContain("The reading list could not be loaded right now.");
+    expect(html).not.toContain("<ol");
+    expect(html).not.toContain("Loading reading list");
+  });
+
+  test("renders the loading prompt before the first resolve", () => {
+    const html = renderContent(null, false);
+
+    expect(html).toContain("Loading reading list...");
+    expect(html).not.toContain("role=\"alert\"");
+  });
+
+  test("renders an empty list without an error for a successful empty result", () => {
+    const html = renderContent([], false);
+
+    expect(html).toContain("<ol");
+    expect(html).not.toContain("role=\"alert\"");
   });
 });

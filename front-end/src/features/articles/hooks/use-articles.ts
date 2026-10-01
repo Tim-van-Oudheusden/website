@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "@/shared/lib/api";
-import {
-  getDefaultArticleSlug,
-  type ArticleData,
-  type ArticleSummary,
-} from "../lib/articles-sidebar";
-import { fetchArticleBySlug, fetchArticleSummaries } from "../lib/article-fetch";
+import { httpContentLoader } from "@/shared/lib/content-loader";
+import type { ArticleData, ArticleSummary } from "shared";
+import { getDefaultArticleSlug } from "../lib/articles-sidebar";
 
 export interface UseArticlesResult {
   articles: ArticleSummary[];
@@ -45,7 +42,7 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
 
     async function fetchArticles(): Promise<void> {
       try {
-        const items = await fetchArticleSummaries();
+        const items = await httpContentLoader.listArticles();
         if (!cancelled) {
           setArticles(items);
           setSelectedSlug(getDefaultArticleSlug(items));
@@ -82,7 +79,7 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
 
     async function fetchArticle(): Promise<void> {
       try {
-        const data = await fetchArticleBySlug(contentSlug);
+        const data = await httpContentLoader.getArticle(contentSlug);
         if (!cancelled) {
           setSelectedArticle(data);
         }

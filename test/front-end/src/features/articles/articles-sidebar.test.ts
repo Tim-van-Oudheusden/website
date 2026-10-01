@@ -1,9 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { DEFAULT_ARTICLE_SLUG } from "shared";
+import { DEFAULT_ARTICLE_SLUG, type ArticleSummary } from "shared";
 import {
   getDefaultArticleSlug,
   groupArticlesByCategory,
-  type ArticleSummary,
 } from "../../../../../front-end/src/features/articles/lib/articles-sidebar";
 
 describe("article sidebar helpers", () => {

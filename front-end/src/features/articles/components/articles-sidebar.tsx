@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import { ChevronRight, FileText, Folder } from "lucide-react";
 import { Link } from "react-router";
-import { ARTICLE_CATEGORIES, type ArticleCategory } from "shared";
+import { ARTICLE_CATEGORIES, type ArticleCategory, type ArticleSummary } from "shared";
 import {
   Collapsible,
   CollapsibleContent,
@@ -10,10 +10,7 @@ import {
 } from "@/shared/components/ui/collapsible";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/utils";
-import {
-  groupArticlesByCategory,
-  type ArticleSummary,
-} from "../lib/articles-sidebar";
+import { groupArticlesByCategory } from "../lib/articles-sidebar";
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
   ARTICLES_PAGE_TYPOGRAPHY_CLASSES,

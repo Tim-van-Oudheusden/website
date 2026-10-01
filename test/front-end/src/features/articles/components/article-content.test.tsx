@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 import { ArticleContent } from "../../../../../../front-end/src/features/articles/components/article-content";
-import type { ArticleData } from "../../../../../../front-end/src/features/articles/lib/articles-sidebar";
+import type { ArticleData } from "shared";
 
 const FIXTURE_ARTICLE: ArticleData = {
   title: "Introduction",

@@ -1,37 +1,5 @@
-import { ARTICLE_CATEGORIES, DEFAULT_ARTICLE_SLUG } from "shared";
-import type { ArticleCategory } from "shared";
-
-export interface ArticleSummary {
-  title: string;
-  description: string;
-  date: string;
-  tags: string[];
-  type: "article";
-  draft: boolean;
-  category: ArticleCategory;
-  slug: string;
-}
-
-/** A full article: the summary fields plus the markdown body. */
-export interface ArticleData extends ArticleSummary {
-  body: string;
-}
-
-function compareArticles(a: ArticleSummary, b: ArticleSummary): number {
-  const dateA = Date.parse(a.date);
-  const dateB = Date.parse(b.date);
-
-  if (!Number.isNaN(dateA) && !Number.isNaN(dateB) && dateA !== dateB) {
-    return dateB - dateA;
-  }
-
-  const titleDiff = a.title.localeCompare(b.title);
-  if (titleDiff !== 0) {
-    return titleDiff;
-  }
-
-  return a.slug.localeCompare(b.slug);
-}
+import { ARTICLE_CATEGORIES, DEFAULT_ARTICLE_SLUG, compareArticles } from "shared";
+import type { ArticleCategory, ArticleSummary } from "shared";
 
 export function getDefaultArticleSlug(articles: ArticleSummary[]): string | null {
   const intro = articles.find((article) => article.slug === DEFAULT_ARTICLE_SLUG);

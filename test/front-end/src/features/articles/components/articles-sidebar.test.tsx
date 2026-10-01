@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 import { ArticlesSidebar } from "../../../../../../front-end/src/features/articles/components/articles-sidebar";
-import type { ArticleSummary } from "../../../../../../front-end/src/features/articles/lib/articles-sidebar";
+import type { ArticleSummary } from "shared";
 
 const FIXTURE_ARTICLES: ArticleSummary[] = [
   {

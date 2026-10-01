@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router";
-import type { ArticleSummary } from "@/features/articles/lib/articles-sidebar";
-import { fetchHomeArticlesAsync } from "../lib/home-articles";
+import type { ArticleSummary } from "shared";
+import { httpContentLoader, type ContentLoader } from "@/shared/lib/content-loader";
 
 /**
  * Small curated set of the site's strongest, most representative articles,
@@ -57,12 +57,36 @@ export function StartHereLinks({ items }: { items: ArticleSummary[] }): React.JS
   );
 }
 
+/** The content slot below the section heading: loading, error note, or list. */
+export function StartHereContent({
+  items,
+  loadError,
+}: {
+  items: ArticleSummary[] | null;
+  loadError: boolean;
+}): React.JSX.Element {
+  if (loadError) {
+    return (
+      <p role="alert" className="text-center text-sm text-red-600 dark:text-red-400">
+        The reading list could not be loaded right now. Please try again later.
+      </p>
+    );
+  }
+
+  if (items === null) {
+    return <p className="text-center text-sm text-(--adw-dark-5)/60 dark:text-white/60">Loading reading list...</p>;
+  }
+
+  return <StartHereLinks items={items} />;
+}
+
 interface HomeStartHereProps {
   sectionId: string;
   headingId: string;
   heading: string;
   body: string;
   bgColor: string;
+  loader?: ContentLoader;
 }
 
 /** Home 'secondary-cta' section: a 'Start here' reading list of real articles. */
@@ -72,30 +96,31 @@ export function HomeStartHere({
   heading,
   body,
   bgColor,
+  loader = httpContentLoader,
 }: HomeStartHereProps): React.JSX.Element {
   const [items, setItems] = React.useState<ArticleSummary[] | null>(null);
+  const [loadError, setLoadError] = React.useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
 
-    async function loadStartHere(): Promise<void> {
-      try {
-        const articles = await fetchHomeArticlesAsync();
+    loader.listArticles().then(
+      (articles) => {
         if (!cancelled) {
           setItems(resolveStartHere(articles));
         }
-      } catch {
+      },
+      () => {
         if (!cancelled) {
-          setItems([]);
+          setLoadError(true);
         }
-      }
-    }
+      },
+    );
 
-    void loadStartHere();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loader]);
 
   return (
     <section
@@ -117,13 +142,7 @@ export function HomeStartHere({
               {body}
             </p>
           </div>
-          {items === null ? (
-            <p className="text-sm text-(--adw-dark-5)/60 dark:text-white/60">
-              Loading reading list...
-            </p>
-          ) : (
-            <StartHereLinks items={items} />
-          )}
+          <StartHereContent items={items} loadError={loadError} />
         </div>
       </div>
     </section>

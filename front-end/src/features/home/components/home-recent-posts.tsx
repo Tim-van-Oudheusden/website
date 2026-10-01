@@ -1,16 +1,16 @@
 import * as React from "react";
 import { Link } from "react-router";
-import type { ArticleSummary } from "@/features/articles/lib/articles-sidebar";
-import { sortArticleSummariesDesc, fetchHomeArticlesAsync } from "../lib/home-articles";
+import { compareArticles, type ArticleSummary } from "shared";
+import { httpContentLoader, type ContentLoader } from "@/shared/lib/content-loader";
 
 export const RECENT_POSTS_COUNT = 4;
 
-/** Pick the N most recent non-empty articles, newest first. */
+/** Pick the N most recent articles, newest first. */
 export function selectRecentPosts(
   posts: ArticleSummary[],
   count: number = RECENT_POSTS_COUNT,
 ): ArticleSummary[] {
-  return sortArticleSummariesDesc(posts).slice(0, count);
+  return [...posts].sort(compareArticles).slice(0, count);
 }
 
 /** A compact grid of recent posts, each linked to its real article page. */
@@ -36,12 +36,36 @@ export function RecentPostsList({ posts }: { posts: ArticleSummary[] }): React.J
   );
 }
 
+/** The content slot below the section heading: loading, error note, or list. */
+export function RecentPostsContent({
+  posts,
+  loadError,
+}: {
+  posts: ArticleSummary[] | null;
+  loadError: boolean;
+}): React.JSX.Element {
+  if (loadError) {
+    return (
+      <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+        Recent posts could not be loaded right now. Please try again later.
+      </p>
+    );
+  }
+
+  if (posts === null) {
+    return <p className="text-sm text-(--adw-dark-5)/60 dark:text-white/60">Loading recent posts...</p>;
+  }
+
+  return <RecentPostsList posts={posts} />;
+}
+
 interface HomeRecentPostsProps {
   sectionId: string;
   headingId: string;
   heading: string;
   body: string;
   bgColor: string;
+  loader?: ContentLoader;
 }
 
 /** Home 'community-and-docs' section: a self-updating recent-posts strip from real content. */
@@ -51,30 +75,31 @@ export function HomeRecentPosts({
   heading,
   body,
   bgColor,
+  loader = httpContentLoader,
 }: HomeRecentPostsProps): React.JSX.Element {
   const [posts, setPosts] = React.useState<ArticleSummary[] | null>(null);
+  const [loadError, setLoadError] = React.useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
 
-    async function loadPosts(): Promise<void> {
-      try {
-        const articles = await fetchHomeArticlesAsync();
+    loader.listArticles().then(
+      (articles) => {
         if (!cancelled) {
           setPosts(selectRecentPosts(articles));
         }
-      } catch {
+      },
+      () => {
         if (!cancelled) {
-          setPosts([]);
+          setLoadError(true);
         }
-      }
-    }
+      },
+    );
 
-    void loadPosts();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loader]);
 
   return (
     <section
@@ -96,13 +121,7 @@ export function HomeRecentPosts({
               {body}
             </p>
           </div>
-          {posts === null ? (
-            <p className="text-sm text-(--adw-dark-5)/60 dark:text-white/60">
-              Loading recent posts...
-            </p>
-          ) : (
-            <RecentPostsList posts={posts} />
-          )}
+          <RecentPostsContent posts={posts} loadError={loadError} />
         </div>
       </div>
     </section>

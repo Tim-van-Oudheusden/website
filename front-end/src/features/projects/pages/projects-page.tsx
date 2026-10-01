@@ -1,8 +1,9 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { ROUTES, type ProjectFrontmatter } from "shared";
-import { apiGet, ApiError } from "@/shared/lib/api";
+import type { ProjectFrontmatter } from "shared";
+import { ApiError } from "@/shared/lib/api";
+import { httpContentLoader } from "@/shared/lib/content-loader";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
@@ -88,7 +89,7 @@ export function ProjectsPage(): React.JSX.Element {
 
     async function fetchProjects(): Promise<void> {
       try {
-        const data = await apiGet<ProjectFrontmatter[]>(`${ROUTES.CONTENT}?type=project`);
+        const data = await httpContentLoader.listProjects();
         if (!cancelled) {
           setProjects(data);
         }
