@@ -1,0 +1,14 @@
+# Corrections
+
+Correction log for agent work in this repository. Append one line per
+correction round (tab-separated): ISO date | what went wrong | correction +
+where it is encoded.
+
+Format: `YYYY-MM-DD\t<behaviour>\t<correction (file:rule)>`
+
+## 2026
+
+- 2026-09-30	Beads: ran a bidirectional `bd github sync` on a first-task device without owner/repo configured, and the full sync hangs >5 min on this device.	Use `GITHUB_OWNER`/`GITHUB_REPO` env and `--pull-only` after GitHub-only changes (`.claude/skills/github-issue-flow/SKILL.md`).
+- 2026-09-30	Style: `Array<T>` type syntax and empty-body stub methods fail the repo's eslint config.	Use `T[]` and expression-bodied stubs (`test/front-end/src/shared/hooks/use-theme.test.ts`).
+- 2026-09-30	Back-end: `await expect(promise).rejects.toThrow()` trips the repo's eslint type-checking (await-thenable / no-confusing-void-expression).	Assert rejections with try/catch + `instanceof Error` narrowing (`test/back-end/src/features/content/content.real.test.ts`).
+- 2026-09-30	Path traversal: fastify's router rejects encoded `%2e%2e` URLs before the handler, so route-level traversal tests didn't exercise `isPathInsideRoot`.	Test the guard with `..%2f` (decodes after routing) and assert the handler body (`test/back-end/src/features/content/content-routes.test.ts`).
