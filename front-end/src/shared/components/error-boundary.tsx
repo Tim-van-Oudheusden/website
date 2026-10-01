@@ -1,12 +1,12 @@
 import * as React from "react";
 import { Component } from "react";
 
-interface ErrorBoundaryProps {
+export interface ErrorBoundaryProps {
   fallback?: React.ReactNode;
   children: React.ReactNode;
 }
 
-interface ErrorBoundaryState {
+export interface ErrorBoundaryState {
   hasError: boolean;
 }
 

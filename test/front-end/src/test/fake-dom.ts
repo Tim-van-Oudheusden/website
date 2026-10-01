@@ -67,7 +67,7 @@ export interface FakeElement extends FakeNode {
   /** Recorded `scrollTo` calls (test-side observation). */
   scrollCalls: { left?: number; top?: number; behavior?: string }[];
   style: {
-    [key: string]: string;
+    [key: string]: string | ((...args: never[]) => unknown);
     setProperty(name: string, value: string): void;
     removeProperty(name: string): void;
     getPropertyValue(name: string): string;
@@ -210,8 +210,9 @@ class FakeNodeImpl implements FakeNode {
 }
 
 class FakeElementImpl extends FakeNodeImpl implements FakeElement {
-  nodeType = 1;
-  nodeName = "";
+  override nodeType = 1 as const;
+  override nodeName = "";
+  override ownerDocument: FakeDocument;
   tagName = "";
   namespaceURI = "http://www.w3.org/1999/xhtml";
   clientWidth = 0;
@@ -230,7 +231,10 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
   style: FakeElement["style"] = {
     setProperty(name, value) { this[name] = value; },
     removeProperty(name) { Reflect.deleteProperty(this, name); },
-    getPropertyValue(name) { return this[name] ?? ""; },
+    getPropertyValue(name) {
+      const value = this[name];
+      return typeof value === "string" ? value : "";
+    },
   };
 
   constructor(tagName: string, doc: FakeDocument, namespaceURI = "http://www.w3.org/1999/xhtml") {
@@ -293,8 +297,8 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
 }
 
 class FakeTextImpl extends FakeNodeImpl implements FakeNode {
-  nodeType = 3;
-  nodeName = "#text";
+  override nodeType = 3;
+  override nodeName = "#text";
 
   constructor(value: string, doc: FakeDocument) {
     super();
@@ -312,8 +316,8 @@ class FakeTextImpl extends FakeNodeImpl implements FakeNode {
 }
 
 class FakeCommentImpl extends FakeNodeImpl implements FakeNode {
-  nodeType = 8;
-  nodeName = "#comment";
+  override nodeType = 8;
+  override nodeName = "#comment";
 
   constructor(value: string, doc: FakeDocument) {
     super();
