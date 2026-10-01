@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MarkdownRenderer } from "../../../../../front-end/src/shared/components/markdown-renderer";
@@ -88,5 +88,44 @@ describe("MarkdownRenderer", () => {
 
     expect(html).toContain("<blockquote");
     expect(html).not.toContain("data-callout-type");
+  });
+
+  test("keeps blockquotes whose first child is a list as blockquotes", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "> - item one\n> - item two",
+      }),
+    );
+
+    expect(html).toContain("<blockquote");
+    expect(html).not.toContain("data-callout-type");
+  });
+
+  test("keeps blockquotes whose first paragraph starts with emphasis as blockquotes", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "> *emphasis first*\n> rest of quote",
+      }),
+    );
+
+    expect(html).toContain("<blockquote");
+    expect(html).not.toContain("data-callout-type");
+  });
+
+  test("falls back to a slugified id and logs when a heading position is not in the toc set", () => {
+    const errorSpy = spyOn(console, "error");
+    try {
+      const html = renderToStaticMarkup(
+        createElement(MarkdownRenderer, {
+          content: "# Top\n\n  ## Indented Heading\n\nbody",
+        }),
+      );
+
+      expect(html).toContain('h1 id="top"');
+      expect(html).toContain('h2 id="indented-heading"');
+      expect(errorSpy).toHaveBeenCalled();
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 });
