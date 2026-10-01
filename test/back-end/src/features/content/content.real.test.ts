@@ -2,6 +2,7 @@ import { describe, expect, test, beforeAll, afterAll, beforeEach, afterEach } fr
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import type { ArticleFrontmatter, ProjectFrontmatter } from "shared";
 import { listContent, getContentBySlug, validateContentDir } from "../../../../../back-end/src/features/content/content";
 
 // Resolve the repo-root content dir from the module location, not CWD, so the
@@ -34,7 +35,7 @@ const VALID_PROJECT = [
   "# Launcher",
 ].join("\n");
 
-const FIXTURES: Record<string, string> = {
+const FIXTURES = {
   "intro.md": [
     "---",
     "title: Introduction",
@@ -102,10 +103,10 @@ const FIXTURES: Record<string, string> = {
     "# No Title",
   ].join("\n"),
   "no-frontmatter.md": "# Plain markdown body",
-};
+} as const;
 
 /** Fixtures that make listContent skip the document; kept out of the main fixture dir. */
-const INVALID_FIXTURES: Record<string, string> = {
+const INVALID_FIXTURES = {
   "no-category.md": [
     "---",
     "title: No Category",
@@ -122,7 +123,7 @@ const INVALID_FIXTURES: Record<string, string> = {
     "---",
     "# No Cover",
   ].join("\n"),
-};
+} as const;
 
 describe("content normalization against controlled fixtures", () => {
   let contentDir: string;
@@ -176,7 +177,7 @@ describe("content normalization against controlled fixtures", () => {
     const video = items.find((item) => item.slug === "unknown-type");
 
     expect(video?.type).toBe("article");
-    expect(video?.category).toBe("Linux");
+    expect((video as ArticleFrontmatter | undefined)?.category).toBe("Linux");
   });
 
   test("narrows the listing with the type filter", async () => {
@@ -221,7 +222,7 @@ describe("content normalization against controlled fixtures", () => {
 
     expect(items.some((item) => item.slug === "bad-status")).toBe(false);
     const badLinks = items.find((item) => item.slug === "bad-links");
-    expect(badLinks?.role).toBeUndefined();
+    expect((badLinks as ProjectFrontmatter | undefined)?.role).toBeUndefined();
   });
 
   test("reports invalid and untitled documents via the directory audit", async () => {
@@ -238,10 +239,10 @@ describe("content normalization against controlled fixtures", () => {
     const healthy = items.find((item) => item.slug === "launcher");
     const broken = items.find((item) => item.slug === "bad-links");
 
-    expect(healthy?.links).toEqual([
+    expect((healthy as ProjectFrontmatter | undefined)?.links).toEqual([
       { type: "repo", label: "Source repository", href: "https://github.com/example/repo" },
     ]);
-    expect(broken?.links).toEqual([
+    expect((broken as ProjectFrontmatter | undefined)?.links).toEqual([
       { type: "repo", label: "Kept", href: "https://github.com/example/kept" },
     ]);
   });
@@ -250,12 +251,13 @@ describe("content normalization against controlled fixtures", () => {
     const item = await getContentBySlug("launcher", contentDir);
 
     expect(item).not.toBeNull();
-    expect(item?.type).toBe("project");
-    expect(item?.status).toBe("In Progress");
-    expect(item?.role).toBe("Full-stack developer");
-    expect(item?.featured).toBe(true);
-    expect(item?.projectOrder).toBe(10);
-    expect(item?.body).toContain("# Launcher");
+    const project = item as ProjectFrontmatter & { body: string };
+    expect(project.type).toBe("project");
+    expect(project.status).toBe("In Progress");
+    expect(project.role).toBe("Full-stack developer");
+    expect(project.featured).toBe(true);
+    expect(project.projectOrder).toBe(10);
+    expect(project.body).toContain("# Launcher");
   });
 
   test("skips an article without a valid category and audits it", async () => {
@@ -292,14 +294,15 @@ describe("real content directory sanity check", () => {
   test("resolves a project with nested links by slug", async () => {
     const item = await getContentBySlug("minimal-android-launcher", REAL_CONTENT_DIR);
     expect(item).not.toBeNull();
-    expect(item!.type).toBe("project");
-    expect(item!.links).toEqual([
+    const project = item as ProjectFrontmatter & { body: string };
+    expect(project.type).toBe("project");
+    expect(project.links).toEqual([
       {
         type: "repo",
         label: "Source repository",
         href: "https://github.com/Tim-van-Oudheusden/website",
       },
     ]);
-    expect(item!.projectOrder).toBe(10);
+    expect(project.projectOrder).toBe(10);
   });
 });

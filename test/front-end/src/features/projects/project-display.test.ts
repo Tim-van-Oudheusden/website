@@ -97,7 +97,7 @@ describe("project-display helpers", () => {
 
       const result = resolvePriorityProjects(projects);
       expect(result.length).toBe(1);
-      expect(result[0].slug).toBe("a");
+      expect(result[0]?.slug).toBe("a");
     });
 
     test("fallback uses featured project as slot 1 when no priority slots are set", () => {
@@ -108,7 +108,7 @@ describe("project-display helpers", () => {
 
       const result = resolvePriorityProjects(projects);
       expect(result.length).toBe(1);
-      expect(result[0].slug).toBe("featured");
+      expect(result[0]?.slug).toBe("featured");
     });
 
     test("duplicate prevention excludes priority projects from gallery", () => {

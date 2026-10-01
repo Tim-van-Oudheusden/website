@@ -11,6 +11,7 @@ import { resolveArticlesTrailTargetSlug } from "../../../../../../front-end/src/
 import {
   extractArticleTableOfContents,
   navigateToArticleHeadingById,
+  type TocNavigationDebugEvent,
 } from "../../../../../../front-end/src/features/articles/lib/article-toc";
 
 describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
@@ -91,7 +92,7 @@ describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {
 describe("ArticleLocationTrail", () => {
   test("resolves the articles trail target to the default introduction slug", () => {
     expect(resolveArticlesTrailTargetSlug([
-      { slug: "work-item", title: "Work", description: "w", date: "2024-02-01", tags: [], category: "Work" },
+      { slug: "work-item", title: "Work", description: "w", date: "2024-02-01", tags: [], category: "Work", type: "article", draft: false },
       {
         slug: "introduction",
         title: "Intro",
@@ -99,6 +100,8 @@ describe("ArticleLocationTrail", () => {
         date: "2024-01-01",
         tags: [],
         category: "Introduction",
+        type: "article",
+        draft: false,
       },
     ])).toBe("introduction");
   });
@@ -179,8 +182,10 @@ describe("navigateToArticleHeadingById", () => {
 
     const didNavigate = navigateToArticleHeadingById("target-heading", {
       getElementById: () => ({
-        scrollIntoView: (options: ScrollIntoViewOptions) => {
-          receivedScrollOptions = options;
+        scrollIntoView: (options?: ScrollIntoViewOptions) => {
+          if (options !== undefined) {
+            receivedScrollOptions = options;
+          }
         },
       }),
       setHash: (headingId: string) => { updatedHash = headingId; },
@@ -189,9 +194,9 @@ describe("navigateToArticleHeadingById", () => {
     });
 
     expect(didNavigate).toBe(true);
-    expect(receivedScrollOptions).toEqual({ behavior: "smooth", block: "start" });
-    expect(updatedHash).toBe("target-heading");
-    expect(loggedEvent).toEqual({
+    expect<ScrollIntoViewOptions | null>(receivedScrollOptions).toEqual({ behavior: "smooth", block: "start" });
+    expect<string | null>(updatedHash).toBe("target-heading");
+    expect<TocNavigationDebugEvent | null>(loggedEvent).toEqual({
       headingId: "target-heading",
       foundTarget: true,
       stage: "scroll",
@@ -222,8 +227,8 @@ describe("navigateToArticleHeadingById", () => {
     });
 
     expect(didNavigate).toBe(false);
-    expect(fallbackHash).toBe("missing-heading");
-    expect(loggedEvent).toEqual({
+    expect<string | null>(fallbackHash).toBe("missing-heading");
+    expect<TocNavigationDebugEvent | null>(loggedEvent).toEqual({
       headingId: "missing-heading",
       foundTarget: false,
       stage: "fallback-hash",

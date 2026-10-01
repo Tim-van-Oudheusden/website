@@ -153,7 +153,7 @@ function makeArticle(body: string): ArticleData {
     tags: [],
     type: "article",
     draft: false,
-    category: "test",
+    category: "Introduction",
     slug: "test-article",
     body,
   };
@@ -184,7 +184,7 @@ function renderAndFlush(env: Environment, root: Root, article: ArticleData | nul
 
 describe("useArticleToc", () => {
   test("extracts toc items from the article body", () => {
-    withFakeDom((env, root) => {
+    withFakeDom((_env, root) => {
       const article = makeArticle("# Intro\n\n## Setup\n\n### Config\n\nbody");
       act(() => {
         root.render(createElement(Harness, { article, loading: false }));

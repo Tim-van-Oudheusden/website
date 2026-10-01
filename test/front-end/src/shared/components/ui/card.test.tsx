@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { createElement } from "react";
+import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   Card,
@@ -17,9 +17,9 @@ interface PrimitiveCase {
   render: (className?: string) => string;
 }
 
-function renderPrimitive(primitive: (props: { className?: string }) => unknown, className?: string): string {
+function renderPrimitive(primitive: (props: { className?: string }) => ReactNode, className?: string): string {
   return renderToStaticMarkup(
-    createElement(primitive, { className, children: ["primitive content"] }),
+    createElement(primitive, { className: className ?? "" }, "primitive content"),
   );
 }
 

@@ -8,6 +8,6 @@ describe("index.html", () => {
     const titleMatch = /<title>([^<]+)<\/title>/.exec(html);
 
     expect(titleMatch).not.toBeNull();
-    expect((titleMatch as string[])[1].trim().length).toBeGreaterThan(0);
+    expect((titleMatch?.[1] ?? "").trim().length).toBeGreaterThan(0);
   });
 });

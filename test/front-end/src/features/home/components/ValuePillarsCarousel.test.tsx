@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { act, createElement } from "react";
-import type { Root, createRoot as CreateRootFn } from "react-dom/client";
+import type { createRoot as createRootValue, Root } from "react-dom/client";
+type CreateRootFn = typeof createRootValue;
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   calculateCardTiltAngles,
@@ -13,6 +14,7 @@ import {
   triggerFakeResizeObservers,
   triggerWindowResize,
   uninstallFakeDom,
+  type FakeDocument,
   type FakeElement,
   type FakeNode,
 } from "../../../test/fake-dom";
@@ -49,9 +51,10 @@ afterAll(() => {
 });
 
 function renderCarouselContainer(): { container: FakeElement; root: Root } {
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  const root = createRoot(container);
+  const fakeDocument = document as unknown as FakeDocument;
+  const container = fakeDocument.createElement("div");
+  fakeDocument.body.appendChild(container);
+  const root = createRoot(container as unknown as Element);
   act(() => {
     root.render(
       createElement(ValuePillarsCarousel, {
@@ -290,7 +293,7 @@ describe("ValuePillarsCarousel interaction", () => {
       });
     });
 
-    expect(card.style.transform).toBe("perspective(900px) rotateX(4deg) rotateY(4deg)");
+    expect(card.style["transform"]).toBe("perspective(900px) rotateX(4deg) rotateY(4deg)");
   });
 
   test("resets the card tilt when the pointer leaves", () => {
@@ -322,7 +325,7 @@ describe("ValuePillarsCarousel interaction", () => {
       });
     });
 
-    expect(card.style.transform).toBe("perspective(900px) rotateX(0deg) rotateY(0deg)");
+    expect(card.style["transform"]).toBe("perspective(900px) rotateX(0deg) rotateY(0deg)");
   });
 
   test("measures the card description height into a css variable on mount", () => {
@@ -362,8 +365,8 @@ describe("ValuePillarsCarousel interaction", () => {
 
   test("falls back to the window resize listener when ResizeObserver is unavailable", () => {
     const globals = globalThis as Record<string, unknown>;
-    const savedResizeObserver = globals.ResizeObserver;
-    delete globals.ResizeObserver;
+    const savedResizeObserver = globals["ResizeObserver"];
+    delete globals["ResizeObserver"];
     try {
       const { container, root } = renderCarouselContainer();
       const articles = queryFakeElements(container, (element) => element.tagName === "ARTICLE");
@@ -393,7 +396,7 @@ describe("ValuePillarsCarousel interaction", () => {
       });
       expect(card.style["--value-pillar-description-height"]).toBe("90px");
     } finally {
-      globals.ResizeObserver = savedResizeObserver;
+      globals["ResizeObserver"] = savedResizeObserver;
     }
   });
 });

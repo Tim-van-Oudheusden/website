@@ -43,7 +43,8 @@ beforeAll(async () => {
       if (slot === undefined) {
         throw new Error("ProjectPage called useState more times than scripted slots");
       }
-      return [scripted[slot], (value) => { scripted[slot] = value; }];
+      const state: { [K in keyof ScriptedProjectState]: unknown } = scripted;
+      return [state[slot], (value) => { state[slot] = value; }];
     },
     useEffect(effect: () => (() => void)): void {
       capturedEffect = effect;
@@ -73,7 +74,7 @@ function renderProjectPage(): string {
 
 /** Invoke the effect the component mounted on its last render. */
 function runEffect(): (() => void) | null {
-  return capturedEffect?.();
+  return capturedEffect?.() ?? null;
 }
 
 /** Enough microticks for the fetch -> json -> guard -> setters chain to land. */
@@ -91,7 +92,7 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 function stubFetch(response: Response): void {
-  globalThis.fetch = () => Promise.resolve(response);
+  globalThis.fetch = (() => Promise.resolve(response)) as unknown as typeof fetch;
 }
 
 function projectItem(): ProjectData {
@@ -141,7 +142,7 @@ describe("ProjectPage", () => {
   });
 
   test("renders the error state when the loader transport throws", async () => {
-    globalThis.fetch = () => Promise.reject(new Error("network exploded"));
+    globalThis.fetch = (() => Promise.reject(new Error("network exploded"))) as unknown as typeof fetch;
     resetState();
     renderProjectPage();
 
@@ -178,7 +179,7 @@ describe("ProjectPage", () => {
 
   test("keeps the loading state after a load cancelled by unmount", async () => {
     let resolveFetch: ((response: Response) => void) | undefined;
-    globalThis.fetch = () => new Promise<Response>((resolve) => { resolveFetch = resolve; });
+    globalThis.fetch = (() => new Promise<Response>((resolve) => { resolveFetch = resolve; })) as unknown as typeof fetch;
     resetState();
     renderProjectPage();
 

@@ -57,15 +57,15 @@ function projectItem(overrides: Partial<ProjectFrontmatter & { body: string }> =
   };
 }
 
-function stubFetch(response: Response): Mock<typeof fetch> {
-  const fetchMock = mock(() => Promise.resolve(response));
-  globalThis.fetch = fetchMock;
+function stubFetch(response: Response): Mock<(_url: string, _init?: RequestInit) => Promise<Response>> {
+  const fetchMock = mock((_url: string, _init?: RequestInit) => Promise.resolve(response));
+  globalThis.fetch = fetchMock as unknown as typeof fetch;
   return fetchMock;
 }
 
-function requestedPath(fetchMock: Mock<typeof fetch>): string {
-  const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
-  return url;
+function requestedPath(fetchMock: Mock<(_url: string, _init?: RequestInit) => Promise<Response>>): string {
+  const [url] = fetchMock.mock.calls[0] ?? [];
+  return url ?? "";
 }
 
 describe("httpContentLoader", () => {

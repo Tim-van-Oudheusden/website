@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import type { ProjectFrontmatter } from "shared";
 import {
   normalizeContentDocument,
   validateContentDir,
@@ -58,7 +59,7 @@ describe("normalizeContentDocument", () => {
     });
     expect(accepted.ok).toBe(true);
     if (accepted.ok) {
-      expect(accepted.value.prioritySlot).toBe(2);
+      expect((accepted.value as ProjectFrontmatter).prioritySlot).toBe(2);
     }
 
     const rejected = normalizeContentDocument("b.md", {

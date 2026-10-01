@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { act, createElement } from "react";
 import type { MouseEvent } from "react";
-import type { Root, createRoot as CreateRootFn } from "react-dom/client";
+import type { createRoot as createRootValue, Root } from "react-dom/client";
+type CreateRootFn = typeof createRootValue;
 import { renderToStaticMarkup } from "react-dom/server";
 import { headingIdFor, HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
 import { HomeSection } from "../../../../../../front-end/src/features/home/components/home-section";
@@ -12,6 +13,7 @@ import {
   installFakeDom,
   queryFakeElements,
   uninstallFakeDom,
+  type FakeDocument,
   type FakeElement,
 } from "../../../test/fake-dom";
 
@@ -58,9 +60,10 @@ function renderDefaultSectionContainer(
   section: HomeSectionDefinition,
   onCtaActivate: ((sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void) | undefined,
 ): { container: FakeElement; root: Root } {
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  const root = createRoot(container);
+  const fakeDocument = document as unknown as FakeDocument;
+  const container = fakeDocument.createElement("div");
+  fakeDocument.body.appendChild(container);
+  const root = createRoot(container as unknown as Element);
   act(() => {
     root.render(createElement(HomeSectionDefault, { section, onCtaActivate }));
   });
@@ -191,8 +194,8 @@ describe("HomeSection", () => {
             bgImage: "/images/proof-bg.png",
             contentDirection: "column",
           },
+          children: "content",
         },
-        "content",
       ),
     );
 
@@ -214,8 +217,8 @@ describe("HomeSection", () => {
             bgColor: "white",
             contentDirection: "column",
           },
+          children: "content",
         },
-        "content",
       ),
     );
 

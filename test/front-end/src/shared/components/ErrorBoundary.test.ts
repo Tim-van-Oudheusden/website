@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ErrorBoundary } from "../../../../../front-end/src/shared/components/error-boundary";
+import { ErrorBoundary, type ErrorBoundaryProps, type ErrorBoundaryState } from "../../../../../front-end/src/shared/components/error-boundary";
 
 const HEALTHY_CHILD = createElement("span", null, "healthy content");
 
@@ -14,12 +14,22 @@ const HEALTHY_CHILD = createElement("span", null, "healthy content");
  * updater that applies `setState` the way the reconciler would on mount (the
  * never-mounted default updater is a no-op).
  */
+interface BoundaryUpdater {
+  enqueueSetState(
+    inst: ErrorBoundary,
+    partialState:
+      | ((state: ErrorBoundaryState, props: ErrorBoundaryProps) => ErrorBoundaryState)
+      | Partial<ErrorBoundaryState>,
+    callback: (() => void) | undefined,
+  ): void;
+}
+
 function applyErrorState(instance: ErrorBoundary): void {
   instance.state = ErrorBoundary.getDerivedStateFromError();
 }
 
 function mountUpdater(instance: ErrorBoundary): void {
-  instance.updater = {
+  (instance as ErrorBoundary & { updater: BoundaryUpdater }).updater = {
     enqueueSetState(inst, partialState, callback) {
       inst.state = typeof partialState === "function"
         ? partialState(inst.state, inst.props)

@@ -23,7 +23,7 @@ describe("front-end API client uses shared constants", () => {
         }),
       ),
     );
-    globalThis.fetch = fetchMock as typeof globalThis.fetch;
+    globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch;
   });
 
   afterEach(() => {
@@ -51,7 +51,7 @@ describe("front-end API client uses shared constants", () => {
       Promise.resolve(
         new Response("Not Found", { status: 404, statusText: "Not Found" }),
       ),
-    ) as typeof globalThis.fetch;
+    ) as unknown as typeof globalThis.fetch;
 
     try {
       await apiGet(ROUTES.HELLO);
