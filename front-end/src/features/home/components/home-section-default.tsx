@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
+import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
 import { HomeSectionShell } from "./home-section-shell";
 
@@ -15,7 +16,6 @@ export function HomeSectionDefault({ section, onCtaActivate }: HomeSectionDefaul
   const ctaLabel = section.ctaLabel;
   const ctaTargetId = section.ctaTargetId;
   const hasCta = ctaLabel !== undefined && ctaTargetId !== undefined;
-  const isDiscoverCta = ctaLabel?.toLowerCase() === "discover";
 
   return (
     <HomeSectionShell section={section}>
@@ -28,7 +28,7 @@ export function HomeSectionDefault({ section, onCtaActivate }: HomeSectionDefaul
         >
           <div className="flex flex-1 flex-col gap-5">
             <h2
-              id={`${section.id}-heading`}
+              id={headingIdFor(section.id)}
               className="font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]"
             >
               {section.heading}
@@ -41,10 +41,7 @@ export function HomeSectionDefault({ section, onCtaActivate }: HomeSectionDefaul
                 asChild
                 variant="secondary"
                 size="lg"
-                className={cn(
-                  "w-fit",
-                  isDiscoverCta ? "bg-(--adw-dark-5) text-white hover:bg-black/90" : "",
-                )}
+                className="w-fit"
               >
                 <a
                   href={`#${ctaTargetId}`}

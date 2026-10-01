@@ -2,6 +2,8 @@ import * as React from "react";
 import { Link } from "react-router";
 import { compareArticles, type ArticleSummary } from "shared";
 import { httpContentLoader, type ContentLoader } from "@/shared/lib/content-loader";
+import { HomeSectionShell } from "./home-section-shell";
+import type { HomeSectionDefinition } from "../types/home-section";
 
 export const RECENT_POSTS_COUNT = 4;
 
@@ -60,21 +62,13 @@ export function RecentPostsContent({
 }
 
 interface HomeRecentPostsProps {
-  sectionId: string;
-  headingId: string;
-  heading: string;
-  body: string;
-  bgColor: string;
+  section: HomeSectionDefinition;
   loader?: ContentLoader;
 }
 
 /** Home 'community-and-docs' section: a self-updating recent-posts strip from real content. */
 export function HomeRecentPosts({
-  sectionId,
-  headingId,
-  heading,
-  body,
-  bgColor,
+  section,
   loader = httpContentLoader,
 }: HomeRecentPostsProps): React.JSX.Element {
   const [posts, setPosts] = React.useState<ArticleSummary[] | null>(null);
@@ -102,28 +96,8 @@ export function HomeRecentPosts({
   }, [loader]);
 
   return (
-    <section
-      id={sectionId}
-      aria-labelledby={headingId}
-      className="flex min-h-svh items-center justify-center px-6 py-12 sm:px-10 sm:py-16 lg:px-6"
-      style={{ backgroundColor: bgColor }}
-    >
-      <div className="w-full">
-        <div className="mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296">
-          <div className="flex flex-1 flex-col gap-5">
-            <h2
-              id={headingId}
-              className="font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]"
-            >
-              {heading}
-            </h2>
-            <p className="max-w-[65ch] text-base sm:text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80">
-              {body}
-            </p>
-          </div>
-          <RecentPostsContent posts={posts} loadError={loadError} />
-        </div>
-      </div>
-    </section>
+    <HomeSectionShell section={section} heading={section.heading} body={section.body}>
+      <RecentPostsContent posts={posts} loadError={loadError} />
+    </HomeSectionShell>
   );
 }

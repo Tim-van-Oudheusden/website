@@ -21,57 +21,21 @@ export interface HomeSectionProps {
  */
 export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React.JSX.Element {
   switch (section.variant) {
+    case "start":
+      return <HomeSectionStart section={section} onCtaActivate={onCtaActivate} />;
     case "footer":
       return <HomeSectionFooter section={section} />;
     case "carousel":
       return <HomeSectionCarousel section={section} />;
     case "workflow":
-      return (
-        <HomeWorkflowRows
-          sectionId={section.id}
-          headingId={`${section.id}-heading`}
-          heading={section.heading}
-          body={section.body}
-          bgColor={section.bgColor}
-          features={section.features ?? []}
-        />
-      );
+      return <HomeWorkflowRows section={section} />;
     case "trust":
-      return (
-        <HomeTrustStrip
-          sectionId={section.id}
-          headingId={`${section.id}-heading`}
-          heading={section.heading}
-          body={section.body}
-          bgColor={section.bgColor}
-          items={section.trustItems ?? []}
-        />
-      );
+      return <HomeTrustStrip section={section} />;
     case "recent-posts":
-      return (
-        <HomeRecentPosts
-          sectionId={section.id}
-          headingId={`${section.id}-heading`}
-          heading={section.heading}
-          body={section.body}
-          bgColor={section.bgColor}
-        />
-      );
+      return <HomeRecentPosts section={section} />;
     case "start-here":
-      return (
-        <HomeStartHere
-          sectionId={section.id}
-          headingId={`${section.id}-heading`}
-          heading={section.heading}
-          body={section.body}
-          bgColor={section.bgColor}
-        />
-      );
+      return <HomeStartHere section={section} />;
     default:
-      if (section.id === "start") {
-        return <HomeSectionStart section={section} onCtaActivate={onCtaActivate} />;
-      }
-
       return <HomeSectionDefault section={section} onCtaActivate={onCtaActivate} />;
   }
 }

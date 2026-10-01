@@ -8,7 +8,7 @@ export type HomeSectionId =
   | "footer";
 
 export type HomeSectionContentDirection = "row" | "column";
-export type HomeSectionVariant = "default" | "carousel" | "footer" | "workflow" | "trust" | "recent-posts" | "start-here";
+export type HomeSectionVariant = "default" | "start" | "carousel" | "footer" | "workflow" | "trust" | "recent-posts" | "start-here";
 export type HomeSectionSurfaceVariant = "default" | "white-well";
 
 /** One pairing of a real tool with what it enables, used by the for-devs workflow section. */

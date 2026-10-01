@@ -1,4 +1,9 @@
-import type { HomeSectionDefinition } from "../types/home-section";
+import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
+
+/** Single id-derivation seam: DOM id, heading id, URL hash, nav key, and observer key all project from the section id. */
+export function headingIdFor(sectionId: HomeSectionId): string {
+  return `${sectionId}-heading`;
+}
 
 export const HOME_SECTIONS: HomeSectionDefinition[] = [
   {
@@ -10,6 +15,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     ctaLabel: "Discover",
     ctaTargetId: "for-you",
     contentDirection: "row",
+    variant: "start",
   },
   {
     id: "for-you",

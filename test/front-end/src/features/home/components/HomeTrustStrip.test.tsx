@@ -12,12 +12,16 @@ const FIXTURE_ITEMS = [
 function renderTrustStrip(items = FIXTURE_ITEMS): string {
   return renderToStaticMarkup(
     createElement(HomeTrustStrip, {
-      sectionId: "proof",
-      headingId: "proof-heading",
-      heading: "Proof through honesty",
-      body: "The site states only what is true.",
-      bgColor: "var(--adw-page-brown-bg)",
-      items,
+      section: {
+        id: "proof",
+        label: "conquer",
+        heading: "Proof through honesty",
+        body: "The site states only what is true.",
+        bgColor: "var(--adw-page-brown-bg)",
+        contentDirection: "column",
+        variant: "trust",
+        trustItems: items,
+      },
     }),
   );
 }

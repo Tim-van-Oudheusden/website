@@ -2,6 +2,8 @@ import * as React from "react";
 import { Link } from "react-router";
 import type { ArticleSummary } from "shared";
 import { httpContentLoader, type ContentLoader } from "@/shared/lib/content-loader";
+import { HomeSectionShell } from "./home-section-shell";
+import type { HomeSectionDefinition } from "../types/home-section";
 
 /**
  * Small curated set of the site's strongest, most representative articles,
@@ -81,21 +83,13 @@ export function StartHereContent({
 }
 
 interface HomeStartHereProps {
-  sectionId: string;
-  headingId: string;
-  heading: string;
-  body: string;
-  bgColor: string;
+  section: HomeSectionDefinition;
   loader?: ContentLoader;
 }
 
 /** Home 'secondary-cta' section: a 'Start here' reading list of real articles. */
 export function HomeStartHere({
-  sectionId,
-  headingId,
-  heading,
-  body,
-  bgColor,
+  section,
   loader = httpContentLoader,
 }: HomeStartHereProps): React.JSX.Element {
   const [items, setItems] = React.useState<ArticleSummary[] | null>(null);
@@ -123,28 +117,8 @@ export function HomeStartHere({
   }, [loader]);
 
   return (
-    <section
-      id={sectionId}
-      aria-labelledby={headingId}
-      className="flex min-h-svh items-center justify-center px-6 py-12 sm:px-10 sm:py-16 lg:px-6"
-      style={{ backgroundColor: bgColor }}
-    >
-      <div className="w-full">
-        <div className="mx-auto flex max-w-2xl flex-col items-center gap-8 md:max-w-3xl lg:max-w-296">
-          <div className="flex flex-1 flex-col items-center gap-4">
-            <h2
-              id={headingId}
-              className="text-center font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]"
-            >
-              {heading}
-            </h2>
-            <p className="max-w-[65ch] text-center text-base sm:text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80">
-              {body}
-            </p>
-          </div>
-          <StartHereContent items={items} loadError={loadError} />
-        </div>
-      </div>
-    </section>
+    <HomeSectionShell section={section} heading={section.heading} body={section.body} centered>
+      <StartHereContent items={items} loadError={loadError} />
+    </HomeSectionShell>
   );
 }

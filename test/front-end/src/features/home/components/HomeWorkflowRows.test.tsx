@@ -20,12 +20,16 @@ const FIXTURE_ROWS: HomeFeatureRow[] = [
 function renderWorkflow(features = FIXTURE_ROWS): string {
   return renderToStaticMarkup(
     createElement(HomeWorkflowRows, {
-      sectionId: "for-devs",
-      headingId: "for-devs-heading",
-      heading: "How I work",
-      body: "The real stack behind the site.",
-      bgColor: "var(--adw-page-brown-bg)",
-      features,
+      section: {
+        id: "for-devs",
+        label: "for devs",
+        heading: "How I work",
+        body: "The real stack behind the site.",
+        bgColor: "var(--adw-page-brown-bg)",
+        contentDirection: "row",
+        variant: "workflow",
+        features,
+      },
     }),
   );
 }

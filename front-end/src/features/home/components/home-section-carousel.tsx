@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/shared/lib/utils";
+import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionDefinition } from "../types/home-section";
 import { HomeSectionShell } from "./home-section-shell";
 import { ValuePillarsCarousel } from "./value-pillars-carousel";
@@ -24,7 +25,7 @@ export function HomeSectionCarousel({ section }: HomeSectionCarouselProps): Reac
         )}
       >
         <ValuePillarsCarousel
-          headingId={`${section.id}-heading`}
+          headingId={headingIdFor(section.id)}
           heading={section.heading}
           body={section.body}
           inWhiteWell={inWhiteWell}
