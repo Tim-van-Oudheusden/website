@@ -1,9 +1,5 @@
-import {
-  ROUTES,
-  type ArticleData,
-  type ArticleSummary,
-  type ProjectFrontmatter,
-} from "shared";
+import { ROUTES, type ProjectFrontmatter } from "shared";
+import type { ArticleData, ArticleSummary } from "shared/articles";
 import { ApiError, apiGet } from "./api";
 
 /** The content-load surface every content-consuming feature depends on. */

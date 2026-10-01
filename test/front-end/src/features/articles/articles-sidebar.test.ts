@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { DEFAULT_ARTICLE_SLUG, type ArticleSummary } from "shared";
+import { DEFAULT_ARTICLE_SLUG } from "shared";
+import type { ArticleSummary } from "shared/articles";
 import {
   getDefaultArticleSlug,
   groupArticlesByCategory,

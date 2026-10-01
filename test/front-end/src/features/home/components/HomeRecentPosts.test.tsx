@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { MemoryRouter } from "react-router";
 import { renderToStaticMarkup } from "react-dom/server";
 import { RecentPostsContent, RecentPostsList, selectRecentPosts } from "../../../../../../front-end/src/features/home/components/home-recent-posts";
-import type { ArticleSummary } from "shared";
+import type { ArticleSummary } from "shared/articles";
 
 const FIXTURE_POSTS: ArticleSummary[] = [
   {

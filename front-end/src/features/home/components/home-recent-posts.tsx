@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router";
-import { compareArticles, type ArticleSummary } from "shared";
+import { compareArticles, type ArticleSummary } from "shared/articles";
 import { httpContentLoader, type ContentLoader } from "@/shared/lib/content-loader";
 import { HomeSectionShell } from "./home-section-shell";
 import type { HomeSectionDefinition } from "../types/home-section";

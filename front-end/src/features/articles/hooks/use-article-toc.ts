@@ -4,7 +4,7 @@ import {
   resolveActiveTocHeadingIds,
   type ArticleTableOfContentsItem,
 } from "../lib/article-toc";
-import type { ArticleData } from "shared";
+import type { ArticleData } from "shared/articles";
 
 export interface UseArticleTocResult {
   tocItems: ArticleTableOfContentsItem[];

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "@/shared/lib/api";
 import { httpContentLoader } from "@/shared/lib/content-loader";
-import type { ArticleData, ArticleSummary } from "shared";
+import type { ArticleData, ArticleSummary } from "shared/articles";
 import { getDefaultArticleSlug } from "../lib/articles-sidebar";
 
 export interface UseArticlesResult {

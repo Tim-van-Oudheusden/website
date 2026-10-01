@@ -2,7 +2,8 @@ import * as React from "react";
 import { useState } from "react";
 import { ChevronRight, FileText, Folder } from "lucide-react";
 import { Link } from "react-router";
-import { ARTICLE_CATEGORIES, type ArticleCategory, type ArticleSummary } from "shared";
+import { ARTICLE_CATEGORIES, type ArticleCategory } from "shared";
+import type { ArticleSummary } from "shared/articles";
 import {
   Collapsible,
   CollapsibleContent,
