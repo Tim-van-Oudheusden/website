@@ -61,6 +61,9 @@ describe("workspace scripts", () => {
     expect(eslintConfig).toContain("**/.pi-sandbox/**");
   });
 
+  // eslint's first run builds type-aware project info, which exceeds bun's
+  // 5s default test timeout on a cold checkout (CI runners); the typecheck
+  // test above needs orders more, so budget generously.
   test("eslint can lint backend files from the editor workspace path alias", () => {
     const result = spawnSync(
       "bun",
@@ -73,5 +76,5 @@ describe("workspace scripts", () => {
 
     expect(result.stderr).not.toContain("The file was not found in any of the provided project");
     expect(result.status).toBe(0);
-  });
+  }, 30_000);
 });
