@@ -2,7 +2,7 @@ import { afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
 import { createElement, type ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter, Route, Routes } from "react-router";
-import type { ArticleData } from "shared";
+import type { ArticleData } from "shared/articles";
 import type { ProjectData } from "../../../../../../front-end/src/features/projects/pages/project-page";
 
 interface ScriptedProjectState {

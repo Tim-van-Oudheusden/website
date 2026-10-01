@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { act, createElement } from "react";
 import { createRoot, type Container, type Root } from "react-dom/client";
 import { useArticleToc, type UseArticleTocResult } from "../../../../../../front-end/src/features/articles/hooks/use-article-toc";
-import type { ArticleData } from "shared";
+import type { ArticleData } from "shared/articles";
 
 interface FakeNode {
   nodeType: number;

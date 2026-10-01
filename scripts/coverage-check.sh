@@ -17,10 +17,16 @@ min_lines="${3:?min lines % required}"
 
 cd "$ROOT/$workspace"
 
-# Capturing with 2>&1 keeps the full coverage table for the report below; set -e
-# still aborts here if bun test itself fails (test failures propagate).
-report="$(bun test "../test/$workspace" --coverage 2>&1)"
+# Capturing with 2>&1 keeps the full coverage table for the report below. The
+# report is always printed: when bun test fails (any test failure), errexit on
+# the command substitution would otherwise swallow the diagnostics entirely.
+test_status=0
+report="$(bun test "../test/$workspace" --coverage 2>&1)" || test_status=$?
 printf '%s\n' "$report"
+if [ "$test_status" -ne 0 ]; then
+  echo "bun test failed with status ${test_status}; see report above" >&2
+  exit "$test_status"
+fi
 
 metrics="$(printf '%s\n' "$report" | awk -F'|' '
   /^All files[[:space:]]*\|/ {
