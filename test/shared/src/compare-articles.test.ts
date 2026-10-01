@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { compareArticles, type ArticleSummary } from "../../../shared/src/index";
+import { compareArticles, type ArticleSummary } from "../../../shared/src/articles";
 
 function article(overrides: Partial<ArticleSummary> = {}): ArticleSummary {
   return {

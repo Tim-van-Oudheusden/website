@@ -1,5 +1,5 @@
-import { ARTICLE_CATEGORIES, DEFAULT_ARTICLE_SLUG, compareArticles } from "shared";
-import type { ArticleCategory, ArticleSummary } from "shared";
+import { ARTICLE_CATEGORIES, DEFAULT_ARTICLE_SLUG, type ArticleCategory } from "shared";
+import { compareArticles, type ArticleSummary } from "shared/articles";
 
 export function getDefaultArticleSlug(articles: ArticleSummary[]): string | null {
   const intro = articles.find((article) => article.slug === DEFAULT_ARTICLE_SLUG);

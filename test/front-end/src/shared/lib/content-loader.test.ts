@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, mock, test, type Mock } from "bun:test";
-import { API_BASE, ROUTES, type ArticleData, type ArticleSummary, type ProjectFrontmatter } from "shared";
+import { API_BASE, ROUTES, type ProjectFrontmatter } from "shared";
+import type { ArticleData, ArticleSummary } from "shared/articles";
 import {
   createMemoryContentLoader,
   httpContentLoader,

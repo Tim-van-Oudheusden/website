@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { MemoryRouter } from "react-router";
 import { renderToStaticMarkup } from "react-dom/server";
 import { HOME_START_HERE_SLUGS, resolveStartHere, StartHereContent, StartHereLinks } from "../../../../../../front-end/src/features/home/components/home-start-here";
-import type { ArticleSummary } from "shared";
+import type { ArticleSummary } from "shared/articles";
 
 const FIXTURE_ARTICLES: ArticleSummary[] = [
   {
