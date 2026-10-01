@@ -28,6 +28,9 @@ describe("content routes mount JSON under /api and images at the root", () => {
     contentDir = await mkdtemp(join(tmpdir(), "website-content-"));
     await mkdir(join(contentDir, "images"), { recursive: true });
     await writeFile(join(contentDir, "images", "pixel.png"), "fake-image-bytes");
+    await writeFile(join(contentDir, "images", "pixel.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\"/>");
+    await writeFile(join(contentDir, "images", "notes.txt"), "not an image");
+    await writeFile(join(contentDir, "escape.png"), "outside-root-image");
     await writeFile(join(contentDir, "hello-world.md"), ARTICLE_MARKDOWN);
 
     app = await buildApp({ logger: false, contentDir });
@@ -75,11 +78,42 @@ describe("content routes mount JSON under /api and images at the root", () => {
     expect(res.statusCode).toBe(404);
   });
 
-  test("path traversal outside the image root is rejected", async () => {
+  test("rejects encoded dot-segment traversal at routing", async () => {
     const res = await app!.inject({
       method: "GET",
       url: "/content-assets/images/%2e%2e/%2e%2e/passwd",
     });
+    expect(res.statusCode).toBe(404);
+  });
+
+  test("blocks decoded ../ escapes that leave the image root", async () => {
+    const res = await app!.inject({
+      method: "GET",
+      url: "/content-assets/images/..%2fescape.png",
+    });
+    expect(res.statusCode).toBe(404);
+    const decodedBody = res.json();
+    expect(decodedBody).toEqual({ error: "Image not found" });
+  });
+
+  test("blocks double-slash absolute path escapes", async () => {
+    const res = await app!.inject({
+      method: "GET",
+      url: "/content-assets/images//etc/passwd",
+    });
+    expect(res.statusCode).toBe(404);
+    const decodedBody = res.json();
+    expect(decodedBody).toEqual({ error: "Image not found" });
+  });
+
+  test("serves an svg with the correct mime type", async () => {
+    const res = await app!.inject({ method: "GET", url: "/content-assets/images/pixel.svg" });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["content-type"]).toContain("image/svg+xml");
+  });
+
+  test("unknown file extensions are not served", async () => {
+    const res = await app!.inject({ method: "GET", url: "/content-assets/images/notes.txt" });
     expect(res.statusCode).toBe(404);
   });
 });
