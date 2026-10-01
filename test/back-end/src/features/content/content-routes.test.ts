@@ -29,7 +29,16 @@ describe("content routes mount JSON under /api and images at the root", () => {
     await mkdir(join(contentDir, "images"), { recursive: true });
     await writeFile(join(contentDir, "images", "pixel.png"), "fake-image-bytes");
     await writeFile(join(contentDir, "images", "pixel.svg"), "<svg xmlns=\"http://www.w3.org/2000/svg\"/>");
+    await writeFile(join(contentDir, "images", "sample.jpg"), "jpeg-bytes");
+    await writeFile(join(contentDir, "images", "sample.jpeg"), "jpeg-bytes");
+    await writeFile(join(contentDir, "images", "sample.gif"), "gif-bytes");
+    await writeFile(join(contentDir, "images", "sample.webp"), "webp-bytes");
+    await writeFile(join(contentDir, "images", "sample.avif"), "avif-bytes");
     await writeFile(join(contentDir, "images", "notes.txt"), "not an image");
+    await mkdir(join(contentDir, "images", "subdir"), { recursive: true });
+    await writeFile(join(contentDir, "images", "subdir", "nested.png"), "fake-image-bytes");
+    await mkdir(join(contentDir, "images", "nested.png"), { recursive: true });
+    await writeFile(join(contentDir, "images", "nested.png", "inner.txt"), "inside a dir that passes the MIME guard");
     await writeFile(join(contentDir, "escape.png"), "outside-root-image");
     await writeFile(join(contentDir, "hello-world.md"), ARTICLE_MARKDOWN);
     await writeFile(join(contentDir, "bad-status.md"), [
@@ -89,6 +98,16 @@ describe("content routes mount JSON under /api and images at the root", () => {
     expect(res.statusCode).toBe(404);
   });
 
+  test("requesting the images directory returns 404, not 500", async () => {
+    const res = await app!.inject({ method: "GET", url: "/content-assets/images/subdir/" });
+    expect(res.statusCode).toBe(404);
+  });
+
+  test("requesting a directory with an image extension returns 404, not 500", async () => {
+    const res = await app!.inject({ method: "GET", url: "/content-assets/images/nested.png/" });
+    expect(res.statusCode).toBe(404);
+  });
+
   test("rejects encoded dot-segment traversal at routing", async () => {
     const res = await app!.inject({
       method: "GET",
@@ -123,8 +142,47 @@ describe("content routes mount JSON under /api and images at the root", () => {
     expect(res.headers["content-type"]).toContain("image/svg+xml");
   });
 
+  test("serves every supported image extension with its MIME type", async () => {
+    const contentTypeByExtension: Record<string, string> = {
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".gif": "image/gif",
+      ".webp": "image/webp",
+      ".svg": "image/svg+xml",
+      ".avif": "image/avif",
+    };
+    const fixtureName: Record<string, string> = {
+      ".png": "pixel",
+      ".jpg": "sample",
+      ".jpeg": "sample",
+      ".gif": "sample",
+      ".webp": "sample",
+      ".svg": "pixel",
+      ".avif": "sample",
+    };
+    for (const extension of Object.keys(contentTypeByExtension)) {
+      const res = await app!.inject({
+        method: "GET",
+        url: `/content-assets/images/${fixtureName[extension]}${extension}`,
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.headers["content-type"]).toContain(contentTypeByExtension[extension]);
+    }
+  });
+
   test("unknown file extensions are not served", async () => {
     const res = await app!.inject({ method: "GET", url: "/content-assets/images/notes.txt" });
+    expect(res.statusCode).toBe(404);
+  });
+
+  test("rejects a non-image extension even when it resolves inside the root", async () => {
+    const res = await app!.inject({ method: "GET", url: "/content-assets/images/pixel.md" });
+    expect(res.statusCode).toBe(404);
+  });
+
+  test("rejects double-encoded traversal that survives a single decode", async () => {
+    const res = await app!.inject({ method: "GET", url: "/content-assets/images/%252e%252e%252fpasswd" });
     expect(res.statusCode).toBe(404);
   });
 

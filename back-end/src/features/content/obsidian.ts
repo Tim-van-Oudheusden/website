@@ -1,5 +1,5 @@
-const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".avif"];
-const CONTENT_ASSET_IMAGE_PREFIX = "/content-assets/images/";
+import { ASSET_PATH_PREFIX, IMAGE_EXTENSIONS } from "./image-assets";
+
 const EMBED_PATTERN = /!\[\[([^[\]]+)\]\]/g;
 const SIZE_PATTERN = /^\d+(x\d+)?$/i;
 
@@ -17,7 +17,7 @@ function toContentAssetPath(rawPath: string): string | null {
     normalizedPath = normalizedPath.slice(0, hashIndex);
   }
 
-  if (normalizedPath.startsWith(CONTENT_ASSET_IMAGE_PREFIX)) {
+  if (normalizedPath.startsWith(ASSET_PATH_PREFIX)) {
     return normalizedPath;
   }
 
@@ -44,7 +44,7 @@ function toContentAssetPath(rawPath: string): string | null {
     .split("/")
     .map((segment) => encodeURIComponent(segment))
     .join("/");
-  return `${CONTENT_ASSET_IMAGE_PREFIX}${encodedPath}`;
+  return `${ASSET_PATH_PREFIX}${encodedPath}`;
 }
 
 function toAltText(rawOption: string | undefined): string {

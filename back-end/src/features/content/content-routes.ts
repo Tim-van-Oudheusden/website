@@ -2,25 +2,9 @@ import type { FastifyInstance } from "fastify";
 import type { ContentType } from "shared";
 import { ROUTES, CONTENT_TYPES } from "shared";
 import { readFile } from "fs/promises";
-import { extname, isAbsolute, relative, resolve } from "path";
+import { resolve } from "path";
 import { listContent, getContentBySlug } from "./content";
-
-const CONTENT_IMAGE_ROUTE_PREFIX = "/content-assets/images/";
-const CACHE_CONTROL_HEADER = "public, max-age=31536000, immutable";
-const IMAGE_MIME_TYPES: Record<string, string> = {
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".gif": "image/gif",
-  ".webp": "image/webp",
-  ".svg": "image/svg+xml",
-  ".avif": "image/avif",
-};
-
-function isPathInsideRoot(candidatePath: string, rootPath: string): boolean {
-  const rel = relative(rootPath, candidatePath);
-  return rel !== "" && !rel.startsWith("..") && !isAbsolute(rel);
-}
+import { ASSET_CACHE_CONTROL, ASSET_PATH_PREFIX, resolveContentAsset } from "./image-assets";
 
 /**
  * Register content JSON API routes on a Fastify instance scoped under API_BASE.
@@ -57,31 +41,24 @@ export function registerContentRoutes(app: FastifyInstance, contentDir: string):
 export function registerContentImageRoutes(app: FastifyInstance, contentDir: string): void {
   const imageRoot = resolve(contentDir, "images");
 
-  app.get<{ Params: { "*": string } }>(`${CONTENT_IMAGE_ROUTE_PREFIX}*`, async (request, reply) => {
-    const decodedImagePath = decodeURIComponent(request.params["*"]);
-    const fullPath = resolve(imageRoot, decodedImagePath);
+  app.get<{ Params: { "*": string } }>(`${ASSET_PATH_PREFIX}*`, async (request, reply) => {
+    const resolved = resolveContentAsset(imageRoot, request.params["*"]);
 
-    if (!isPathInsideRoot(fullPath, imageRoot)) {
-      return reply.status(404).send({ error: "Image not found" });
-    }
-
-    const extension = extname(fullPath).toLowerCase();
-    const contentType = IMAGE_MIME_TYPES[extension];
-    if (contentType === undefined) {
+    if (resolved === null) {
       return reply.status(404).send({ error: "Image not found" });
     }
 
     try {
-      const imageBuffer = await readFile(fullPath);
-      reply.header("Cache-Control", CACHE_CONTROL_HEADER);
-      reply.type(contentType);
+      const imageBuffer = await readFile(resolved.fullPath);
+      reply.header("Cache-Control", ASSET_CACHE_CONTROL);
+      reply.type(resolved.contentType);
       return await reply.send(imageBuffer);
     } catch (error) {
       if (
         typeof error === "object"
         && error !== null
         && "code" in error
-        && (error.code === "ENOENT" || error.code === "ENOTDIR")
+        && (error.code === "ENOENT" || error.code === "ENOTDIR" || error.code === "EISDIR")
       ) {
         return reply.status(404).send({ error: "Image not found" });
       }
