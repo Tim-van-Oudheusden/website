@@ -1,13 +1,28 @@
 # Testing
 
-| Command                  | What it runs                                       | Needs podman |
-| ------------------------ | -------------------------------------------------- | ------------ |
-| `bun run test`           | Unit tests (all workspaces)                        | no           |
-| `bun run typecheck`      | TypeScript across shared, root, and both apps      | no           |
-| `bun run lint`           | ESLint (`eslint .`)                                | no           |
-| `bun run build`          | Production builds for both apps                    | no           |
-| `scripts/e2e.sh`         | Playwright E2E suite against the dev pod           | yes          |
-| `scripts/prod-assets.sh` | Prod front-end image serves every `public/` file   | yes          |
+| Command                     | What it runs                                          | Needs podman |
+| --------------------------- | ----------------------------------------------------- | ------------ |
+| `bun run test`              | Unit tests (all workspaces)                           | no           |
+| `bun run typecheck`         | TypeScript across shared, root, and both apps         | no           |
+| `bun run lint`              | ESLint (`eslint .`)                                   | no           |
+| `bun run build`             | Production builds for both apps                       | no           |
+| `scripts/e2e.sh`            | Playwright E2E suite against the dev pod              | yes          |
+| `scripts/prod-assets.sh`    | Prod front-end image serves every `public/` file      | yes          |
+| `scripts/quality-report.sh` | Markdown report of all gates + coverage per workspace | no           |
+
+## Quality report
+
+`.github/workflows/quality-report.yml` runs `scripts/quality-report.sh` on every
+push to `main`, weekly (Monday 06:17 UTC), and on demand (`workflow_dispatch`).
+The report lists pass/fail for `lint`, `typecheck`, `test`, and `build`, plus
+the overall function and line coverage for `back-end`, `shared`, and
+`front-end`. It is published as the run's job summary and as the
+`quality-report` artifact. Every gate runs even if an earlier one fails, and the
+job fails if any gate or coverage run failed. The coverage floors are still
+enforced only by `coverage-gate.yml`.
+
+Run it locally with `scripts/quality-report.sh > quality-report.md`. Gate output
+goes to stderr and the report to stdout.
 
 ## Run the E2E suite locally
 
