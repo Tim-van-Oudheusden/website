@@ -28,6 +28,22 @@ async function start(): Promise<void> {
     app.log.error(err);
     process.exit(1);
   }
+
+  // In the container this process is PID 1, where the kernel ignores signals we
+  // don't handle: `podman stop` would wait 10 s and SIGKILL (#482). Close
+  // Fastify (in-flight requests finish, no new ones are accepted), then exit.
+  for (const signal of ["SIGTERM", "SIGINT"] as const) {
+    process.once(signal, () => {
+      app.log.info(`${signal} received, shutting down`);
+      app.close().then(
+        () => process.exit(0),
+        (err: unknown) => {
+          app.log.error(err);
+          process.exit(1);
+        },
+      );
+    });
+  }
 }
 
 void start();
