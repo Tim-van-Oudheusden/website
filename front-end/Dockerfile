@@ -32,12 +32,13 @@ COPY front-end/ front-end/
 COPY package.json tsconfig.json ./
 WORKDIR /app/front-end
 RUN bunx vite build
+# Bundle the production server (and its `shared` imports) into one file.
+RUN bun build server/main.ts --target bun --outfile server-dist/main.js
 
-# Production — serve static files
+# Production — Bun server: static files + per-article link-preview tags
 FROM base AS prod
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/front-end/node_modules ./front-end/node_modules
-COPY --from=build /app/front-end/dist ./dist
 WORKDIR /app/front-end
+COPY --from=build /app/front-end/dist ./dist
+COPY --from=build /app/front-end/server-dist/main.js ./server/main.js
 EXPOSE 3000
-CMD ["./node_modules/.bin/serve", "-s", "../dist", "-l", "3000"]
+CMD ["bun", "server/main.js"]

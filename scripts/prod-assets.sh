@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Build the PRODUCTION front-end image, serve it, and require every file under
 # public/ to come back byte-identical. The dev pod bind-mounts ./public, so the
-# e2e suite cannot see a prod image that ships without it (#480): `serve -s`
-# answers a missing file with index.html and a 200.
+# e2e suite cannot see a prod image that ships without it (#480): the prod
+# server answers a missing file with index.html and a 200 (SPA fallback).
 #
 # Requires a podman-capable host (see docs/testing.md); CI runs it in the
 # `prod-assets` job.

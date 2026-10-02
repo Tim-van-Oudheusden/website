@@ -18,12 +18,6 @@ export const IMAGE_MIME_TYPES: Readonly<Record<string, string>> = {
 export const IMAGE_EXTENSIONS: readonly string[] = Object.keys(IMAGE_MIME_TYPES);
 
 /**
- * URL path under which content images are served. Shared by the HTTP route
- * and the Obsidian embed rewriter so a prefix change lands in one place.
- */
-export const ASSET_PATH_PREFIX = "/content-assets/images/";
-
-/**
  * Asset filenames are fixed content paths, so the response is safe to cache
  * immutably for a year.
  */

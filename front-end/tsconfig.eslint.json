@@ -8,6 +8,6 @@
     "sourceMap": false,
     "rootDir": "../.."
   },
-  "include": ["src", "vite.config.ts", "../test/front-end"],
+  "include": ["src", "server", "vite.config.ts", "../test/front-end"],
   "exclude": []
 }

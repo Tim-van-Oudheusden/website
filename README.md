@@ -49,3 +49,19 @@ Canonical image syntax for guaranteed rendering in this app:
 ```
 
 The image route is served by the back-end and maps to files stored in `content/images`.
+
+### Link previews (`socialImage`)
+
+Sharing an article URL (LinkedIn, Mastodon, Slack, …) shows a preview card built
+from Open Graph tags that the production front-end server injects for
+`/articles/<slug>`: `title` and `description` from frontmatter, plus the image
+from `socialImage`:
+
+```yaml
+socialImage: images/cover.png   # relative → content/images/cover.png
+socialImage: /images/me.png     # root-absolute → a site path (public/)
+```
+
+Use a PNG or JPEG of 1200×630 (LinkedIn ignores SVG). `content/images/cover.png`
+is the generic placeholder. Without `socialImage` the preview has no image.
+Crawlers cache previews; LinkedIn's Post Inspector re-fetches one on demand.

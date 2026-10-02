@@ -53,8 +53,9 @@ terminal and run `bun run test:e2e -- e2e/<spec>.e2e.ts` (or
 ## Check the prod front-end image's static assets
 
 The dev pod bind-mounts `./public`, so the E2E suite cannot tell whether the
-**prod** front-end image ships it. When a file is missing, `serve -s` answers
-with `index.html` and a 200, and every image breaks silently (#480).
+**prod** front-end image ships it. When a file is missing, the prod server
+answers with `index.html` and a 200 (SPA fallback), so every image breaks
+silently (#480).
 `scripts/prod-assets.sh` (CI job `prod-assets`, which `release` waits for)
 covers that gap:
 

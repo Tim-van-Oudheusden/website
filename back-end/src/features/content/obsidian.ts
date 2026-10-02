@@ -1,4 +1,5 @@
-import { ASSET_PATH_PREFIX, IMAGE_EXTENSIONS } from "./image-assets";
+import { ASSET_PATH_PREFIX } from "shared";
+import { IMAGE_EXTENSIONS } from "./image-assets";
 
 const EMBED_PATTERN = /!\[\[([^[\]]+)\]\]/g;
 const SIZE_PATTERN = /^\d+(x\d+)?$/i;

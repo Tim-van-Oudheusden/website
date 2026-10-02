@@ -1,10 +1,10 @@
 import type { FastifyInstance } from "fastify";
 import type { ContentType } from "shared";
-import { ROUTES, CONTENT_TYPES } from "shared";
+import { ROUTES, CONTENT_TYPES, ASSET_PATH_PREFIX } from "shared";
 import { readFile } from "fs/promises";
 import { resolve } from "path";
 import { listContent, getContentBySlug } from "./content";
-import { ASSET_CACHE_CONTROL, ASSET_PATH_PREFIX, resolveContentAsset } from "./image-assets";
+import { ASSET_CACHE_CONTROL, resolveContentAsset } from "./image-assets";
 
 /**
  * Register content JSON API routes on a Fastify instance scoped under API_BASE.

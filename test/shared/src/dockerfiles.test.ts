@@ -16,12 +16,6 @@ describe("docker dependency installs are deterministic", () => {
     expect(frontendDockerfile).not.toContain("bun install --frozen-lockfile || bun install");
   });
 
-  test("front-end production image does not install serve during docker build", () => {
-    const frontendDockerfile = readDockerfile("front-end/Dockerfile");
-
-    expect(frontendDockerfile).not.toContain("RUN bun add serve");
-  });
-
   test("pi sandbox image includes common agent command line tools", () => {
     const sandboxDockerfile = readDockerfile("Dockerfile.sandbox");
 

@@ -46,6 +46,13 @@ export const ROUTES = {
   CONTENT_BY_SLUG: "/content/:slug",
 } as const;
 
+/**
+ * URL path under which the back-end serves content images (content/images/*).
+ * Used by the back-end route, its Obsidian embed rewriter, and the front-end
+ * server's link-preview tags, so a prefix change lands in one place.
+ */
+export const ASSET_PATH_PREFIX = "/content-assets/images/";
+
 /* ── Content Schema ── */
 
 /** The valid content types for Obsidian frontmatter entries. */
