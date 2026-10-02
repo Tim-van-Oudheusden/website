@@ -66,9 +66,21 @@ jobs:
         if: always()
         run: podman kube down deploy/kube/dev.yaml
 
+  prod-assets:
+    name: Prod front-end serves public/ assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+      - name: Build prod front-end image and check public/ assets
+        run: scripts/prod-assets.sh
+
   release:
     name: Publish GHCR images
-    needs: [check, e2e]
+    needs: [check, e2e, prod-assets]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:

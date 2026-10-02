@@ -64,11 +64,12 @@ End-to-end tests run against the Podman pod. `scripts/e2e.sh` mirrors the CI E2E
 
 ```bash
 scripts/e2e.sh
+scripts/prod-assets.sh   # prod front-end image serves every public/ file (#480)
 ```
 
 See [`docs/testing.md`](docs/testing.md) for prerequisites and why the agent sandbox runs only the non-container gates.
 
-CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, and build on every PR, plus an E2E job on the dev pod, and a release job on `main`.
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, and build on every PR, plus an E2E job on the dev pod, a `prod-assets` job on the prod front-end image, and a release job on `main` that waits for all three.
 
 ## Code style
 

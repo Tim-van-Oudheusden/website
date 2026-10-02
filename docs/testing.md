@@ -1,12 +1,13 @@
 # Testing
 
-| Command             | What it runs                                  | Needs podman |
-| ------------------- | --------------------------------------------- | ------------ |
-| `bun run test`      | Unit tests (all workspaces)                   | no           |
-| `bun run typecheck` | TypeScript across shared, root, and both apps | no           |
-| `bun run lint`      | ESLint (`eslint .`)                           | no           |
-| `bun run build`     | Production builds for both apps               | no           |
-| `scripts/e2e.sh`    | Playwright E2E suite against the dev pod      | yes          |
+| Command                  | What it runs                                       | Needs podman |
+| ------------------------ | -------------------------------------------------- | ------------ |
+| `bun run test`           | Unit tests (all workspaces)                        | no           |
+| `bun run typecheck`      | TypeScript across shared, root, and both apps      | no           |
+| `bun run lint`           | ESLint (`eslint .`)                                | no           |
+| `bun run build`          | Production builds for both apps                    | no           |
+| `scripts/e2e.sh`         | Playwright E2E suite against the dev pod           | yes          |
+| `scripts/prod-assets.sh` | Prod front-end image serves every `public/` file   | yes          |
 
 ## Run the E2E suite locally
 
@@ -48,6 +49,22 @@ The script exits with the status of the first failing step.
 For iterating on a single spec, keep the pod up with `scripts/dev.sh` in one
 terminal and run `bun run test:e2e -- e2e/<spec>.e2e.ts` (or
 `bun run test:e2e:headed`) in another; `scripts/dev-down.sh` when done.
+
+## Check the prod front-end image's static assets
+
+The dev pod bind-mounts `./public`, so the E2E suite cannot tell whether the
+**prod** front-end image ships it. When a file is missing, `serve -s` answers
+with `index.html` and a 200, and every image breaks silently (#480).
+`scripts/prod-assets.sh` (CI job `prod-assets`, which `release` waits for)
+covers that gap:
+
+1. `podman build -f front-end/Dockerfile --target prod`
+2. run the image on `127.0.0.1:${PROD_ASSETS_PORT:-18300}` and poll `/` until
+   it answers (`PROD_ASSETS_WAIT_ATTEMPTS` × `PROD_ASSETS_WAIT_INTERVAL`,
+   default 30 × 1 s)
+3. fetch every non-dotfile under `public/` and require it to be byte-identical
+   to the file in the repo
+4. remove the container, always
 
 ## Agent sandbox: what runs where
 

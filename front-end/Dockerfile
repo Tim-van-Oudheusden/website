@@ -25,6 +25,9 @@ FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/front-end/node_modules ./front-end/node_modules
 COPY shared/ shared/
+# vite.config.ts sets publicDir to ../public; Vite silently skips a missing
+# publicDir, which would ship an image without images or favicon (#480).
+COPY public/ public/
 COPY front-end/ front-end/
 COPY package.json tsconfig.json ./
 WORKDIR /app/front-end
