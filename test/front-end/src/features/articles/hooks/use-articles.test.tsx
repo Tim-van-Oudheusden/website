@@ -159,6 +159,24 @@ describe("useArticles listing", () => {
     }
   });
 
+  test("a URL slug loads only that article, without fetching the default first", async () => {
+    const requested = routeFetch({
+      [LIST_URL]: respond([summary("introduction"), summary("linux-setup")]),
+      "/api/content/introduction": respond(article("introduction")),
+      "/api/content/linux-setup": respond(article("linux-setup")),
+    });
+    const probe = mountProbe("linux-setup");
+
+    try {
+      await settle();
+
+      expect(probe.latest().selectedArticle?.slug).toBe("linux-setup");
+      expect(requested).toEqual([LIST_URL, "/api/content/linux-setup"]);
+    } finally {
+      probe.cleanup();
+    }
+  });
+
   test("an empty listing selects nothing and never requests an article", async () => {
     const requested = routeFetch({ [LIST_URL]: respond([]) });
     const probe = mountProbe();
@@ -260,6 +278,26 @@ describe("useArticles selected article", () => {
       expect(probe.latest().selectedSlug).toBe("linux-setup");
       expect(probe.latest().selectedArticle?.slug).toBe("linux-setup");
       expect(probe.latest().loadingArticle).toBe(false);
+    } finally {
+      probe.cleanup();
+    }
+  });
+
+  test("selectSlug is not reverted while the URL still names another slug", async () => {
+    routeFetch({
+      [LIST_URL]: respond([summary("introduction"), summary("linux-setup")]),
+      "/api/content/introduction": respond(article("introduction")),
+      "/api/content/linux-setup": respond(article("linux-setup")),
+    });
+    const probe = mountProbe("linux-setup");
+
+    try {
+      await settle();
+      act(() => { probe.latest().selectSlug("introduction"); });
+      await settle();
+
+      expect(probe.latest().selectedSlug).toBe("introduction");
+      expect(probe.latest().selectedArticle?.slug).toBe("introduction");
     } finally {
       probe.cleanup();
     }
