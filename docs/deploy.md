@@ -13,7 +13,7 @@ Related decisions: see the epic #270 (pure Podman + Cloudflare Tunnel).
 | Concern | Choice |
 |---|---|
 | Host | one physical machine, rootless Podman (systemd **user** units) |
-| App | `podman kube play deploy/kube/prod.yaml` — pod `website`, published on loopback only: front-end `127.0.0.1:8300`, back-end `127.0.0.1:8301` (in-pod ports 3000/3001) |
+| App | `podman kube play --network pasta:--host-lo-to-ns-lo deploy/kube/prod.yaml` — pod `website`, published on loopback only: front-end `127.0.0.1:8300`, back-end `127.0.0.1:8301` (in-pod ports 3000/3001) |
 | Images | `ghcr.io/tim-van-oudheusden/website/{front-end,back-end}` (private; `:latest` advances only after green CI) |
 | Exposure | Cloudflare Tunnel (edge TLS; origin is plain HTTP, unreachable from the LAN) |
 | Updates | `website-update.timer` every 5 min: pull `:latest`, replay the pod only when an image changed |
@@ -88,9 +88,10 @@ and `WantedBy=default.target` makes `enable` rebuild the pod on session start.
 The template plays the pod with `--network pasta:--host-lo-to-ns-lo`. With
 that option, connections to the loopback-published ports arrive on the pod's
 own loopback. The back-end therefore sees cloudflared as `127.0.0.1`, which is
-the only peer it trusts for `CF-Connecting-IP`. On podman's default bridge
-network it would see a pod-network address (`10.89.x.x`) instead, and every
-visitor would share one rate-limit bucket. To check that per-client keying
+the only peer it trusts for `CF-Connecting-IP`. On kube play's default bridge
+network (`podman-default-kube-network`) it would see a pod-network address
+(`10.89.x.x`) instead, and every visitor would share one rate-limit bucket
+(#479). To check that per-client keying
 works on the host:
 
 ```bash

@@ -155,9 +155,7 @@ describe("podman-kube@ prod pod template", () => {
   });
 
   test("plays on pasta with host loopback spliced in, so the back-end sees cloudflared as loopback", () => {
-    // The rate limiter trusts CF-Connecting-IP only from a loopback peer. The
-    // default bridge network shows the back-end a pod-network peer (10.89.x.x)
-    // instead, so every visitor would share one bucket (#479).
+    // Why: docs/deploy.md §1 (#479).
     const execStart = /^ExecStart=(.+)$/m.exec(readDeploy("deploy/systemd/podman-kube@.service"))?.[1] ?? "";
     const network = /--network[= ](\S+)/.exec(execStart)?.[1] ?? "";
     const [mode, options = ""] = network.split(/:(.*)/s);
