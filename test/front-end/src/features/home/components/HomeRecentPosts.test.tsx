@@ -1,9 +1,28 @@
-import { describe, expect, test } from "bun:test";
-import { createElement } from "react";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { act, createElement } from "react";
 import { MemoryRouter } from "react-router";
 import { renderToStaticMarkup } from "react-dom/server";
-import { RecentPostsContent, RecentPostsList, selectRecentPosts } from "../../../../../../front-end/src/features/home/components/home-recent-posts";
+import { HomeRecentPosts, RecentPostsContent, RecentPostsList, selectRecentPosts } from "../../../../../../front-end/src/features/home/components/home-recent-posts";
+import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
+import { createMemoryContentLoader, type ContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
 import type { ArticleSummary } from "shared/articles";
+
+import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
+import {
+  initFakeDomHarness,
+  mountIntoBody,
+  settleMicrotasks,
+  unmountFakeDomRoot,
+  type FakeMount,
+} from "../../../../src/test/dom-harness";
+
+beforeAll(async () => {
+  await initFakeDomHarness();
+});
+
+afterAll(() => {
+  uninstallFakeDom();
+});
 
 const FIXTURE_POSTS: ArticleSummary[] = [
   {
@@ -50,6 +69,17 @@ function renderContent(posts: ArticleSummary[] | null, loadError: boolean): stri
   );
 }
 
+const RECENT_POSTS_SECTION = HOME_SECTIONS.find((section) => section.id === "community-and-docs");
+
+async function mountRecentPosts(loader: ContentLoader): Promise<FakeMount> {
+  if (RECENT_POSTS_SECTION === undefined) throw new Error("Expected a community-and-docs home section");
+  const mount = mountIntoBody(
+    createElement(MemoryRouter, null, createElement(HomeRecentPosts, { section: RECENT_POSTS_SECTION, loader })),
+  );
+  await act(async () => { await settleMicrotasks(); });
+  return mount;
+}
+
 describe("selectRecentPosts", () => {
   test("sorts newest-first by date", () => {
     const result = selectRecentPosts(FIXTURE_POSTS);
@@ -66,6 +96,26 @@ describe("selectRecentPosts", () => {
     const input = [...FIXTURE_POSTS];
     selectRecentPosts(input);
     expect(input[0]?.slug).toBe("apt-get-out-of-my-life-hello-flatpak");
+  });
+
+  test("orders same-day posts by title before falling back to slug", () => {
+    const sameDay: ArticleSummary = {
+      title: "",
+      slug: "",
+      date: "2026-04-01",
+      tags: [],
+      type: "article",
+      draft: false,
+      category: "Linux",
+      description: "Same-day post.",
+    };
+    const result = selectRecentPosts([
+      { ...sameDay, title: "Zebra crossings", slug: "a-zebra" },
+      { ...sameDay, title: "Alpine mornings", slug: "z-alpine" },
+      { ...sameDay, title: "Alpine mornings", slug: "m-alpine" },
+    ]);
+
+    expect(result.map((post) => post.slug)).toEqual(["m-alpine", "z-alpine", "a-zebra"]);
   });
 });
 
@@ -111,5 +161,39 @@ describe("RecentPostsContent", () => {
 
     expect(html).toContain("<ul");
     expect(html).not.toContain("role=\"alert\"");
+  });
+});
+
+describe("HomeRecentPosts", () => {
+  test("links the loader's newest posts, newest first", async () => {
+    const mount = await mountRecentPosts(
+      createMemoryContentLoader(FIXTURE_POSTS.map((post) => ({ ...post, body: "" }))),
+    );
+
+    try {
+      const hrefs = queryFakeElements(mount.container, (el) => el.nodeName === "A").map((el) => el.getAttribute("href"));
+      expect(hrefs).toEqual([
+        "/articles/yoga-nidra-a-way-to-be-at-peace-in-chaos",
+        "/articles/introduction",
+        "/articles/apt-get-out-of-my-life-hello-flatpak",
+      ]);
+      expect(mount.container.textContent).not.toContain("Loading recent posts...");
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("shows the error note when the loader rejects", async () => {
+    const mount = await mountRecentPosts({
+      ...createMemoryContentLoader([]),
+      listArticles: () => Promise.reject(new Error("offline")),
+    });
+
+    try {
+      expect(mount.container.textContent).toContain("Recent posts could not be loaded right now.");
+      expect(queryFakeElements(mount.container, (el) => el.nodeName === "A")).toEqual([]);
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
   });
 });

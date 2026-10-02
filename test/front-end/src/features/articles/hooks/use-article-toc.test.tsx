@@ -129,6 +129,7 @@ function withFakeDom<T>(fn: (env: Environment, root: Root) => T): T {
   const env = makeFakeEnvironment();
   const originalDocument = globalThis.document;
   const originalWindow = globalThis.window;
+  const originalActEnvironment: unknown = (globalThis as Record<string, unknown>)["IS_REACT_ACT_ENVIRONMENT"];
   Object.defineProperty(globalThis, "document", { value: env.documentStub, configurable: true });
   Object.defineProperty(globalThis, "window", { value: env.windowStub, configurable: true });
   Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", { value: true, configurable: true });
@@ -141,7 +142,12 @@ function withFakeDom<T>(fn: (env: Environment, root: Root) => T): T {
   } finally {
     Object.defineProperty(globalThis, "document", { value: originalDocument, configurable: true });
     Object.defineProperty(globalThis, "window", { value: originalWindow, configurable: true });
-    Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", { value: undefined, configurable: true });
+    // Restore whatever the process had before (the fake-DOM preload sets true);
+    // clearing it unconditionally would break act() for later test files.
+    Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", {
+      value: originalActEnvironment,
+      configurable: true,
+    });
   }
 }
 

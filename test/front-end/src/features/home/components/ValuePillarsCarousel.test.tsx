@@ -12,7 +12,7 @@ import {
   installFakeDom,
   queryFakeElements,
   triggerFakeResizeObservers,
-  triggerWindowResize,
+  triggerWindowEvent,
   uninstallFakeDom,
   type FakeDocument,
   type FakeElement,
@@ -379,7 +379,7 @@ describe("ValuePillarsCarousel interaction", () => {
       description.scrollHeight = 90;
 
       act(() => {
-        triggerWindowResize();
+        triggerWindowEvent("resize");
       });
 
       expect(card.style["--value-pillar-description-height"]).toBe("90px");
@@ -392,7 +392,7 @@ describe("ValuePillarsCarousel interaction", () => {
       // must not re-measure the (now detached) description.
       description.scrollHeight = 130;
       act(() => {
-        triggerWindowResize();
+        triggerWindowEvent("resize");
       });
       expect(card.style["--value-pillar-description-height"]).toBe("90px");
     } finally {

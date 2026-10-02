@@ -1,9 +1,28 @@
-import { describe, expect, test } from "bun:test";
-import { createElement } from "react";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { act, createElement } from "react";
 import { MemoryRouter } from "react-router";
 import { renderToStaticMarkup } from "react-dom/server";
-import { HOME_START_HERE_SLUGS, resolveStartHere, StartHereContent, StartHereLinks } from "../../../../../../front-end/src/features/home/components/home-start-here";
+import { HOME_START_HERE_SLUGS, HomeStartHere, resolveStartHere, StartHereContent, StartHereLinks } from "../../../../../../front-end/src/features/home/components/home-start-here";
+import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
+import { createMemoryContentLoader, type ContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
 import type { ArticleSummary } from "shared/articles";
+
+import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
+import {
+  initFakeDomHarness,
+  mountIntoBody,
+  settleMicrotasks,
+  unmountFakeDomRoot,
+  type FakeMount,
+} from "../../../../src/test/dom-harness";
+
+beforeAll(async () => {
+  await initFakeDomHarness();
+});
+
+afterAll(() => {
+  uninstallFakeDom();
+});
 
 const FIXTURE_ARTICLES: ArticleSummary[] = [
   {
@@ -48,6 +67,17 @@ function renderContent(items: ArticleSummary[] | null, loadError: boolean): stri
   return renderToStaticMarkup(
     createElement(MemoryRouter, null, createElement(StartHereContent, { items, loadError })),
   );
+}
+
+const START_HERE_SECTION = HOME_SECTIONS.find((section) => section.id === "secondary-cta");
+
+async function mountStartHere(loader: ContentLoader): Promise<FakeMount> {
+  if (START_HERE_SECTION === undefined) throw new Error("Expected a secondary-cta home section");
+  const mount = mountIntoBody(
+    createElement(MemoryRouter, null, createElement(HomeStartHere, { section: START_HERE_SECTION, loader })),
+  );
+  await act(async () => { await settleMicrotasks(); });
+  return mount;
 }
 
 describe("resolveStartHere", () => {
@@ -116,5 +146,39 @@ describe("StartHereContent", () => {
 
     expect(html).toContain("<ol");
     expect(html).not.toContain("role=\"alert\"");
+  });
+});
+
+describe("HomeStartHere", () => {
+  test("lists the curated articles the loader serves, in curated order", async () => {
+    const mount = await mountStartHere(
+      createMemoryContentLoader(FIXTURE_ARTICLES.map((article) => ({ ...article, body: "" }))),
+    );
+
+    try {
+      const hrefs = queryFakeElements(mount.container, (el) => el.nodeName === "A").map((el) => el.getAttribute("href"));
+      expect(hrefs).toEqual([
+        "/articles/introduction",
+        "/articles/my-operating-system-is-a-container-image-yes-really",
+        "/articles/yoga-nidra-a-way-to-be-at-peace-in-chaos",
+      ]);
+      expect(mount.container.textContent).not.toContain("Loading reading list...");
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("shows the error note when the loader rejects", async () => {
+    const mount = await mountStartHere({
+      ...createMemoryContentLoader([]),
+      listArticles: () => Promise.reject(new Error("offline")),
+    });
+
+    try {
+      expect(mount.container.textContent).toContain("The reading list could not be loaded right now.");
+      expect(queryFakeElements(mount.container, (el) => el.nodeName === "A")).toEqual([]);
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
   });
 });
