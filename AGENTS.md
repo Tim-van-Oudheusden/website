@@ -104,7 +104,7 @@ bd close <id>         # Complete work
 - **Run the full suite after every change** - Not just the new test. AI refactoring frequently breaks existing functionality
 - **Never modify tests to make them pass** - Fix the implementation, not the test. Never delete, skip, comment out, or weaken assertions. Never add `@pytest.mark.skip`, `@ts-expect-error`, `# type: ignore`, or similar suppressions to silence failures
 - **Don't over-implement** - If the test passes, the implementation is done. Do not add code that is not required by a failing test
-- **E2E with Podman** - Run `scripts/dev.sh` (kube-play dev pod) when kicking off Playwright tests, `scripts/dev-down.sh` when finished.
+- **E2E with Podman** - Run `scripts/e2e.sh` on a podman-capable host (mirrors the CI e2e job, tears the pod down itself); for iterating, `scripts/dev.sh` + `bun run test:e2e`, then `scripts/dev-down.sh`. The agent sandbox has no podman: run only the unit/typecheck/lint/build gates there (see `docs/testing.md`).
 
 ## Dependency Management
 

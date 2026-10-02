@@ -26,6 +26,9 @@ The pod publishes:
 
 Host source is bind-mounted, so edits hot-reload without a rebuild.
 
+Run the E2E suite the way CI does with `scripts/e2e.sh` (see
+[`docs/testing.md`](docs/testing.md)).
+
 ## Obsidian Content Authoring
 
 Markdown content lives in `content/` and should be authored in Obsidian using these settings.
