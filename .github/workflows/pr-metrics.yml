@@ -1,0 +1,57 @@
+name: PR metrics
+
+# PR acceptance metric: of the pull requests closed in the reporting window,
+# how many were merged vs. closed without merging. Split by agent-authored
+# (claude/* head branch) vs. other PRs so agent work has its own feedback loop.
+# Results land in the run's job summary.
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      days:
+        description: Reporting window in days
+        required: false
+        default: '28'
+
+permissions:
+  pull-requests: read
+
+jobs:
+  acceptance:
+    name: PR acceptance rate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compute acceptance metric
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          DAYS: ${{ inputs.days || '28' }}
+        run: |
+          set -euo pipefail
+          since="$(date -u -d "${DAYS} days ago" +%Y-%m-%d)"
+          gh pr list --repo "$REPO" --state closed --limit 1000 \
+            --search "closed:>=${since}" \
+            --json number,mergedAt,headRefName > prs.json
+
+          jq -r --arg since "$since" --arg days "$DAYS" '
+            def row($label; $set):
+              ($set | length) as $total
+              | ($set | map(select(.mergedAt != null)) | length) as $merged
+              | "| \($label) | \($total) | \($merged) | \($total - $merged) | "
+                + (if $total == 0 then "n/a"
+                   else "\(($merged * 1000 / $total | round) / 10)%" end)
+                + " |";
+            (map(select(.headRefName | startswith("claude/")))) as $agent
+            | (map(select(.headRefName | startswith("claude/") | not))) as $other
+            | "## PR acceptance metric",
+              "",
+              "PRs closed since \($since) (last \($days) days).",
+              "",
+              "| Source | Closed | Merged | Rejected | Acceptance |",
+              "| --- | ---: | ---: | ---: | ---: |",
+              row("Agent (`claude/*`)"; $agent),
+              row("Other"; $other),
+              row("**All**"; .)
+          ' prs.json | tee -a "$GITHUB_STEP_SUMMARY"
