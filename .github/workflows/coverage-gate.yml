@@ -22,4 +22,4 @@ jobs:
       - name: Shared coverage
         run: scripts/coverage-check.sh shared 90 90
       - name: Front-end coverage
-        run: scripts/coverage-check.sh front-end 55 60
+        run: scripts/coverage-check.sh front-end 91 91
