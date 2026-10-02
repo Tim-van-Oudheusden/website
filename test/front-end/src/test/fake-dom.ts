@@ -99,6 +99,8 @@ export interface FakeElement extends FakeNode {
   removeAttribute(name: string): void;
   getAttribute(name: string): string | null;
   hasAttribute(name: string): boolean;
+  /** Reflects the `id` attribute, as on real elements. */
+  readonly id: string;
   getBoundingClientRect(): {
     left: number; top: number; right: number; bottom: number;
     width: number; height: number; x: number; y: number;
@@ -142,6 +144,8 @@ export interface FakeDocument {
   body: FakeElement;
   /** Currently focused element or null (focus-tracking tests observe this). */
   activeElement: FakeElement | null;
+  /** The fake window once installed (`BrowserRouter` resolves history through it). */
+  defaultView: object | null;
   createElement(tagName: string): FakeElement;
   createElementNS(namespaceURI: string, tagName: string): FakeElement;
   createTextNode(value: string): FakeNode;
@@ -334,6 +338,10 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
     return this.attributes.has(name);
   }
 
+  get id(): string {
+    return this.getAttribute("id") ?? "";
+  }
+
   getBoundingClientRect(): {
     left: number; top: number; right: number; bottom: number;
     width: number; height: number; x: number; y: number;
@@ -485,6 +493,51 @@ class FakeResizeObserverImpl {
   }
 }
 
+/** One entry handed to `triggerFakeIntersections`: a target and its visible ratio. */
+export interface FakeIntersection {
+  target: FakeElement;
+  intersectionRatio: number;
+}
+
+class FakeIntersectionObserverImpl {
+  static readonly instances: FakeIntersectionObserverImpl[] = [];
+  readonly callback: (
+    entries: (FakeIntersection & { isIntersecting: boolean })[],
+    observer: FakeIntersectionObserverImpl,
+  ) => void;
+  observedTargets: FakeElement[] = [];
+  disconnected = false;
+
+  constructor(
+    callback: (
+      entries: (FakeIntersection & { isIntersecting: boolean })[],
+      observer: FakeIntersectionObserverImpl,
+    ) => void,
+  ) {
+    this.callback = callback;
+    FakeIntersectionObserverImpl.instances.push(this);
+  }
+
+  /** Like the browser, reject anything that is not an element (e.g. a missing `getElementById` result). */
+  observe(target: FakeElement): void {
+    if (!(target instanceof FakeElementImpl)) {
+      throw new TypeError("IntersectionObserver.observe: target is not an Element");
+    }
+    this.observedTargets.push(target);
+  }
+
+  unobserve(target: FakeElement): void {
+    this.observedTargets = this.observedTargets.filter(
+      (observed) => observed !== target,
+    );
+  }
+
+  disconnect(): void {
+    this.disconnected = true;
+    this.observedTargets = [];
+  }
+}
+
 function makeDocument(): FakeDocument {
   const documentListeners = new Map<string, Set<(event: unknown) => void>>();
   const document: FakeDocument = {
@@ -494,6 +547,7 @@ function makeDocument(): FakeDocument {
     head: null as unknown as FakeElement,
     body: null as unknown as FakeElement,
     activeElement: null,
+    defaultView: null,
     createElement: (tagName) => new FakeElementImpl(tagName, document),
     createElementNS: (namespaceURI, tagName) => new FakeElementImpl(tagName, document, namespaceURI),
     createTextNode: (value) => new FakeTextImpl(value, document),
@@ -556,6 +610,7 @@ const GLOBAL_NAMES = [
   "HTMLImageElement",
   "MutationObserver",
   "ResizeObserver",
+  "IntersectionObserver",
   "IS_REACT_ACT_ENVIRONMENT",
 ] as const;
 
@@ -648,10 +703,14 @@ class FakeTreeWalkerImpl {
 }
 
 /**
- * `window.location` slice: `hash` normalizes like the DOM's (assigning `"x"`
- * reads back `"#x"`, assigning `""` clears it).
+ * `window.location` slice: `origin`/`pathname`/`search` are plain settable
+ * fields (what `BrowserRouter` reads); `hash` normalizes like the DOM's
+ * (assigning `"x"` reads back `"#x"`, assigning `""` clears it).
  */
 class FakeLocationImpl {
+  origin = "http://localhost";
+  pathname = "/";
+  search = "";
   private fragment = "";
 
   get hash(): string { return this.fragment === "" ? "" : `#${this.fragment}`; }
@@ -714,6 +773,7 @@ export function installFakeDom(): void {
   createdMediaQueryLists.length = 0;
   systemPrefersDark = false;
   FakeResizeObserverImpl.instances.length = 0;
+  FakeIntersectionObserverImpl.instances.length = 0;
 
   for (const name of GLOBAL_NAMES) {
     previousGlobals[name] = (globalThis as Record<string, unknown>)[name];
@@ -756,17 +816,22 @@ export function installFakeDom(): void {
     cancelAnimationFrame: cancelFakeAnimationFrame,
     focus: () => undefined,
     location,
-    // `replaceState` only affects the fragment; that is all the app reads back.
+    // `replaceState` records the state (`BrowserRouter` stores its entry index
+    // there) and only applies a URL's fragment; that is all the app reads back.
     history: {
-      replaceState: (_state: unknown, _unused: string, url?: string) => {
+      state: null as unknown,
+      replaceState(state: unknown, _unused: string, url?: string) {
+        this.state = state;
         if (url?.includes("#") === true) location.hash = url.slice(url.indexOf("#"));
       },
     },
     scrollY: 0,
     innerWidth: 1280,
     innerHeight: 800,
+    IntersectionObserver: FakeIntersectionObserverImpl,
     ...domClasses,
   };
+  document.defaultView = window;
 
   const globals = {
     document,
@@ -782,6 +847,7 @@ export function installFakeDom(): void {
       disconnect = (): void => undefined;
     },
     ResizeObserver: FakeResizeObserverImpl,
+    IntersectionObserver: FakeIntersectionObserverImpl,
     IS_REACT_ACT_ENVIRONMENT: true,
   };
   for (const [name, value] of Object.entries(globals)) {
@@ -877,8 +943,23 @@ export function triggerFakeResizeObservers(): void {
   }
 }
 
-/** Invoke the fake window's `resize` listeners (test-side event dispatch). */
-export function triggerWindowResize(): void {
-  const event = { type: "resize" };
-  windowListeners.get("resize")?.forEach((listener) => { listener(event); });
+/**
+ * Report `intersections` to every connected fake IntersectionObserver, each
+ * receiving only the entries for targets it observes (a ratio above 0 counts
+ * as intersecting). Test-side event dispatch.
+ */
+export function triggerFakeIntersections(intersections: FakeIntersection[]): void {
+  for (const observer of FakeIntersectionObserverImpl.instances) {
+    if (observer.disconnected) continue;
+    const entries = intersections
+      .filter((entry) => observer.observedTargets.includes(entry.target))
+      .map((entry) => ({ ...entry, isIntersecting: entry.intersectionRatio > 0 }));
+    if (entries.length > 0) observer.callback(entries, observer);
+  }
+}
+
+/** Invoke the fake window's listeners for `type` (`resize`, `scroll`, ...; test-side event dispatch). */
+export function triggerWindowEvent(type: string): void {
+  const event = { type };
+  windowListeners.get(type)?.forEach((listener) => { listener(event); });
 }
