@@ -71,8 +71,9 @@ export function findAllBySlot(root: FakeElement, slot: string): FakeElement[] {
 /**
  * Fire a bubbling pointer-ish event (`pointerdown`, `click`, ...) at
  * `element`; React's delegated listeners pick it up from the root container.
+ * Returns the event so callers can observe `defaultPrevented`.
  */
-export function fireFakePointer(element: FakeElement, type: string): void {
+export function fireFakePointer(element: FakeElement, type: string): FakeDomEvent {
   const event: FakeDomEvent = {
     type,
     target: element,
@@ -84,10 +85,12 @@ export function fireFakePointer(element: FakeElement, type: string): void {
     pointerType: "mouse",
     isPrimary: true,
     detail: 1,
-    preventDefault: () => undefined,
+    defaultPrevented: false,
+    preventDefault: () => { event.defaultPrevented = true; },
     stopPropagation: () => undefined,
   };
   act(() => { element.dispatchEvent(event); });
+  return event;
 }
 
 /**
@@ -112,6 +115,22 @@ export function jsonResponse(body: unknown, status = 200): Response {
     status,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+/**
+ * Stub `fetch` to answer by request URL (path + query, e.g.
+ * `/api/content?type=article`). Each route is a factory because a Response
+ * body can only be read once; unrouted URLs reject so stray requests fail
+ * loudly. Returns the requested URLs in call order.
+ */
+export function routeFetch(routes: Record<string, () => Promise<Response>>): string[] {
+  const requested: string[] = [];
+  globalThis.fetch = ((input: string) => {
+    requested.push(input);
+    const route = routes[input];
+    return route === undefined ? Promise.reject(new Error(`Unrouted fetch: ${input}`)) : route();
+  }) as unknown as typeof globalThis.fetch;
+  return requested;
 }
 
 /** Enough microticks for a fetch -> json -> guard -> setState chain to land. */

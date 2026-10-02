@@ -40,6 +40,8 @@ export interface FakeDomEvent {
   pointerType?: string;
   detail?: number;
   isPrimary?: boolean;
+  /** Set by the harness' `preventDefault` so tests can observe a cancelled default action. */
+  defaultPrevented?: boolean;
   preventDefault?: () => void;
   stopPropagation?: () => void;
 }
@@ -111,6 +113,9 @@ export interface FakeElement extends FakeNode {
   /** Attribute-selector matcher (`[name]`, `[name="value"]`) over this subtree. */
   querySelectorAll(selector: string): FakeElement[];
   scrollTo(options: { left?: number; top?: number; behavior?: string }): void;
+  /** Recorded `scrollIntoView` calls (test-side observation). */
+  scrollIntoViewCalls: { behavior?: string; block?: string }[];
+  scrollIntoView(options?: { behavior?: string; block?: string }): void;
   matches(selector: string): boolean;
   closest(selector: string): null;
   textContent: string;
@@ -293,6 +298,7 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
   scrollWidth = 0;
   scrollHeight = 0;
   scrollCalls: { left?: number; top?: number; behavior?: string }[] = [];
+  scrollIntoViewCalls: { behavior?: string; block?: string }[] = [];
   rect = { width: 0, height: 0 };
   private attributes = new Map<string, string>();
   style: FakeElement["style"] = {
@@ -343,6 +349,10 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
   scrollTo(options: { left?: number; top?: number; behavior?: string }): void {
     this.scrollCalls.push({ ...options });
     if (typeof options.left === "number") this.scrollLeft = options.left;
+  }
+
+  scrollIntoView(options: { behavior?: string; block?: string } = {}): void {
+    this.scrollIntoViewCalls.push({ ...options });
   }
 
   matches(): boolean {
@@ -531,6 +541,8 @@ const GLOBAL_NAMES = [
   "getComputedStyle",
   "localStorage",
   "NodeFilter",
+  "requestAnimationFrame",
+  "cancelAnimationFrame",
   "HTMLElement",
   "Element",
   "Node",
@@ -556,6 +568,29 @@ function makeComputedStyle(): Record<string, string | ((name: string) => string)
     paddingLeft: "0px",
     getPropertyValue: () => "",
   };
+}
+
+/**
+ * Animation frames run as `setTimeout(0)` tasks. Ids map to their timers so
+ * `cancelAnimationFrame` really cancels (a cleanup that skips a pending frame
+ * stays observable). Bare globals too: Radix Collapsible calls them unqualified.
+ */
+const pendingAnimationFrames = new Map<number, Timer>();
+let nextAnimationFrameId = 1;
+
+function requestFakeAnimationFrame(callback: (time: number) => void): number {
+  const id = nextAnimationFrameId;
+  nextAnimationFrameId += 1;
+  pendingAnimationFrames.set(id, setTimeout(() => {
+    pendingAnimationFrames.delete(id);
+    callback(performance.now());
+  }, 0));
+  return id;
+}
+
+function cancelFakeAnimationFrame(id: number): void {
+  clearTimeout(pendingAnimationFrames.get(id));
+  pendingAnimationFrames.delete(id);
 }
 
 /** In-memory `localStorage` mirror so storage effects are observable. */
@@ -612,7 +647,24 @@ class FakeTreeWalkerImpl {
   }
 }
 
-/** `window.matchMedia` result whose `matches` tracks the shared system preference. */
+/**
+ * `window.location` slice: `hash` normalizes like the DOM's (assigning `"x"`
+ * reads back `"#x"`, assigning `""` clears it).
+ */
+class FakeLocationImpl {
+  private fragment = "";
+
+  get hash(): string { return this.fragment === "" ? "" : `#${this.fragment}`; }
+  set hash(value: string) { this.fragment = value.startsWith("#") ? value.slice(1) : value; }
+}
+
+const DARK_SCHEME_QUERY = "(prefers-color-scheme: dark)";
+
+/**
+ * `window.matchMedia` result. Only the dark colour-scheme query tracks the
+ * shared system preference; every other query (e.g. reduced motion) never
+ * matches, so one file's theme flips cannot leak into unrelated media checks.
+ */
 class FakeMediaQueryListImpl {
   readonly media: string;
   onchange: ((event: unknown) => void) | null = null;
@@ -623,7 +675,7 @@ class FakeMediaQueryListImpl {
     createdMediaQueryLists.push(this);
   }
 
-  get matches(): boolean { return systemPrefersDark; }
+  get matches(): boolean { return this.media === DARK_SCHEME_QUERY && systemPrefersDark; }
 
   addEventListener(type: string, listener: (event: unknown) => void): void {
     const set = this.listeners.get(type) ?? new Set();
@@ -645,11 +697,13 @@ class FakeMediaQueryListImpl {
   }
 }
 
-/** Flip the system dark preference and dispatch `change` to every MQL listener. */
+/** Flip the system dark preference and dispatch `change` to every dark-scheme MQL listener. */
 export function triggerFakeMediaPreferenceChange(prefersDark: boolean): void {
   systemPrefersDark = prefersDark;
   const event = { type: "change", matches: prefersDark };
-  for (const mql of createdMediaQueryLists) mql.dispatchEvent(event);
+  for (const mql of createdMediaQueryLists) {
+    if (mql.media === DARK_SCHEME_QUERY) mql.dispatchEvent(event);
+  }
 }
 
 export function installFakeDom(): void {
@@ -679,6 +733,7 @@ export function installFakeDom(): void {
     HTMLTextAreaElement: FakeElementImpl,
     HTMLImageElement: FakeElementImpl,
   };
+  const location = new FakeLocationImpl();
   const window = {
     document,
     addEventListener: (type: string, listener: (event: unknown) => void) => {
@@ -697,12 +752,17 @@ export function installFakeDom(): void {
     clearInterval: (id: number) => { clearInterval(id); },
     localStorage: fakeLocalStorage,
     matchMedia: (query: string) => new FakeMediaQueryListImpl(query),
-    requestAnimationFrame: (callback: () => void) => {
-      setTimeout(callback, 0);
-      return 1;
-    },
-    cancelAnimationFrame: (id: number) => { clearTimeout(id); },
+    requestAnimationFrame: requestFakeAnimationFrame,
+    cancelAnimationFrame: cancelFakeAnimationFrame,
     focus: () => undefined,
+    location,
+    // `replaceState` only affects the fragment; that is all the app reads back.
+    history: {
+      replaceState: (_state: unknown, _unused: string, url?: string) => {
+        if (url?.includes("#") === true) location.hash = url.slice(url.indexOf("#"));
+      },
+    },
+    scrollY: 0,
     innerWidth: 1280,
     innerHeight: 800,
     ...domClasses,
@@ -714,6 +774,8 @@ export function installFakeDom(): void {
     getComputedStyle: makeComputedStyle,
     NodeFilter: NODE_FILTER,
     localStorage: fakeLocalStorage,
+    requestAnimationFrame: requestFakeAnimationFrame,
+    cancelAnimationFrame: cancelFakeAnimationFrame,
     ...domClasses,
     MutationObserver: class {
       observe = (): void => undefined;
