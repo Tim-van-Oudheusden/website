@@ -1,0 +1,39 @@
+name: PR review rubric
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  rubric:
+    name: PR review rubric
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check title and issue link
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: scripts/pr-review-check.sh
+      - name: Reviewer rubric
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ## Reviewer rubric
+
+          Automated above: Conventional Commits title, linked issue. CI and
+          Coverage gate cover lint, typecheck, tests, build and coverage floors.
+
+          Check by hand:
+
+          - [ ] **TDD evidence** — the PR shows a test that failed before the change and passes after.
+          - [ ] **Behaviour, not implementation** — tests assert observable output, not class strings or private state.
+          - [ ] **No test tampering** — existing tests were not weakened to pass; no type suppressions added.
+          - [ ] **Scope** — one issue per PR; unrelated changes split out.
+          - [ ] **Dependencies** — none added without approval; any new one pinned to an exact version.
+          - [ ] **Content** — no `draft: true` left in `content/` meant for release.
+          EOF
