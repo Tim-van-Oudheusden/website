@@ -1,0 +1,9 @@
+# Front-end workspace bun configuration.
+#
+# The front-end test suite runs against `../test/front-end` with a hand-rolled
+# fake DOM instead of jsdom. Radix primitives capture `globalThis?.document` at
+# module load, and some test files (App.test.tsx, TopBar.test.tsx) statically
+# import app components, so the fake DOM must be installed before any test file
+# is evaluated — hence the preload.
+[test]
+preload = ["../test/front-end/src/test/fake-dom-preload.ts"]

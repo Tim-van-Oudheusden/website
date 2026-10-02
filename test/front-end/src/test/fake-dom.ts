@@ -27,6 +27,23 @@
  * restores whatever globals existed before install.
  */
 
+/** Test-side DOM-style event object accepted by `dispatchEvent`. */
+export interface FakeDomEvent {
+  type: string;
+  bubbles?: boolean;
+  cancelable?: boolean;
+  target?: FakeNode;
+  currentTarget?: FakeNode;
+  key?: string;
+  button?: number;
+  ctrlKey?: boolean;
+  pointerType?: string;
+  detail?: number;
+  isPrimary?: boolean;
+  preventDefault?: () => void;
+  stopPropagation?: () => void;
+}
+
 export interface FakeNode {
   nodeType: number;
   nodeName: string;
@@ -47,6 +64,8 @@ export interface FakeNode {
   removeEventListener(type: string, listener: (event: unknown) => void): void;
   /** Invoke the listeners registered for `type` (test-side event dispatch). */
   dispatch(type: string, event: unknown): void;
+  /** DOM-style dispatch: routes by `event.type` through registered listeners. */
+  dispatchEvent(event: FakeDomEvent): boolean;
 }
 
 export interface FakeElement extends FakeNode {
@@ -85,10 +104,29 @@ export interface FakeElement extends FakeNode {
   focus(): void;
   blur(): void;
   click(): void;
+  remove(): void;
+  insertAdjacentElement(position: "beforebegin" | "afterbegin" | "beforeend" | "afterend", element: FakeNode): FakeNode | null;
+  /** Element-node children (test-side surface for `aria-hidden` and friends). */
+  readonly children: FakeElement[];
+  /** Attribute-selector matcher (`[name]`, `[name="value"]`) over this subtree. */
+  querySelectorAll(selector: string): FakeElement[];
   scrollTo(options: { left?: number; top?: number; behavior?: string }): void;
   matches(selector: string): boolean;
   closest(selector: string): null;
   textContent: string;
+  /** Not focusable unless `tabIndex >= 0`; consulted by focus-scope walks. */
+  tabIndex: number;
+  hidden: boolean;
+  disabled?: boolean;
+  /** Element parent, or null for the tree root. */
+  get parentElement(): FakeElement | null;
+  /** Class-name registry (`toggle(name, force)` mirrors the DOM signature). */
+  get classList(): {
+    add(name: string): void;
+    remove(name: string): void;
+    toggle(name: string, force?: boolean): boolean;
+    contains(name: string): boolean;
+  };
 }
 
 export interface FakeDocument {
@@ -97,12 +135,25 @@ export interface FakeDocument {
   documentElement: FakeElement;
   head: FakeElement;
   body: FakeElement;
+  /** Currently focused element or null (focus-tracking tests observe this). */
+  activeElement: FakeElement | null;
   createElement(tagName: string): FakeElement;
   createElementNS(namespaceURI: string, tagName: string): FakeElement;
   createTextNode(value: string): FakeNode;
   createComment(value: string): FakeNode;
+  /** Attribute-selector matcher (`[name]`, `[name="value"]`) over the document tree. */
+  querySelectorAll(selector: string): FakeElement[];
+  /** First element in the document tree whose `id` attribute matches. */
+  getElementById(id: string): FakeElement | null;
+  /** Element-only tree walker honouring an optional `acceptNode` filter. */
+  createTreeWalker(
+    root: FakeNode,
+    whatToShow: number,
+    filter?: { acceptNode: (node: FakeNode) => number },
+  ): { currentNode: FakeNode; nextNode(): boolean };
   addEventListener(type: string, listener: (event: unknown) => void): void;
   removeEventListener(type: string, listener: (event: unknown) => void): void;
+  dispatchEvent(event: FakeDomEvent): boolean;
 }
 
 export interface FakeDomClasses {
@@ -120,6 +171,7 @@ export interface FakeDomClasses {
 }
 
 let installed = false;
+let permanent = false;
 let previousGlobals: Record<string, unknown> = {};
 const windowListeners = new Map<string, Set<(event: unknown) => void>>();
 
@@ -207,6 +259,18 @@ class FakeNodeImpl implements FakeNode {
   dispatch(type: string, event: unknown): void {
     for (const listener of this.listeners.get(type) ?? []) listener(event);
   }
+
+  dispatchEvent(event: FakeDomEvent): boolean {
+    this.dispatch(event.type, event);
+    if (event.bubbles === true) {
+      let node = this.parentNode;
+      while (node !== null) {
+        node.dispatch(event.type, event);
+        node = node.parentNode;
+      }
+    }
+    return true;
+  }
 }
 
 class FakeElementImpl extends FakeNodeImpl implements FakeElement {
@@ -215,8 +279,11 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
   override ownerDocument: FakeDocument;
   tagName = "";
   namespaceURI = "http://www.w3.org/1999/xhtml";
+  private readonly classNames = new Set<string>();
   clientWidth = 0;
   clientHeight = 0;
+  tabIndex = 0;
+  hidden = false;
   offsetWidth = 0;
   offsetHeight = 0;
   offsetLeft = 0;
@@ -287,12 +354,59 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
   }
 
   get textContent(): string {
-    return this.childNodes.map((child) => child.nodeValue ?? "").join("");
+    return this.childNodes.map((child) =>
+      child.nodeType === 1 ? (child as FakeElement).textContent : child.nodeValue ?? "",
+    ).join("");
   }
 
   set textContent(value: string) {
     for (const child of [...this.childNodes]) this.removeChild(child);
     if (value !== "") this.appendChild(new FakeTextImpl(value, this.ownerDocument));
+  }
+
+  remove(): void {
+    this.parentNode?.removeChild(this);
+  }
+
+  insertAdjacentElement(position: "beforebegin" | "afterbegin" | "beforeend" | "afterend", element: FakeNode): FakeNode | null {
+    if (position === "beforebegin" || position === "afterend") return null;
+    if (position === "afterbegin") {
+      this.insertBefore(element, this.firstChild);
+    } else {
+      this.appendChild(element);
+    }
+    return element;
+  }
+
+  get children(): FakeElement[] {
+    return this.childNodes.filter((child) => child.nodeType === 1) as FakeElement[];
+  }
+
+  get parentElement(): FakeElement | null {
+    return this.parentNode?.nodeType === 1 ? (this.parentNode as FakeElement) : null;
+  }
+
+  querySelectorAll(selector: string): FakeElement[] {
+    const constraints = attributeConstraints(selector);
+    if (constraints.length === 0) return [];
+    return queryFakeElements(this, (element) =>
+      element !== this && matchesAttributeConstraints(element, constraints),
+    );
+  }
+
+  get classList(): FakeElement["classList"] {
+    const names = this.classNames;
+    return {
+      add: (name: string) => { names.add(name); },
+      remove: (name: string) => { names.delete(name); },
+      toggle: (name: string, force?: boolean) => {
+        const enable = force ?? !names.has(name);
+        if (enable) names.add(name);
+        else names.delete(name);
+        return enable;
+      },
+      contains: (name: string) => names.has(name),
+    };
   }
 }
 
@@ -362,18 +476,46 @@ class FakeResizeObserverImpl {
 }
 
 function makeDocument(): FakeDocument {
+  const documentListeners = new Map<string, Set<(event: unknown) => void>>();
   const document: FakeDocument = {
     nodeType: 9,
     nodeName: "#document",
     documentElement: null as unknown as FakeElement,
     head: null as unknown as FakeElement,
     body: null as unknown as FakeElement,
+    activeElement: null,
     createElement: (tagName) => new FakeElementImpl(tagName, document),
     createElementNS: (namespaceURI, tagName) => new FakeElementImpl(tagName, document, namespaceURI),
     createTextNode: (value) => new FakeTextImpl(value, document),
     createComment: (value) => new FakeCommentImpl(value, document),
-    addEventListener: () => undefined,
-    removeEventListener: () => undefined,
+    querySelectorAll: (selector) => {
+      const constraints = attributeConstraints(selector);
+      if (constraints.length === 0) return [];
+      return queryFakeElements(document.documentElement, (element) =>
+        matchesAttributeConstraints(element, constraints),
+      );
+    },
+    getElementById: (id) => {
+      const [found] = queryFakeElements(
+        document.documentElement,
+        (element) => element.getAttribute("id") === id,
+      );
+      return found ?? null;
+    },
+    createTreeWalker: (root, whatToShow, filter) =>
+      new FakeTreeWalkerImpl(root, whatToShow, filter),
+    addEventListener: (type: string, listener: (event: unknown) => void) => {
+      const set = documentListeners.get(type) ?? new Set();
+      set.add(listener);
+      documentListeners.set(type, set);
+    },
+    removeEventListener: (type: string, listener: (event: unknown) => void) => {
+      documentListeners.get(type)?.delete(listener);
+    },
+    dispatchEvent: (event: { type: string }) => {
+      for (const listener of documentListeners.get(event.type) ?? []) listener(event);
+      return true;
+    },
   };
   document.documentElement = new FakeElementImpl("html", document);
   document.head = new FakeElementImpl("head", document);
@@ -386,6 +528,9 @@ function makeDocument(): FakeDocument {
 const GLOBAL_NAMES = [
   "document",
   "window",
+  "getComputedStyle",
+  "localStorage",
+  "NodeFilter",
   "HTMLElement",
   "Element",
   "Node",
@@ -402,10 +547,118 @@ const GLOBAL_NAMES = [
   "IS_REACT_ACT_ENVIRONMENT",
 ] as const;
 
+// Bare `getComputedStyle` used by Radix Presence; reads animation styles.
+function makeComputedStyle(): Record<string, string | ((name: string) => string)> {
+  return {
+    animationName: "none",
+    display: "block",
+    position: "static",
+    paddingLeft: "0px",
+    getPropertyValue: () => "",
+  };
+}
+
+/** In-memory `localStorage` mirror so storage effects are observable. */
+const fakeStorage = new Map<string, string>();
+const fakeLocalStorage = {
+  getItem: (key: string) => fakeStorage.get(key) ?? null,
+  setItem: (key: string, value: string) => { fakeStorage.set(key, value); },
+  removeItem: (key: string) => { fakeStorage.delete(key); },
+  clear: () => { fakeStorage.clear(); },
+};
+
+let systemPrefersDark = false;
+const createdMediaQueryLists: FakeMediaQueryListImpl[] = [];
+
+const NODE_FILTER = {
+  SHOW_ELEMENT: 1,
+  FILTER_ACCEPT: 1,
+  FILTER_REJECT: 2,
+  FILTER_SKIP: 3,
+} as const;
+
+/** Minimal element walker: filters with `acceptNode`, iterates depth-first. */
+class FakeTreeWalkerImpl {
+  readonly root: FakeNode;
+  readonly whatToShow: number;
+  readonly filter?: { acceptNode: (node: FakeNode) => number } | undefined;
+  currentNode: FakeNode;
+  private readonly elements: FakeElement[];
+  private index = -1;
+
+  constructor(
+    root: FakeNode,
+    whatToShow: number,
+    filter?: { acceptNode: (node: FakeNode) => number },
+  ) {
+    this.root = root;
+    this.whatToShow = whatToShow;
+    this.filter = filter;
+    this.currentNode = root;
+    this.elements = queryFakeElements(root, () => true);
+  }
+
+  nextNode(): boolean {
+    while (this.index + 1 < this.elements.length) {
+      this.index += 1;
+      const node = this.elements[this.index];
+      if (!node) continue;
+      const verdict = this.filter?.acceptNode(node) ?? NODE_FILTER.FILTER_ACCEPT;
+      if (verdict !== NODE_FILTER.FILTER_ACCEPT) continue;
+      this.currentNode = node;
+      return true;
+    }
+    return false;
+  }
+}
+
+/** `window.matchMedia` result whose `matches` tracks the shared system preference. */
+class FakeMediaQueryListImpl {
+  readonly media: string;
+  onchange: ((event: unknown) => void) | null = null;
+  private readonly listeners = new Map<string, Set<(event: unknown) => void>>();
+
+  constructor(media: string) {
+    this.media = media;
+    createdMediaQueryLists.push(this);
+  }
+
+  get matches(): boolean { return systemPrefersDark; }
+
+  addEventListener(type: string, listener: (event: unknown) => void): void {
+    const set = this.listeners.get(type) ?? new Set();
+    set.add(listener);
+    this.listeners.set(type, set);
+  }
+
+  removeEventListener(type: string, listener: (event: unknown) => void): void {
+    this.listeners.get(type)?.delete(listener);
+  }
+
+  addListener(listener: (event: unknown) => void): void { this.addEventListener("change", listener); }
+  removeListener(listener: (event: unknown) => void): void { this.removeEventListener("change", listener); }
+
+  dispatchEvent(event: { type: string }): boolean {
+    for (const listener of this.listeners.get(event.type) ?? []) listener(event);
+    if (event.type === "change" && this.onchange !== null) this.onchange(event);
+    return true;
+  }
+}
+
+/** Flip the system dark preference and dispatch `change` to every MQL listener. */
+export function triggerFakeMediaPreferenceChange(prefersDark: boolean): void {
+  systemPrefersDark = prefersDark;
+  const event = { type: "change", matches: prefersDark };
+  for (const mql of createdMediaQueryLists) mql.dispatchEvent(event);
+}
+
 export function installFakeDom(): void {
   if (installed) return;
   installed = true;
   windowListeners.clear();
+  fakeStorage.clear();
+  createdMediaQueryLists.length = 0;
+  systemPrefersDark = false;
   FakeResizeObserverImpl.instances.length = 0;
 
   for (const name of GLOBAL_NAMES) {
@@ -436,10 +689,14 @@ export function installFakeDom(): void {
     removeEventListener: (type: string, listener: (event: unknown) => void) => {
       windowListeners.get(type)?.delete(listener);
     },
-    getComputedStyle: () => ({
-      paddingLeft: "0px",
-      getPropertyValue: () => "",
-    }),
+    getComputedStyle: makeComputedStyle,
+    // Radix primitives schedule timers via `window.setTimeout`/`clearTimeout`.
+    setTimeout: (callback: () => void, ms?: number) => setTimeout(callback, ms),
+    clearTimeout: (id: number) => { clearTimeout(id); },
+    setInterval: (callback: () => void, ms?: number) => setInterval(callback, ms),
+    clearInterval: (id: number) => { clearInterval(id); },
+    localStorage: fakeLocalStorage,
+    matchMedia: (query: string) => new FakeMediaQueryListImpl(query),
     requestAnimationFrame: (callback: () => void) => {
       setTimeout(callback, 0);
       return 1;
@@ -454,6 +711,9 @@ export function installFakeDom(): void {
   const globals = {
     document,
     window,
+    getComputedStyle: makeComputedStyle,
+    NodeFilter: NODE_FILTER,
+    localStorage: fakeLocalStorage,
     ...domClasses,
     MutationObserver: class {
       observe = (): void => undefined;
@@ -477,8 +737,22 @@ function defineGlobal(name: string, value: unknown): void {
   });
 }
 
+/**
+ * Install the fake DOM once for the whole test process (preload entry point).
+ *
+ * Radix primitives capture `globalThis?.document` at module load; any test
+ * file that statically imports app components (App.test.tsx, TopBar.test.tsx)
+ * therefore loads those modules before its own `beforeAll` can install the
+ * fake DOM. Preloading keeps the install active for the run — per-file
+ * install/uninstall calls become no-ops.
+ */
+export function installPermanentFakeDom(): void {
+  permanent = true;
+  installFakeDom();
+}
+
 export function uninstallFakeDom(): void {
-  if (!installed) return;
+  if (!installed || permanent) return;
   installed = false;
   for (const name of GLOBAL_NAMES) {
     const previous = previousGlobals[name];
@@ -505,6 +779,29 @@ export function queryFakeElements(
   };
   visit(root);
   return found;
+}
+
+interface AttributeConstraint {
+  name: string;
+  value: string | null;
+}
+
+/** Parse `[name]` / `[name="value"]` attribute constraints out of a selector. */
+function attributeConstraints(selector: string): AttributeConstraint[] {
+  return [...selector.matchAll(/\[([^\]~^$|*="']+)(?:="([^"]*)")?\]/g)]
+    .map((match) => ({ name: match[1] ?? "", value: match[2] ?? null }));
+}
+
+function matchesAttributeConstraints(
+  element: FakeElement,
+  constraints: AttributeConstraint[],
+): boolean {
+  return constraints.every((constraint) => {
+    const actual = element.getAttribute(constraint.name);
+    return constraint.value === null
+      ? actual !== null
+      : actual === constraint.value;
+  });
 }
 
 /** Invoke the callbacks of all connected fake ResizeObservers (test-side event dispatch). */

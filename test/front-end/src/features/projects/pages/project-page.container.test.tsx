@@ -1,101 +1,46 @@
-import { afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
-import { createElement, type ComponentType } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
+import { act, createElement } from "react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import type { ArticleData } from "shared/articles";
-import type { ProjectData } from "../../../../../../front-end/src/features/projects/pages/project-page";
+import type * as ProjectPageModule from "../../../../../../front-end/src/features/projects/pages/project-page";
 
-interface ScriptedProjectState {
-  project: ProjectData | null;
-  loading: boolean;
-  notFound: boolean;
-  error: string | null;
-}
+import { uninstallFakeDom } from "../../../../src/test/fake-dom";
+import {
+  initFakeDomHarness,
+  jsonResponse,
+  mountIntoBody,
+  settleMicrotasks,
+  unmountFakeDomRoot,
+  type FakeMount,
+} from "../../../../src/test/dom-harness";
 
-/**
- * Hook call order inside ProjectPage: project, loading, notFound, error.
- * Keeping the harness positional means this list MUST mirror the component's
- * useState order — the same coupling ErrorBoundary's container test accepts
- * when it drives instance state directly.
- */
-const HOOK_SLOTS: (keyof ScriptedProjectState)[] = ["project", "loading", "notFound", "error"];
-
-const scripted: ScriptedProjectState = { project: null, loading: true, notFound: false, error: null };
-let capturedEffect: (() => (() => void)) | null = null;
-let nextSlot = 0;
-
-let ProjectPage: ComponentType;
+// Module-loading boundary: react-dom captures `canUseDOM` at module load, so it
+// must be imported after the fake DOM is installed by the harness. ProjectPage
+// uses its real hooks and is driven through the fetch stub, like
+// content-loader.test.ts.
+let ProjectPage: typeof ProjectPageModule.ProjectPage;
 
 const ORIGINAL_FETCH = globalThis.fetch;
 
 beforeAll(async () => {
-  // Module-loading boundary: the react hooks mock must be in place before
-  // project-page is evaluated, so it cannot be a static import (a static
-  // import would capture the unmocked hooks; the content loader stays real
-  // and is driven through the fetch stub, like content-loader.test.ts).
-  const realReact = await import("react");
-  void mock.module("react", () => ({
-    ...realReact,
-    useState(initial: unknown): [unknown, (value: unknown) => void] {
-      void initial;
-      const slot = HOOK_SLOTS[nextSlot];
-      nextSlot += 1;
-      if (slot === undefined) {
-        throw new Error("ProjectPage called useState more times than scripted slots");
-      }
-      const state: { [K in keyof ScriptedProjectState]: unknown } = scripted;
-      return [state[slot], (value) => { state[slot] = value; }];
-    },
-    useEffect(effect: () => (() => void)): void {
-      capturedEffect = effect;
-    },
-  }));
-  ({ ProjectPage } = await import("../../../../../../front-end/src/features/projects/pages/project-page"));
+  await initFakeDomHarness();
+  const mod = await import("../../../../../../front-end/src/features/projects/pages/project-page");
+  ProjectPage = mod.ProjectPage;
 });
 
 afterEach(() => {
   globalThis.fetch = ORIGINAL_FETCH;
 });
 
-function renderProjectPage(): string {
-  nextSlot = 0;
-  return renderToStaticMarkup(
-    createElement(
-      MemoryRouter,
-      { initialEntries: ["/projects/sweet-app"] },
-      createElement(
-        Routes,
-        null,
-        createElement(Route, { path: "/projects/:slug", element: createElement(ProjectPage) }),
-      ),
-    ),
-  );
-}
-
-/** Invoke the effect the component mounted on its last render. */
-function runEffect(): (() => void) | null {
-  return capturedEffect?.() ?? null;
-}
-
-/** Enough microticks for the fetch -> json -> guard -> setters chain to land. */
-async function settleEffects(): Promise<void> {
-  for (let index = 0; index < 25; index += 1) {
-    await Promise.resolve();
-  }
-}
-
-function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
+afterAll(() => {
+  uninstallFakeDom();
+});
 
 function stubFetch(response: Response): void {
-  globalThis.fetch = (() => Promise.resolve(response)) as unknown as typeof fetch;
+  globalThis.fetch = mock(() => Promise.resolve(response)) as unknown as typeof globalThis.fetch;
 }
 
-function projectItem(): ProjectData {
+function projectItem(): ProjectPageModule.ProjectData {
   return {
     title: "Sweet App",
     description: "A sweet app",
@@ -114,85 +59,6 @@ function projectItem(): ProjectData {
   };
 }
 
-function resetState(): void {
-  Object.assign(scripted, { project: null, loading: true, notFound: false, error: null });
-}
-
-describe("ProjectPage", () => {
-  test("renders the loading state before the loader resolves", () => {
-    resetState();
-    const html = renderProjectPage();
-
-    expect(html).toContain("Loading project...");
-    expect(html).not.toContain("Project not found");
-  });
-
-  test("renders the not-found state when the slug resolves to an article document", async () => {
-    const article = articleItem();
-    stubFetch(jsonResponse(article));
-    resetState();
-    renderProjectPage();
-
-    runEffect();
-    await settleEffects();
-
-    const html = renderProjectPage();
-    expect(html).toContain("Project not found");
-    expect(html).toContain("Back to projects");
-  });
-
-  test("renders the error state when the loader transport throws", async () => {
-    globalThis.fetch = (() => Promise.reject(new Error("network exploded"))) as unknown as typeof fetch;
-    resetState();
-    renderProjectPage();
-
-    runEffect();
-    await settleEffects();
-
-    expect(renderProjectPage()).toContain("Failed to load project");
-  });
-
-  test("surfaces the message of a non-404 ApiError", async () => {
-    stubFetch(jsonResponse({}, 500));
-    resetState();
-    renderProjectPage();
-
-    runEffect();
-    await settleEffects();
-
-    expect(renderProjectPage()).toContain("Request failed");
-  });
-
-  test("renders the project page once the loader resolves", async () => {
-    stubFetch(jsonResponse(projectItem()));
-    resetState();
-    renderProjectPage();
-
-    runEffect();
-    await settleEffects();
-
-    const html = renderProjectPage();
-    expect(html).toContain("Sweet App");
-    expect(html).toContain("Back to projects");
-    expect(html).toContain("Shipped");
-  });
-
-  test("keeps the loading state after a load cancelled by unmount", async () => {
-    let resolveFetch: ((response: Response) => void) | undefined;
-    globalThis.fetch = (() => new Promise<Response>((resolve) => { resolveFetch = resolve; })) as unknown as typeof fetch;
-    resetState();
-    renderProjectPage();
-
-    const cleanup = runEffect();
-    // The route unmounts (e.g. navigation away) before the loader resolves.
-    cleanup?.();
-    resolveFetch?.(jsonResponse(projectItem()));
-    await settleEffects();
-
-    expect(renderProjectPage()).toContain("Loading project...");
-  });
-});
-
 function articleItem(): ArticleData {
   return {
     title: "Sweet App",
@@ -206,3 +72,115 @@ function articleItem(): ArticleData {
     body: "# Sweet App",
   };
 }
+
+function mountProjectPage(): FakeMount {
+  return mountIntoBody(
+    createElement(
+      MemoryRouter,
+      { initialEntries: ["/projects/sweet-app"] },
+      createElement(
+        Routes,
+        null,
+        createElement(Route, { path: "/projects/:slug", element: createElement(ProjectPage) }),
+      ),
+    ),
+  );
+}
+
+function pageText(page: FakeMount): string {
+  return page.container.textContent;
+}
+
+describe("ProjectPage", () => {
+  test("renders the loading state before the loader resolves", () => {
+    const page = mountProjectPage();
+
+    try {
+      expect(pageText(page)).toContain("Loading project...");
+      expect(pageText(page)).not.toContain("Project not found");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("renders the not-found state when the slug resolves to an article document", async () => {
+    stubFetch(jsonResponse(articleItem()));
+    const page = mountProjectPage();
+
+    try {
+      await act(async () => { await settleMicrotasks(); });
+
+      expect(pageText(page)).toContain("Project not found");
+      expect(pageText(page)).toContain("Back to projects");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("renders the error state when the loader transport throws", async () => {
+    globalThis.fetch = mock(() =>
+      Promise.reject(new Error("network exploded")),
+    ) as unknown as typeof globalThis.fetch;
+    const page = mountProjectPage();
+
+    try {
+      await act(async () => { await settleMicrotasks(); });
+
+      expect(pageText(page)).toContain("Failed to load project");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("surfaces the message of a non-404 ApiError", async () => {
+    stubFetch(jsonResponse({}, 500));
+    const page = mountProjectPage();
+
+    try {
+      await act(async () => { await settleMicrotasks(); });
+
+      expect(pageText(page)).toContain("Request failed");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("renders the project page once the loader resolves", async () => {
+    stubFetch(jsonResponse(projectItem()));
+    const page = mountProjectPage();
+
+    try {
+      await act(async () => { await settleMicrotasks(); });
+
+      const text = pageText(page);
+      expect(text).toContain("Sweet App");
+      expect(text).toContain("Back to projects");
+      expect(text).toContain("Shipped");
+      expect(text).not.toContain("Loading project...");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("a late resolution after unmounting cannot corrupt a fresh mount", async () => {
+    // Mounting with a fetch that never resolves and unmounting mid-flight is
+    // the navigation-away path; the component's cancellation guard keeps the
+    // settled response from touching any state afterwards.
+    const { promise: fetchResult, resolve: resolveFetch } = Promise.withResolvers<Response>();
+    globalThis.fetch = mock(() => fetchResult) as unknown as typeof globalThis.fetch;
+
+    const cancelledPage = mountProjectPage();
+    unmountFakeDomRoot(cancelledPage);
+    resolveFetch(jsonResponse(projectItem()));
+    await settleMicrotasks();
+
+    // A fresh mount starts from loading; no stale project state leaks in.
+    stubFetch(jsonResponse(projectItem()));
+    const page = mountProjectPage();
+    try {
+      expect(pageText(page)).toContain("Loading project...");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+});
