@@ -19,7 +19,8 @@ Related decisions: see the epic #270 (pure Podman + Cloudflare Tunnel).
 | Updates | `website-update.timer` every 5 min: pull `:latest`, replay the pod only when an image changed |
 | Secrets | tunnel token: `~/.config/cloudflared/cloudflared.env` (`0600`); GHCR pull token: `~/.config/containers/auth.json` (`0600`) |
 
-Prerequisites: Podman 5.x, user lingering (`loginctl enable-linger`). All
+Prerequisites: Podman 5.x with a `pasta` build that supports
+`--host-lo-to-ns-lo` (check `pasta --help | grep host-lo-to-ns-lo`), user lingering (`loginctl enable-linger`). All
 commands run as the service user (not root). The `cloudflared` binary is
 optional — §2 shows how to run it from the image on immutable hosts.
 
@@ -83,6 +84,20 @@ The instance name `website` is the pod's name in `deploy/kube/prod.yaml`; the
 template always plays that manifest. `RemainAfterExit=yes` keeps the one-shot
 "active" so `website-update.service` can `restart` it to activate a new image,
 and `WantedBy=default.target` makes `enable` rebuild the pod on session start.
+
+The template plays the pod with `--network pasta:--host-lo-to-ns-lo`. With
+that option, connections to the loopback-published ports arrive on the pod's
+own loopback. The back-end therefore sees cloudflared as `127.0.0.1`, which is
+the only peer it trusts for `CF-Connecting-IP`. On podman's default bridge
+network it would see a pod-network address (`10.89.x.x`) instead, and every
+visitor would share one rate-limit bucket. To check that per-client keying
+works on the host:
+
+```bash
+for i in $(seq 1 55); do
+  curl -s -o /dev/null -w '%{http_code}\n' -H "CF-Connecting-IP: 192.0.2.$i" http://127.0.0.1:8301/api/hello
+done | sort | uniq -c   # all 200; the same IP 55 times yields 429s after 50
+```
 
 ---
 

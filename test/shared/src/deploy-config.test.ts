@@ -154,6 +154,18 @@ describe("podman-kube@ prod pod template", () => {
     expect(template).toContain("${WEBSITE_REPO}/deploy/kube/prod.yaml");
   });
 
+  test("plays on pasta with host loopback spliced in, so the back-end sees cloudflared as loopback", () => {
+    // The rate limiter trusts CF-Connecting-IP only from a loopback peer. The
+    // default bridge network shows the back-end a pod-network peer (10.89.x.x)
+    // instead, so every visitor would share one bucket (#479).
+    const execStart = /^ExecStart=(.+)$/m.exec(readDeploy("deploy/systemd/podman-kube@.service"))?.[1] ?? "";
+    const network = /--network[= ](\S+)/.exec(execStart)?.[1] ?? "";
+    const [mode, options = ""] = network.split(/:(.*)/s);
+
+    expect(mode).toBe("pasta");
+    expect(options.split(",")).toContain("--host-lo-to-ns-lo");
+  });
+
   test("update-timer restart target instance matches the prod pod name", () => {
     const script = readDeploy("deploy/systemd/website-update.sh");
     const prod = readDeploy("deploy/kube/prod.yaml");

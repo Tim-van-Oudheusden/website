@@ -31,7 +31,12 @@ After=podman-user-wait-network-online.service
 Type=oneshot
 RemainAfterExit=yes
 Environment=WEBSITE_REPO=%h/Git/website
-ExecStart=/usr/bin/podman kube play --replace ${WEBSITE_REPO}/deploy/kube/prod.yaml
+# pasta with --host-lo-to-ns-lo: connections to the loopback-published ports
+# arrive on the pod's loopback, so the back-end sees cloudflared as 127.0.0.1
+# and trusts its CF-Connecting-IP. The default bridge network presents a
+# pod-network peer instead, collapsing every visitor into one rate-limit
+# bucket (#479). Requires a pasta build that supports --host-lo-to-ns-lo.
+ExecStart=/usr/bin/podman kube play --replace --network pasta:--host-lo-to-ns-lo ${WEBSITE_REPO}/deploy/kube/prod.yaml
 ExecStop=/usr/bin/podman kube down ${WEBSITE_REPO}/deploy/kube/prod.yaml
 
 [Install]
