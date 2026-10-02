@@ -51,3 +51,6 @@ test-results/
 
 # Worktrees
 worktrees/*
+
+# Claude Code personal settings (project settings in .claude/settings.json are tracked)
+.claude/settings.local.json
