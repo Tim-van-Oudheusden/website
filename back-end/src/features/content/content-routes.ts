@@ -36,7 +36,8 @@ export function registerContentRoutes(app: FastifyInstance, contentDir: string):
  * Register the static content image route at the root.
  *
  * Image embeds use /content-assets/images/* — an asset path, not an API call,
- * so it stays at the root (cloudflared routes it to the back-end on 3001).
+ * so it stays at the root (cloudflared routes it to the back-end's published
+ * host port; see deploy/cloudflared/config.yml).
  */
 export function registerContentImageRoutes(app: FastifyInstance, contentDir: string): void {
   const imageRoot = resolve(contentDir, "images");
