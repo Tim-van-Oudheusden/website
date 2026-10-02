@@ -60,11 +60,13 @@ Run these before opening a PR:
 | `bun run lint`        | ESLint (`eslint .`)                       |
 | `bun run build`       | Production builds for both apps           |
 
-End-to-end tests run against the Podman pod:
+End-to-end tests run against the Podman pod. `scripts/e2e.sh` mirrors the CI E2E job (build dev images, `podman kube play`, wait for services, `bun run test:e2e`, tear down):
 
 ```bash
-scripts/dev.sh && bun run test:e2e
+scripts/e2e.sh
 ```
+
+See [`docs/testing.md`](docs/testing.md) for prerequisites and why the agent sandbox runs only the non-container gates.
 
 CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, and build on every PR, plus an E2E job on the dev pod, and a release job on `main`.
 
