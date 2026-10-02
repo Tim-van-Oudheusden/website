@@ -246,14 +246,14 @@ describe("dropdown-menu interaction", () => {
 
       expect(findBySlot(content, "dropdown-menu-label").textContent).toContain("Section");
       expect(findBySlot(content, "dropdown-menu-label").getAttribute("data-inset")).toBe("true");
-      expect(findBySlot(content, "dropdown-menu-separator")).toBeDefined();
+      expect(findBySlot(content, "dropdown-menu-separator").getAttribute("role")).toBe("separator");
       expect(findBySlot(content, "dropdown-menu-shortcut").textContent).toContain("⌘K");
       expect(findBySlot(content, "dropdown-menu-group").textContent).toContain("Grouped item");
       expect(findBySlot(content, "dropdown-menu-sub-trigger").getAttribute("data-inset")).toBe("true");
       // The sub wrapper's explicit portal slots its props onto the sub content
-    // (asChild), so no separate portal element is rendered — assert the content.
-    const subContent = findBySlot(doc.body, "dropdown-menu-sub-content");
-    expect(subContent.textContent).toContain("Sub content");
+      // (asChild), so no separate portal element is rendered — assert the content.
+      const subContent = findBySlot(doc.body, "dropdown-menu-sub-content");
+      expect(subContent.textContent).toContain("Sub content");
     } finally {
       unmountFakeDomRoot(menu.mount);
     }

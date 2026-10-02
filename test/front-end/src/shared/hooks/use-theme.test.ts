@@ -45,11 +45,9 @@ interface ProbeHandle {
 interface MountedProvider {
   mount: FakeMount;
   probe: ProbeHandle;
-  doc: FakeDocument;
 }
 
 function mountThemeProvider(storedTheme: string | null): MountedProvider {
-  const doc = document as unknown as FakeDocument;
   if (storedTheme === null) window.localStorage.removeItem("theme");
   else window.localStorage.setItem("theme", storedTheme);
 
@@ -69,7 +67,6 @@ function mountThemeProvider(storedTheme: string | null): MountedProvider {
 
   return {
     mount,
-    doc,
     probe: {
       theme: () => currentTheme,
       setTheme: (theme: "light" | "dark" | "system") => { setThemeFn(theme); },

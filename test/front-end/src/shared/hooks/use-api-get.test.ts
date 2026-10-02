@@ -164,4 +164,21 @@ describe("useApiGet hook lifecycle", () => {
       probe.cleanup();
     }
   });
+
+  test("falls back to a generic message when the transport rejects with a non-Error", async () => {
+    // Error-shaped but not an Error instance (e.g. a cross-realm or plain-object
+    // rejection): its message must not leak, the generic fallback is shown.
+    const errorLike = { name: "Error", message: "offline" } as Error;
+    globalThis.fetch = mock(() => Promise.reject(errorLike)) as unknown as typeof globalThis.fetch;
+    const probe = mountProbe();
+
+    try {
+      await act(async () => { await probe.latest()?.refetch(); });
+
+      expect(probe.latest()?.status).toBe("error");
+      expect(probe.latest()?.error).toBe("Failed to reach back-end");
+    } finally {
+      probe.cleanup();
+    }
+  });
 });

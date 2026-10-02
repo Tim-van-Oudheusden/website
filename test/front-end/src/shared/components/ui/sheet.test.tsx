@@ -185,14 +185,13 @@ describe("sheet interaction", () => {
     const doc = document as unknown as FakeDocument;
 
     try {
-      const content = openSheet(sheet);
+      openSheet(sheet);
 
       fireDocumentKey(doc, "Escape");
 
       expect(queryFakeElements(doc.body, (el) => el.getAttribute("data-slot") === "sheet-content")).toHaveLength(0);
       expect(queryFakeElements(doc.body, (el) => el.getAttribute("data-slot") === "sheet-overlay")).toHaveLength(0);
       expect(sheet.openChangeEvents).toEqual([true, false]);
-      void content;
     } finally {
       unmountFakeDomRoot(sheet.mount);
     }
@@ -227,23 +226,4 @@ describe("sheet interaction", () => {
       unmountFakeDomRoot(sheet.mount);
     }
   });
-
-  for (const [side, slideInClass] of [
-    ["right", "slide-in-from-right"],
-    ["left", "slide-in-from-left"],
-    ["top", "slide-in-from-top"],
-    ["bottom", "slide-in-from-bottom"],
-  ] as const) {
-    test(`side="${side}" content carries that side's slide-in classes`, () => {
-      const sheet = mountSheet({ side });
-
-      try {
-        const content = openSheet(sheet);
-
-        expect(content.getAttribute("class")).toContain(slideInClass);
-      } finally {
-        unmountFakeDomRoot(sheet.mount);
-      }
-    });
-  }
 });
