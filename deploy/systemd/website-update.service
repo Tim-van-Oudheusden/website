@@ -4,7 +4,11 @@
 # new :latest take effect with no SSH/push (the server pulls outbound-only) and
 # without tearing the pod down on the common no-new-image cycle.
 #
-# The image refs below must match deploy/kube/prod.yaml exactly.
+# The image refs in website-update.sh must match deploy/kube/prod.yaml exactly.
+#
+# WEBSITE_REPO must match podman-kube@.service's: the helper and the manifest
+# come from the same checkout. Override both with drop-ins if it lives
+# elsewhere (see docs/deploy.md §1).
 #
 # Rollback:
 #   podman pull ghcr.io/tim-van-oudheusden/website/front-end:<git-sha>
@@ -17,4 +21,5 @@ Description=Pull latest website images and replay the prod pod when they change
 
 [Service]
 Type=oneshot
-ExecStart=%h/website/deploy/systemd/website-update.sh
+Environment=WEBSITE_REPO=%h/Git/website
+ExecStart=/usr/bin/bash ${WEBSITE_REPO}/deploy/systemd/website-update.sh

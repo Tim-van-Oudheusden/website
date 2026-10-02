@@ -7,17 +7,51 @@ function readDeploy(relativePath: string): string {
   return readFileSync(fullPath, "utf8");
 }
 
+interface IngressRule {
+  path?: string;
+  service: string;
+}
+
+interface PodPort {
+  hostPort: number;
+  hostIP?: string;
+}
+
+function prodHostOrigin(containerName: string): string {
+  const pod = Bun.YAML.parse(readDeploy("deploy/kube/prod.yaml")) as {
+    spec: { containers: { name: string; ports: PodPort[] }[] };
+  };
+  const container = pod.spec.containers.find((c) => c.name === containerName);
+  const [port] = container?.ports ?? [];
+  return `http://${port?.hostIP}:${port?.hostPort}`;
+}
+
+function ingressRules(): IngressRule[] {
+  const config = Bun.YAML.parse(readDeploy("deploy/cloudflared/config.yml")) as {
+    ingress: IngressRule[];
+  };
+  return config.ingress;
+}
+
 describe("cloudflared ingress config", () => {
-  test("routes /api/* and /content-assets/* to the back-end", () => {
-    const text = readDeploy("deploy/cloudflared/config.yml");
-    expect(text).toContain('path: "^/api(/.*)?$"');
-    expect(text).toContain('path: "^/content-assets(/.*)?$"');
-    expect(text).toContain("service: http://localhost:3001");
+  test("routes /api/* and /content-assets/* to the prod back-end's published port", () => {
+    const backEnd = prodHostOrigin("back-end");
+    const rules = ingressRules();
+    for (const path of ["^/api(/.*)?$", "^/content-assets(/.*)?$"]) {
+      expect(rules.find((r) => r.path === path)?.service).toBe(backEnd);
+    }
   });
 
-  test("routes everything else to the front-end via a catch-all", () => {
-    const text = readDeploy("deploy/cloudflared/config.yml");
-    expect(text).toContain("- service: http://localhost:3000");
+  test("routes everything else to the prod front-end's published port via a catch-all", () => {
+    const rules = ingressRules();
+    const catchAll = rules.at(-1);
+    expect(catchAll?.path).toBeUndefined();
+    expect(catchAll?.service).toBe(prodHostOrigin("front-end"));
+  });
+
+  test("prod pod publishes only on loopback so the tunnel is the sole way in", () => {
+    expect(prodHostOrigin("front-end")).toStartWith("http://127.0.0.1:");
+    expect(prodHostOrigin("back-end")).toStartWith("http://127.0.0.1:");
   });
 
   test("contains no secret material (token/credentials)", () => {
@@ -37,14 +71,20 @@ describe("cloudflared quadlet", () => {
 
   test("injects the token from a host env file, never inline", () => {
     const text = readDeploy("deploy/cloudflared/cloudflared.container");
-    expect(text).toContain("EnvironmentFile=%h/.cloudflared/cloudflared.env");
+    expect(text).toContain("EnvironmentFile=%E/cloudflared/cloudflared.env");
     expect(text).not.toContain("Environment=TUNNEL_TOKEN");
   });
 
-  test("uses the host network so localhost targets the kube pod", () => {
+  test("uses the host network so loopback targets the kube pod", () => {
     const text = readDeploy("deploy/cloudflared/cloudflared.container");
     expect(text).toContain("Network=host");
-    expect(text).toContain("config.yml");
+  });
+
+  test("relabels the config.yml bind mount so SELinux-enforcing hosts can read it", () => {
+    const text = readDeploy("deploy/cloudflared/cloudflared.container");
+    const mount = text.split("\n").find((line) => line.startsWith("Volume=") && line.includes("config.yml"));
+    const options = mount?.split(":").at(-1)?.split(",") ?? [];
+    expect(options).toContain("Z");
   });
 });
 
@@ -69,9 +109,16 @@ describe("website image update timer", () => {
     expect(script).toContain("restart podman-kube@website");
   });
 
-  test("service unit delegates to the helper script", () => {
+  test("service unit runs the helper from the same WEBSITE_REPO as the pod template", () => {
+    const repoDefault = (unit: string): string | undefined =>
+      /^Environment=WEBSITE_REPO=(.+)$/m.exec(readDeploy(unit))?.[1];
     const service = readDeploy("deploy/systemd/website-update.service");
-    expect(service).toContain("website-update.sh");
+
+    expect(service).toContain("${WEBSITE_REPO}/deploy/systemd/website-update.sh");
+    expect(repoDefault("deploy/systemd/website-update.service")).toBeDefined();
+    expect(repoDefault("deploy/systemd/website-update.service")).toBe(
+      repoDefault("deploy/systemd/podman-kube@.service"),
+    );
   });
 
   test("timer fires every 5 minutes and is persistent", () => {

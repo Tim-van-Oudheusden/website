@@ -5,6 +5,11 @@ metadata:
   labels:
     app: website
 
+# Host ports are published on loopback only: cloudflared (Network=host) is the
+# sole way in, so the origin is never reachable from the LAN bypassing
+# Cloudflare. 8300/8301 avoid other services on the host's 3000/3001; the
+# containers still listen on 3000/3001 inside the pod.
+# deploy/cloudflared/config.yml must target exactly these host ports.
 spec:
   restartPolicy: Always
   containers:
@@ -15,7 +20,8 @@ spec:
           value: production
       ports:
         - containerPort: 3000
-          hostPort: 3000
+          hostPort: 8300
+          hostIP: 127.0.0.1
 
     - name: back-end
       image: ghcr.io/tim-van-oudheusden/website/back-end:latest
@@ -26,4 +32,5 @@ spec:
           value: "0.0.0.0"
       ports:
         - containerPort: 3001
-          hostPort: 3001
+          hostPort: 8301
+          hostIP: 127.0.0.1

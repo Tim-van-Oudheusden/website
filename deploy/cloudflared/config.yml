@@ -8,11 +8,14 @@
 # the request path. The final rule must be a catch-all (no hostname/path). The
 # tunnel token never lives here — it is injected from a host-only 0600 env file
 # at run time (see cloudflared.container).
+#
+# Targets are the prod pod's loopback-published host ports (deploy/kube/prod.yaml),
+# not the in-pod container ports.
 ingress:
-  # JSON API and content images → back-end (Fastify, port 3001).
+  # JSON API and content images → back-end (Fastify, host port 8301).
   - path: "^/api(/.*)?$"
-    service: http://localhost:3001
+    service: http://127.0.0.1:8301
   - path: "^/content-assets(/.*)?$"
-    service: http://localhost:3001
-  # Everything else (the site and its static assets) → front-end (port 3000).
-  - service: http://localhost:3000
+    service: http://127.0.0.1:8301
+  # Everything else (the site and its static assets) → front-end (host port 8300).
+  - service: http://127.0.0.1:8300

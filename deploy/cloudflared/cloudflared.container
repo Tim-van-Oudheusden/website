@@ -5,15 +5,22 @@
 # "remotely managed" tunnel fetches its config from the edge and silently
 # ignores config.yml. Obtain the token with `cloudflared tunnel token <name>`
 # and store it in the env file below (host-side, 0600) — never in the repo or
-# an image.
+# an image. See docs/deploy.md §2 for running `cloudflared` via this image on a
+# host without the binary.
+#
+# Host-side files live under $XDG_CONFIG_HOME/cloudflared (%E = ~/.config).
 #
 # Install (as the service user):
-#   mkdir -p ~/.config/containers/systemd ~/.cloudflared
+#   mkdir -p ~/.config/containers/systemd ~/.config/cloudflared
 #   cp deploy/cloudflared/cloudflared.container ~/.config/containers/systemd/
-#   cp deploy/cloudflared/config.yml ~/.cloudflared/config.yml
-#   printf 'TUNNEL_TOKEN=...' > ~/.cloudflared/cloudflared.env && chmod 600 ~/.cloudflared/cloudflared.env
+#   cp deploy/cloudflared/config.yml ~/.config/cloudflared/config.yml
+#   printf 'TUNNEL_TOKEN=...' > ~/.config/cloudflared/cloudflared.env && chmod 600 ~/.config/cloudflared/cloudflared.env
 #   systemctl --user daemon-reload
-#   systemctl --user enable --now cloudflared.service
+#   systemctl --user start cloudflared.service
+#
+# Quadlet units are generated, so `enable` does not apply: [Install] below makes
+# the generator start it at boot. AutoUpdate=registry only acts when
+# `podman-auto-update.timer` is enabled for the user.
 
 [Unit]
 Description=Cloudflare Tunnel (cloudflared)
@@ -22,10 +29,12 @@ Description=Cloudflare Tunnel (cloudflared)
 Image=docker.io/cloudflare/cloudflared:latest
 AutoUpdate=registry
 ContainerName=cloudflared
-# cloudflared reaches the kube pod's published ports via the host's loopback.
+# cloudflared reaches the kube pod's loopback-published ports via the host's
+# network namespace.
 Network=host
-EnvironmentFile=%h/.cloudflared/cloudflared.env
-Volume=%h/.cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+EnvironmentFile=%E/cloudflared/cloudflared.env
+# Z relabels the file so the container may read it on SELinux-enforcing hosts.
+Volume=%E/cloudflared/config.yml:/etc/cloudflared/config.yml:ro,Z
 # The image ENTRYPOINT is `cloudflared --no-autoupdate`; these args override
 # its default CMD (`version`) to run the tunnel with our local ingress rules.
 Exec=tunnel --config /etc/cloudflared/config.yml run
