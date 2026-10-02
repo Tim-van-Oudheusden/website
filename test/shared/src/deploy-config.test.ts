@@ -17,11 +17,15 @@ interface PodPort {
   hostIP?: string;
 }
 
-function prodHostOrigin(containerName: string): string {
+function prodContainers(): { name: string; ports: PodPort[] }[] {
   const pod = Bun.YAML.parse(readDeploy("deploy/kube/prod.yaml")) as {
     spec: { containers: { name: string; ports: PodPort[] }[] };
   };
-  const container = pod.spec.containers.find((c) => c.name === containerName);
+  return pod.spec.containers;
+}
+
+function prodHostOrigin(containerName: string): string {
+  const container = prodContainers().find((c) => c.name === containerName);
   const [port] = container?.ports ?? [];
   return `http://${port?.hostIP}:${port?.hostPort}`;
 }
@@ -50,8 +54,11 @@ describe("cloudflared ingress config", () => {
   });
 
   test("prod pod publishes only on loopback so the tunnel is the sole way in", () => {
-    expect(prodHostOrigin("front-end")).toStartWith("http://127.0.0.1:");
-    expect(prodHostOrigin("back-end")).toStartWith("http://127.0.0.1:");
+    const published = prodContainers().flatMap((c) => c.ports.filter((p) => p.hostPort !== undefined));
+    expect(published.length).toBeGreaterThan(0);
+    for (const port of published) {
+      expect(port.hostIP).toBe("127.0.0.1");
+    }
   });
 
   test("contains no secret material (token/credentials)", () => {

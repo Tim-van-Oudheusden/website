@@ -6,12 +6,14 @@
 #   systemctl --user daemon-reload
 #   systemctl --user enable --now podman-kube@website.service
 #
-# WEBSITE_REPO is the repository root on the host. The default below assumes
-# ~/Git/website; override it once per host with a drop-in if the repository
-# lives elsewhere, e.g. ~/.config/systemd/user/podman-kube@.service.d/override.conf:
+# WEBSITE_REPO is the repository root on the host (only deploy/kube/prod.yaml
+# and deploy/systemd/website-update.sh are read from it). The default below
+# assumes ~/Git/website. website-update.service shares the same default; if the
+# files live elsewhere, override BOTH units with identical drop-ins
+# (docs/deploy.md §1), e.g. ~/.config/systemd/user/<unit>.d/override.conf:
 #
 #   [Service]
-#   Environment=WEBSITE_REPO=/srv/website
+#   Environment=WEBSITE_REPO=%E/website
 #
 # website-update.service/.timer restart this unit (podman-kube@website) so a
 # newly-pulled :latest image takes effect with no SSH/push from CI. The one-shot
@@ -20,8 +22,10 @@
 
 [Unit]
 Description=Run the website production pod (podman kube play)
-Wants=network-online.target
-After=network-online.target
+# The user manager has no network-online.target; podman ships this user-level
+# wait (the same one Quadlet units use) so boot-time pulls see the network.
+Wants=podman-user-wait-network-online.service
+After=podman-user-wait-network-online.service
 
 [Service]
 Type=oneshot

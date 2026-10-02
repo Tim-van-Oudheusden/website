@@ -8,19 +8,12 @@
 # an image. See docs/deploy.md §2 for running `cloudflared` via this image on a
 # host without the binary.
 #
-# Host-side files live under $XDG_CONFIG_HOME/cloudflared (%E = ~/.config).
-#
-# Install (as the service user):
-#   mkdir -p ~/.config/containers/systemd ~/.config/cloudflared
-#   cp deploy/cloudflared/cloudflared.container ~/.config/containers/systemd/
-#   cp deploy/cloudflared/config.yml ~/.config/cloudflared/config.yml
-#   printf 'TUNNEL_TOKEN=...' > ~/.config/cloudflared/cloudflared.env && chmod 600 ~/.config/cloudflared/cloudflared.env
-#   systemctl --user daemon-reload
-#   systemctl --user start cloudflared.service
-#
-# Quadlet units are generated, so `enable` does not apply: [Install] below makes
-# the generator start it at boot. AutoUpdate=registry only acts when
-# `podman-auto-update.timer` is enabled for the user.
+# Host-side files live under $XDG_CONFIG_HOME/cloudflared (%E = ~/.config):
+# config.yml (copied from this directory) and cloudflared.env (TUNNEL_TOKEN=…).
+# Install steps: docs/deploy.md §2. Quadlet units are generated, so `enable`
+# does not apply: [Install] below makes the generator start it at boot.
+# AutoUpdate=registry only acts when `podman-auto-update.timer` is enabled for
+# the user.
 
 [Unit]
 Description=Cloudflare Tunnel (cloudflared)

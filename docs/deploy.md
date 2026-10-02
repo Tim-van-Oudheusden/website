@@ -141,8 +141,16 @@ cloudflared tunnel ingress validate
 cloudflared tunnel ingress rule https://example.com/api/health   # → http://127.0.0.1:8301
 ```
 
-`AutoUpdate=registry` only acts when `podman-auto-update.timer` is enabled for
-the user (it then updates every container carrying that label).
+`AutoUpdate=registry` only acts when podman's user auto-update timer runs. It
+is not enabled by default; enabling it updates **every** container carrying
+the `io.containers.autoupdate` label on the host, not just cloudflared:
+
+```bash
+systemctl --user enable --now podman-auto-update.timer
+```
+
+Without it, update cloudflared manually: `podman pull
+docker.io/cloudflare/cloudflared:latest && systemctl --user restart cloudflared.service`.
 
 Bot mitigation is configured in the Cloudflare dashboard (Super Bot Fight Mode
 / a WAF rule scoped to these hostnames). There is no CLI step in this repo for
