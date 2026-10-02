@@ -203,6 +203,67 @@ describe("ArticlesPage layout", () => {
       unmountFakeDomRoot(page);
     }
   });
+
+  test("activating the Articles trail on a slugged article shows the default article", async () => {
+    routeFetch({
+      [LIST_URL]: respond([summary("introduction", "Introduction"), summary("linux-setup", "Linux setup")]),
+      "/api/content/introduction": respond(INTRODUCTION),
+      "/api/content/linux-setup": respond(LINUX_SETUP),
+    });
+    const page = mountArticlesPage("/articles/linux-setup");
+
+    try {
+      await settle();
+      const [trailButton] = queryFakeElements(
+        page.container,
+        (el) => el.nodeName === "BUTTON" && el.textContent === "Articles",
+      );
+      if (trailButton === undefined) throw new Error("Expected the Articles trail button");
+
+      fireFakePointer(trailButton, "click");
+      await settle();
+
+      const [content] = queryFakeElements(page.container, (el) => el.nodeName === "ARTICLE");
+      expect(content?.textContent).toContain("Welcome aboard.");
+      expect(content?.textContent).not.toContain("Partition the disk.");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("after the Articles trail, the sidebar link back to the slugged article still works", async () => {
+    routeFetch({
+      [LIST_URL]: respond([summary("introduction", "Introduction"), summary("linux-setup", "Linux setup")]),
+      "/api/content/introduction": respond(INTRODUCTION),
+      "/api/content/linux-setup": respond(LINUX_SETUP),
+    });
+    const page = mountArticlesPage("/articles/linux-setup");
+
+    try {
+      await settle();
+      const [trailButton] = queryFakeElements(
+        page.container,
+        (el) => el.nodeName === "BUTTON" && el.textContent === "Articles",
+      );
+      if (trailButton === undefined) throw new Error("Expected the Articles trail button");
+      fireFakePointer(trailButton, "click");
+      await settle();
+
+      const [linuxSetupLink] = queryFakeElements(
+        page.container,
+        (el) => el.nodeName === "A" && el.getAttribute("href") === "/articles/linux-setup",
+      );
+      if (linuxSetupLink === undefined) throw new Error("Expected the Linux setup sidebar link");
+      fireFakePointer(linuxSetupLink, "click");
+      await settle();
+
+      const [content] = queryFakeElements(page.container, (el) => el.nodeName === "ARTICLE");
+      expect(content?.textContent).toContain("Partition the disk.");
+      expect(content?.textContent).not.toContain("Welcome aboard.");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
 });
 
 describe("ArticlesPage deep links", () => {

@@ -18,24 +18,26 @@ export interface UseArticlesResult {
 /**
  * Listing + selected-article fetch lifecycle for the Articles page.
  *
- * Keeps the URL slug and the API-driven default selection in sync, then loads
+ * Selects the URL slug when present (otherwise the API-driven default), then loads
  * the selected article's body. All three transitions are observable from the
  * returned tuple; the page stays a pure composition of the result.
  */
 export function useArticles(urlSlug: string | undefined): UseArticlesResult {
   const [articles, setArticles] = useState<ArticleSummary[]>([]);
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(urlSlug ?? null);
   const [selectedArticle, setSelectedArticle] = useState<ArticleData | null>(null);
   const [loadingArticles, setLoadingArticles] = useState(true);
   const [loadingArticle, setLoadingArticle] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
   const [articleError, setArticleError] = useState<string | null>(null);
 
+  // React to URL changes only: an in-page selectSlug must not be reverted
+  // while the URL still names the slug the page was opened on.
   useEffect(() => {
-    if (urlSlug !== undefined && urlSlug !== selectedSlug) {
+    if (urlSlug !== undefined) {
       setSelectedSlug(urlSlug);
     }
-  }, [urlSlug, selectedSlug]);
+  }, [urlSlug]);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,7 +47,7 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
         const items = await httpContentLoader.listArticles();
         if (!cancelled) {
           setArticles(items);
-          setSelectedSlug(getDefaultArticleSlug(items));
+          setSelectedSlug((current) => current ?? getDefaultArticleSlug(items));
         }
       } catch (err) {
         if (!cancelled) {

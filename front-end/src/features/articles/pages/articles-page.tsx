@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useEffect } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useArticles } from "../hooks/use-articles";
 import { useArticleToc } from "../hooks/use-article-toc";
 import { navigateToArticleHeadingById } from "../lib/article-toc";
@@ -11,6 +11,7 @@ import { ARTICLES_PAGE_LAYOUT_CLASSES, ARTICLES_PAGE_TYPOGRAPHY_CLASSES } from "
 
 export function ArticlesPage(): React.JSX.Element {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const {
     articles,
     selectedSlug,
@@ -19,7 +20,6 @@ export function ArticlesPage(): React.JSX.Element {
     loadingArticle,
     listError,
     articleError,
-    selectSlug,
   } = useArticles(slug);
   const { tocItems, visibleTocHeadingIds } = useArticleToc(selectedArticle, loadingArticle);
 
@@ -80,8 +80,10 @@ export function ArticlesPage(): React.JSX.Element {
         tocItems={tocItems}
         visibleTocHeadingIds={visibleTocHeadingIds}
         onArticlesActivate={() => {
+          // Navigate rather than set hook state: the URL is the source of
+          // selection, so a slugged URL would otherwise keep naming the old article.
           if (trailTargetSlug !== null) {
-            selectSlug(trailTargetSlug);
+            void navigate(`/articles/${trailTargetSlug}`);
           }
         }}
       />
