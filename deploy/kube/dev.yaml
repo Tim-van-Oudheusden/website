@@ -2,6 +2,11 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: website
+  # kube play does not relabel hostPath bind mounts, so on SELinux hosts the
+  # containers cannot read the user_home_t checkout (#500). Ignored elsewhere.
+  annotations:
+    io.podman.annotations.label/front-end: disable
+    io.podman.annotations.label/back-end: disable
   labels:
     app: website
 

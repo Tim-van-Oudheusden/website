@@ -171,3 +171,27 @@ describe("podman-kube@ prod pod template", () => {
     expect(prod).toContain("name: website");
   });
 });
+
+describe("dev pod manifest", () => {
+  test("disables SELinux labelling for every container with a hostPath mount", () => {
+    // Why: kube play does not relabel bind mounts, so on SELinux hosts the
+    // containers cannot read the user_home_t checkout (#500).
+    const pod = Bun.YAML.parse(readDeploy("deploy/kube/dev.yaml")) as {
+      metadata: { annotations?: Record<string, string> };
+      spec: {
+        containers: { name: string; volumeMounts?: { name: string }[] }[];
+        volumes: { name: string; hostPath?: unknown }[];
+      };
+    };
+    const hostPathVolumes = new Set(pod.spec.volumes.filter((v) => v.hostPath).map((v) => v.name));
+    const bindMounting = pod.spec.containers
+      .filter((c) => c.volumeMounts?.some((m) => hostPathVolumes.has(m.name)))
+      .map((c) => c.name);
+    const annotations = pod.metadata.annotations ?? {};
+
+    expect(bindMounting.length).toBeGreaterThan(0);
+    for (const name of bindMounting) {
+      expect(annotations[`io.podman.annotations.label/${name}`]).toBe("disable");
+    }
+  });
+});

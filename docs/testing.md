@@ -47,6 +47,10 @@ The script exits with the status of the first failing step.
 - Run from a full checkout: `deploy/kube/dev.yaml` bind-mounts `./front-end`,
   `./back-end`, `./shared`, `./content`, `./public`, `./package.json`, and
   `./bun.lock` as `hostPath` volumes.
+- SELinux hosts (Fedora, Silverblue): `podman kube play` does not relabel
+  `hostPath` mounts, so `dev.yaml` sets
+  `io.podman.annotations.label/<container>: disable` for both containers (#500);
+  no `chcon` of the checkout is needed.
 - Same setup steps CI runs before the job:
 
   ```bash
