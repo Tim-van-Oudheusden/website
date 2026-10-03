@@ -1,0 +1,44 @@
+# Path-based PR labels, applied by .github/workflows/labeler.yml (actions/labeler).
+# Each workspace label also covers that workspace's tests under test/<workspace>/.
+
+front-end:
+  - changed-files:
+      - any-glob-to-any-file: ['front-end/**', 'test/front-end/**']
+
+back-end:
+  - changed-files:
+      - any-glob-to-any-file: ['back-end/**', 'test/back-end/**']
+
+shared:
+  - changed-files:
+      - any-glob-to-any-file: ['shared/**', 'test/shared/**']
+
+content:
+  - changed-files:
+      - any-glob-to-any-file: 'content/**'
+
+e2e:
+  - changed-files:
+      - any-glob-to-any-file: ['e2e/**', 'playwright/**', 'playwright.config.ts']
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/**', 'scripts/**']
+
+deploy:
+  - changed-files:
+      - any-glob-to-any-file: 'deploy/**'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - 'README.md'
+          - 'CONTRIBUTING.md'
+          - 'AGENTS.md'
+          - 'CLAUDE.md'
+          - 'BRANDING.md'
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file: ['bun.lock', 'package.json', '*/package.json']
