@@ -32,8 +32,9 @@ Thumbs.db
 .bv/
 .bv.lock
 
-# beads transient socket lock
+# beads transient locks
 .beads/bd.sock.startlock
+.beads.gate.lock
 
 # Playwright artifacts
 playwright-report/
