@@ -98,6 +98,15 @@ Image routes are served by the back-end and map to files in `content/images`.
 - Always pin an explicit version and match the range style already in use (`bun.lock` should only change via the package manager).
 - Prefer standard-library / Web APIs and existing dependencies over new packages.
 
+## Agent safety layers
+
+AI agents working in this repo are bounded by several layers, each catching what the one before misses:
+
+1. **Instructions** — `AGENTS.md` (authoritative) and `CLAUDE.md` state the rules: TDD, ask before dependency changes, never edit `bun.lock` by hand.
+2. **Project permissions** — `.claude/settings.json` (committed) enforces those rules for Claude Code: quality-gate commands are pre-approved, dependency and history-rewriting commands need confirmation, and reading `.env*` / credential files, hand-editing `bun.lock`, force-pushes, `--no-verify` commits, and `--force` / `--legacy-peer-deps` installs are denied.
+3. **Personal overrides** — `.claude/settings.local.json` (gitignored) for per-developer additions. Deny rules from the project file still apply.
+4. **Structural gates** — the quality gates above and CI (`.github/workflows/`) must pass before merge, regardless of who wrote the change.
+
 ## Release notes
 
 Deployment details (server bootstrap, pod manifests, image publishing) live in `docs/deploy.md` and `README.md`; keep them in sync when you change infrastructure.
