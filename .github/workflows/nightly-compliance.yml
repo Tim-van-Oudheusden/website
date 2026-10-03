@@ -1,0 +1,38 @@
+name: Nightly compliance
+
+# Checks that can go stale without a code change: new advisories against the
+# locked dependency tree, and drafts left in content/. A frozen-lockfile
+# install also fails the run if bun.lock has drifted from package.json.
+# Results land in the run's job summary and as an artifact.
+
+on:
+  schedule:
+    - cron: '23 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compliance:
+    name: Nightly compliance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Run compliance checks
+        run: scripts/nightly-compliance.sh > nightly-compliance.md
+      - name: Publish job summary
+        if: always()
+        run: cat nightly-compliance.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload compliance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-compliance
+          path: nightly-compliance.md
