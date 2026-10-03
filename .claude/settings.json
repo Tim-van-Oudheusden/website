@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(bun run test)",
+      "Bash(bun run test *)",
+      "Bash(bun test)",
+      "Bash(bun test *)",
+      "Bash(bun run typecheck)",
+      "Bash(bun run lint)",
+      "Bash(bun run build)",
+      "Bash(bun run --filter *)",
+      "Bash(bun install --frozen-lockfile)",
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(bd ready)",
+      "Bash(bd show *)",
+      "Bash(bd prime)"
+    ],
+    "ask": [
+      "Bash(bun add *)",
+      "Bash(bun remove *)",
+      "Bash(bun update *)",
+      "Bash(npm install *)",
+      "Bash(git rebase *)",
+      "Bash(git reset *)",
+      "Bash(git clean *)",
+      "Bash(git branch -D *)",
+      "Bash(gh pr merge *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
+      "Read(./.beads-credential-key)",
+      "Edit(./bun.lock)",
+      "Write(./bun.lock)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git push * --force)",
+      "Bash(git push * -f)",
+      "Bash(git commit --no-verify *)",
+      "Bash(git commit * --no-verify *)",
+      "Bash(git commit * --no-verify)",
+      "Bash(* --legacy-peer-deps *)",
+      "Bash(* --legacy-peer-deps)",
+      "Bash(bun add * --force *)",
+      "Bash(bun add * --force)",
+      "Bash(bun install --force *)",
+      "Bash(bun install --force)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/*)",
+      "Bash(sudo *)"
+    ]
+  }
+}
