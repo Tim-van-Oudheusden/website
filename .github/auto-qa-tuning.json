@@ -1,0 +1,17 @@
+{
+  "margin": 2,
+  "floors": {
+    "back-end": {
+      "functions": 95,
+      "lines": 90
+    },
+    "shared": {
+      "functions": 90,
+      "lines": 90
+    },
+    "front-end": {
+      "functions": 91,
+      "lines": 91
+    }
+  }
+}
