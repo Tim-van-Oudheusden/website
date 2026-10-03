@@ -1,14 +1,15 @@
 # Testing
 
-| Command                     | What it runs                                          | Needs podman |
-| --------------------------- | ----------------------------------------------------- | ------------ |
-| `bun run test`              | Unit tests (all workspaces)                           | no           |
-| `bun run typecheck`         | TypeScript across shared, root, and both apps         | no           |
-| `bun run lint`              | ESLint (`eslint .`)                                   | no           |
-| `bun run build`             | Production builds for both apps                       | no           |
-| `scripts/e2e.sh`            | Playwright E2E suite against the dev pod              | yes          |
-| `scripts/prod-assets.sh`    | Prod front-end image serves every `public/` file      | yes          |
-| `scripts/quality-report.sh` | Markdown report of all gates + coverage per workspace | no           |
+| Command                         | What it runs                                          | Needs podman |
+| ------------------------------- | ----------------------------------------------------- | ------------ |
+| `bun run test`                  | Unit tests (all workspaces)                           | no           |
+| `bun run typecheck`             | TypeScript across shared, root, and both apps         | no           |
+| `bun run lint`                  | ESLint (`eslint .`)                                   | no           |
+| `bun run build`                 | Production builds for both apps                       | no           |
+| `scripts/e2e.sh`                | Playwright E2E suite against the dev pod              | yes          |
+| `scripts/prod-assets.sh`        | Prod front-end image serves every `public/` file      | yes          |
+| `scripts/quality-report.sh`     | Markdown report of all gates + coverage per workspace | no           |
+| `scripts/nightly-compliance.sh` | Markdown report of dependency audit + draft guard     | no           |
 
 ## Quality report
 
@@ -23,6 +24,24 @@ enforced only by `coverage-gate.yml`.
 
 Run it locally with `scripts/quality-report.sh > quality-report.md`. Gate output
 goes to stderr and the report to stdout.
+
+## Nightly compliance
+
+`.github/workflows/nightly-compliance.yml` runs nightly (03:23 UTC) and on
+demand (`workflow_dispatch`) to catch problems that appear without a code
+change:
+
+- **Lockfile drift** — `bun install --frozen-lockfile` fails if `bun.lock` no
+  longer matches `package.json`.
+- **Dependency audit** — `bun audit --audit-level=high` fails on any high or
+  critical advisory in the locked dependency tree.
+- **Draft leak guard** — fails if any file in `content/` has `draft: true`
+  front matter, the same rule the `release` job in `ci.yml` enforces.
+
+`scripts/nightly-compliance.sh` writes the report, published as the run's job
+summary and as the `nightly-compliance` artifact. Every check runs even if an
+earlier one fails, and the job fails if any check failed. Run it locally with
+`scripts/nightly-compliance.sh > nightly-compliance.md`.
 
 ## Run the E2E suite locally
 
