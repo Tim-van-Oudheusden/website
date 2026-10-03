@@ -51,4 +51,5 @@
 # - github.org
 # - github.repo
 
-sync.remote: "git+ssh://git@github.com/Tim-van-Oudheusden/website.git"
+sync:
+    remote: "git+ssh://git@github.com/Tim-van-Oudheusden/website.git"
