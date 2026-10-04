@@ -10,6 +10,7 @@
 | `scripts/prod-assets.sh`        | Prod front-end image serves every `public/` file      | yes          |
 | `scripts/quality-report.sh`     | Markdown report of all gates + coverage per workspace | no           |
 | `scripts/nightly-compliance.sh` | Markdown report of dependency audit + draft guard     | no           |
+| `bun scripts/auto-qa-tuner.ts` | Propose ratcheted coverage floors from a quality report | no           |
 
 ## Quality report
 
@@ -42,6 +43,29 @@ change:
 summary and as the `nightly-compliance` artifact. Every check runs even if an
 earlier one fails, and the job fails if any check failed. Run it locally with
 `scripts/nightly-compliance.sh > nightly-compliance.md`.
+
+## Coverage floor self-tuning
+
+The per-workspace coverage floors that `coverage-gate.yml` enforces live in
+`.github/auto-qa-tuning.json` (`floors.<workspace>.functions` / `.lines`, in
+percent), next to a `margin` in percentage points.
+
+`scripts/auto-qa-tuner.ts` reads that config and a quality report and proposes,
+for each floor, the observed coverage minus `margin`, rounded down to a whole
+percent. Floors only ratchet up: a drop in coverage never lowers one, and a
+workspace with no coverage in the report (`n/a`) keeps its floors.
+
+The quality-report workflow runs the tuner after every report, appends its
+proposal table to the job summary, and uploads the tuned config as the
+`auto-qa-tuning` artifact. Nothing is committed automatically: to adopt the
+proposal, download the artifact over `.github/auto-qa-tuning.json`, or run it
+locally and commit the result:
+
+```bash
+scripts/quality-report.sh > quality-report.md
+bun scripts/auto-qa-tuner.ts --report quality-report.md          # preview
+bun scripts/auto-qa-tuner.ts --report quality-report.md --write  # apply
+```
 
 ## Run the E2E suite locally
 
