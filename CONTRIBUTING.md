@@ -111,6 +111,8 @@ AI agents working in this repo are bounded by several layers, each catching what
 3. **Personal overrides** — `.claude/settings.local.json` (gitignored) for per-developer additions. Deny rules from the project file still apply.
 4. **Structural gates** — the quality gates above and CI (`.github/workflows/`) must pass before merge, regardless of who wrote the change.
 
+The security side of these layers (trust boundaries, secrets, supply chain, review focus, reporting) is set out in [`docs/security/SECURITY-AI.md`](docs/security/SECURITY-AI.md).
+
 ## Release notes
 
 Deployment details (server bootstrap, pod manifests, image publishing) live in `docs/deploy.md` and `README.md`; keep them in sync when you change infrastructure.
