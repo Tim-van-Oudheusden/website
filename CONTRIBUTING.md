@@ -71,6 +71,10 @@ See [`docs/testing.md`](docs/testing.md) for prerequisites and why the agent san
 
 CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, and build on every PR, plus an E2E job on the dev pod, a `prod-assets` job on the prod front-end image, and a release job on `main` that waits for all three.
 
+### Applying review suggestions
+
+Comment `/apply-suggestions` on a pull request to have `.github/workflows/auto-review.yml` commit every GitHub ```` ```suggestion ```` block on the PR's current diff (`scripts/apply-review-suggestions.sh`). Only comments from `OWNER`/`MEMBER`/`COLLABORATOR` trigger it or have their suggestions applied; outdated, overlapping, and out-of-checkout suggestions are skipped, and fork PRs are refused. The run reports what it applied and skipped as a PR comment. Its commit is pushed with `GITHUB_TOKEN`, which does not start CI, so CI runs again on your next push.
+
 ## Code style
 
 Enforced by ESLint (`eslint.config.js`) with strict TypeScript rules and `@stylistic`. Notable conventions:
