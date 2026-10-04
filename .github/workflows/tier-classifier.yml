@@ -1,0 +1,40 @@
+name: Change classification
+
+# Classifies each pull request into a risk tier (low / medium / high) from the
+# paths it changes, so reviewers know how closely to look. Informational: the
+# tier lands in the job summary and never fails the run. Tiers and the review
+# each one expects are defined in docs/risk-tiers.md.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  classify:
+    name: Risk tier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Classify changed files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "${BASE_SHA}...${HEAD_SHA}" | scripts/tier-classify.sh > tier.txt
+          tier="$(sed -n 's/^tier=//p' tier.txt)"
+          echo "::notice title=Risk tier::${tier} (see docs/risk-tiers.md)"
+          {
+            echo "## Risk tier: ${tier}"
+            echo
+            echo "Highest tier of any changed file wins; see \`docs/risk-tiers.md\` for what each tier asks of reviewers."
+            echo
+            echo '```'
+            grep -v '^tier=' tier.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
