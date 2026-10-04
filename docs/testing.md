@@ -35,7 +35,9 @@ change:
 - **Lockfile drift** — `bun install --frozen-lockfile` fails if `bun.lock` no
   longer matches `package.json`.
 - **Dependency audit** — `bun audit --audit-level=high` fails on any high or
-  critical advisory in the locked dependency tree.
+  critical advisory in the locked dependency tree. Advisories with no patched
+  release upstream are listed in `AUDIT_IGNORE` in the script, each with the
+  reason it can't be fixed; remove an entry once a fix ships.
 - **Draft leak guard** — fails if any file in `content/` has `draft: true`
   front matter, the same rule the `release` job in `ci.yml` enforces.
 

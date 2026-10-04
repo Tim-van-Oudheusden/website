@@ -7,7 +7,7 @@
 # Checks that can go stale without a code change, so they run on a schedule
 # rather than only on push:
 #   - Dependency audit: `bun audit` finds no high or critical advisories in
-#     the locked dependency tree.
+#     the locked dependency tree, except those in AUDIT_IGNORE below.
 #   - Draft leak guard: no `draft: true` front matter in content/ (CONTENT_DIR
 #     overrides the directory), the same rule the release job enforces.
 # Check output goes to stderr so stdout stays a clean report. Every check runs
@@ -37,7 +37,12 @@ echo
 echo "| Check | Result |"
 echo "| ----- | ------ |"
 
-bun audit --audit-level=high >&2
+# Advisories with no patched release upstream, so no override can fix them.
+# Remove an entry once a fix ships and the lockfile picks it up.
+#   GHSA-vfj7-8cjw-p6xm: braces <=3.0.3 stack-exhaustion DoS. Dev-only, via
+#     shadcn CLI › fast-glob › micromatch; no patched braces release exists.
+AUDIT_IGNORE=(GHSA-vfj7-8cjw-p6xm)
+bun audit --audit-level=high "${AUDIT_IGNORE[@]/#/--ignore=}" >&2
 row "Dependency audit (high+)" $?
 
 if grep -RIl '^draft:[[:space:]]*true[[:space:]]*$' "$content_dir" >&2; then
