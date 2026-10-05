@@ -1,7 +1,9 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
 import * as path from "path";
+
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+
 import { API_BASE, BACKEND_HOST, BACKEND_PORT, FRONTEND_PORT } from "../shared/src/index";
 
 /**

@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, test } from "bun:test";
+
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
+
 import { App, AppRoutes } from "../../../front-end/src/App";
 
 afterEach(() => {

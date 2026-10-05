@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
+
 import type { ArticleFrontmatter } from "shared";
+
 import { renderSocialMeta } from "../../../front-end/server/social-meta";
 
 const INDEX_HTML = `<!doctype html>

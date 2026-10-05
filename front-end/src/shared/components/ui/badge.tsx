@@ -1,6 +1,7 @@
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 import { Slot } from "radix-ui";
+import type { ComponentProps, ElementType, JSX } from "react";
 
 import { cn } from "@/shared/lib/utils";
 
@@ -31,9 +32,9 @@ function Badge({
   variant = "default",
   asChild = false,
   ...props
-}: React.ComponentProps<"span">
-  & VariantProps<typeof badgeVariants> & { asChild?: boolean }): React.JSX.Element {
-  let Comp: React.ElementType = "span";
+}: ComponentProps<"span">
+  & VariantProps<typeof badgeVariants> & { asChild?: boolean }): JSX.Element {
+  let Comp: ElementType = "span";
 
   if (asChild) {
     Comp = Slot.Root;

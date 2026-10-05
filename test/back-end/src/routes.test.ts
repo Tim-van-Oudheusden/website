@@ -1,6 +1,9 @@
-import { describe, expect, test, beforeAll, afterAll } from "bun:test";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+
 import type { FastifyInstance } from "fastify";
+
 import { API_BASE, APP_NAME, ROUTES } from "shared";
+
 import { buildApp } from "../../../back-end/src/app";
 
 /** JSON API routes live under API_BASE; only /health stays at the root. */
@@ -157,12 +160,14 @@ describe("back-end routes use shared ROUTES constants", () => {
 
     // Behind Cloudflare Tunnel the peer is always 127.0.0.1; the real client
     // identity arrives in CF-Connecting-IP, so each client must get its own bucket.
-    const requestAs = (ip: string): Promise<{ statusCode: number }> => app!.inject({
-      method: "GET",
-      url: apiUrl(ROUTES.HELLO),
-      remoteAddress: "127.0.0.1",
-      headers: { "CF-Connecting-IP": ip },
-    });
+    function requestAs(ip: string): Promise<{ statusCode: number }> {
+      return app!.inject({
+        method: "GET",
+        url: apiUrl(ROUTES.HELLO),
+        remoteAddress: "127.0.0.1",
+        headers: { "CF-Connecting-IP": ip },
+      });
+    }
 
     let last: { statusCode: number } | null = null;
 
@@ -184,12 +189,14 @@ describe("back-end routes use shared ROUTES constants", () => {
 
     // A non-loopback peer (arbitrary caller) can set CF-Connecting-IP freely;
     // the limiter must key on the socket IP, ignoring the spoofable header.
-    const requestAs = (ip: string): Promise<{ statusCode: number }> => app!.inject({
-      method: "GET",
-      url: apiUrl(ROUTES.HELLO),
-      remoteAddress: "203.0.113.9",
-      headers: { "CF-Connecting-IP": ip },
-    });
+    function requestAs(ip: string): Promise<{ statusCode: number }> {
+      return app!.inject({
+        method: "GET",
+        url: apiUrl(ROUTES.HELLO),
+        remoteAddress: "203.0.113.9",
+        headers: { "CF-Connecting-IP": ip },
+      });
+    }
 
     let last: { statusCode: number } | null = null;
 

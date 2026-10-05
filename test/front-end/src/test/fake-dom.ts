@@ -1044,7 +1044,8 @@ export function queryFakeElements(
   predicate: (element: FakeElement) => boolean,
 ): FakeElement[] {
   const found: FakeElement[] = [];
-  const visit = (node: FakeNode): void => {
+
+  function visit(node: FakeNode): void {
     for (const child of node.childNodes) {
       if (child.nodeType !== 1) {
         continue;
@@ -1058,7 +1059,7 @@ export function queryFakeElements(
 
       visit(element);
     }
-  };
+  }
 
   visit(root);
 

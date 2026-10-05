@@ -1,8 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { createElement, type ReactElement } from "react";
+
+import type { ReactElement } from "react";
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
+
 import type { ProjectFrontmatter } from "shared";
+
 import { ProjectCard } from "../../../../../../front-end/src/features/projects/pages/projects-page";
 
 function project(overrides: Partial<ProjectFrontmatter> = {}): ProjectFrontmatter {

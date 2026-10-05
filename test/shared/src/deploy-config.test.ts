@@ -131,8 +131,10 @@ describe("website image update timer", () => {
   });
 
   test("service unit runs the helper from the same WEBSITE_REPO as the pod template", () => {
-    const repoDefault = (unit: string): string | undefined =>
-      /^Environment=WEBSITE_REPO=(.+)$/m.exec(readDeploy(unit))?.[1];
+    function repoDefault(unit: string): string | undefined {
+      return /^Environment=WEBSITE_REPO=(.+)$/m.exec(readDeploy(unit))?.[1];
+    }
+
     const service = readDeploy("deploy/systemd/website-update.service");
 
     expect(service).toContain("${WEBSITE_REPO}/deploy/systemd/website-update.sh");

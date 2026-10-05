@@ -1,6 +1,10 @@
-import * as React from "react";
+import type { JSX } from "react";
+import { useMemo } from "react";
+
 import { cn } from "@/shared/lib/utils";
-import { resolveTocLinkIndentClass, type ArticleTableOfContentsItem } from "../lib/article-toc";
+
+import type { ArticleTableOfContentsItem } from "../lib/article-toc";
+import { resolveTocLinkIndentClass } from "../lib/article-toc";
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
   ARTICLES_PAGE_TEXT,
@@ -13,8 +17,8 @@ interface ArticleTocNavProps {
 }
 
 /** Right-anchored table of contents, highlighting headings above the fold. */
-export function ArticleTocNav({ tocItems, visibleTocHeadingIds }: ArticleTocNavProps): React.JSX.Element {
-  const visibleTocHeadingIdSet = React.useMemo(
+export function ArticleTocNav({ tocItems, visibleTocHeadingIds }: ArticleTocNavProps): JSX.Element {
+  const visibleTocHeadingIdSet = useMemo(
     () => new Set(visibleTocHeadingIds),
     [visibleTocHeadingIds],
   );

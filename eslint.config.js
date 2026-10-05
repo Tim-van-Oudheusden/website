@@ -1,8 +1,11 @@
 import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
+import eslintReact from "@eslint-react/eslint-plugin";
 import stylistic from "@stylistic/eslint-plugin";
+import perfectionist from "eslint-plugin-perfectionist";
+import reactHooks from "eslint-plugin-react-hooks";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import tseslint from "typescript-eslint";
 
 const configDir = dirname(fileURLToPath(import.meta.url));
 
@@ -20,6 +23,66 @@ const projectAliases = workspaceAliasRootDir === configDir
   ? []
   : projectPaths.map((projectPath) => resolve(workspaceAliasRootDir, projectPath));
 
+const reactNamedImportsMessage = "Import React APIs by name (`import { useState } from \"react\"`), not as a namespace or default.";
+
+/* Syntax banned everywhere; tool config files only get the default-export exemption. */
+const restrictedSyntax = [
+  { selector: "TSEnumDeclaration", message: "Use an `as const` object or a union type instead of `enum`." },
+  { selector: "TSModuleDeclaration[kind='namespace']", message: "Use ES modules instead of `namespace`." },
+  { selector: "TSParameterProperty", message: "Declare class fields explicitly instead of parameter properties." },
+  {
+    selector: "ImportSpecifier[importKind='type']",
+    message: "Use a separate `import type` statement instead of an inline `type` specifier.",
+  },
+  {
+    selector: "ImportDeclaration[source.value='react'][importKind='value'] > ImportNamespaceSpecifier",
+    message: reactNamedImportsMessage,
+  },
+  { selector: "ImportDeclaration[source.value='react'] > ImportDefaultSpecifier", message: reactNamedImportsMessage },
+  {
+    selector: "JSXAttribute > JSXExpressionContainer > Literal[value=true]",
+    message: "Use boolean shorthand (`disabled`) instead of `disabled={true}`.",
+  },
+  {
+    selector: "JSXOpeningElement[attributes.length=0]:matches([name.name='Fragment'], [name.property.name='Fragment'])",
+    message: "Use `<>` instead of `<Fragment>` unless it needs a `key`.",
+  },
+];
+
+const defaultExportFiles = ["playwright.config.ts", "front-end/vite.config.ts", "test/front-end/vite.config.test.ts"];
+
+/* React code: the front-end app and its tests (hooks also live in .ts files). */
+const reactFiles = ["front-end/src/**/*.{ts,tsx}", "test/front-end/**/*.{ts,tsx}"];
+
+/** Only the three agreed rules may warn (see CONTRIBUTING.md); preset warnings become errors. */
+function asErrors(rules) {
+  return Object.fromEntries(
+    Object.entries(rules).map(([rule, entry]) => {
+      const [severity, ...options] = Array.isArray(entry) ? entry : [entry];
+
+      return [rule, severity === "off" || severity === 0 ? entry : ["error", ...options]];
+    }),
+  );
+}
+
+/* @eslint-react v5 re-implements the hooks rules; eslint-plugin-react-hooks owns them here. */
+const eslintReactHooksDuplicates = Object.fromEntries(
+  [
+    "error-boundaries",
+    "exhaustive-deps",
+    "globals",
+    "immutability",
+    "purity",
+    "refs",
+    "rules-of-hooks",
+    "set-state-in-effect",
+    "set-state-in-render",
+    "static-components",
+    "unsupported-syntax",
+    "use-memo",
+  ].map((rule) => [`@eslint-react/${rule}`, "off"]),
+);
+
 export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
@@ -35,6 +98,7 @@ export default tseslint.config(
     quoteProps: "consistent-as-needed",
   }),
   {
+    plugins: { perfectionist },
     languageOptions: {
       parserOptions: {
         project: [...projectPaths, ...projectAliases],
@@ -82,14 +146,14 @@ export default tseslint.config(
       ],
       "@stylistic/jsx-self-closing-comp": "error",
 
-      /* ── Best practices ── */
+      /* ── Types and type safety ── */
       "@typescript-eslint/no-unused-vars": [
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/explicit-function-return-type": [
-        "warn",
+        "error",
         {
           allowExpressions: true,
           allowTypedFunctionExpressions: true,
@@ -99,7 +163,7 @@ export default tseslint.config(
       ],
       "@typescript-eslint/consistent-type-imports": [
         "error",
-        { prefer: "type-imports", fixStyle: "inline-type-imports" },
+        { prefer: "type-imports", fixStyle: "separate-type-imports" },
       ],
       "@typescript-eslint/no-import-type-side-effects": "error",
       "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
@@ -111,12 +175,92 @@ export default tseslint.config(
         "error",
         { allowNumber: true },
       ],
+      "@typescript-eslint/naming-convention": [
+        "error",
+        { selector: "default", format: ["camelCase"] },
+        { selector: "import", format: ["camelCase", "PascalCase"] },
+        { selector: "variable", format: ["camelCase", "PascalCase"] },
+        { selector: "variable", modifiers: ["const", "global"], format: ["camelCase", "PascalCase", "UPPER_CASE"] },
+        { selector: "function", format: ["camelCase", "PascalCase"] },
+        { selector: "parameter", format: ["camelCase", "PascalCase"] },
+        {
+          selector: ["variable", "parameter"],
+          modifiers: ["unused"],
+          format: ["camelCase", "PascalCase"],
+          leadingUnderscore: "allow",
+        },
+        { selector: "typeLike", format: ["PascalCase"] },
+        {
+          selector: ["interface", "typeAlias"],
+          format: ["PascalCase"],
+          custom: { regex: "^[IT][A-Z]", match: false },
+        },
+        { selector: "property", format: null },
+        { selector: ["objectLiteralMethod", "typeMethod"], format: null },
+      ],
+
+      /* ── Code shape ── */
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "ExportDefaultDeclaration",
+          message: "Use named exports; default exports are only allowed in tool config files.",
+        },
+        ...restrictedSyntax,
+      ],
+      "func-style": ["error", "declaration", { allowArrowFunctions: false }],
+      "prefer-arrow-callback": "error",
+      "arrow-body-style": ["error", "as-needed"],
+      "object-shorthand": ["error", "always"],
+      "prefer-template": "error",
+      "no-else-return": "error",
+      "no-nested-ternary": "error",
+      "no-param-reassign": ["error", { props: false }],
+      "no-implicit-coercion": ["error", { allow: ["!!"] }],
+      "no-duplicate-imports": ["error", { includeExports: true, allowSeparateTypeImports: true }],
+
+      /* ── Import and export ordering ── */
+      "perfectionist/sort-imports": [
+        "error",
+        {
+          type: "natural",
+          ignoreCase: true,
+          environment: "bun",
+          internalPattern: ["^@/"],
+          customGroups: [{ groupName: "workspace", elementNamePattern: "^shared($|/)" }],
+          groups: ["builtin", "external", "workspace", "internal", "parent", "sibling", "index"],
+          newlinesBetween: 1,
+        },
+      ],
+      "perfectionist/sort-named-imports": ["error", { type: "natural", ignoreCase: true }],
+      "perfectionist/sort-named-exports": ["error", { type: "natural", ignoreCase: true }],
+      "perfectionist/sort-exports": ["error", { type: "natural", ignoreCase: true }],
 
       /* ── General quality ── */
       "no-console": ["warn", { allow: ["warn", "error"] }],
       eqeqeq: ["error", "always"],
       "prefer-const": "error",
       "no-var": "error",
+    },
+  },
+  {
+    ...eslintReact.configs["strict-type-checked"],
+    files: reactFiles,
+    rules: asErrors(eslintReact.configs["strict-type-checked"].rules),
+  },
+  {
+    ...reactHooks.configs.flat.recommended,
+    files: reactFiles,
+    rules: asErrors(reactHooks.configs.flat.recommended.rules),
+  },
+  {
+    files: reactFiles,
+    rules: eslintReactHooksDuplicates,
+  },
+  {
+    files: defaultExportFiles,
+    rules: {
+      "no-restricted-syntax": ["error", ...restrictedSyntax],
     },
   },
   {
@@ -129,6 +273,16 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-unsafe-argument": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/explicit-function-return-type": "off",
+    },
+  },
+  {
+    /* shadcn-generated components: house formatting applies, authoring-shape rules do not */
+    files: ["front-end/src/shared/components/ui/**"],
+    rules: {
+      "@typescript-eslint/naming-convention": "off",
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "func-style": "off",
     },
   },
   {

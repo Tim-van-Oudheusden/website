@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { calculateIndicatorMetrics } from "../../../../../../front-end/src/features/home/lib/home-floating-nav-indicator";
 
 describe("calculateIndicatorMetrics", () => {

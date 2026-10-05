@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
+
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+
 import { ArticleTocNav } from "../../../../../../front-end/src/features/articles/components/article-toc-nav";
 import type { ArticleTableOfContentsItem } from "../../../../../../front-end/src/features/articles/lib/article-toc";
 import {

@@ -1,13 +1,14 @@
-import * as React from "react";
-import { BrowserRouter, Routes, Route } from "react-router";
-import { TopBar } from "@/shared/components/top-bar";
-import { HomePage } from "@/features/home/pages/home-page";
-import { ProjectsPage } from "@/features/projects/pages/projects-page";
+import type { JSX } from "react";
+import { BrowserRouter, Route, Routes } from "react-router";
+
 import { ArticlesPage } from "@/features/articles/pages/articles-page";
+import { HomePage } from "@/features/home/pages/home-page";
 import { ProjectPage } from "@/features/projects/pages/project-page";
+import { ProjectsPage } from "@/features/projects/pages/projects-page";
+import { TopBar } from "@/shared/components/top-bar";
 
 /** Route table only, so it can be asserted independently of the browser router. */
-export function AppRoutes(): React.JSX.Element {
+export function AppRoutes(): JSX.Element {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
@@ -19,7 +20,7 @@ export function AppRoutes(): React.JSX.Element {
   );
 }
 
-export function App(): React.JSX.Element {
+export function App(): JSX.Element {
   return (
     <BrowserRouter>
       <div className="flex min-h-svh flex-col">

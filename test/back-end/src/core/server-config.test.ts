@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
+
 import { BACKEND_PORT } from "shared";
+
 import { getServerConfig } from "../../../../back-end/src/core/server-config";
 
 describe("server config", () => {

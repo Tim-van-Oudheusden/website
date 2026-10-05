@@ -1,25 +1,26 @@
-import * as React from "react";
-import type { HomeSectionId } from "../types/home-section";
-import type { HomeSectionDefinition } from "../types/home-section";
-import { HomeSectionFooter } from "./home-section-footer";
+import type { JSX, MouseEvent } from "react";
+
+import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
+
+import { HomeRecentPosts } from "./home-recent-posts";
 import { HomeSectionCarousel } from "./home-section-carousel";
-import { HomeSectionStart } from "./home-section-start";
 import { HomeSectionDefault } from "./home-section-default";
+import { HomeSectionFooter } from "./home-section-footer";
+import { HomeSectionStart } from "./home-section-start";
+import { HomeStartHere } from "./home-start-here";
 import { HomeTrustStrip } from "./home-trust-strip";
 import { HomeWorkflowRows } from "./home-workflow-rows";
-import { HomeRecentPosts } from "./home-recent-posts";
-import { HomeStartHere } from "./home-start-here";
 
 export interface HomeSectionProps {
   section: HomeSectionDefinition;
-  onCtaActivate?: (sectionId: HomeSectionId, event: React.MouseEvent<HTMLAnchorElement>) => void;
+  onCtaActivate?: (sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void;
 }
 
 /**
  * Dispatches a home section definition to the renderer responsible for its
  * variant. The default-variant `start` section renders as a hero.
  */
-export function HomeSection({ section, onCtaActivate }: HomeSectionProps): React.JSX.Element {
+export function HomeSection({ section, onCtaActivate }: HomeSectionProps): JSX.Element {
   switch (section.variant) {
     case "start":
       return <HomeSectionStart section={section} onCtaActivate={onCtaActivate} />;

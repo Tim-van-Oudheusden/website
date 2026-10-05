@@ -1,19 +1,14 @@
 import { afterAll, afterEach, beforeAll, describe, expect, test } from "bun:test";
+
 import { act, createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
-import { TopBar } from "../../../../../front-end/src/shared/components/top-bar";
 
-import { queryFakeElements, triggerWindowEvent, uninstallFakeDom, type FakeDocument, type FakeElement } from "../../test/fake-dom";
-import {
-  findAllBySlot,
-  findBySlot,
-  fireFakePointer,
-  initFakeDomHarness,
-  mountIntoBody,
-  unmountFakeDomRoot,
-  type FakeMount,
-} from "../../test/dom-harness";
+import { TopBar } from "../../../../../front-end/src/shared/components/top-bar";
+import type { FakeMount } from "../../test/dom-harness";
+import { findAllBySlot, findBySlot, fireFakePointer, initFakeDomHarness, mountIntoBody, unmountFakeDomRoot } from "../../test/dom-harness";
+import type { FakeDocument, FakeElement } from "../../test/fake-dom";
+import { queryFakeElements, triggerWindowEvent, uninstallFakeDom } from "../../test/fake-dom";
 
 beforeAll(async () => {
   await initFakeDomHarness();

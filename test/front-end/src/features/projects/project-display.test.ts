@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
+
 import type { ProjectFrontmatter } from "shared";
+
 import {
   resolveFeaturedProject,
   resolveGalleryProjects,

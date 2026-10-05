@@ -1,11 +1,15 @@
 import { resolve } from "path";
-import Fastify, { type FastifyInstance } from "fastify";
+
+import type { FastifyInstance } from "fastify";
+import Fastify from "fastify";
+
 import { API_BASE } from "shared";
-import { registerRateLimiting, isLoopbackAddress } from "./core/rate-limit";
+
+import { isLoopbackAddress, registerRateLimiting } from "./core/rate-limit";
 import { registerSecurityHeaders } from "./core/security-headers";
 import {
-  registerContentRoutes,
   registerContentImageRoutes,
+  registerContentRoutes,
 } from "./features/content/content-routes";
 import { registerHealthRoute } from "./features/health/register-health-route";
 import { registerHelloRoute } from "./features/hello/register-hello-route";

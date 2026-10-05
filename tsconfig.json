@@ -24,6 +24,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
 
     /* Quality */
     "skipLibCheck": true,

@@ -1,8 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { createElement, type ReactElement } from "react";
+
+import type { ReactElement } from "react";
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
-import { ProjectMetaHeader, type ProjectData } from "../../../../../../front-end/src/features/projects/pages/project-page";
+
+import type { ProjectData } from "../../../../../../front-end/src/features/projects/pages/project-page";
+import { ProjectMetaHeader } from "../../../../../../front-end/src/features/projects/pages/project-page";
 import { ProjectCard } from "../../../../../../front-end/src/features/projects/pages/projects-page";
 
 function project(overrides: Partial<ProjectData> = {}): ProjectData {

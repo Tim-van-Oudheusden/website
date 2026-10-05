@@ -1,17 +1,18 @@
-import * as React from "react";
-import { memo } from "react";
+import type { JSX, ReactElement, ReactNode } from "react";
+import { Children, isValidElement, memo, useMemo } from "react";
 import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
 import type { Components } from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import remarkGfm from "remark-gfm";
 import "highlight.js/styles/github.css";
-import { cn } from "@/shared/lib/utils";
+
 import {
   extractMarkdownHeadingsWithOffsets,
   normalizeMarkdownHeadingText,
   slugifyHeadingText,
   TOC_MAX_DEPTH,
 } from "@/shared/lib/markdown-headings";
+import { cn } from "@/shared/lib/utils";
 
 export interface MarkdownRendererProps {
   /** Raw markdown string (frontmatter already stripped). */
@@ -21,22 +22,22 @@ export interface MarkdownRendererProps {
 interface ParsedObsidianCallout {
   type: string;
   title: string;
-  bodyNodes: React.ReactNode[];
+  bodyNodes: ReactNode[];
 }
 
 const OBSIDIAN_CALLOUT_MARKER_PATTERN = /^\s*\[!([a-z0-9_-]+)\](?:[ \t]+([^\n]+))?(?:\n([\s\S]*))?$/i;
 
-function flattenNodeText(node: React.ReactNode): string {
+function flattenNodeText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") {
     return String(node);
   }
 
   if (Array.isArray(node)) {
-    return node.map((child: React.ReactNode) => flattenNodeText(child)).join("");
+    return node.map((child: ReactNode) => flattenNodeText(child)).join("");
   }
 
-  if (React.isValidElement(node)) {
-    const elementProps = node.props as { children?: React.ReactNode; alt?: string };
+  if (isValidElement(node)) {
+    const elementProps = node.props as { children?: ReactNode; alt?: string };
 
     if (
       (node.type === "img" || elementProps.children === null)
@@ -60,18 +61,21 @@ function formatCalloutTitle(type: string): string {
     .join(" ");
 }
 
-function parseObsidianCallout(children: React.ReactNode): ParsedObsidianCallout | null {
-  const blockquoteChildren = React.Children
-    .toArray(children)
+function parseObsidianCallout(children: ReactNode): ParsedObsidianCallout | null {
+  // Children.toArray is required here: react-markdown hands over nested/fragmented children and
+  // the flattened, keyed list is re-rendered as callout body nodes.
+  // eslint-disable-next-line @eslint-react/no-children-to-array -- see comment above
+  const blockquoteChildren = Children.toArray(children)
     .filter((child) => !(typeof child === "string" && child.trim().length === 0));
   const firstNode = blockquoteChildren[0];
 
-  if (!React.isValidElement(firstNode) || firstNode.type !== "p") {
+  if (!isValidElement(firstNode) || firstNode.type !== "p") {
     return null;
   }
 
-  const firstParagraphElement = firstNode as React.ReactElement<{ children?: React.ReactNode }>;
-  const firstParagraphChildren = React.Children.toArray(firstParagraphElement.props.children);
+  const firstParagraphElement = firstNode as ReactElement<{ children?: ReactNode }>;
+  // eslint-disable-next-line @eslint-react/no-children-to-array -- flattens the paragraph text to detect the marker
+  const firstParagraphChildren = Children.toArray(firstParagraphElement.props.children);
 
   if (firstParagraphChildren.length === 0 || typeof firstParagraphChildren[0] !== "string") {
     return null;
@@ -99,13 +103,14 @@ function parseObsidianCallout(children: React.ReactNode): ParsedObsidianCallout 
     adjustedFirstParagraphChildren.unshift(markerRemainder);
   }
 
-  const calloutBodyNodes: React.ReactNode[] = [];
+  const calloutBodyNodes: ReactNode[] = [];
 
   if (flattenNodeText(adjustedFirstParagraphChildren).trim().length > 0) {
-    calloutBodyNodes.push(React.cloneElement(firstParagraphElement, {
-      key: "callout-body-first-paragraph",
-      children: adjustedFirstParagraphChildren,
-    }));
+    calloutBodyNodes.push(
+      <p key="callout-body-first-paragraph" {...firstParagraphElement.props}>
+        {adjustedFirstParagraphChildren}
+      </p>,
+    );
   }
 
   calloutBodyNodes.push(...blockquoteChildren.slice(1));
@@ -117,16 +122,56 @@ function parseObsidianCallout(children: React.ReactNode): ParsedObsidianCallout 
   };
 }
 
+interface HeadingIdLookup {
+  byOffset: Map<number, string>;
+  byLineColumn: Map<string, string>;
+}
+
+function resolveHeadingIdFromPosition(
+  headingIds: HeadingIdLookup,
+  headingText: string,
+  position?: {
+    offset?: number | undefined;
+    line?: number | undefined;
+    column?: number | undefined;
+  },
+): string {
+  if (position?.offset !== undefined) {
+    const resolvedId = headingIds.byOffset.get(position.offset);
+
+    if (resolvedId !== undefined) {
+      return resolvedId;
+    }
+  }
+
+  if (position?.line !== undefined && position.column !== undefined) {
+    const resolvedId = headingIds.byLineColumn.get(`${position.line}:${position.column}`);
+
+    if (resolvedId !== undefined) {
+      return resolvedId;
+    }
+  }
+
+  // A lookup miss means this rendered heading was not part of the extracted
+  // set, so the TOC has no link for it; inventing a position-suffixed id
+  // here would silently diverge. Stay deterministic and make it loud.
+  console.error(
+    `[markdown-renderer] heading id lookup missed for "${headingText}"; TOC link may be absent.`,
+  );
+
+  return slugifyHeadingText(headingText) || "section";
+}
+
 /**
  * Renders a markdown string to styled HTML using react-markdown.
  *
  * Wraps output in prose classes for typography styling.
  * Supports GitHub Flavored Markdown (tables, strikethrough, task lists).
  */
-export const MarkdownRenderer = memo(function MarkdownRenderer({
+export const MarkdownRenderer = memo(({
   content,
-}: MarkdownRendererProps): React.JSX.Element {
-  const headingIdByOffset = React.useMemo(() => {
+}: MarkdownRendererProps): JSX.Element => {
+  const headingIdByOffset = useMemo((): HeadingIdLookup => {
     const entries = extractMarkdownHeadingsWithOffsets(content, TOC_MAX_DEPTH);
 
     return {
@@ -135,41 +180,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     };
   }, [content]);
 
-  function resolveHeadingIdFromPosition(
-    headingText: string,
-    position?: {
-      offset?: number | undefined;
-      line?: number | undefined;
-      column?: number | undefined;
-    },
-  ): string {
-    if (position?.offset !== undefined) {
-      const resolvedId = headingIdByOffset.byOffset.get(position.offset);
-
-      if (resolvedId !== undefined) {
-        return resolvedId;
-      }
-    }
-
-    if (position?.line !== undefined && position.column !== undefined) {
-      const resolvedId = headingIdByOffset.byLineColumn.get(`${position.line}:${position.column}`);
-
-      if (resolvedId !== undefined) {
-        return resolvedId;
-      }
-    }
-
-    // A lookup miss means this rendered heading was not part of the extracted
-    // set, so the TOC has no link for it; inventing a position-suffixed id
-    // here would silently diverge. Stay deterministic and make it loud.
-    console.error(
-      `[markdown-renderer] heading id lookup missed for "${headingText}"; TOC link may be absent.`,
-    );
-
-    return slugifyHeadingText(headingText) || "section";
-  }
-
-  const components = React.useMemo<Components>(() => ({
+  const components = useMemo<Components>(() => ({
     a({ href, children, ...rest }) {
       const isExternal = href?.startsWith("http") === true;
       let externalLinkProps: {
@@ -193,7 +204,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     },
     h1({ children, className, node, ...rest }) {
       const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
-      const id = resolveHeadingIdFromPosition(headingText, node?.position?.start);
+      const id = resolveHeadingIdFromPosition(headingIdByOffset, headingText, node?.position?.start);
 
       return (
         <h1 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
@@ -203,7 +214,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     },
     h2({ children, className, node, ...rest }) {
       const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
-      const id = resolveHeadingIdFromPosition(headingText, node?.position?.start);
+      const id = resolveHeadingIdFromPosition(headingIdByOffset, headingText, node?.position?.start);
 
       return (
         <h2 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
@@ -213,7 +224,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     },
     h3({ children, className, node, ...rest }) {
       const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
-      const id = resolveHeadingIdFromPosition(headingText, node?.position?.start);
+      const id = resolveHeadingIdFromPosition(headingIdByOffset, headingText, node?.position?.start);
 
       return (
         <h3 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>

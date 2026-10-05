@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 async function pickTheme(page: Page, theme: "Light" | "Dark" | "System"): Promise<void> {
   await page.getByRole("button", { name: "Toggle theme" }).click();

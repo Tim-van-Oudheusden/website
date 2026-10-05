@@ -1,9 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import {
-  resolveActiveTocHeadingIds,
-  resolveTocLinkIndentClass,
-  type ArticleTableOfContentsItem,
-} from "../../../../../../front-end/src/features/articles/lib/article-toc";
+
+import type { ArticleTableOfContentsItem } from "../../../../../../front-end/src/features/articles/lib/article-toc";
+import { resolveActiveTocHeadingIds, resolveTocLinkIndentClass } from "../../../../../../front-end/src/features/articles/lib/article-toc";
 
 const TOC_ITEMS: ArticleTableOfContentsItem[] = [
   { id: "intro", text: "Intro", depth: 1 },

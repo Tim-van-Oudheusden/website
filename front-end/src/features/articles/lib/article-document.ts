@@ -1,7 +1,10 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+
 import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
-import { extractArticleTableOfContents, type ArticleTableOfContentsItem } from "./article-toc";
+
+import type { ArticleTableOfContentsItem } from "./article-toc";
+import { extractArticleTableOfContents } from "./article-toc";
 
 export interface RenderedArticle {
   /** Server-rendered article markup with heading ids matching `toc`. */

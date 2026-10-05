@@ -1,9 +1,9 @@
-import * as React from "react";
+import type { ReactNode } from "react";
 import { Component } from "react";
 
 export interface ErrorBoundaryProps {
-  fallback?: React.ReactNode;
-  children: React.ReactNode;
+  fallback?: ReactNode;
+  children: ReactNode;
 }
 
 export interface ErrorBoundaryState {
@@ -29,7 +29,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     this.setState({ hasError: false });
   };
 
-  override render(): React.ReactNode {
+  override render(): ReactNode {
     if (this.state.hasError) {
       return this.props.fallback ?? (
         <div className="rounded-md border border-destructive bg-destructive/10 p-4">

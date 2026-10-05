@@ -1,9 +1,10 @@
-import * as React from "react";
+import { MenuIcon } from "lucide-react";
+import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
-import { MenuIcon } from "lucide-react";
+
+import { ThemeToggle } from "@/shared/components/theme-toggle";
 import { Button } from "@/shared/components/ui/button";
-import { cn } from "@/shared/lib/utils";
 import {
   Sheet,
   SheetContent,
@@ -11,7 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
-import { ThemeToggle } from "@/shared/components/theme-toggle";
+import { cn } from "@/shared/lib/utils";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -27,7 +28,7 @@ function isActiveNavPath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function TopBar(): React.JSX.Element {
+export function TopBar(): JSX.Element {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();

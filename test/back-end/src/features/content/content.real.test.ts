@@ -1,9 +1,11 @@
-import { describe, expect, test, beforeAll, afterAll, beforeEach, afterEach } from "bun:test";
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from "bun:test";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+
 import type { ArticleFrontmatter, ProjectFrontmatter } from "shared";
-import { listContent, getContentBySlug, validateContentDir } from "../../../../../back-end/src/features/content/content";
+
+import { getContentBySlug, listContent, validateContentDir } from "../../../../../back-end/src/features/content/content";
 
 // Resolve the repo-root content dir from the module location, not CWD, so the
 // test works both standalone and via `bun run test` (workspace filter).

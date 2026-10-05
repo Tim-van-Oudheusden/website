@@ -1,13 +1,16 @@
-import * as React from "react";
-import { useState, useEffect } from "react";
+import type { JSX } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
+
 import type { ProjectFrontmatter } from "shared";
-import { ApiError } from "@/shared/lib/api";
-import { httpContentLoader } from "@/shared/lib/content-loader";
+
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/components/ui/card";
-import { resolvePriorityProjects, resolveGalleryProjects } from "../lib/project-display";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { ApiError } from "@/shared/lib/api";
+import { httpContentLoader } from "@/shared/lib/content-loader";
+
+import { resolveGalleryProjects, resolvePriorityProjects } from "../lib/project-display";
 
 export const PROJECTS_PAGE_LAYOUT_CLASSES = {
   main: "w-full flex-1 bg-[var(--adw-page-brown-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8",
@@ -41,7 +44,7 @@ interface ProjectCardProps {
   featured?: boolean;
 }
 
-export function ProjectCard({ project, featured = false }: ProjectCardProps): React.JSX.Element {
+export function ProjectCard({ project, featured = false }: ProjectCardProps): JSX.Element {
   return (
     <Card className="group h-full overflow-hidden border-border bg-(--site-section-well-bg) p-0 transition-[border-color,box-shadow] hover:border-[var(--adw-dark-5)] hover:ring-1 hover:ring-[var(--adw-dark-5)] dark:hover:border-[var(--adw-light-1)] dark:hover:ring-[var(--adw-light-1)]">
       <Link to={`/projects/${project.slug}`} className="flex h-full flex-col gap-6">
@@ -79,7 +82,7 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps): Re
   );
 }
 
-export function ProjectsPage(): React.JSX.Element {
+export function ProjectsPage(): JSX.Element {
   const [projects, setProjects] = useState<ProjectFrontmatter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

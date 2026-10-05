@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { resolveContentAsset } from "../../../../../back-end/src/features/content/image-assets";
 
 describe("resolveContentAsset", () => {

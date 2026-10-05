@@ -1,17 +1,20 @@
-import * as React from "react";
-import { cn } from "@/shared/lib/utils";
+import type { JSX, MouseEvent } from "react";
+
 import { Button } from "@/shared/components/ui/button";
+import { cn } from "@/shared/lib/utils";
+
 import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
+
 import { HomeSectionShell } from "./home-section-shell";
 
 interface HomeSectionDefaultProps {
   section: HomeSectionDefinition;
-  onCtaActivate?: ((sectionId: HomeSectionId, event: React.MouseEvent<HTMLAnchorElement>) => void) | undefined;
+  onCtaActivate?: ((sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void) | undefined;
 }
 
 /** Default home section: heading, body, optional CTA beside a media placeholder. */
-export function HomeSectionDefault({ section, onCtaActivate }: HomeSectionDefaultProps): React.JSX.Element {
+export function HomeSectionDefault({ section, onCtaActivate }: HomeSectionDefaultProps): JSX.Element {
   const isRow = section.contentDirection === "row";
   const ctaLabel = section.ctaLabel;
   const ctaTargetId = section.ctaTargetId;

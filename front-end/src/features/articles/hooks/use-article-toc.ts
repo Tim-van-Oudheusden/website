@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  extractArticleTableOfContents,
-  resolveActiveTocHeadingIds,
-  type ArticleTableOfContentsItem,
-} from "../lib/article-toc";
+
 import type { ArticleData } from "shared/articles";
+
+import type { ArticleTableOfContentsItem } from "../lib/article-toc";
+import { extractArticleTableOfContents, resolveActiveTocHeadingIds } from "../lib/article-toc";
 
 export interface UseArticleTocResult {
   tocItems: ArticleTableOfContentsItem[];
@@ -24,17 +23,21 @@ export function useArticleToc(
     [article],
   );
   const [visibleTocHeadingIds, setVisibleTocHeadingIds] = useState<string[]>([]);
+  const tracking = !loadingArticle && article !== null && tocItems.length > 0;
+
+  // Reset during render (not in the effect) so an inactive TOC never commits stale headings.
+  if (!tracking && visibleTocHeadingIds.length > 0) {
+    setVisibleTocHeadingIds([]);
+  }
 
   useEffect(() => {
-    if (loadingArticle || article === null || tocItems.length === 0) {
-      setVisibleTocHeadingIds([]);
-
+    if (!tracking) {
       return;
     }
 
     let rafId: number | null = null;
 
-    const updateActiveTocHeadings = (): void => {
+    function updateActiveTocHeadings(): void {
       rafId = null;
       const nextVisibleHeadingIds = resolveActiveTocHeadingIds(
         tocItems,
@@ -60,15 +63,15 @@ export function useArticleToc(
 
         return nextVisibleHeadingIds;
       });
-    };
+    }
 
-    const scheduleActiveTocHeadingUpdate = (): void => {
+    function scheduleActiveTocHeadingUpdate(): void {
       if (rafId !== null) {
         return;
       }
 
       rafId = window.requestAnimationFrame(updateActiveTocHeadings);
-    };
+    }
 
     window.addEventListener("scroll", scheduleActiveTocHeadingUpdate, { passive: true });
     document.addEventListener("scroll", scheduleActiveTocHeadingUpdate, { passive: true, capture: true });
@@ -84,7 +87,7 @@ export function useArticleToc(
         window.cancelAnimationFrame(rafId);
       }
     };
-  }, [loadingArticle, article, tocItems]);
+  }, [tracking, tocItems]);
 
   return { tocItems, visibleTocHeadingIds };
 }

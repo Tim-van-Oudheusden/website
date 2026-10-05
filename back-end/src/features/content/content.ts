@@ -1,8 +1,10 @@
 import { readdir, readFile } from "fs/promises";
-import { join, basename } from "path";
-import { parseFrontmatter } from "./frontmatter";
+import { basename, join } from "path";
+
 import { ARTICLE_CATEGORIES, CONTENT_TYPES, PROJECT_LINK_TYPES, PROJECT_STATUSES } from "shared";
 import type { ArticleCategory, ContentFrontmatter, ContentType, ProjectLink } from "shared";
+
+import { parseFrontmatter } from "./frontmatter";
 import { rewriteObsidianImageEmbeds } from "./obsidian";
 
 /** Content item with frontmatter only (for listing pages). */

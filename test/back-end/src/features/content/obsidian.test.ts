@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { rewriteObsidianImageEmbeds } from "../../../../../back-end/src/features/content/obsidian";
 
 describe("rewriteObsidianImageEmbeds", () => {

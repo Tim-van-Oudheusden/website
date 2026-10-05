@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { resolveAnchorScrollBehavior } from "../../../../../../front-end/src/features/home/lib/home-section-nav-scroll";
 
 describe("resolveAnchorScrollBehavior", () => {
@@ -7,15 +8,17 @@ describe("resolveAnchorScrollBehavior", () => {
   });
 
   test("uses auto when the user prefers reduced motion", () => {
-    const matchMedia = (query: string): { matches: boolean } => ({
-      matches: query === "(prefers-reduced-motion: reduce)",
-    });
+    function matchMedia(query: string): { matches: boolean } {
+      return { matches: query === "(prefers-reduced-motion: reduce)" };
+    }
 
     expect(resolveAnchorScrollBehavior(matchMedia)).toBe("auto");
   });
 
   test("uses smooth scrolling when reduced motion is not preferred", () => {
-    const matchMedia = (): { matches: boolean } => ({ matches: false });
+    function matchMedia(): { matches: boolean } {
+      return { matches: false };
+    }
 
     expect(resolveAnchorScrollBehavior(matchMedia)).toBe("smooth");
   });

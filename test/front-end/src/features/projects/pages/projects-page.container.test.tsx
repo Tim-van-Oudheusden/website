@@ -1,20 +1,15 @@
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
+
 import { act, createElement } from "react";
 import { MemoryRouter } from "react-router";
+
 import type { ProjectFrontmatter } from "shared";
 
 import { ProjectsPage } from "../../../../../../front-end/src/features/projects/pages/projects-page";
-
-import { queryFakeElements, uninstallFakeDom, type FakeElement } from "../../../../src/test/fake-dom";
-import {
-  findAllBySlot,
-  initFakeDomHarness,
-  jsonResponse,
-  mountIntoBody,
-  settleMicrotasks,
-  unmountFakeDomRoot,
-  type FakeMount,
-} from "../../../../src/test/dom-harness";
+import type { FakeMount } from "../../../../src/test/dom-harness";
+import { findAllBySlot, initFakeDomHarness, jsonResponse, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import type { FakeElement } from "../../../../src/test/fake-dom";
+import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 // ProjectsPage uses its real hooks and the real content loader, driven through
 // the fetch stub like project-page.container.test.tsx.

@@ -1,15 +1,10 @@
-import { afterAll, beforeEach, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
+
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+
 import type * as ThemeToggleModule from "../../../../../front-end/src/shared/components/theme-toggle";
 import type * as UseThemeModule from "../../../../../front-end/src/shared/hooks/use-theme";
-
-import {
-  uninstallFakeDom,
-  queryFakeElements,
-  triggerFakeMediaPreferenceChange,
-  type FakeDocument,
-} from "../../../src/test/fake-dom";
 import {
   findBySlot,
   fireFakePointer,
@@ -18,6 +13,8 @@ import {
   mountIntoBody,
   unmountFakeDomRoot,
 } from "../../../src/test/dom-harness";
+import type { FakeDocument } from "../../../src/test/fake-dom";
+import { queryFakeElements, triggerFakeMediaPreferenceChange, uninstallFakeDom } from "../../../src/test/fake-dom";
 
 // Module-loading boundary: Radix captures `globalThis?.document` at module
 // load, so it must be imported after the fake DOM is installed by the harness.

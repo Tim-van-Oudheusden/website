@@ -1,0 +1,5 @@
+# Mechanical reformats to skip in `git blame`.
+# Enable locally: git config blame.ignoreRevsFile .git-blame-ignore-revs (GitHub honours it automatically).
+
+# chore(lint): adopt @stylistic house formatting and reformat codebase (#538)
+dfd1ef6725ccf26e2b3fa1a5b96367983a59f471

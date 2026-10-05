@@ -6,16 +6,12 @@
  * React/ Radix listeners react to, so test files stop re-implementing the
  * same harness.
  */
-import { act, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { act } from "react";
 import type { createRoot as CreateRootValue, Root } from "react-dom/client";
 
-import {
-  installFakeDom,
-  queryFakeElements,
-  type FakeDocument,
-  type FakeDomEvent,
-  type FakeElement,
-} from "./fake-dom";
+import type { FakeDocument, FakeDomEvent, FakeElement } from "./fake-dom";
+import { installFakeDom, queryFakeElements } from "./fake-dom";
 
 type CreateRootFn = typeof CreateRootValue;
 

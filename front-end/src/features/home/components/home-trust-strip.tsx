@@ -1,6 +1,8 @@
-import * as React from "react";
-import { HomeSectionShell } from "./home-section-shell";
+import type { JSX } from "react";
+
 import type { HomeSectionDefinition } from "../types/home-section";
+
+import { HomeSectionShell } from "./home-section-shell";
 
 interface HomeTrustStripProps {
   section: HomeSectionDefinition;
@@ -13,7 +15,7 @@ interface HomeTrustStripProps {
  * deliberately renders no metrics, testimonials, or compatibility badges —
  * the site is young, so credibility comes from stating only what holds.
  */
-export function HomeTrustStrip({ section }: HomeTrustStripProps): React.JSX.Element {
+export function HomeTrustStrip({ section }: HomeTrustStripProps): JSX.Element {
   const items = section.trustItems ?? [];
 
   return (

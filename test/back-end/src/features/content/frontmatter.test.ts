@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { parseFrontmatter } from "../../../../../back-end/src/features/content/frontmatter";
 
 describe("parseFrontmatter", () => {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import type { HomeSectionId } from "../types/home-section";
 
 export interface ObservedSectionEntry {

@@ -1,13 +1,11 @@
 import { afterAll, afterEach, beforeAll, describe, expect, test } from "bun:test";
+
 import { act, createElement } from "react";
+
 import type { ArticleData, ArticleSummary } from "shared/articles";
 
-import {
-  useArticles,
-  type UseArticlesResult,
-} from "../../../../../../front-end/src/features/articles/hooks/use-articles";
-
-import { uninstallFakeDom } from "../../../../src/test/fake-dom";
+import type { UseArticlesResult } from "../../../../../../front-end/src/features/articles/hooks/use-articles";
+import { useArticles } from "../../../../../../front-end/src/features/articles/hooks/use-articles";
 import {
   initFakeDomHarness,
   jsonResponse,
@@ -16,6 +14,7 @@ import {
   settleMicrotasks,
   unmountFakeDomRoot,
 } from "../../../../src/test/dom-harness";
+import { uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 // useArticles runs against the real content loader, driven through a routed
 // fetch stub like content-loader.test.ts.

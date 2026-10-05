@@ -1,7 +1,10 @@
-import * as React from "react";
+import type { JSX } from "react";
+
 import { cn } from "@/shared/lib/utils";
+
 import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionDefinition } from "../types/home-section";
+
 import { HomeSectionShell } from "./home-section-shell";
 import { ValuePillarsCarousel } from "./value-pillars-carousel";
 
@@ -10,7 +13,7 @@ interface HomeSectionCarouselProps {
 }
 
 /** Home 'carousel' variant: the value-pillars carousel inside an optional well. */
-export function HomeSectionCarousel({ section }: HomeSectionCarouselProps): React.JSX.Element {
+export function HomeSectionCarousel({ section }: HomeSectionCarouselProps): JSX.Element {
   const inWhiteWell = section.surfaceVariant === "white-well";
 
   return (

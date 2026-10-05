@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { API_BASE, BACKEND_HOST, BACKEND_PORT, FRONTEND_PORT, ROUTES } from "../../../shared/src/index";
 
 describe("shared route constants", () => {

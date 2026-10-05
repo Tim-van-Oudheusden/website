@@ -1,15 +1,16 @@
-import * as React from "react";
+import type { JSX } from "react";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useArticles } from "../hooks/use-articles";
-import { useArticleToc } from "../hooks/use-article-toc";
-import { navigateToArticleHeadingById } from "../lib/article-toc";
-import { resolveArticlesTrailTargetSlug } from "../lib/articles-sidebar";
-import { ArticlesSidebar } from "../components/articles-sidebar";
-import { ArticleContent } from "../components/article-content";
-import { ARTICLES_PAGE_LAYOUT_CLASSES, ARTICLES_PAGE_TYPOGRAPHY_CLASSES } from "../lib/articles-page-styles";
 
-export function ArticlesPage(): React.JSX.Element {
+import { ArticleContent } from "../components/article-content";
+import { ArticlesSidebar } from "../components/articles-sidebar";
+import { useArticleToc } from "../hooks/use-article-toc";
+import { useArticles } from "../hooks/use-articles";
+import { navigateToArticleHeadingById } from "../lib/article-toc";
+import { ARTICLES_PAGE_LAYOUT_CLASSES, ARTICLES_PAGE_TYPOGRAPHY_CLASSES } from "../lib/articles-page-styles";
+import { resolveArticlesTrailTargetSlug } from "../lib/articles-sidebar";
+
+export function ArticlesPage(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const {

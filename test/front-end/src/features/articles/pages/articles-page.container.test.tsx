@@ -1,21 +1,15 @@
 import { afterAll, afterEach, beforeAll, describe, expect, test } from "bun:test";
+
 import { act, createElement } from "react";
 import { MemoryRouter, Route, Routes } from "react-router";
+
 import type { ArticleData, ArticleSummary } from "shared/articles";
 
 import { ArticlesPage } from "../../../../../../front-end/src/features/articles/pages/articles-page";
-
-import { queryFakeElements, uninstallFakeDom, type FakeDocument, type FakeElement } from "../../../../src/test/fake-dom";
-import {
-  fireFakePointer,
-  initFakeDomHarness,
-  jsonResponse,
-  mountIntoBody,
-  routeFetch,
-  settleMicrotasks,
-  unmountFakeDomRoot,
-  type FakeMount,
-} from "../../../../src/test/dom-harness";
+import type { FakeMount } from "../../../../src/test/dom-harness";
+import { fireFakePointer, initFakeDomHarness, jsonResponse, mountIntoBody, routeFetch, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import type { FakeDocument, FakeElement } from "../../../../src/test/fake-dom";
+import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 // ArticlesPage runs its real hooks against the real content loader, driven
 // through a routed fetch stub. Data-state permutations live in

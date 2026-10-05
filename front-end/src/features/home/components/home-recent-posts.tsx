@@ -1,9 +1,16 @@
-import * as React from "react";
+import type { JSX } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { compareArticles, type ArticleSummary } from "shared/articles";
-import { httpContentLoader, type ContentLoader } from "@/shared/lib/content-loader";
-import { HomeSectionShell } from "./home-section-shell";
+
+import type { ArticleSummary } from "shared/articles";
+import { compareArticles } from "shared/articles";
+
+import type { ContentLoader } from "@/shared/lib/content-loader";
+import { httpContentLoader } from "@/shared/lib/content-loader";
+
 import type { HomeSectionDefinition } from "../types/home-section";
+
+import { HomeSectionShell } from "./home-section-shell";
 
 export const RECENT_POSTS_COUNT = 4;
 
@@ -16,7 +23,7 @@ export function selectRecentPosts(
 }
 
 /** A compact grid of recent posts, each linked to its real article page. */
-export function RecentPostsList({ posts }: { posts: ArticleSummary[] }): React.JSX.Element {
+export function RecentPostsList({ posts }: { posts: ArticleSummary[] }): JSX.Element {
   return (
     <ul className="grid gap-4 sm:grid-cols-2">
       {posts.map((post) => (
@@ -45,7 +52,7 @@ export function RecentPostsContent({
 }: {
   posts: ArticleSummary[] | null;
   loadError: boolean;
-}): React.JSX.Element {
+}): JSX.Element {
   if (loadError) {
     return (
       <p role="alert" className="text-sm text-red-600 dark:text-red-400">
@@ -70,11 +77,11 @@ interface HomeRecentPostsProps {
 export function HomeRecentPosts({
   section,
   loader = httpContentLoader,
-}: HomeRecentPostsProps): React.JSX.Element {
-  const [posts, setPosts] = React.useState<ArticleSummary[] | null>(null);
-  const [loadError, setLoadError] = React.useState(false);
+}: HomeRecentPostsProps): JSX.Element {
+  const [posts, setPosts] = useState<ArticleSummary[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
 
     loader.listArticles().then(

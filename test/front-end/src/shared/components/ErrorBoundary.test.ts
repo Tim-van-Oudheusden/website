@@ -1,7 +1,10 @@
 import { describe, expect, test } from "bun:test";
+
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ErrorBoundary, type ErrorBoundaryProps, type ErrorBoundaryState } from "../../../../../front-end/src/shared/components/error-boundary";
+
+import type { ErrorBoundaryProps, ErrorBoundaryState } from "../../../../../front-end/src/shared/components/error-boundary";
+import { ErrorBoundary } from "../../../../../front-end/src/shared/components/error-boundary";
 
 const HEALTHY_CHILD = createElement("span", null, "healthy content");
 

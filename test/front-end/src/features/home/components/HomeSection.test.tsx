@@ -1,21 +1,18 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+
 import { act, createElement } from "react";
 import type { MouseEvent } from "react";
 import type { createRoot as createRootValue, Root } from "react-dom/client";
 type CreateRootFn = typeof createRootValue;
 import { renderToStaticMarkup } from "react-dom/server";
-import { headingIdFor, HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
+
 import { HomeSection } from "../../../../../../front-end/src/features/home/components/home-section";
 import { HomeSectionDefault } from "../../../../../../front-end/src/features/home/components/home-section-default";
 import { HomeSectionShell } from "../../../../../../front-end/src/features/home/components/home-section-shell";
+import { headingIdFor, HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
 import type { HomeSectionDefinition, HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
-import {
-  installFakeDom,
-  queryFakeElements,
-  uninstallFakeDom,
-  type FakeDocument,
-  type FakeElement,
-} from "../../../test/fake-dom";
+import type { FakeDocument, FakeElement } from "../../../test/fake-dom";
+import { installFakeDom, queryFakeElements, uninstallFakeDom } from "../../../test/fake-dom";
 
 function findHomeSection(sectionId: HomeSectionId): HomeSectionDefinition {
   const section = HOME_SECTIONS.find((candidateSection) => candidateSection.id === sectionId);
@@ -189,21 +186,19 @@ describe("HomeSection", () => {
 
   test("renders the shell background image when the section defines one", () => {
     const html = renderToStaticMarkup(
-      createElement(
-        HomeSectionShell,
-        {
-          section: {
-            id: "proof",
-            label: "Proof",
-            heading: "Proof",
-            body: "Body",
-            bgColor: "white",
-            bgImage: "/images/proof-bg.png",
-            contentDirection: "column",
-          },
-          children: "content",
-        },
-      ),
+      <HomeSectionShell
+        section={{
+          id: "proof",
+          label: "Proof",
+          heading: "Proof",
+          body: "Body",
+          bgColor: "white",
+          bgImage: "/images/proof-bg.png",
+          contentDirection: "column",
+        }}
+      >
+        content
+      </HomeSectionShell>,
     );
 
     expect(html).toContain("background-image:url(/images/proof-bg.png)");
@@ -213,20 +208,18 @@ describe("HomeSection", () => {
 
   test("omits the background image styles when the section has no bgImage", () => {
     const html = renderToStaticMarkup(
-      createElement(
-        HomeSectionShell,
-        {
-          section: {
-            id: "proof",
-            label: "Proof",
-            heading: "Proof",
-            body: "Body",
-            bgColor: "white",
-            contentDirection: "column",
-          },
-          children: "content",
-        },
-      ),
+      <HomeSectionShell
+        section={{
+          id: "proof",
+          label: "Proof",
+          heading: "Proof",
+          body: "Body",
+          bgColor: "white",
+          contentDirection: "column",
+        }}
+      >
+        content
+      </HomeSectionShell>,
     );
 
     expect(html).not.toContain("background-image");

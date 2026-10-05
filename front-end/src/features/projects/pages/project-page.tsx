@@ -1,13 +1,15 @@
-import * as React from "react";
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router";
+import type { JSX } from "react";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router";
+
 import type { ProjectFrontmatter } from "shared";
-import { ApiError } from "@/shared/lib/api";
-import { httpContentLoader } from "@/shared/lib/content-loader";
+
+import { ErrorBoundary } from "@/shared/components/error-boundary";
+import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
-import { ErrorBoundary } from "@/shared/components/error-boundary";
+import { ApiError } from "@/shared/lib/api";
+import { httpContentLoader } from "@/shared/lib/content-loader";
 
 export type ProjectData = ProjectFrontmatter & { body: string };
 
@@ -30,7 +32,7 @@ interface ProjectMetaHeaderProps {
   project: ProjectData;
 }
 
-export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): React.JSX.Element {
+export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): JSX.Element {
   return (
     <header className="mb-8">
       <Link to="/projects" className="text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)] mb-6 inline-flex text-sm font-semibold underline-offset-4 hover:underline">
@@ -85,7 +87,7 @@ export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): React.JS
   );
 }
 
-export function ProjectPage(): React.JSX.Element {
+export function ProjectPage(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
   const [project, setProject] = useState<ProjectData | null>(null);
   const [loading, setLoading] = useState(true);

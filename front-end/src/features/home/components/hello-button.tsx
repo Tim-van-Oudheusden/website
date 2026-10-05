@@ -1,7 +1,10 @@
-import * as React from "react";
-import { ROUTES, type HelloResponse } from "shared";
-import { Button } from "@/shared/components/ui/button";
+import type { JSX } from "react";
+
+import type { HelloResponse } from "shared";
+import { ROUTES } from "shared";
+
 import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
 import { useApiGet } from "@/shared/hooks/use-api-get";
 
 interface HelloButtonViewProps {
@@ -17,7 +20,7 @@ export function HelloButtonView({
   message,
   error,
   onActivate,
-}: HelloButtonViewProps): React.JSX.Element {
+}: HelloButtonViewProps): JSX.Element {
   let buttonText = "Say Hello";
 
   if (loading) {
@@ -45,7 +48,7 @@ export function HelloButtonView({
   );
 }
 
-export function HelloButton(): React.JSX.Element {
+export function HelloButton(): JSX.Element {
   const { status, data, error, refetch } = useApiGet<HelloResponse>(ROUTES.HELLO);
 
   return (

@@ -1,15 +1,16 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { act, createElement, type ReactElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import {
-  selectActiveSectionId,
-  useActiveHomeSection,
-  type ObservedSectionEntry,
-} from "../../../../../../front-end/src/features/home/hooks/use-active-home-section";
-import type { HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
 
-import { triggerFakeIntersections, uninstallFakeDom, type FakeDocument, type FakeElement } from "../../../../src/test/fake-dom";
-import { findBySlot, initFakeDomHarness, mountIntoBody, unmountFakeDomRoot, type FakeMount } from "../../../../src/test/dom-harness";
+import type { ReactElement } from "react";
+import { act, createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
+import type { ObservedSectionEntry } from "../../../../../../front-end/src/features/home/hooks/use-active-home-section";
+import { selectActiveSectionId, useActiveHomeSection } from "../../../../../../front-end/src/features/home/hooks/use-active-home-section";
+import type { HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
+import type { FakeMount } from "../../../../src/test/dom-harness";
+import { findBySlot, initFakeDomHarness, mountIntoBody, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import type { FakeDocument, FakeElement } from "../../../../src/test/fake-dom";
+import { triggerFakeIntersections, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 beforeAll(async () => {
   await initFakeDomHarness();
