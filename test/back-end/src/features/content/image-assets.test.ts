@@ -22,6 +22,13 @@ describe("resolveContentAsset", () => {
     expect(resolveContentAsset(imageRoot, "notes.txt")).toBeNull();
   });
 
+  test.each(["%.png", "%E0%A4%A.png", "pixel%2.png"])(
+    "returns null instead of throwing for the malformed percent-encoding %p",
+    (rawPath) => {
+      expect(resolveContentAsset(imageRoot, rawPath)).toBeNull();
+    },
+  );
+
   test("returns null for an empty raw path", () => {
     expect(resolveContentAsset(imageRoot, "")).toBeNull();
   });
