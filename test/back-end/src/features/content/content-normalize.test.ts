@@ -134,6 +134,22 @@ describe("normalizeContentDocument", () => {
     }
   });
 
+  test("keeps a non-numeric created timeframe as written", () => {
+    const result = normalizeContentDocument("range.md", {
+      title: "Range",
+      date: "2026-01-01",
+      type: "project",
+      coverImage: "/img.png",
+      coverImageAlt: "img",
+      created: "2024-2025",
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toMatchObject({ created: "2024-2025" });
+    }
+  });
+
   test("rejects non-object and untitled inputs", () => {
     expect(normalizeContentDocument("x.md", "not an object").ok).toBe(false);
     expect(normalizeContentDocument("x.md", { date: "2026-01-01" }).ok).toBe(false);
