@@ -141,4 +141,29 @@ Body
 `;
     expect(parseFrontmatter(raw)).toBeNull();
   });
+
+  test.each([
+    [
+      "returns null for a block that is never closed",
+      ["---", "title: Unclosed", "date: 2026-01-01", "", "Body that was meant to follow the block"],
+      null,
+    ],
+    [
+      "skips a blank line inside the block",
+      ["---", "title: T", "", "date: 2026-01-01", "---", "Body"],
+      { data: { title: "T", date: "2026-01-01" }, content: "Body" },
+    ],
+    [
+      "skips a non-field line inside the block",
+      ["---", "title: T", "# a note left in the frontmatter", "date: 2026-01-01", "---", "Body"],
+      { data: { title: "T", date: "2026-01-01" }, content: "Body" },
+    ],
+    [
+      "skips a non-list line among a block key's children",
+      ["---", "title: T", "tags:", "  - Linux", "  # - Retired tag", "  - Containers", "---", "Body"],
+      { data: { title: "T", tags: ["Linux", "Containers"] }, content: "Body" },
+    ],
+  ])("%s", (_label, lines, expected) => {
+    expect(parseFrontmatter(lines.join("\n"))).toEqual(expected);
+  });
 });
