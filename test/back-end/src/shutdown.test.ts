@@ -80,6 +80,9 @@ describe("back-end process", () => {
       const socketClosed = once(socket, "close");
       socket.write("POST /api/hello HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/json\r\nContent-Length: 2\r\n\r\n{");
 
+      // `write` returning only means the bytes left this process; wait until the
+      // server has parsed the headers (body still pending) before signalling (#535).
+      await logged("incoming request");
       child.kill("SIGTERM");
       await logged("SIGTERM received");
       socket.write("}");

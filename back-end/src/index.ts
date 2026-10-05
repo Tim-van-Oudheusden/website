@@ -21,17 +21,11 @@ async function start(): Promise<void> {
 
   const app = await buildApp(appOptions);
 
-  try {
-    await app.listen({ host: HOST, port: PORT });
-    app.log.info(`${APP_NAME} back-end listening on ${HOST}:${PORT}`);
-  } catch (err) {
-    app.log.error(err);
-    process.exit(1);
-  }
-
   // In the container this process is PID 1, where the kernel ignores signals we
   // don't handle: `podman stop` would wait 10 s and SIGKILL (#482). Close
   // Fastify (in-flight requests finish, no new ones are accepted), then exit.
+  // Registered before `listen` so the handlers exist whenever the readiness
+  // log below is observed (#535).
   for (const signal of ["SIGTERM", "SIGINT"] as const) {
     process.once(signal, () => {
       app.log.info(`${signal} received, shutting down`);
@@ -43,6 +37,14 @@ async function start(): Promise<void> {
         },
       );
     });
+  }
+
+  try {
+    await app.listen({ host: HOST, port: PORT });
+    app.log.info(`${APP_NAME} back-end listening on ${HOST}:${PORT}`);
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
   }
 }
 
