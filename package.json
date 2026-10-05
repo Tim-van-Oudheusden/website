@@ -25,7 +25,6 @@
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/bun": "^1.4.0",
     "eslint": "^10.9.0",
-    "shadcn": "^3.8.5",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.67.0"
   },
