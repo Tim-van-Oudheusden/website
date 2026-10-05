@@ -154,6 +154,40 @@ describe("normalizeContentDocument", () => {
     expect(normalizeContentDocument("x.md", "not an object").ok).toBe(false);
     expect(normalizeContentDocument("x.md", { date: "2026-01-01" }).ok).toBe(false);
   });
+
+  test.each([
+    ["has neither date nor publishDate", {}],
+    ["has a blank date and no publishDate", { date: "  " }],
+    ["has blank date and publishDate", { date: "", publishDate: " " }],
+    ["has a non-string date", { date: 2026 }],
+  ])("rejects a document that %s with a date field error", (_case, dates) => {
+    const result = normalizeContentDocument("undated.md", {
+      title: "Undated",
+      type: "article",
+      category: "Linux",
+      ...dates,
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: { file: "undated.md", field: "date", message: "Missing required date or publishDate" },
+    });
+  });
+
+  test("falls back to publishDate when date is blank", () => {
+    const result = normalizeContentDocument("fallback.md", {
+      title: "Fallback",
+      date: "",
+      publishDate: "2026-06-10",
+      type: "article",
+      category: "Linux",
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.date).toBe("2026-06-10");
+    }
+  });
 });
 
 describe("validateContentDir", () => {
