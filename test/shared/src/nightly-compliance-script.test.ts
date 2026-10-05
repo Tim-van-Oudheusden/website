@@ -10,13 +10,16 @@ const scriptPath = resolve(rootPath, "scripts/nightly-compliance.sh");
 let workDir: string;
 let stubDir: string;
 let contentDir: string;
+let argsLog: string;
 
 // Stub `bun`: `bun audit` prints an advisory and exits 1 when STUB_AUDIT_FAIL=1.
+// Every invocation's arguments are appended, one per line, to $STUB_ARGS_LOG.
 function writeBunStub(): void {
   const stubPath = join(stubDir, "bun");
   writeFileSync(
     stubPath,
     `#!/usr/bin/env bash
+printf '%s\\n' "$@" >> "$STUB_ARGS_LOG"
 if [ "$1" = audit ]; then
   if [ "\${STUB_AUDIT_FAIL:-0}" = 1 ]; then
     echo "high: fastify vulnerable to something - https://github.com/advisories/GHSA-xxxx"
@@ -40,6 +43,7 @@ function runScript(env: Record<string, string> = {}): { status: number | null; r
       PATH: `${stubDir}:${process.env["PATH"] ?? ""}`,
       CONTENT_DIR: contentDir,
       GITHUB_SHA: "abc1234",
+      STUB_ARGS_LOG: argsLog,
       ...env,
     },
   });
@@ -50,6 +54,7 @@ beforeEach(() => {
   workDir = mkdtempSync(join(tmpdir(), "nightly-compliance-"));
   stubDir = join(workDir, "bin");
   contentDir = join(workDir, "content");
+  argsLog = join(workDir, "bun-args.log");
   mkdirSync(stubDir);
   mkdirSync(contentDir);
   writeFileSync(join(contentDir, "Published.md"), "---\ntitle: Published\n---\n\nHello.\n");
@@ -77,6 +82,19 @@ describe("scripts/nightly-compliance.sh", () => {
     expect(status).toBe(1);
     expect(report).toMatch(/Dependency audit.*fail/);
     expect(log).toContain("GHSA-xxxx");
+  });
+
+  // A dropped threshold or a malformed --ignore entry (e.g. an empty
+  // `--ignore=`) would change what the audit reports without failing it.
+  test("audits at the high threshold and passes ignored advisories as well-formed IDs", () => {
+    runScript();
+
+    const [command, ...flags] = readFileSync(argsLog, "utf8").trimEnd().split("\n");
+    expect(command).toBe("audit");
+    expect(flags).toContain("--audit-level=high");
+    for (const flag of flags.filter((f) => f !== "--audit-level=high")) {
+      expect(flag).toMatch(/^--ignore=(GHSA(-[23456789cfghjmpqrvwx]{4}){3}|CVE-\d{4}-\d{4,})$/);
+    }
   });
 
   test("fails and names the file when content contains a draft", () => {
