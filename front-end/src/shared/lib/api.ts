@@ -25,6 +25,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   const url = `${API_BASE}${path}`;
 
   const headers = new Headers(init?.headers);
+
   if (!headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }

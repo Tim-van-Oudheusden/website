@@ -15,8 +15,10 @@ test.describe("Projects page", () => {
       { region: "More projects", title: "Obsidian Content Pipeline", href: "/projects/obsidian-content-pipeline" },
       { region: "More projects", title: "Pi Sandbox Automation", href: "/projects/pi-sandbox-automation" },
     ];
+
     for (const { region, title, href } of cards) {
       const card = page.getByRole("region", { name: region }).getByRole("link", { name: new RegExp(title) });
+
       await expect(card).toBeVisible();
       await expect(card).toHaveAttribute("href", href);
     }
@@ -30,6 +32,7 @@ test.describe("Projects page", () => {
 
     await expect(page).toHaveURL(/\/projects\/obsidian-content-pipeline$/);
     const article = page.getByRole("article");
+
     // The markdown body repeats the title as its own `#` heading; the page header owns the real one.
     await expect(article.locator("header").getByRole("heading", { level: 1, name: "Obsidian Content Pipeline" })).toBeVisible();
     await expect(article.getByRole("heading", { level: 2, name: "Approach" })).toBeVisible();

@@ -13,6 +13,7 @@ let stubDir: string;
 // prints a Bun-style coverage table whose numbers depend on the workspace it runs in.
 function writeBunStub(): void {
   const stubPath = join(stubDir, "bun");
+
   writeFileSync(
     stubPath,
     `#!/usr/bin/env bash
@@ -37,6 +38,7 @@ echo "All files            |  $funcs |  $lines |"
 exit 0
 `,
   );
+
   chmodSync(stubPath, 0o755);
 }
 
@@ -51,6 +53,7 @@ function runScript(env: Record<string, string> = {}): { status: number | null; r
       ...env,
     },
   });
+
   return { status: result.status, report: result.stdout };
 }
 

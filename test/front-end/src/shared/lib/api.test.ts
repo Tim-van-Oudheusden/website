@@ -23,6 +23,7 @@ describe("front-end API client uses shared constants", () => {
         }),
       ),
     );
+
     globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch;
   });
 
@@ -35,6 +36,7 @@ describe("front-end API client uses shared constants", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
+
     expect(url).toBe(`${API_BASE}${ROUTES.HELLO}`);
   });
 
@@ -43,6 +45,7 @@ describe("front-end API client uses shared constants", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
+
     expect(url).toBe(`${API_BASE}${ROUTES.HEALTH}`);
   });
 
@@ -75,12 +78,14 @@ describe("shared network constants for the dev proxy", () => {
 
   test("default proxy target resolves to http://localhost:3001", () => {
     const target = `http://${BACKEND_HOST}:${BACKEND_PORT}`;
+
     expect(target).toBe("http://localhost:3001");
   });
 
   test("BACKEND_HOST can be overridden for non-pod deployments", () => {
     // The escape hatch documented in front-end/vite.config.ts (VITE_BACKEND_HOST).
     const target = `http://back-end:${BACKEND_PORT}`;
+
     expect(target).toBe("http://back-end:3001");
     expect(target).not.toContain("localhost");
   });

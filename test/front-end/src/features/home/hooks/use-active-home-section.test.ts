@@ -46,6 +46,7 @@ describe("selectActiveSectionId", () => {
 
   test("keeps the current section when no entry competes", () => {
     expect(selectActiveSectionId([], VALID_IDS, "for-you")).toBe("for-you");
+
     expect(selectActiveSectionId(
       [entry("start", 0, true)], VALID_IDS, "for-you",
     )).toBe("for-you");
@@ -64,6 +65,7 @@ const RENDERED_IDS: readonly HomeSectionId[] = ["start", "for-you", "footer"];
 
 function ActiveSectionProbe({ sectionIds }: { sectionIds: readonly HomeSectionId[] }): ReactElement {
   const activeSectionId = useActiveHomeSection(sectionIds);
+
   return createElement(
     "div",
     null,
@@ -84,7 +86,11 @@ function section(id: HomeSectionId): FakeElement {
   // The fake document stands in for the real one installed as a global.
   const fakeDocument = document as unknown as FakeDocument;
   const element = fakeDocument.getElementById(id);
-  if (element === null) throw new Error(`Expected a rendered section with id="${id}"`);
+
+  if (element === null) {
+    throw new Error(`Expected a rendered section with id="${id}"`);
+  }
+
   return element;
 }
 
@@ -109,6 +115,7 @@ describe("useActiveHomeSection", () => {
           { target: section("for-you"), intersectionRatio: 0.6 },
         ]);
       });
+
       expect(activeSection(mount)).toBe("for-you");
 
       act(() => {
@@ -117,6 +124,7 @@ describe("useActiveHomeSection", () => {
           { target: section("footer"), intersectionRatio: 0.4 },
         ]);
       });
+
       expect(activeSection(mount)).toBe("footer");
     } finally {
       unmountFakeDomRoot(mount);
@@ -130,6 +138,7 @@ describe("useActiveHomeSection", () => {
       act(() => {
         triggerFakeIntersections([{ target: section("footer"), intersectionRatio: 0.8 }]);
       });
+
       act(() => {
         triggerFakeIntersections([{ target: section("footer"), intersectionRatio: 0 }]);
       });
@@ -142,6 +151,7 @@ describe("useActiveHomeSection", () => {
 
   test("stays on the first section in browsers without IntersectionObserver", () => {
     const originalObserver: unknown = Reflect.get(window, "IntersectionObserver");
+
     Reflect.deleteProperty(window, "IntersectionObserver");
 
     try {

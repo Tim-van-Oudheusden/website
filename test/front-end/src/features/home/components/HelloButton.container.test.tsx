@@ -40,12 +40,17 @@ function mountHelloButton(): FakeMount {
 
 function buttonText(button: FakeMount): string {
   const [element] = queryFakeElements(button.container, (el) => el.nodeName === "BUTTON");
+
   return element?.textContent ?? "";
 }
 
 function clickButton(button: FakeMount): void {
   const [element] = queryFakeElements(button.container, (el) => el.nodeName === "BUTTON");
-  if (element === undefined) throw new Error("Expected a hello button");
+
+  if (element === undefined) {
+    throw new Error("Expected a hello button");
+  }
+
   fireFakePointer(element, "click");
 }
 
@@ -75,6 +80,7 @@ describe("HelloButton", () => {
 
       expect(buttonText(button)).toBe("Requesting...");
       const [element] = queryFakeElements(button.container, (el) => el.nodeName === "BUTTON");
+
       expect(element?.getAttribute("disabled")).not.toBeNull();
     } finally {
       unmount(button);
@@ -86,12 +92,16 @@ describe("HelloButton", () => {
       message: "hello from the back-end",
       timestamp: "2026-01-01T00:00:00Z",
     };
+
     globalThis.fetch = mock(() => Promise.resolve(jsonResponse(message))) as unknown as typeof globalThis.fetch;
     const button = mountHelloButton();
 
     try {
       clickButton(button);
-      await act(async () => { await settleMicrotasks(); });
+
+      await act(async () => {
+        await settleMicrotasks();
+      });
 
       expect(buttonText(button)).toBe("Say Hello");
       expect(button.container.textContent).toContain("hello from the back-end");
@@ -105,11 +115,15 @@ describe("HelloButton", () => {
     globalThis.fetch = mock(() =>
       Promise.resolve(new Response("Internal Server Error", { status: 500, statusText: "Internal Server Error" })),
     ) as unknown as typeof globalThis.fetch;
+
     const button = mountHelloButton();
 
     try {
       clickButton(button);
-      await act(async () => { await settleMicrotasks(); });
+
+      await act(async () => {
+        await settleMicrotasks();
+      });
 
       expect(button.container.textContent).toContain("Request failed: Internal Server Error");
       expect(button.container.textContent).not.toContain("hello from the back-end");

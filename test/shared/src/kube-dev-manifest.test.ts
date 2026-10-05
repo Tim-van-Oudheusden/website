@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 
 function readDevManifest(): string {
   const fullPath = resolve(import.meta.dirname, "../../..", "deploy/kube/dev.yaml");
+
   return readFileSync(fullPath, "utf8");
 }
 

@@ -25,6 +25,7 @@ const ORIGINAL_FETCH = globalThis.fetch;
 beforeAll(async () => {
   await initFakeDomHarness();
   const mod = await import("../../../../../../front-end/src/features/projects/pages/project-page");
+
   ProjectPage = mod.ProjectPage;
 });
 
@@ -108,7 +109,9 @@ describe("ProjectPage", () => {
     const page = mountProjectPage();
 
     try {
-      await act(async () => { await settleMicrotasks(); });
+      await act(async () => {
+        await settleMicrotasks();
+      });
 
       expect(pageText(page)).toContain("Project not found");
       expect(pageText(page)).toContain("Back to projects");
@@ -121,10 +124,13 @@ describe("ProjectPage", () => {
     globalThis.fetch = mock(() =>
       Promise.reject(new Error("network exploded")),
     ) as unknown as typeof globalThis.fetch;
+
     const page = mountProjectPage();
 
     try {
-      await act(async () => { await settleMicrotasks(); });
+      await act(async () => {
+        await settleMicrotasks();
+      });
 
       expect(pageText(page)).toContain("Failed to load project");
     } finally {
@@ -137,7 +143,9 @@ describe("ProjectPage", () => {
     const page = mountProjectPage();
 
     try {
-      await act(async () => { await settleMicrotasks(); });
+      await act(async () => {
+        await settleMicrotasks();
+      });
 
       expect(pageText(page)).toContain("Request failed");
     } finally {
@@ -150,9 +158,12 @@ describe("ProjectPage", () => {
     const page = mountProjectPage();
 
     try {
-      await act(async () => { await settleMicrotasks(); });
+      await act(async () => {
+        await settleMicrotasks();
+      });
 
       const text = pageText(page);
+
       expect(text).toContain("Sweet App");
       expect(text).toContain("Back to projects");
       expect(text).toContain("Shipped");
@@ -167,9 +178,11 @@ describe("ProjectPage", () => {
     // the navigation-away path; the component's cancellation guard keeps the
     // settled response from touching any state afterwards.
     const { promise: fetchResult, resolve: resolveFetch } = Promise.withResolvers<Response>();
+
     globalThis.fetch = mock(() => fetchResult) as unknown as typeof globalThis.fetch;
 
     const cancelledPage = mountProjectPage();
+
     unmountFakeDomRoot(cancelledPage);
     resolveFetch(jsonResponse(projectItem()));
     await settleMicrotasks();
@@ -177,6 +190,7 @@ describe("ProjectPage", () => {
     // A fresh mount starts from loading; no stale project state leaks in.
     stubFetch(jsonResponse(projectItem()));
     const page = mountProjectPage();
+
     try {
       expect(pageText(page)).toContain("Loading project...");
     } finally {

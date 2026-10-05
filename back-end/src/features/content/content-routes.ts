@@ -18,6 +18,7 @@ export function registerContentRoutes(app: FastifyInstance, contentDir: string):
     const typeFilter = type !== undefined && (CONTENT_TYPES as readonly string[]).includes(type)
       ? (type as ContentType)
       : undefined;
+
     return listContent(contentDir, { type: typeFilter });
   });
 
@@ -51,8 +52,10 @@ export function registerContentImageRoutes(app: FastifyInstance, contentDir: str
 
     try {
       const imageBuffer = await readFile(resolved.fullPath);
+
       reply.header("Cache-Control", ASSET_CACHE_CONTROL);
       reply.type(resolved.contentType);
+
       return await reply.send(imageBuffer);
     } catch (error) {
       if (

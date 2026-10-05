@@ -19,18 +19,21 @@ test.describe("Articles sidebar layout", () => {
     const snapshot = await page.evaluate((): SidebarLayoutSnapshot | null => {
       function createCssVarProbe(varName: string): HTMLDivElement {
         const probe = document.createElement("div");
+
         probe.style.position = "absolute";
         probe.style.visibility = "hidden";
         probe.style.pointerEvents = "none";
         probe.style.width = `var(${varName})`;
         probe.style.height = "0";
         probe.style.overflow = "hidden";
+
         return probe;
       }
 
       const sidebar = document.querySelector("main > aside");
       const contentWithToc = document.querySelector("main article > div");
       const toc = document.querySelector("main article aside");
+
       if (sidebar === null || contentWithToc === null || toc === null) {
         return null;
       }
@@ -64,12 +67,15 @@ test.describe("Articles sidebar layout", () => {
     }
 
     const snapshotTyped = snapshot;
+
     expect(snapshotTyped.sidebarWidth).toBeDefined();
     expect(snapshotTyped.expectedSidebarWidth).toBeDefined();
     expect(Math.abs(snapshotTyped.sidebarWidth - snapshotTyped.expectedSidebarWidth)).toBeLessThanOrEqual(2);
     expect(snapshotTyped.sidebarWidth).toBeGreaterThanOrEqual(snapshotTyped.minimumReadableSidebarWidth);
     expect(snapshotTyped.contentPaddingRight).toBeDefined();
     expect(snapshotTyped.expectedContentPaddingRight).toBeDefined();
-    expect(Math.abs(snapshotTyped.contentPaddingRight - snapshotTyped.expectedContentPaddingRight)).toBeLessThanOrEqual(4);
+
+    expect(Math.abs(snapshotTyped.contentPaddingRight - snapshotTyped.expectedContentPaddingRight))
+      .toBeLessThanOrEqual(4);
   });
 });

@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 
 function readDockerfile(relativePath: string): string {
   const fullPath = resolve(import.meta.dirname, "../../..", relativePath);
+
   return readFileSync(fullPath, "utf8");
 }
 

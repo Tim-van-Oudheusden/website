@@ -48,6 +48,7 @@ export function createHeadingIdResolver(): (headingText: string) => string {
     const baseSlug = slugifyHeadingText(headingText);
     const normalizedBaseSlug = baseSlug.length > 0 ? baseSlug : "section";
     const currentCount = slugCounts.get(normalizedBaseSlug) ?? 0;
+
     slugCounts.set(normalizedBaseSlug, currentCount + 1);
 
     if (currentCount === 0) {
@@ -73,9 +74,11 @@ function collectMarkdownHeadings(
   const lines = markdown.split(/\r?\n/);
   const lineStartOffsets: number[] = [];
   let cursor = 0;
+
   for (const line of lines) {
     lineStartOffsets.push(cursor);
     cursor += line.length;
+
     if (markdown[cursor] === "\r" && markdown[cursor + 1] === "\n") {
       cursor += 2;
     } else if (markdown[cursor] === "\n") {
@@ -89,12 +92,14 @@ function collectMarkdownHeadings(
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
+
     if (line === undefined) {
       continue;
     }
 
     const fencedCodeDelimiterMatch = FENCED_CODE_DELIMITER_PATTERN.exec(line);
     const fenceMarker = fencedCodeDelimiterMatch?.[1];
+
     if (fencedCodeDelimiter !== null) {
       if (
         fenceMarker !== undefined
@@ -103,11 +108,13 @@ function collectMarkdownHeadings(
       ) {
         fencedCodeDelimiter = null;
       }
+
       continue;
     }
 
     if (fenceMarker !== undefined) {
       fencedCodeDelimiter = fenceMarker;
+
       continue;
     }
 
@@ -116,16 +123,19 @@ function collectMarkdownHeadings(
     if (atxHeading !== null) {
       const headingHashes = atxHeading[1];
       const rawHeadingText = atxHeading[2];
+
       if (headingHashes === undefined || rawHeadingText === undefined) {
         continue;
       }
 
       const depth = headingHashes.length as 1 | 2 | 3 | 4 | 5 | 6;
+
       if (depth > maxDepth) {
         continue;
       }
 
       const text = normalizeMarkdownHeadingText(rawHeadingText);
+
       if (text.length === 0) {
         continue;
       }
@@ -140,32 +150,39 @@ function collectMarkdownHeadings(
         startLine: index + 1,
         startColumn: 1,
       });
+
       continue;
     }
 
     const nextLine = lines[index + 1];
+
     if (nextLine === undefined || line.trim().length === 0) {
       continue;
     }
 
     const setextUnderline = SETEXT_UNDERLINE_PATTERN.exec(nextLine);
+
     if (setextUnderline === null) {
       continue;
     }
 
     const underline = setextUnderline[1];
+
     if (underline === undefined) {
       continue;
     }
 
     const depth = toSetextDepth(underline);
     const headingLineIndex = index;
+
     index += 1;
+
     if (depth > maxDepth) {
       continue;
     }
 
     const text = normalizeMarkdownHeadingText(line);
+
     if (text.length === 0) {
       continue;
     }

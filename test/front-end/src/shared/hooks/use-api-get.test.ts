@@ -36,12 +36,15 @@ beforeAll(async () => {
   const hookMod = await import(
     "../../../../../front-end/src/shared/hooks/use-api-get"
   );
+
   useApiGet = hookMod.useApiGet;
   initialApiGetState = hookMod.initialApiGetState;
   reduceApiGetState = hookMod.reduceApiGetState;
 });
 
-afterEach(() => { globalThis.fetch = ORIGINAL_FETCH; });
+afterEach(() => {
+  globalThis.fetch = ORIGINAL_FETCH;
+});
 
 afterAll(() => {
   uninstallFakeDom();
@@ -94,13 +97,17 @@ describe("useApiGet hook lifecycle", () => {
 
     function Probe(): null {
       latestRef.current = useApiGet<HelloData>("/hello");
+
       return null;
     }
 
     const mount: FakeMount = mountIntoBody(createElement(Probe));
+
     return {
       latest: () => latestRef.current,
-      cleanup: () => { unmountFakeDomRoot(mount); },
+      cleanup: () => {
+        unmountFakeDomRoot(mount);
+      },
     };
   }
 
@@ -108,6 +115,7 @@ describe("useApiGet hook lifecycle", () => {
     globalThis.fetch = mock(() =>
       Promise.resolve(jsonResponse({ message: "hello", timestamp: "2026-01-01T00:00:00Z" })),
     ) as unknown as typeof globalThis.fetch;
+
     const probe = mountProbe();
 
     try {
@@ -115,7 +123,10 @@ describe("useApiGet hook lifecycle", () => {
       expect(probe.latest()?.data).toBeNull();
       expect(probe.latest()?.error).toBeNull();
 
-      await act(async () => { await probe.latest()?.refetch(); });
+      await act(async () => {
+        await probe.latest()?.refetch();
+      });
+
       expect(probe.latest()?.status).toBe("success");
       expect(probe.latest()?.data).toEqual({ message: "hello", timestamp: "2026-01-01T00:00:00Z" });
       expect(probe.latest()?.error).toBeNull();
@@ -128,16 +139,23 @@ describe("useApiGet hook lifecycle", () => {
     globalThis.fetch = mock(() =>
       Promise.resolve(jsonResponse({ message: "stale", timestamp: "2026-01-01T00:00:00Z" })),
     ) as unknown as typeof globalThis.fetch;
+
     const probe = mountProbe();
 
     try {
-      await act(async () => { await probe.latest()?.refetch(); });
+      await act(async () => {
+        await probe.latest()?.refetch();
+      });
+
       expect(probe.latest()?.status).toBe("success");
 
       globalThis.fetch = mock(() =>
         Promise.resolve(new Response("Internal Server Error", { status: 500, statusText: "Internal Server Error" })),
       ) as unknown as typeof globalThis.fetch;
-      await act(async () => { await probe.latest()?.refetch(); });
+
+      await act(async () => {
+        await probe.latest()?.refetch();
+      });
 
       expect(probe.latest()?.status).toBe("error");
       expect(probe.latest()?.error).toBe("Request failed: Internal Server Error");
@@ -152,10 +170,13 @@ describe("useApiGet hook lifecycle", () => {
     globalThis.fetch = mock(() =>
       Promise.reject(new TypeError("network dropped")),
     ) as unknown as typeof globalThis.fetch;
+
     const probe = mountProbe();
 
     try {
-      await act(async () => { await probe.latest()?.refetch(); });
+      await act(async () => {
+        await probe.latest()?.refetch();
+      });
 
       expect(probe.latest()?.status).toBe("error");
       expect(probe.latest()?.error).toBe("network dropped");
@@ -169,11 +190,14 @@ describe("useApiGet hook lifecycle", () => {
     // Error-shaped but not an Error instance (e.g. a cross-realm or plain-object
     // rejection): its message must not leak, the generic fallback is shown.
     const errorLike = { name: "Error", message: "offline" } as Error;
+
     globalThis.fetch = mock(() => Promise.reject(errorLike)) as unknown as typeof globalThis.fetch;
     const probe = mountProbe();
 
     try {
-      await act(async () => { await probe.latest()?.refetch(); });
+      await act(async () => {
+        await probe.latest()?.refetch();
+      });
 
       expect(probe.latest()?.status).toBe("error");
       expect(probe.latest()?.error).toBe("Failed to reach back-end");

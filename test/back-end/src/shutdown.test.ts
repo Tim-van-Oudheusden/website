@@ -28,9 +28,11 @@ async function startBackEnd(): Promise<RunningBackEnd> {
   const decoder = new TextDecoder();
   let output = "";
   const waiters: { text: string; resolve: (value: undefined) => void }[] = [];
+
   void (async () => {
     for await (const chunk of child.stdout) {
       output += decoder.decode(chunk, { stream: true });
+
       for (const waiter of waiters.filter(({ text }) => output.includes(text))) {
         waiter.resolve(undefined);
       }
@@ -41,12 +43,16 @@ async function startBackEnd(): Promise<RunningBackEnd> {
     if (output.includes(text)) {
       return Promise.resolve();
     }
+
     const { promise, resolve } = Promise.withResolvers<undefined>();
+
     waiters.push({ text, resolve });
+
     return promise;
   };
 
   await logged("back-end listening on");
+
   return { child, port, logged };
 }
 
@@ -74,10 +80,16 @@ describe("back-end process", () => {
     try {
       // A request whose body is only half sent is in flight until the rest arrives.
       const socket = connect(port, "127.0.0.1");
+
       await once(socket, "connect");
       let response = "";
-      socket.on("data", (data: Buffer) => { response += data.toString(); });
+
+      socket.on("data", (data: Buffer) => {
+        response += data.toString();
+      });
+
       const socketClosed = once(socket, "close");
+
       socket.write("POST /api/hello HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/json\r\nContent-Length: 2\r\n\r\n{");
 
       // `write` returning only means the bytes left this process; wait until the

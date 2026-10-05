@@ -23,6 +23,7 @@ describe("normalizeContentDocument", () => {
     });
 
     expect(result.ok).toBe(true);
+
     if (result.ok) {
       expect(result.value).toMatchObject({
         title: "Intro",
@@ -43,6 +44,7 @@ describe("normalizeContentDocument", () => {
     });
 
     expect(result.ok).toBe(true);
+
     if (result.ok) {
       expect(result.value).toMatchObject({ type: "article", draft: false });
     }
@@ -57,7 +59,9 @@ describe("normalizeContentDocument", () => {
       coverImageAlt: "img",
       prioritySlot: 2,
     });
+
     expect(accepted.ok).toBe(true);
+
     if (accepted.ok) {
       expect((accepted.value as ProjectFrontmatter).prioritySlot).toBe(2);
     }
@@ -70,7 +74,9 @@ describe("normalizeContentDocument", () => {
       coverImageAlt: "img",
       prioritySlot: 4,
     });
+
     expect(rejected.ok).toBe(false);
+
     if (!rejected.ok) {
       expect(rejected.error.field).toBe("prioritySlot");
     }
@@ -87,6 +93,7 @@ describe("normalizeContentDocument", () => {
     });
 
     expect(result.ok).toBe(false);
+
     if (!result.ok) {
       expect(result.error.field).toBe("status");
       expect(result.error.file).toBe("bad-status.md");
@@ -104,6 +111,7 @@ describe("normalizeContentDocument", () => {
     });
 
     expect(result.ok).toBe(false);
+
     if (!result.ok) {
       expect(result.error.field).toBe("status");
     }
@@ -117,6 +125,7 @@ describe("normalizeContentDocument", () => {
     });
 
     expect(result.ok).toBe(false);
+
     if (!result.ok) {
       expect(result.error.field).toBe("category");
     }
@@ -128,7 +137,9 @@ describe("normalizeContentDocument", () => {
       date: "2026-01-01",
       type: "project",
     });
+
     expect(noImage.ok).toBe(false);
+
     if (!noImage.ok) {
       expect(noImage.error.field).toBe("coverImage");
     }
@@ -145,6 +156,7 @@ describe("normalizeContentDocument", () => {
     });
 
     expect(result.ok).toBe(true);
+
     if (result.ok) {
       expect(result.value).toMatchObject({ created: "2024-2025" });
     }
@@ -184,6 +196,7 @@ describe("normalizeContentDocument", () => {
     });
 
     expect(result.ok).toBe(true);
+
     if (result.ok) {
       expect(result.value.date).toBe("2026-06-10");
     }
@@ -193,6 +206,7 @@ describe("normalizeContentDocument", () => {
 describe("validateContentDir", () => {
   test("reports every invalid document in a controlled directory", async () => {
     const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
     try {
       await writeFile(join(dir, "bad-status.md"), [
         "---",
@@ -205,6 +219,7 @@ describe("validateContentDir", () => {
         "---",
         "# Bad Status",
       ].join("\n"));
+
       await writeFile(join(dir, "ok.md"), [
         "---",
         "title: Ok",

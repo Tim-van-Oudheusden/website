@@ -28,6 +28,7 @@ export function compareArticles(left: ArticleSummary, right: ArticleSummary): nu
   }
 
   const titleDiff = left.title.localeCompare(right.title);
+
   if (titleDiff !== 0) {
     return titleDiff;
   }

@@ -6,17 +6,20 @@ test.describe("Home start portrait layout", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
     const portrait = page.locator('[data-testid="start-portrait"]');
+
     await expect(portrait).toBeVisible();
 
     const layout = await page.evaluate(() => {
       const whiteBox = document.querySelector("section#start > div");
       const image = document.querySelector("section#start [data-testid='start-portrait']");
+
       if (whiteBox === null || image === null) {
         return null;
       }
 
       const whiteBoxRect = whiteBox.getBoundingClientRect();
       const imageRect = image.getBoundingClientRect();
+
       return {
         rightGap: whiteBoxRect.right - imageRect.right,
         bottomGap: whiteBoxRect.bottom - imageRect.bottom,

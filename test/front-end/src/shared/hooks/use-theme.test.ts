@@ -25,16 +25,21 @@ beforeAll(async () => {
   const mod: typeof UseThemeModule = await import(
     "../../../../../front-end/src/shared/hooks/use-theme"
   );
+
   applyTheme = mod.applyTheme;
   ThemeProvider = mod.ThemeProvider;
   useTheme = mod.useTheme;
 });
 
-afterAll(() => { uninstallFakeDom(); });
+afterAll(() => {
+  uninstallFakeDom();
+});
 
 // Shared fake-DOM state persists across files under the bunfig preload; give
 // every test a deterministic light system preference.
-beforeEach(() => { triggerFakeMediaPreferenceChange(false); });
+beforeEach(() => {
+  triggerFakeMediaPreferenceChange(false);
+});
 
 /** Probe child that reports the context theme and a way to set a new one. */
 interface ProbeHandle {
@@ -48,16 +53,21 @@ interface MountedProvider {
 }
 
 function mountThemeProvider(storedTheme: string | null): MountedProvider {
-  if (storedTheme === null) window.localStorage.removeItem("theme");
-  else window.localStorage.setItem("theme", storedTheme);
+  if (storedTheme === null) {
+    window.localStorage.removeItem("theme");
+  } else {
+    window.localStorage.setItem("theme", storedTheme);
+  }
 
   let currentTheme: string | null = null;
   let setThemeFn: (theme: "light" | "dark" | "system") => void = () => undefined;
 
   function Probe(): null {
     const { theme, setTheme } = useTheme();
+
     currentTheme = theme;
     setThemeFn = setTheme;
+
     return null;
   }
 
@@ -69,7 +79,9 @@ function mountThemeProvider(storedTheme: string | null): MountedProvider {
     mount,
     probe: {
       theme: () => currentTheme,
-      setTheme: (theme: "light" | "dark" | "system") => { setThemeFn(theme); },
+      setTheme: (theme: "light" | "dark" | "system") => {
+        setThemeFn(theme);
+      },
     },
   };
 }
@@ -90,6 +102,7 @@ describe("applyTheme", () => {
 
   test("toggles the dark class off for an explicit light theme", () => {
     const doc = document as unknown as FakeDocument;
+
     doc.documentElement.classList.add("dark");
 
     applyTheme("light");

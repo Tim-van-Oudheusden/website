@@ -72,17 +72,25 @@ function renderContent(posts: ArticleSummary[] | null, loadError: boolean): stri
 const RECENT_POSTS_SECTION = HOME_SECTIONS.find((section) => section.id === "community-and-docs");
 
 async function mountRecentPosts(loader: ContentLoader): Promise<FakeMount> {
-  if (RECENT_POSTS_SECTION === undefined) throw new Error("Expected a community-and-docs home section");
+  if (RECENT_POSTS_SECTION === undefined) {
+    throw new Error("Expected a community-and-docs home section");
+  }
+
   const mount = mountIntoBody(
     createElement(MemoryRouter, null, createElement(HomeRecentPosts, { section: RECENT_POSTS_SECTION, loader })),
   );
-  await act(async () => { await settleMicrotasks(); });
+
+  await act(async () => {
+    await settleMicrotasks();
+  });
+
   return mount;
 }
 
 describe("selectRecentPosts", () => {
   test("sorts newest-first by date", () => {
     const result = selectRecentPosts(FIXTURE_POSTS);
+
     expect(result[0]?.slug).toBe("yoga-nidra-a-way-to-be-at-peace-in-chaos");
     expect(result[1]?.slug).toBe("introduction");
     expect(result[2]?.slug).toBe("apt-get-out-of-my-life-hello-flatpak");
@@ -94,6 +102,7 @@ describe("selectRecentPosts", () => {
 
   test("does not mutate the input array", () => {
     const input = [...FIXTURE_POSTS];
+
     selectRecentPosts(input);
     expect(input[0]?.slug).toBe("apt-get-out-of-my-life-hello-flatpak");
   });
@@ -172,11 +181,13 @@ describe("HomeRecentPosts", () => {
 
     try {
       const hrefs = queryFakeElements(mount.container, (el) => el.nodeName === "A").map((el) => el.getAttribute("href"));
+
       expect(hrefs).toEqual([
         "/articles/yoga-nidra-a-way-to-be-at-peace-in-chaos",
         "/articles/introduction",
         "/articles/apt-get-out-of-my-life-hello-flatpak",
       ]);
+
       expect(mount.container.textContent).not.toContain("Loading recent posts...");
     } finally {
       unmountFakeDomRoot(mount);

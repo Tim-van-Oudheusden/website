@@ -9,10 +9,10 @@ export interface ApiGetState<T> {
   error: string | null;
 }
 
-export type ApiGetAction<T> =
-  | { type: "start" }
-  | { type: "success"; data: T }
-  | { type: "error"; error: string };
+export type ApiGetAction<T>
+  = | { type: "start" }
+    | { type: "success"; data: T }
+    | { type: "error"; error: string };
 
 export function initialApiGetState<T>(): ApiGetState<T> {
   return { status: "idle", data: null, error: null };
@@ -62,8 +62,10 @@ export function useApiGet<T>(path: string): UseApiGetResult<T> {
 
   const refetch = useCallback(async () => {
     dispatch({ type: "start" });
+
     try {
       const data = await apiGet<T>(path);
+
       dispatch({ type: "success", data });
     } catch (err: unknown) {
       dispatch({ type: "error", error: resolveErrorMessage(err) });

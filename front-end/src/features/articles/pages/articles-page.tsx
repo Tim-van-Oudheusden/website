@@ -29,6 +29,7 @@ export function ArticlesPage(): React.JSX.Element {
     }
 
     const hash = window.location.hash;
+
     if (hash.length <= 1) {
       return;
     }

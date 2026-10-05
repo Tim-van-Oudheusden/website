@@ -43,6 +43,7 @@ beforeAll(async () => {
   const mod: typeof DropdownModule = await import(
     "../../../../../../front-end/src/shared/components/ui/dropdown-menu"
   );
+
   DropdownMenu = mod.DropdownMenu;
   DropdownMenuPortal = mod.DropdownMenuPortal;
   DropdownMenuTrigger = mod.DropdownMenuTrigger;
@@ -60,7 +61,9 @@ beforeAll(async () => {
   DropdownMenuSubContent = mod.DropdownMenuSubContent;
 });
 
-afterAll(() => { uninstallFakeDom(); });
+afterAll(() => {
+  uninstallFakeDom();
+});
 
 // ── SSR rendering (no DOM required) ──────────────────────────────────────────
 
@@ -102,7 +105,9 @@ interface MountedMenu {
 
 function menuChildren(selectedItems: string[]): ReactNode[] {
   return [
-    createElement(DropdownMenuItem, { onSelect: () => { selectedItems.push("plain"); } }, "Plain item"),
+    createElement(DropdownMenuItem, { onSelect: () => {
+      selectedItems.push("plain");
+    } }, "Plain item"),
     createElement(DropdownMenuItem, { variant: "destructive", inset: true, className: "item-surface" }, "Delete"),
     createElement(DropdownMenuLabel, { inset: true }, "Section"),
     createElement(DropdownMenuSeparator),
@@ -116,7 +121,9 @@ function menuChildren(selectedItems: string[]): ReactNode[] {
       createElement(DropdownMenuRadioItem, { value: "b" }, "Radio B"),
     ),
     createElement(DropdownMenuGroup, null,
-      createElement(DropdownMenuItem, { onSelect: () => { selectedItems.push("grouped"); } }, "Grouped item"),
+      createElement(DropdownMenuItem, { onSelect: () => {
+        selectedItems.push("grouped");
+      } }, "Grouped item"),
     ),
     createElement(
       DropdownMenuSub,
@@ -137,18 +144,23 @@ function mountMenu(): MountedMenu {
   const mount = mountIntoBody(
     createElement(
       DropdownMenu,
-      { onOpenChange: (open) => { openChangeEvents.push(open); } },
+      { onOpenChange: (open) => {
+        openChangeEvents.push(open);
+      } },
       createElement(DropdownMenuTrigger, { asChild: true }, createElement("button", null, "Open menu")),
       createElement(DropdownMenuContent, null, ...menuChildren(selectedItems)),
     ),
   );
+
   return { mount, openChangeEvents, selectedItems };
 }
 
 function openMenu(menu: MountedMenu): FakeElement {
   const trigger = findBySlot(menu.mount.container, "dropdown-menu-trigger");
+
   fireFakePointer(trigger, "pointerdown");
   const doc = document as unknown as FakeDocument;
+
   return findBySlot(doc.body, "dropdown-menu-content");
 }
 
@@ -158,16 +170,23 @@ describe("dropdown-menu interaction", () => {
 
     try {
       const trigger = findBySlot(menu.mount.container, "dropdown-menu-trigger");
+
       expect(trigger.getAttribute("aria-expanded")).toBe("false");
 
       const content = openMenu(menu);
+
       expect(trigger.getAttribute("aria-expanded")).toBe("true");
 
       const items = queryFakeElements(content, (el) => el.getAttribute("data-slot") === "dropdown-menu-item");
+
       expect(items.map((item) => item.textContent)).toContain("Plain item");
 
       const plainItem = items.find((item) => item.textContent === "Plain item");
-      if (!isFakeElement(plainItem)) throw new Error("Expected a plain menu item");
+
+      if (!isFakeElement(plainItem)) {
+        throw new Error("Expected a plain menu item");
+      }
+
       fireFakePointer(plainItem, "click");
       expect(menu.selectedItems).toEqual(["plain"]);
     } finally {
@@ -181,6 +200,7 @@ describe("dropdown-menu interaction", () => {
 
     try {
       const trigger = findBySlot(menu.mount.container, "dropdown-menu-trigger");
+
       openMenu(menu);
 
       fireDocumentKey(doc, "Escape");
@@ -203,6 +223,7 @@ describe("dropdown-menu interaction", () => {
         content,
         (el) => el.getAttribute("data-variant") === "destructive",
       );
+
       expect(destructive).toHaveLength(1);
       expect(destructive[0]?.getAttribute("data-inset")).toBe("true");
       expect(destructive[0]?.getAttribute("class")).toContain("item-surface");
@@ -221,6 +242,7 @@ describe("dropdown-menu interaction", () => {
         content,
         (el) => el.getAttribute("data-slot") === "dropdown-menu-checkbox-item",
       );
+
       expect(checkboxes).toHaveLength(2);
       expect(checkboxes[0]?.getAttribute("data-state")).toBe("unchecked");
       expect(checkboxes[1]?.getAttribute("data-state")).toBe("checked");
@@ -229,6 +251,7 @@ describe("dropdown-menu interaction", () => {
         content,
         (el) => el.getAttribute("data-slot") === "dropdown-menu-radio-item",
       );
+
       expect(radios).toHaveLength(2);
       expect(radios[0]?.getAttribute("data-state")).toBe("unchecked");
       expect(radios[1]?.getAttribute("data-state")).toBe("checked");
@@ -253,6 +276,7 @@ describe("dropdown-menu interaction", () => {
       // The sub wrapper's explicit portal slots its props onto the sub content
       // (asChild), so no separate portal element is rendered — assert the content.
       const subContent = findBySlot(doc.body, "dropdown-menu-sub-content");
+
       expect(subContent.textContent).toContain("Sub content");
     } finally {
       unmountFakeDomRoot(menu.mount);

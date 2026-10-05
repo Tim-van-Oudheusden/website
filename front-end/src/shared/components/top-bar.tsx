@@ -108,7 +108,9 @@ export function TopBar(): React.JSX.Element {
                     variant="ghost"
                     className="justify-start text-[18px] font-medium"
                     asChild
-                    onClick={() => { setOpen(false); }}
+                    onClick={() => {
+                      setOpen(false);
+                    }}
                   >
                     <Link to={link.href}>{link.label}</Link>
                   </Button>

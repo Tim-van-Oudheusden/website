@@ -24,11 +24,13 @@ export type ContentItem = ArticleData | (ProjectFrontmatter & { body: string });
 export const httpContentLoader: ContentLoader = {
   async listArticles(): Promise<ArticleSummary[]> {
     const data = await apiGet<ArticleSummary[]>(`${ROUTES.CONTENT}?type=article`);
+
     return data.filter((item): item is ArticleSummary => typeof item.slug === "string");
   },
 
   async getArticle(slug: string): Promise<ArticleData> {
     const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", slug);
+
     return apiGet<ArticleData>(path);
   },
 
@@ -39,6 +41,7 @@ export const httpContentLoader: ContentLoader = {
   async getProject(slug: string): Promise<ProjectFrontmatter & { body: string }> {
     const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", slug);
     const data = await apiGet<ContentItem>(path);
+
     if (data.type !== "project") {
       throw new ApiError(`Project not found: ${slug}`, 404);
     }
@@ -60,6 +63,7 @@ export function createMemoryContentLoader(items: ContentItem[]): ContentLoader {
       const found = items.find(
         (item): item is ArticleData => item.type === "article" && item.slug === slug,
       );
+
       if (found === undefined) {
         return Promise.reject(new ApiError(`Article not found: ${slug}`, 404));
       }
@@ -80,6 +84,7 @@ export function createMemoryContentLoader(items: ContentItem[]): ContentLoader {
         (item): item is ProjectFrontmatter & { body: string } =>
           item.type === "project" && item.slug === slug,
       );
+
       if (found === undefined) {
         return Promise.reject(new ApiError(`Project not found: ${slug}`, 404));
       }

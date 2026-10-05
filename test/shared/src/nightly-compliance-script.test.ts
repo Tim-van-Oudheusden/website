@@ -16,6 +16,7 @@ let argsLog: string;
 // Every invocation's arguments are appended, one per line, to $STUB_ARGS_LOG.
 function writeBunStub(): void {
   const stubPath = join(stubDir, "bun");
+
   writeFileSync(
     stubPath,
     `#!/usr/bin/env bash
@@ -31,6 +32,7 @@ fi
 exit 0
 `,
   );
+
   chmodSync(stubPath, 0o755);
 }
 
@@ -47,6 +49,7 @@ function runScript(env: Record<string, string> = {}): { status: number | null; r
       ...env,
     },
   });
+
   return { status: result.status, report: result.stdout, log: result.stderr };
 }
 
@@ -90,8 +93,10 @@ describe("scripts/nightly-compliance.sh", () => {
     runScript();
 
     const [command, ...flags] = readFileSync(argsLog, "utf8").trimEnd().split("\n");
+
     expect(command).toBe("audit");
     expect(flags).toContain("--audit-level=high");
+
     for (const flag of flags.filter((f) => f !== "--audit-level=high")) {
       expect(flag).toMatch(/^--ignore=(GHSA(-[23456789cfghjmpqrvwx]{4}){3}|CVE-\d{4}-\d{4,})$/);
     }

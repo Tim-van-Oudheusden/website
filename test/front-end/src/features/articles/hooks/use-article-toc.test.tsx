@@ -91,7 +91,10 @@ function makeFakeEnvironment(): Environment {
     createTextNode: (text) => ({ nodeType: 3, nodeValue: text, ownerDocument: documentStub }),
     body: bodyNode,
     addEventListener: (type, listener) => {
-      if (!documentListeners.has(type)) documentListeners.set(type, new Set());
+      if (!documentListeners.has(type)) {
+        documentListeners.set(type, new Set());
+      }
+
       documentListeners.get(type)?.add(listener);
     },
     removeEventListener: (type, listener) => {
@@ -99,6 +102,7 @@ function makeFakeEnvironment(): Environment {
     },
     getElementById: (id) => headingElements.get(id) ?? null,
   };
+
   bodyNode.ownerDocument = documentStub;
   const container = makeFakeNode(documentStub);
   const rafQueue: (() => void)[] = [];
@@ -106,7 +110,10 @@ function makeFakeEnvironment(): Environment {
     innerHeight: 800,
     HTMLIFrameElement,
     addEventListener: (type, listener) => {
-      if (!windowListeners.has(type)) windowListeners.set(type, new Set());
+      if (!windowListeners.has(type)) {
+        windowListeners.set(type, new Set());
+      }
+
       windowListeners.get(type)?.add(listener);
     },
     removeEventListener: (type, listener) => {
@@ -114,6 +121,7 @@ function makeFakeEnvironment(): Environment {
     },
     requestAnimationFrame: (cb) => {
       rafQueue.push(cb);
+
       return rafQueue.length;
     },
     cancelAnimationFrame: (id) => {
@@ -122,6 +130,7 @@ function makeFakeEnvironment(): Environment {
       }
     },
   };
+
   return { container, documentStub, windowStub, rafQueue, windowListeners, documentListeners, headingElements };
 }
 
@@ -130,18 +139,22 @@ function withFakeDom<T>(fn: (env: Environment, root: Root) => T): T {
   const originalDocument = globalThis.document;
   const originalWindow = globalThis.window;
   const originalActEnvironment: unknown = (globalThis as Record<string, unknown>)["IS_REACT_ACT_ENVIRONMENT"];
+
   Object.defineProperty(globalThis, "document", { value: env.documentStub, configurable: true });
   Object.defineProperty(globalThis, "window", { value: env.windowStub, configurable: true });
   Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", { value: true, configurable: true });
+
   try {
     // FakeNode satisfies react-dom's structural Container checks (nodeType, tagName,
     // namespaceURI); the cast is a library-type mismatch, not a data boundary.
     const rootContainer: Container = env.container as unknown as Container;
     const root: Root = createRoot(rootContainer);
+
     return fn(env, root);
   } finally {
     Object.defineProperty(globalThis, "document", { value: originalDocument, configurable: true });
     Object.defineProperty(globalThis, "window", { value: originalWindow, configurable: true });
+
     // Restore whatever the process had before (the fake-DOM preload sets true);
     // clearing it unconditionally would break act() for later test files.
     Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", {
@@ -169,11 +182,13 @@ let currentResult: UseArticleTocResult = { tocItems: [], visibleTocHeadingIds: [
 
 function Harness({ article, loading }: { article: ArticleData | null; loading: boolean }): null {
   currentResult = useArticleToc(article, loading);
+
   return null;
 }
 
 function flushRaf(env: Environment): void {
   const pending = env.rafQueue.splice(0);
+
   pending.forEach((callback) => {
     callback();
   });
@@ -183,6 +198,7 @@ function renderAndFlush(env: Environment, root: Root, article: ArticleData | nul
   act(() => {
     root.render(createElement(Harness, { article, loading }));
   });
+
   act(() => {
     flushRaf(env);
   });
@@ -192,6 +208,7 @@ describe("useArticleToc", () => {
   test("extracts toc items from the article body", () => {
     withFakeDom((_env, root) => {
       const article = makeArticle("# Intro\n\n## Setup\n\n### Config\n\nbody");
+
       act(() => {
         root.render(createElement(Harness, { article, loading: false }));
       });
@@ -219,6 +236,7 @@ describe("useArticleToc", () => {
   test("tracks only the headings above the viewport fold", () => {
     withFakeDom((env, root) => {
       const article = makeArticle("# Intro\n\n## Setup");
+
       env.headingElements.set("intro", { getBoundingClientRect: () => ({ top: 10 }) });
       env.headingElements.set("setup", { getBoundingClientRect: () => ({ top: 900 }) });
 
@@ -233,6 +251,7 @@ describe("useArticleToc", () => {
       const article = makeArticle("# Intro\n\n## Setup");
       const introRect = { top: 10 };
       const setupRect = { top: 900 };
+
       env.headingElements.set("intro", { getBoundingClientRect: () => introRect });
       env.headingElements.set("setup", { getBoundingClientRect: () => setupRect });
 
@@ -242,12 +261,15 @@ describe("useArticleToc", () => {
       // Scroll so "setup" moves above the fold.
       setupRect.top = 200;
       const scrollHandlers = env.windowListeners.get("scroll");
+
       expect(scrollHandlers?.size).toBe(1);
+
       act(() => {
         scrollHandlers?.forEach((handler) => {
           (handler as () => void)();
         });
       });
+
       act(() => {
         flushRaf(env);
       });
@@ -259,6 +281,7 @@ describe("useArticleToc", () => {
   test("resets visible ids and stops tracking while loading", () => {
     withFakeDom((env, root) => {
       const article = makeArticle("# Intro\n\n## Setup");
+
       env.headingElements.set("intro", { getBoundingClientRect: () => ({ top: 10 }) });
 
       renderAndFlush(env, root, article, false);
@@ -277,6 +300,7 @@ describe("useArticleToc", () => {
   test("removes listeners and cancels the pending update on unmount", () => {
     withFakeDom((env, root) => {
       const article = makeArticle("# Intro\n\n## Setup");
+
       env.headingElements.set("intro", { getBoundingClientRect: () => ({ top: 10 }) });
 
       act(() => {
@@ -300,6 +324,7 @@ describe("useArticleToc", () => {
   test("keeps visible ids unchanged when a recompute yields the same result", () => {
     withFakeDom((env, root) => {
       const article = makeArticle("# Intro\n\n## Setup");
+
       env.headingElements.set("intro", { getBoundingClientRect: () => ({ top: 10 }) });
       env.headingElements.set("setup", { getBoundingClientRect: () => ({ top: 900 }) });
 
@@ -309,11 +334,13 @@ describe("useArticleToc", () => {
       // Fire the scroll handler again without moving any heading; the recompute
       // yields the same ids, so the dedup short-circuit returns the current list.
       const scrollHandlers = env.windowListeners.get("scroll");
+
       act(() => {
         scrollHandlers?.forEach((handler) => {
           (handler as () => void)();
         });
       });
+
       act(() => {
         flushRaf(env);
       });
@@ -325,6 +352,7 @@ describe("useArticleToc", () => {
   test("excludes a toc heading that has no dom element", () => {
     withFakeDom((env, root) => {
       const article = makeArticle("# Intro\n\n## Setup");
+
       // Only "intro" has a DOM element; "setup" does not.
       env.headingElements.set("intro", { getBoundingClientRect: () => ({ top: 10 }) });
 

@@ -13,7 +13,9 @@ if (errors.length === 0) {
 
 for (const error of errors) {
   const field = error.field ?? "document";
+
   console.error(`- ${error.file} (${field}): ${error.message}`);
 }
+
 console.error(`Content validation failed: ${errors.length} invalid document(s).`);
 process.exit(1);

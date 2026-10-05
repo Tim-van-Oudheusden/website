@@ -69,6 +69,7 @@ describe("article sidebar helpers", () => {
     ];
 
     const grouped = groupArticlesByCategory(articles);
+
     expect(grouped.Linux.map((article) => article.slug)).toEqual(["linux-tips"]);
     expect(grouped.Work.map((article) => article.slug)).toEqual(["office-notes"]);
     expect(grouped["Personal Life"].map((article) => article.slug)).toEqual(["yoga"]);
@@ -89,6 +90,7 @@ describe("article sidebar helpers", () => {
     ];
 
     const grouped = groupArticlesByCategory(articles);
+
     expect(grouped.Introduction.map((article) => article.slug)).toEqual(["introduction"]);
   });
 });

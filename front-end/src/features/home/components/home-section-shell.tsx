@@ -3,8 +3,8 @@ import { cn } from "@/shared/lib/utils";
 import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionDefinition } from "../types/home-section";
 
-const DEFAULT_FRAME_CLASSES =
-  "flex min-h-svh items-center justify-center px-6 py-12 sm:px-10 sm:py-16 lg:px-6";
+const DEFAULT_FRAME_CLASSES
+  = "flex min-h-svh items-center justify-center px-6 py-12 sm:px-10 sm:py-16 lg:px-6";
 
 interface HomeSectionShellProps {
   section: HomeSectionDefinition;
@@ -37,10 +37,10 @@ export function HomeSectionShell({
   const headingId = headingIdFor(section.id);
 
   const frameProps = {
-    id: section.id,
+    "id": section.id,
     "aria-labelledby": headingId,
-    className: className ?? DEFAULT_FRAME_CLASSES,
-    style: {
+    "className": className ?? DEFAULT_FRAME_CLASSES,
+    "style": {
       backgroundColor: section.bgColor,
       ...(section.bgImage !== undefined
         ? {
@@ -52,48 +52,52 @@ export function HomeSectionShell({
     },
   };
 
-  const content =
-    heading === undefined && body === undefined ? (
-      children
-    ) : (
-      <div className="w-full">
-        <div
-          className={cn(
-            "mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296",
-            centered ? "items-center" : "",
-          )}
-        >
-          <div className={cn("flex flex-1 flex-col", centered ? "items-center gap-4" : "gap-5")}>
-            {heading !== undefined && (
-              <h2
-                id={headingId}
-                className={cn(
-                  "font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]",
-                  centered ? "text-center" : "",
+  const content
+    = heading === undefined && body === undefined
+      ? (
+          children
+        )
+      : (
+          <div className="w-full">
+            <div
+              className={cn(
+                "mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296",
+                centered ? "items-center" : "",
+              )}
+            >
+              <div className={cn("flex flex-1 flex-col", centered ? "items-center gap-4" : "gap-5")}>
+                {heading !== undefined && (
+                  <h2
+                    id={headingId}
+                    className={cn(
+                      "font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]",
+                      centered ? "text-center" : "",
+                    )}
+                  >
+                    {heading}
+                  </h2>
                 )}
-              >
-                {heading}
-              </h2>
-            )}
-            {body !== undefined && (
-              <p
-                className={cn(
-                  "max-w-[65ch] text-base sm:text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80",
-                  centered ? "text-center" : "",
+                {body !== undefined && (
+                  <p
+                    className={cn(
+                      "max-w-[65ch] text-base sm:text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80",
+                      centered ? "text-center" : "",
+                    )}
+                  >
+                    {body}
+                  </p>
                 )}
-              >
-                {body}
-              </p>
-            )}
+              </div>
+              {children}
+            </div>
           </div>
-          {children}
-        </div>
-      </div>
-    );
+        );
 
-  return as === "footer" ? (
-    <footer {...frameProps}>{content}</footer>
-  ) : (
-    <section {...frameProps}>{content}</section>
-  );
+  return as === "footer"
+    ? (
+        <footer {...frameProps}>{content}</footer>
+      )
+    : (
+        <section {...frameProps}>{content}</section>
+      );
 }

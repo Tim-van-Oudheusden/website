@@ -21,13 +21,13 @@ interface HomeFloatingNavProps {
 }
 
 const HOME_NAV_ICONS: Record<HomeSectionId, LucideIcon> = {
-  start: House,
+  "start": House,
   "for-you": UserRound,
   "for-devs": CodeXml,
-  proof: Trophy,
+  "proof": Trophy,
   "community-and-docs": Dumbbell,
   "secondary-cta": ShieldCheck,
-  footer: Sparkles,
+  "footer": Sparkles,
 };
 
 export function HomeFloatingNav({
@@ -42,8 +42,10 @@ export function HomeFloatingNav({
   const updateIndicatorMetrics = React.useCallback(() => {
     const navListElement = navListRef.current;
     const activeNavItemElement = navItemRefs.current[activeSectionId];
+
     if (navListElement === null || activeNavItemElement === null || activeNavItemElement === undefined) {
       setIndicatorMetrics(null);
+
       return;
     }
 
@@ -63,11 +65,13 @@ export function HomeFloatingNav({
     }
 
     const animationFrameId = window.requestAnimationFrame(updateIndicatorMetrics);
+
     function handleResize(): void {
       updateIndicatorMetrics();
     }
 
     window.addEventListener("resize", handleResize);
+
     return () => {
       window.cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", handleResize);
@@ -121,9 +125,13 @@ export function HomeFloatingNav({
               >
                 <a
                   href={`#${section.id}`}
-                  ref={(element) => { navItemRefs.current[section.id] = element; }}
+                  ref={(element) => {
+                    navItemRefs.current[section.id] = element;
+                  }}
                   aria-current={isActive ? "location" : undefined}
-                  onClick={(event) => { onAnchorActivate(section.id, event); }}
+                  onClick={(event) => {
+                    onAnchorActivate(section.id, event);
+                  }}
                 >
                   <Icon className="size-4" aria-hidden="true" />
                   {section.label}

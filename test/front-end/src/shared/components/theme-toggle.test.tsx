@@ -32,15 +32,20 @@ beforeAll(async () => {
   const themeMod: typeof UseThemeModule = await import(
     "../../../../../front-end/src/shared/hooks/use-theme"
   );
+
   ThemeToggle = toggleMod.ThemeToggle;
   ThemeProvider = themeMod.ThemeProvider;
 });
 
-afterAll(() => { uninstallFakeDom(); });
+afterAll(() => {
+  uninstallFakeDom();
+});
 
 // Shared fake-DOM state persists across files under the bunfig preload; give
 // every test a deterministic light system preference.
-beforeEach(() => { triggerFakeMediaPreferenceChange(false); });
+beforeEach(() => {
+  triggerFakeMediaPreferenceChange(false);
+});
 
 describe("ThemeToggle (SSR)", () => {
   test("renders the trigger icons and an accessible toggle label", () => {
@@ -70,6 +75,7 @@ describe("ThemeToggle interaction (with ThemeProvider)", () => {
 
     try {
       const trigger = findBySlot(button.container, "dropdown-menu-trigger");
+
       fireFakePointer(trigger, "pointerdown");
       const content = findBySlot(doc.body, "dropdown-menu-content");
       const items = queryFakeElements(
@@ -77,7 +83,10 @@ describe("ThemeToggle interaction (with ThemeProvider)", () => {
         (el) => el.getAttribute("data-slot") === "dropdown-menu-item",
       );
       const darkItem = items.find((item) => item.textContent.startsWith("Dark"));
-      if (!isFakeElement(darkItem)) throw new Error("Expected a Dark menu item");
+
+      if (!isFakeElement(darkItem)) {
+        throw new Error("Expected a Dark menu item");
+      }
 
       fireFakePointer(darkItem, "click");
 
@@ -101,6 +110,7 @@ describe("ThemeToggle interaction (with ThemeProvider)", () => {
       expect(doc.documentElement.classList.contains("dark")).toBe(false);
 
       const trigger = findBySlot(button.container, "dropdown-menu-trigger");
+
       fireFakePointer(trigger, "pointerdown");
       const content = findBySlot(doc.body, "dropdown-menu-content");
 
@@ -109,11 +119,19 @@ describe("ThemeToggle interaction (with ThemeProvider)", () => {
         (el) => el.getAttribute("data-slot") === "dropdown-menu-item",
       );
       const lightItem = items.find((item) => item.textContent.startsWith("Light"));
-      if (!isFakeElement(lightItem)) throw new Error("Expected a Light menu item");
+
+      if (!isFakeElement(lightItem)) {
+        throw new Error("Expected a Light menu item");
+      }
+
       expect(lightItem.textContent).toContain("Active");
 
       const darkItem = items.find((item) => item.textContent.startsWith("Dark"));
-      if (!isFakeElement(darkItem)) throw new Error("Expected a Dark menu item");
+
+      if (!isFakeElement(darkItem)) {
+        throw new Error("Expected a Dark menu item");
+      }
+
       fireFakePointer(darkItem, "click");
 
       expect(doc.documentElement.classList.contains("dark")).toBe(true);
@@ -128,15 +146,21 @@ describe("ThemeToggle interaction (with ThemeProvider)", () => {
       );
       const activeDarkItem = reopenedItems.find((item) => item.textContent.startsWith("Dark"));
       const activeLightItem = reopenedItems.find((item) => item.textContent.startsWith("Light"));
+
       if (!isFakeElement(activeDarkItem) || !isFakeElement(activeLightItem)) {
         throw new Error("Expected Light and Dark menu items");
       }
+
       expect(activeDarkItem.textContent).toContain("Active");
       expect(activeLightItem.textContent).not.toContain("Active");
 
       // Switching back to light re-applies the light theme.
       const lightReopenItem = reopenedItems.find((item) => item.textContent.startsWith("Light"));
-      if (!isFakeElement(lightReopenItem)) throw new Error("Expected a Light menu item");
+
+      if (!isFakeElement(lightReopenItem)) {
+        throw new Error("Expected a Light menu item");
+      }
+
       fireFakePointer(lightReopenItem, "click");
       expect(doc.documentElement.classList.contains("dark")).toBe(false);
       expect(window.localStorage.getItem("theme")).toBe("light");
@@ -154,6 +178,7 @@ describe("ThemeToggle interaction (with ThemeProvider)", () => {
 
     try {
       const trigger = findBySlot(button.container, "dropdown-menu-trigger");
+
       fireFakePointer(trigger, "pointerdown");
       const content = findBySlot(doc.body, "dropdown-menu-content");
       const items = queryFakeElements(
@@ -161,7 +186,11 @@ describe("ThemeToggle interaction (with ThemeProvider)", () => {
         (el) => el.getAttribute("data-slot") === "dropdown-menu-item",
       );
       const systemItem = items.find((item) => item.textContent.startsWith("System"));
-      if (!isFakeElement(systemItem)) throw new Error("Expected a System menu item");
+
+      if (!isFakeElement(systemItem)) {
+        throw new Error("Expected a System menu item");
+      }
+
       fireFakePointer(systemItem, "click");
 
       expect(window.localStorage.getItem("theme")).toBe("system");

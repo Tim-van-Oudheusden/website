@@ -19,6 +19,7 @@ import {
 
 function findHomeSection(sectionId: HomeSectionId): HomeSectionDefinition {
   const section = HOME_SECTIONS.find((candidateSection) => candidateSection.id === sectionId);
+
   if (section === undefined) {
     throw new Error(`Expected ${sectionId} section in homepage config`);
   }
@@ -35,10 +36,12 @@ function renderSection(sectionId: HomeSectionId): string {
 function countOccurrences(haystack: string, needle: string): number {
   let count = 0;
   let index = 0;
+
   while ((index = haystack.indexOf(needle, index)) !== -1) {
     count += 1;
     index += needle.length;
   }
+
   return count;
 }
 
@@ -62,11 +65,14 @@ function renderDefaultSectionContainer(
 ): { container: FakeElement; root: Root } {
   const fakeDocument = document as unknown as FakeDocument;
   const container = fakeDocument.createElement("div");
+
   fakeDocument.body.appendChild(container);
   const root = createRoot(container as unknown as Element);
+
   act(() => {
     root.render(createElement(HomeSectionDefault, { section, onCtaActivate }));
   });
+
   return { container, root };
 }
 
@@ -180,6 +186,7 @@ describe("HomeSection", () => {
       expect(countOccurrences(html, `id="${headingId}"`)).toBe(1);
     }
   });
+
   test("renders the shell background image when the section defines one", () => {
     const html = renderToStaticMarkup(
       createElement(
@@ -258,11 +265,13 @@ describe("HomeSection", () => {
     const labelOnly = renderToStaticMarkup(
       createElement(HomeSectionDefault, { section: { ...base, ctaLabel: "See the tools" } }),
     );
+
     expect(labelOnly).not.toContain("<a ");
 
     const targetOnly = renderToStaticMarkup(
       createElement(HomeSectionDefault, { section: { ...base, ctaTargetId: "for-you" } }),
     );
+
     expect(targetOnly).not.toContain("<a ");
   });
 });
@@ -291,8 +300,10 @@ describe("HomeSectionDefault interaction", () => {
     );
 
     const anchors = queryFakeElements(container, (element) => element.tagName === "A");
+
     expect(anchors.length).toBe(1);
     const anchor = anchors[0];
+
     if (anchor === undefined) {
       throw new Error("Expected a CTA anchor");
     }

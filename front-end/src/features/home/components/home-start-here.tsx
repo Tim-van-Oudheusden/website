@@ -30,6 +30,7 @@ export function resolveStartHere(
 
   for (const slug of slugOrder) {
     const article = bySlug.get(slug);
+
     if (article !== undefined) {
       ordered.push(article);
     }
@@ -49,7 +50,8 @@ export function StartHereLinks({ items }: { items: ArticleSummary[] }): React.JS
             className="flex w-full items-center gap-3 rounded-full border border-white/15 bg-(--site-section-well-bg) px-5 py-2.5 text-(--adw-dark-5) dark:text-white/85 text-base"
           >
             <span aria-hidden="true" className="text-(--adw-dark-5)/50 dark:text-white/50">
-              {index + 1}.
+              {index + 1}
+              .
             </span>
             {item.title}
           </Link>

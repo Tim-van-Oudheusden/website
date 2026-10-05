@@ -188,14 +188,19 @@ describe("navigateToArticleHeadingById", () => {
           }
         },
       }),
-      setHash: (headingId: string) => { updatedHash = headingId; },
+      setHash: (headingId: string) => {
+        updatedHash = headingId;
+      },
       getScrollY: () => 200,
-      logNavigation: (event) => { loggedEvent = event; },
+      logNavigation: (event) => {
+        loggedEvent = event;
+      },
     });
 
     expect(didNavigate).toBe(true);
     expect<ScrollIntoViewOptions | null>(receivedScrollOptions).toEqual({ behavior: "smooth", block: "start" });
     expect<string | null>(updatedHash).toBe("target-heading");
+
     expect<TocNavigationDebugEvent | null>(loggedEvent).toEqual({
       headingId: "target-heading",
       foundTarget: true,
@@ -221,13 +226,18 @@ describe("navigateToArticleHeadingById", () => {
 
     const didNavigate = navigateToArticleHeadingById("missing-heading", {
       getElementById: () => null,
-      setHash: (hash: string) => { fallbackHash = hash; },
+      setHash: (hash: string) => {
+        fallbackHash = hash;
+      },
       getScrollY: () => 0,
-      logNavigation: (event) => { loggedEvent = event; },
+      logNavigation: (event) => {
+        loggedEvent = event;
+      },
     });
 
     expect(didNavigate).toBe(false);
     expect<string | null>(fallbackHash).toBe("missing-heading");
+
     expect<TocNavigationDebugEvent | null>(loggedEvent).toEqual({
       headingId: "missing-heading",
       foundTarget: false,

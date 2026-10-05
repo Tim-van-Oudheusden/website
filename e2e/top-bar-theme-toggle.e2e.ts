@@ -17,6 +17,7 @@ test.describe("Top bar theme toggle", () => {
 
   test("dark theme toggles html.dark, is stored, and survives a reload", async ({ page }) => {
     const html = page.locator("html");
+
     await expect(html).not.toHaveClass(/\bdark\b/);
 
     await pickTheme(page, "Dark");
@@ -35,6 +36,7 @@ test.describe("Top bar theme toggle", () => {
 
   test("system theme follows prefers-color-scheme, including live changes", async ({ page }) => {
     const html = page.locator("html");
+
     await page.emulateMedia({ colorScheme: "dark" });
     await expect(html).not.toHaveClass(/\bdark\b/);
 

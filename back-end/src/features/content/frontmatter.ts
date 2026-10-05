@@ -34,15 +34,19 @@ const NUMERIC_RE = /^-?\d+$/;
 
 function parseScalarValue(value: string): Scalar {
   const trimmed = value.trim();
+
   if (trimmed === "true") {
     return true;
   }
+
   if (trimmed === "false") {
     return false;
   }
+
   if (NUMERIC_RE.exec(trimmed) !== null) {
     return Number(trimmed);
   }
+
   return trimmed;
 }
 
@@ -70,14 +74,18 @@ function parseBlockChildren(children: string[]): FrontmatterValue {
 
   while (index < children.length) {
     const line = children[index];
+
     if (line === undefined) {
       index += 1;
+
       continue;
     }
 
     const itemMatch = LIST_ITEM_RE.exec(line.trimStart());
+
     if (itemMatch === null) {
       index += 1;
+
       continue;
     }
 
@@ -86,40 +94,54 @@ function parseBlockChildren(children: string[]): FrontmatterValue {
 
     // Plain scalar item: `- One` (no colon-field inside).
     const inlineField = FIELD_RE.exec(rest);
+
     if (inlineField === null) {
       items.push(parseScalarValue(rest));
       index += 1;
+
       continue;
     }
 
     // Object item: `- type: repo`, then deeper `key: value` siblings.
     const inlineKey = inlineField[1];
+
     if (inlineKey === undefined || inlineKey === "") {
       index += 1;
+
       continue;
     }
+
     const obj: FrontmatterMap = {
       [inlineKey]: parseScalarValue(inlineField[2] ?? ""),
     };
 
     let next = index + 1;
+
     while (next < children.length) {
       const sub = children[next];
+
       if (sub === undefined) {
         next += 1;
+
         break;
       }
+
       const subIndent = indentOf(sub);
+
       if (subIndent <= itemIndent) {
         break;
       }
+
       const subField = FIELD_RE.exec(sub.trimStart());
+
       if (subField !== null) {
         const subKey = subField[1];
+
         if (subKey !== undefined && subKey !== "") {
           obj[subKey] = parseScalarValue(subField[2] ?? "");
         }
       }
+
       next += 1;
     }
 
@@ -144,14 +166,18 @@ export function parseFrontmatter(raw: string): ParseResult | null {
 
   while (index < lines.length) {
     const line = lines[index];
+
     if (line === undefined) {
       break;
     }
+
     if (line.trim() === "---") {
       closed = true;
       index += 1;
+
       break;
     }
+
     block.push(line);
     index += 1;
   }
@@ -164,35 +190,46 @@ export function parseFrontmatter(raw: string): ParseResult | null {
   const data: FrontmatterMap = {};
 
   let i = 0;
+
   while (i < block.length) {
     const line = block[i];
+
     if (line === undefined) {
       i += 1;
+
       continue;
     }
+
     if (line.trim() === "") {
       i += 1;
+
       continue;
     }
 
     const indent = indentOf(line);
     const field = FIELD_RE.exec(line.trimStart());
+
     if (field === null) {
       i += 1;
+
       continue;
     }
 
     const key = field[1];
+
     if (key === undefined || key === "") {
       i += 1;
+
       continue;
     }
+
     const value = field[2] ?? "";
 
     // A key with a value: `title: X`.
     if (value.trim() !== "") {
       data[key] = parseScalarValue(value);
       i += 1;
+
       continue;
     }
 
@@ -201,19 +238,25 @@ export function parseFrontmatter(raw: string): ParseResult | null {
     // deeper than the parent key does, so children cannot leak to top level.
     const children: string[] = [];
     let next = i + 1;
+
     while (next < block.length) {
       const child = block[next];
+
       if (child === undefined) {
         break;
       }
+
       if (child.trim() !== "") {
         if (indentOf(child) <= indent) {
           break;
         }
+
         children.push(child);
       }
+
       next += 1;
     }
+
     data[key] = parseBlockChildren(children);
     i = next;
   }

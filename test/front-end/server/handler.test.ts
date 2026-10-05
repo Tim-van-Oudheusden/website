@@ -47,9 +47,11 @@ function backend(path: string): Promise<Response> {
   if (path === "/api/content/yoga-nidra") {
     return Promise.resolve(Response.json(ARTICLE));
   }
+
   if (path === "/api/content/pi-sandbox-automation") {
     return Promise.resolve(Response.json({ ...ARTICLE, type: "project", slug: "pi-sandbox-automation", title: "Pi Sandbox Automation" }));
   }
+
   return Promise.resolve(Response.json({ error: "Content not found" }, { status: 404 }));
 }
 
@@ -90,12 +92,14 @@ describe("front-end request handler", () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
     const image = await handle(new Request("https://buildwithtim.dev/images/me.png"));
+
     expect(image.status).toBe(200);
     expect(image.headers.get("content-type")).toBe("image/png");
     expect(new Uint8Array(await image.arrayBuffer())).toEqual(new Uint8Array(readFileSync(join(distDir, "images", "me.png"))));
 
     for (const path of ["/", "/projects", "/projects/pi-sandbox-automation", "/images"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+
       expect(response.status).toBe(200);
       expect(await response.text()).toBe(INDEX_HTML);
     }
@@ -106,6 +110,7 @@ describe("front-end request handler", () => {
 
     for (const path of ["/../secret.txt", "/%2e%2e/secret.txt", "/..%2fsecret.txt", "/images/..%2f..%2fsecret.txt"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+
       expect(await response.text()).toBe(INDEX_HTML);
     }
   });
@@ -126,6 +131,7 @@ describe("front-end request handler", () => {
       distDir,
       fetchBackend: (path, headers) => {
         visitorIps.push(new Headers(headers).get("cf-connecting-ip"));
+
         return backend(path);
       },
     });

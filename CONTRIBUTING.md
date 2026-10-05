@@ -57,7 +57,7 @@ Run these before opening a PR:
 | --------------------- | ----------------------------------------- |
 | `bun test`            | Full unit test suite (all workspaces)     |
 | `bun run typecheck`   | TypeScript across shared, root, and both apps |
-| `bun run lint`        | ESLint (`eslint .`)                       |
+| `bun run lint`        | ESLint, zero warnings (`eslint . --max-warnings 0`) |
 | `bun run build`       | Production builds for both apps           |
 
 End-to-end tests run against the Podman pod. `scripts/e2e.sh` mirrors the CI E2E job (build dev images, `podman kube play`, wait for services, `bun run test:e2e`, tear down):
@@ -77,9 +77,18 @@ Comment `/apply-suggestions` on a pull request to have `.github/workflows/auto-r
 
 ## Code style
 
-Enforced by ESLint (`eslint.config.js`) with strict TypeScript rules and `@stylistic`. Notable conventions:
+Enforced by ESLint (`eslint.config.js`): strict type-checked TypeScript rules, with `@stylistic` as the only formatter (no Prettier). `bun run lint` fails on any warning (`--max-warnings 0`); `bun run lint:fix` applies every autofix. Formatting, from `stylistic.configs.customize()` plus overrides:
 
-- Semicolons required (`always`).
+- 2-space indent, double quotes (single only to avoid escaping), semicolons always.
+- Trailing commas on every multiline list (arrays, objects, imports/exports, parameters/arguments, tuples).
+- Max line length 120 (strings, URLs, template literals, regexes, and `className` lines exempt); `max-len` has no autofix, so wrap by hand.
+- `1tbs` braces, braces required on every block (`curly: all`), no single-line blocks.
+- Arrow parameters always parenthesised; wrapped operators lead the next line; wrapped ternaries put each branch on its own line.
+- Blank line before and after block statements (`if`, loops, `switch`, `try`, functions, classes) and multiline expressions, after `const`/`let` groups, and before `return`/`break`/`continue`/`throw`.
+- Object keys quoted only when one of them must be (`consistent-as-needed`); empty JSX elements self-close.
+
+Other rules:
+
 - `no-explicit-any` is an error — type things properly.
 - Explicit return types on functions (warnings; keep them clean).
 - Unused vars are warnings; prefix deliberately-unused args with `_`.

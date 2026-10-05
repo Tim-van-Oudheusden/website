@@ -15,6 +15,7 @@ function classify(paths: string[]): { status: number | null; output: string } {
     input: paths.join("\n"),
     env: { PATH: process.env["PATH"] ?? "" },
   });
+
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
 }
 

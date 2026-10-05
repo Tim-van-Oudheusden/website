@@ -6,6 +6,7 @@ describe("resolveContentAsset", () => {
 
   test("resolves an image path inside the root with its content type", () => {
     const result = resolveContentAsset(imageRoot, "pixel.png");
+
     expect(result).toEqual({
       fullPath: "/tmp/content/images/pixel.png",
       contentType: "image/png",
@@ -14,6 +15,7 @@ describe("resolveContentAsset", () => {
 
   test("resolves uppercase extensions to the matching MIME type", () => {
     const result = resolveContentAsset(imageRoot, "pixel.PNG");
+
     expect(result?.contentType).toBe("image/png");
   });
 

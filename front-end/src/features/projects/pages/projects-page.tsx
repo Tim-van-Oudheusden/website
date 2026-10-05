@@ -90,15 +90,18 @@ export function ProjectsPage(): React.JSX.Element {
     async function fetchProjects(): Promise<void> {
       try {
         const data = await httpContentLoader.listProjects();
+
         if (!cancelled) {
           setProjects(data);
         }
       } catch (err) {
         if (!cancelled) {
           let message = "Failed to load projects";
+
           if (err instanceof ApiError) {
             message = err.message;
           }
+
           setError(message);
         }
       } finally {
@@ -109,7 +112,10 @@ export function ProjectsPage(): React.JSX.Element {
     }
 
     void fetchProjects();
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) {

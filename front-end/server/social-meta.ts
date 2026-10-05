@@ -28,6 +28,7 @@ export function renderSocialMeta(html: string, item: ContentFrontmatter, origin:
     const imagePath = item.socialImage.startsWith("/")
       ? item.socialImage
       : `${ASSET_PATH_PREFIX}${item.socialImage.replace(/^images\//, "")}`;
+
     tags.push({ attribute: "property", key: "og:image", content: `${origin}${imagePath}` });
     tags.push({ attribute: "name", key: "twitter:card", content: "summary_large_image" });
   }
@@ -36,6 +37,7 @@ export function renderSocialMeta(html: string, item: ContentFrontmatter, origin:
   const markup = tags
     .map(({ attribute, key, content }) => {
       const escaped = content.replace(/[&"'<>]/g, (character) => ATTRIBUTE_ESCAPES[character] ?? character);
+
       return `    <meta ${attribute}="${key}" content="${escaped}" />`;
     })
     .join("\n");

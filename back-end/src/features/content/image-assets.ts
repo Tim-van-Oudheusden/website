@@ -34,6 +34,7 @@ export interface ResolvedAsset {
  */
 export function resolveContentAsset(imageRoot: string, rawPath: string): ResolvedAsset | null {
   let decodedPath: string;
+
   try {
     decodedPath = decodeURIComponent(rawPath);
   } catch {
@@ -42,12 +43,14 @@ export function resolveContentAsset(imageRoot: string, rawPath: string): Resolve
 
   const fullPath = resolve(imageRoot, decodedPath);
   const rel = relative(imageRoot, fullPath);
+
   if (rel === "" || rel.startsWith("..") || isAbsolute(rel)) {
     return null;
   }
 
   const extension = extname(fullPath).toLowerCase();
   const contentType = IMAGE_MIME_TYPES[extension];
+
   if (contentType === undefined) {
     return null;
   }

@@ -24,9 +24,11 @@ beforeAll(async () => {
   writeFileSync(join(root, "dist", "index.html"), INDEX_HTML);
 
   const build = await Bun.build({ entrypoints: [mainEntry], target: "bun", outdir: join(root, "server") });
+
   if (!build.success) {
     throw new AggregateError(build.logs, "bundling front-end/server/main.ts failed");
   }
+
   serverScript = join(root, "server", "main.js");
 });
 
@@ -53,11 +55,13 @@ async function startFrontEnd(env: Record<string, string> = {}): Promise<RunningF
   for (;;) {
     try {
       await fetch(`${baseUrl}/`);
+
       return { child, baseUrl };
     } catch {
       if (child.exitCode !== null) {
         throw new Error(`front-end server exited early with code ${child.exitCode}`);
       }
+
       await Bun.sleep(20);
     }
   }
@@ -83,11 +87,13 @@ describe("front-end prod server process", () => {
 
   test("fetches an article's link-preview data from BACKEND_ORIGIN", async () => {
     const backendPaths: string[] = [];
+
     using backend = Bun.serve({
       hostname: "127.0.0.1",
       port: 0,
       fetch: (request) => {
         backendPaths.push(new URL(request.url).pathname);
+
         return Response.json({
           type: "article",
           title: "Yoga Nidra, a way to be at peace in chaos",

@@ -24,10 +24,17 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+  stylistic.configs.customize({
+    indent: 2,
+    quotes: "double",
+    semi: true,
+    jsx: true,
+    braceStyle: "1tbs",
+    commaDangle: "always-multiline",
+    arrowParens: true,
+    quoteProps: "consistent-as-needed",
+  }),
   {
-    plugins: {
-      "@stylistic": stylistic,
-    },
     languageOptions: {
       parserOptions: {
         project: [...projectPaths, ...projectAliases],
@@ -35,15 +42,45 @@ export default tseslint.config(
       },
     },
     rules: {
-      /* ── Semicolons ── */
-      semi: ["error", "always"],
-      "@stylistic/member-delimiter-style": [
+      /* ── Formatting (overrides on top of stylistic.configs.customize) ── */
+      "@stylistic/quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: "always" }],
+      "@stylistic/comma-dangle": [
         "error",
         {
-          multiline: { delimiter: "semi", requireLast: true },
-          singleline: { delimiter: "semi", requireLast: false },
+          arrays: "always-multiline",
+          objects: "always-multiline",
+          imports: "always-multiline",
+          exports: "always-multiline",
+          functions: "always-multiline",
+          enums: "always-multiline",
+          tuples: "always-multiline",
+          generics: "ignore",
         },
       ],
+      "@stylistic/brace-style": ["error", "1tbs", { allowSingleLine: false }],
+      curly: ["error", "all"],
+      "@stylistic/max-len": [
+        "error",
+        {
+          code: 120,
+          tabWidth: 2,
+          ignoreStrings: true,
+          ignoreUrls: true,
+          ignoreTemplateLiterals: true,
+          ignoreRegExpLiterals: true,
+          ignorePattern: String.raw`\bclassName=`,
+        },
+      ],
+      "@stylistic/padding-line-between-statements": [
+        "error",
+        { blankLine: "always", prev: "*", next: ["block-like", "multiline-expression"] },
+        { blankLine: "always", prev: ["block-like", "multiline-expression"], next: "*" },
+        { blankLine: "always", prev: ["const", "let", "var"], next: "*" },
+        { blankLine: "any", prev: ["const", "let", "var"], next: ["const", "let", "var"] },
+        { blankLine: "always", prev: "*", next: ["return", "break", "continue", "throw"] },
+        { blankLine: "any", prev: ["case", "default"], next: ["case", "default"] },
+      ],
+      "@stylistic/jsx-self-closing-comp": "error",
 
       /* ── Best practices ── */
       "@typescript-eslint/no-unused-vars": [

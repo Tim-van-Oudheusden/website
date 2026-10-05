@@ -36,19 +36,31 @@ export interface FakeMount {
 
 /** Mount `node` into a fresh container appended to the fake document body. */
 export function mountIntoBody(node: ReactNode): FakeMount {
-  if (createRootFn === null) throw new Error("Call initFakeDomHarness() in beforeAll first");
+  if (createRootFn === null) {
+    throw new Error("Call initFakeDomHarness() in beforeAll first");
+  }
+
   const doc = document as unknown as FakeDocument;
   const container = doc.createElement("div");
+
   doc.body.appendChild(container);
   const root: Root = createRootFn(container as unknown as Element);
-  act(() => { root.render(node); });
+
+  act(() => {
+    root.render(node);
+  });
+
   return { container, root };
 }
 
 /** Unmount the tree and remove its container from the fake body. */
 export function unmountFakeDomRoot(mount: FakeMount): void {
   const doc = document as unknown as FakeDocument;
-  act(() => { mount.root.unmount(); });
+
+  act(() => {
+    mount.root.unmount();
+  });
+
   doc.body.removeChild(mount.container);
 }
 
@@ -59,7 +71,11 @@ export function isFakeElement(node: FakeElement | undefined): node is FakeElemen
 /** First element under `root` carrying `slot` as its data-slot attribute. */
 export function findBySlot(root: FakeElement, slot: string): FakeElement {
   const [found] = queryFakeElements(root, (el) => el.getAttribute("data-slot") === slot);
-  if (!isFakeElement(found)) throw new Error(`No element with data-slot="${slot}"`);
+
+  if (!isFakeElement(found)) {
+    throw new Error(`No element with data-slot="${slot}"`);
+  }
+
   return found;
 }
 
@@ -86,10 +102,16 @@ export function fireFakePointer(element: FakeElement, type: string): FakeDomEven
     isPrimary: true,
     detail: 1,
     defaultPrevented: false,
-    preventDefault: () => { event.defaultPrevented = true; },
+    preventDefault: () => {
+      event.defaultPrevented = true;
+    },
     stopPropagation: () => undefined,
   };
-  act(() => { element.dispatchEvent(event); });
+
+  act(() => {
+    element.dispatchEvent(event);
+  });
+
   return event;
 }
 
@@ -106,7 +128,10 @@ export function fireDocumentKey(doc: FakeDocument, key: string): void {
     preventDefault: () => undefined,
     stopPropagation: () => undefined,
   };
-  act(() => { doc.dispatchEvent(event); });
+
+  act(() => {
+    doc.dispatchEvent(event);
+  });
 }
 
 /** Minimal JSON Response for `apiGet`'s parse step. */
@@ -125,11 +150,14 @@ export function jsonResponse(body: unknown, status = 200): Response {
  */
 export function routeFetch(routes: Record<string, () => Promise<Response>>): string[] {
   const requested: string[] = [];
+
   globalThis.fetch = ((input: string) => {
     requested.push(input);
     const route = routes[input];
+
     return route === undefined ? Promise.reject(new Error(`Unrouted fetch: ${input}`)) : route();
   }) as unknown as typeof globalThis.fetch;
+
   return requested;
 }
 

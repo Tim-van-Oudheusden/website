@@ -5,6 +5,7 @@ describe("rewriteObsidianImageEmbeds", () => {
   test("rewrites ![[images/pixel.gif]] to markdown image with content-assets route", () => {
     const input = "Intro\n\n![[images/pixel.gif]]\n";
     const output = rewriteObsidianImageEmbeds(input);
+
     expect(output).toContain("![](/content-assets/images/pixel.gif)");
   });
 
@@ -55,6 +56,7 @@ describe("rewriteObsidianImageEmbeds", () => {
 
   test("rewrites every embed in the document", () => {
     const input = "![[a.png]] text ![[Note]] text ![[images/b.jpg|B]]";
+
     expect(rewriteObsidianImageEmbeds(input)).toBe(
       "![](/content-assets/images/a.png) text ![[Note]] text ![B](/content-assets/images/b.jpg)",
     );

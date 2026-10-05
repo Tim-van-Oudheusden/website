@@ -53,8 +53,10 @@ afterAll(() => {
 function renderCarouselContainer(): { container: FakeElement; root: Root } {
   const fakeDocument = document as unknown as FakeDocument;
   const container = fakeDocument.createElement("div");
+
   fakeDocument.body.appendChild(container);
   const root = createRoot(container as unknown as Element);
+
   act(() => {
     root.render(
       createElement(ValuePillarsCarousel, {
@@ -64,6 +66,7 @@ function renderCarouselContainer(): { container: FakeElement; root: Root } {
       }),
     );
   });
+
   return { container, root };
 }
 
@@ -81,9 +84,11 @@ function clickElement(container: FakeElement, target: FakeElement): void {
 
 function parentElementOf(node: FakeNode): FakeElement {
   const parent = node.parentNode;
+
   if (parent?.nodeType !== 1) {
     throw new Error("Expected an element parent");
   }
+
   return parent as FakeElement;
 }
 
@@ -135,6 +140,7 @@ describe("ValuePillarsCarousel", () => {
       }),
     ).toBe(330);
   });
+
   test("resolves empty card lists to the current scroll position", () => {
     for (const direction of [1, -1] as const) {
       expect(
@@ -200,6 +206,7 @@ describe("ValuePillarsCarousel", () => {
       viewportWidth: 300,
       trackPaddingLeft: 0,
     };
+
     // floor((300 + 1) / 330) = 0, so the page size clamps to one card.
     expect(resolvePagedCarouselScrollLeft({ currentScrollLeft: 0, direction: 1, ...narrow })).toBe(330);
     expect(resolvePagedCarouselScrollLeft({ currentScrollLeft: 330, direction: -1, ...narrow })).toBe(0);
@@ -212,6 +219,7 @@ describe("calculateCardTiltAngles", () => {
 
   test("returns zero tilt at the card centre, without signed zeros", () => {
     const angles = calculateCardTiltAngles({ pointerX: 150, pointerY: 200, ...CARD });
+
     // `toBe` is identity-based: -0 would fail, so this pins the signed-zero
     // normalisation as well as the zero tilt at the centre.
     expect(angles.rotateX).toBe(0);
@@ -224,8 +232,11 @@ describe("calculateCardTiltAngles", () => {
   });
 
   test("returns zero tilt for zero or negative card sizes", () => {
-    expect(calculateCardTiltAngles({ pointerX: 150, pointerY: 200, width: 0, height: 400 })).toEqual({ rotateX: 0, rotateY: 0 });
-    expect(calculateCardTiltAngles({ pointerX: 150, pointerY: 200, width: 300, height: -5 })).toEqual({ rotateX: 0, rotateY: 0 });
+    expect(calculateCardTiltAngles({ pointerX: 150, pointerY: 200, width: 0, height: 400 }))
+      .toEqual({ rotateX: 0, rotateY: 0 });
+
+    expect(calculateCardTiltAngles({ pointerX: 150, pointerY: 200, width: 300, height: -5 }))
+      .toEqual({ rotateX: 0, rotateY: 0 });
   });
 
   test("clamps out-of-bounds pointers to the maximum tilt", () => {
@@ -234,7 +245,8 @@ describe("calculateCardTiltAngles", () => {
   });
 
   test("scales with a custom maximum tilt", () => {
-    expect(calculateCardTiltAngles({ pointerX: 300, pointerY: 0, ...CARD, maxTiltDegrees: 10 })).toEqual({ rotateX: 10, rotateY: 10 });
+    expect(calculateCardTiltAngles({ pointerX: 300, pointerY: 0, ...CARD, maxTiltDegrees: 10 }))
+      .toEqual({ rotateX: 10, rotateY: 10 });
   });
 });
 
@@ -242,9 +254,11 @@ describe("ValuePillarsCarousel interaction", () => {
   test("scrolls the track by one page on next and previous clicks", () => {
     const { container, root } = renderCarouselContainer();
     const articles = queryFakeElements(container, (element) => element.tagName === "ARTICLE");
+
     expect(articles.length).toBe(5);
     // The scroller is the grandparent of the articles (scroller > flex row > article).
     const scroller = parentElementOf(parentElementOf(articles[0] as FakeNode));
+
     articles.forEach((article, index) => {
       article.offsetLeft = index * 330;
     });
@@ -254,6 +268,7 @@ describe("ValuePillarsCarousel interaction", () => {
     const buttons = queryFakeElements(container, (element) => element.tagName === "BUTTON");
     const nextButton = buttons.find((button) => button.getAttribute("aria-label") === "Next cards");
     const previousButton = buttons.find((button) => button.getAttribute("aria-label") === "Previous cards");
+
     expect(nextButton).toBeDefined();
     expect(previousButton).toBeDefined();
 
@@ -262,10 +277,12 @@ describe("ValuePillarsCarousel interaction", () => {
     expect(scroller.scrollLeft).toBe(990);
 
     clickElement(container, previousButton!);
+
     expect(scroller.scrollCalls).toEqual([
       { left: 990, behavior: "smooth" },
       { left: 0, behavior: "smooth" },
     ]);
+
     expect(scroller.scrollLeft).toBe(0);
 
     act(() => {
@@ -277,10 +294,13 @@ describe("ValuePillarsCarousel interaction", () => {
     const { container } = renderCarouselContainer();
     const articles = queryFakeElements(container, (element) => element.tagName === "ARTICLE");
     const article = articles[0];
+
     if (article === undefined) {
       throw new Error("Expected a card article");
     }
+
     const card = article.childNodes[0] as FakeElement;
+
     card.rect = { width: 300, height: 400 };
 
     act(() => {
@@ -300,10 +320,13 @@ describe("ValuePillarsCarousel interaction", () => {
     const { container } = renderCarouselContainer();
     const articles = queryFakeElements(container, (element) => element.tagName === "ARTICLE");
     const article = articles[0];
+
     if (article === undefined) {
       throw new Error("Expected a card article");
     }
+
     const card = article.childNodes[0] as FakeElement;
+
     card.rect = { width: 300, height: 400 };
 
     act(() => {
@@ -332,9 +355,11 @@ describe("ValuePillarsCarousel interaction", () => {
     const { container } = renderCarouselContainer();
     const articles = queryFakeElements(container, (element) => element.tagName === "ARTICLE");
     const article = articles[0];
+
     if (article === undefined) {
       throw new Error("Expected a card article");
     }
+
     const card = article.childNodes[0] as FakeElement;
 
     // The fake element's default scrollHeight is 0, so the mount effect
@@ -346,11 +371,14 @@ describe("ValuePillarsCarousel interaction", () => {
     const { container, root } = renderCarouselContainer();
     const articles = queryFakeElements(container, (element) => element.tagName === "ARTICLE");
     const article = articles[0];
+
     if (article === undefined) {
       throw new Error("Expected a card article");
     }
+
     const card = article.childNodes[0] as FakeElement;
     const description = queryFakeElements(card, (element) => element.tagName === "P")[0]!;
+
     description.scrollHeight = 120;
 
     act(() => {
@@ -358,6 +386,7 @@ describe("ValuePillarsCarousel interaction", () => {
     });
 
     expect(card.style["--value-pillar-description-height"]).toBe("120px");
+
     act(() => {
       root.unmount();
     });
@@ -366,16 +395,21 @@ describe("ValuePillarsCarousel interaction", () => {
   test("falls back to the window resize listener when ResizeObserver is unavailable", () => {
     const globals = globalThis as Record<string, unknown>;
     const savedResizeObserver = globals["ResizeObserver"];
+
     delete globals["ResizeObserver"];
+
     try {
       const { container, root } = renderCarouselContainer();
       const articles = queryFakeElements(container, (element) => element.tagName === "ARTICLE");
       const article = articles[0];
+
       if (article === undefined) {
         throw new Error("Expected a card article");
       }
+
       const card = article.childNodes[0] as FakeElement;
       const description = queryFakeElements(card, (element) => element.tagName === "P")[0]!;
+
       description.scrollHeight = 90;
 
       act(() => {
@@ -391,9 +425,11 @@ describe("ValuePillarsCarousel interaction", () => {
       // After unmount the resize listener is removed, so a further resize
       // must not re-measure the (now detached) description.
       description.scrollHeight = 130;
+
       act(() => {
         triggerWindowEvent("resize");
       });
+
       expect(card.style["--value-pillar-description-height"]).toBe("90px");
     } finally {
       globals["ResizeObserver"] = savedResizeObserver;

@@ -13,6 +13,7 @@ function runCheck(env: Record<string, string>): { status: number | null; output:
     encoding: "utf8",
     env: { PATH: process.env["PATH"] ?? "", PR_AUTHOR: "someone", ...env },
   });
+
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
 }
 

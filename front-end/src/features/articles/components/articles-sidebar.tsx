@@ -18,9 +18,9 @@ import {
 } from "../lib/articles-page-styles";
 
 const INITIAL_OPEN_CATEGORIES: Record<ArticleCategory, boolean> = {
-  Introduction: true,
-  Linux: true,
-  Work: true,
+  "Introduction": true,
+  "Linux": true,
+  "Work": true,
   "Personal Life": true,
 };
 
@@ -44,6 +44,7 @@ export function ArticlesSidebar({ articles, selectedSlug }: ArticlesSidebarProps
               const isOpen = openCategories[category];
               const categoryArticles = groupedArticles[category];
               let chevronRotationClass = "rotate-0";
+
               if (isOpen) {
                 chevronRotationClass = "rotate-90";
               }
@@ -74,6 +75,7 @@ export function ArticlesSidebar({ articles, selectedSlug }: ArticlesSidebarProps
                   <CollapsibleContent className="space-y-1 pt-1 pl-6">
                     {categoryArticles.map((article) => {
                       let articleStateClass = "text-muted-foreground";
+
                       if (article.slug === selectedSlug) {
                         articleStateClass = ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState;
                       }

@@ -40,6 +40,7 @@ describe("HomeWorkflowRows", () => {
 
     expect(html).toContain("How I work");
     expect(html).toContain("The real stack behind the site.");
+
     for (const row of FIXTURE_ROWS) {
       expect(html).toContain(row.title);
       expect(html).toContain(row.description);

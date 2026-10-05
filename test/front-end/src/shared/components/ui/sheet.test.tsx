@@ -36,6 +36,7 @@ beforeAll(async () => {
   const mod: typeof SheetModule = await import(
     "../../../../../../front-end/src/shared/components/ui/sheet"
   );
+
   Sheet = mod.Sheet;
   SheetTrigger = mod.SheetTrigger;
   SheetClose = mod.SheetClose;
@@ -46,7 +47,9 @@ beforeAll(async () => {
   SheetDescription = mod.SheetDescription;
 });
 
-afterAll(() => { uninstallFakeDom(); });
+afterAll(() => {
+  uninstallFakeDom();
+});
 
 // ── SSR rendering (no DOM required) ──────────────────────────────────────────
 
@@ -126,7 +129,9 @@ function mountSheet(props: Parameters<typeof SheetContent>[0] = {}, open?: boole
     createElement(
       Sheet,
       {
-        onOpenChange: (next) => { openChangeEvents.push(next); },
+        onOpenChange: (next) => {
+          openChangeEvents.push(next);
+        },
         // Omitting `open` keeps the sheet uncontrolled for trigger-driven tests.
         ...(open === undefined ? {} : { open }),
       },
@@ -134,13 +139,16 @@ function mountSheet(props: Parameters<typeof SheetContent>[0] = {}, open?: boole
       createElement(SheetContent, props, ...sheetBody()),
     ),
   );
+
   return { mount, openChangeEvents };
 }
 
 function openSheet(sheet: MountedSheet): FakeElement {
   const trigger = findBySlot(sheet.mount.container, "sheet-trigger");
+
   fireFakePointer(trigger, "click");
   const doc = document as unknown as FakeDocument;
+
   return findBySlot(doc.body, "sheet-content");
 }
 
@@ -158,9 +166,11 @@ describe("sheet interaction", () => {
       expect(content.textContent).toContain("Footer text");
 
       const overlay = findBySlot(doc.body, "sheet-overlay");
+
       expect(overlay.getAttribute("data-state")).toBe("open");
 
       const closeButtons = queryFakeElements(content, (el) => el.nodeName === "BUTTON");
+
       expect(closeButtons).toHaveLength(1);
       expect(closeButtons[0]?.textContent).toContain("Close");
     } finally {
@@ -174,6 +184,7 @@ describe("sheet interaction", () => {
 
     try {
       const content = findBySlot(doc.body, "sheet-content");
+
       expect(content.getAttribute("data-state")).toBe("open");
     } finally {
       unmountFakeDomRoot(sheet.mount);
@@ -204,7 +215,10 @@ describe("sheet interaction", () => {
     try {
       const content = openSheet(sheet);
       const [closeButton] = queryFakeElements(content, (el) => el.nodeName === "BUTTON");
-      if (!isFakeElement(closeButton)) throw new Error("Expected a close button");
+
+      if (!isFakeElement(closeButton)) {
+        throw new Error("Expected a close button");
+      }
 
       fireFakePointer(closeButton, "click");
 

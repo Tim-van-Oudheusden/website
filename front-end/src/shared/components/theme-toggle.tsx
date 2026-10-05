@@ -28,17 +28,26 @@ export function ThemeToggle({ triggerClassName, iconClassName }: ThemeToggleProp
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => { setTheme("light"); }}>
+        <DropdownMenuItem onClick={() => {
+          setTheme("light");
+        }}
+        >
           <SunIcon className="mr-2 size-4" />
           Light
           {theme === "light" && <span className="text-muted-foreground ml-auto text-xs">Active</span>}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("dark"); }}>
+        <DropdownMenuItem onClick={() => {
+          setTheme("dark");
+        }}
+        >
           <MoonIcon className="mr-2 size-4" />
           Dark
           {theme === "dark" && <span className="text-muted-foreground ml-auto text-xs">Active</span>}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { setTheme("system"); }}>
+        <DropdownMenuItem onClick={() => {
+          setTheme("system");
+        }}
+        >
           <MonitorIcon className="mr-2 size-4" />
           System
           {theme === "system" && <span className="text-muted-foreground ml-auto text-xs">Active</span>}
