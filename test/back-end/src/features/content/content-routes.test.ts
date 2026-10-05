@@ -186,6 +186,15 @@ describe("content routes mount JSON under /api and images at the root", () => {
     expect(res.statusCode).toBe(404);
   });
 
+  test("answers 404, not 500, for a malformed escape that survives the router's decode", async () => {
+    // Fastify decodes %25 to "%", so the handler receives "%.png" and
+    // decodeURIComponent would throw a URIError without the resolver's guard.
+    const res = await app!.inject({ method: "GET", url: "/content-assets/images/%25.png" });
+    expect(res.statusCode).toBe(404);
+    const body = res.json();
+    expect(body).toEqual({ error: "Image not found" });
+  });
+
   test("invalid documents are skipped, not fatal to the list route", async () => {
     const res = await app!.inject({ method: "GET", url: `${API_BASE}${ROUTES.CONTENT}` });
     expect(res.statusCode).toBe(200);
