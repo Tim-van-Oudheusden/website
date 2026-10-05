@@ -29,6 +29,7 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     // so it cannot climb out of distDir. Do not decode it: "..%2f" would escape.
     const filePath = join(options.distDir, url.pathname);
     const fileStats = await stat(filePath).catch(() => null);
+
     if (fileStats?.isFile()) {
       return new Response(Bun.file(filePath));
     }
@@ -65,10 +66,13 @@ async function fetchArticle(
 ): Promise<ContentFrontmatter | null> {
   try {
     const response = await fetchBackend(`${API_BASE}/content/${slug}`, headers);
+
     if (!response.ok) {
       return null;
     }
+
     const item = await response.json() as ContentFrontmatter;
+
     return item.type === "article" ? item : null;
   } catch {
     return null;

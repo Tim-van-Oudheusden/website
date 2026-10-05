@@ -61,6 +61,7 @@ describe("App", () => {
     const html = renderToStaticMarkup(createElement(App));
 
     const headerAt = html.indexOf("<header");
+
     expect(html).toContain("Tim V.O.");
     expect(headerAt).toBeGreaterThanOrEqual(0);
     expect(headerAt).toBeLessThan(html.indexOf("Loading projects..."));

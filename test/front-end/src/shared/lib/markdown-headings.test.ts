@@ -110,7 +110,9 @@ describe("extractMarkdownHeadingsWithOffsets", () => {
     const markdown = "# Intro\n\n## [Reference style][ref]\n\nTitle\n===\n\nSub\n---\n\n```md\n# Not a heading\n```\n\n~~~\n## Also not\n~~~\n\n# Intro\n";
     const headings = extractMarkdownHeadingsWithOffsets(markdown, 3);
 
-    expect(headings.map(({ id, startOffset, startLine, startColumn }) => [id, startOffset, startLine, startColumn])).toEqual([
+    expect(
+      headings.map(({ id, startOffset, startLine, startColumn }) => [id, startOffset, startLine, startColumn]),
+    ).toEqual([
       ["intro", 0, 1, 1],
       ["reference-style", 9, 3, 1],
       ["title", 36, 5, 1],

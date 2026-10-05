@@ -77,21 +77,31 @@ function mountArticlesPage(path = "/articles"): FakeMount {
 }
 
 async function settle(): Promise<void> {
-  await act(async () => { await settleMicrotasks(); });
+  await act(async () => {
+    await settleMicrotasks();
+  });
 }
 
 /** Let `requestAnimationFrame` callbacks (fake: `setTimeout(0)`) run. */
 async function flushAnimationFrames(): Promise<void> {
   await act(async () => {
     const { promise, resolve } = Promise.withResolvers<undefined>();
-    setTimeout(() => { resolve(undefined); }, 0);
+
+    setTimeout(() => {
+      resolve(undefined);
+    }, 0);
+
     await promise;
   });
 }
 
 function headingById(id: string): FakeElement {
   const heading = (document as unknown as FakeDocument).getElementById(id);
-  if (heading === null) throw new Error(`Expected a heading with id="${id}"`);
+
+  if (heading === null) {
+    throw new Error(`Expected a heading with id="${id}"`);
+  }
+
   return heading;
 }
 
@@ -111,6 +121,7 @@ describe("ArticlesPage states", () => {
     routeFetch({
       [LIST_URL]: () => Promise.resolve(new Response("", { status: 503, statusText: "Service Unavailable" })),
     });
+
     const page = mountArticlesPage();
 
     try {
@@ -142,6 +153,7 @@ describe("ArticlesPage states", () => {
       [LIST_URL]: respond([summary("introduction", "Introduction")]),
       "/api/content/introduction": () => new Promise<Response>(() => undefined),
     });
+
     const page = mountArticlesPage();
 
     try {
@@ -160,6 +172,7 @@ describe("ArticlesPage layout", () => {
       [LIST_URL]: respond([summary("introduction", "Introduction"), summary("linux-setup", "Linux setup")]),
       "/api/content/linux-setup": respond(LINUX_SETUP),
     });
+
     const page = mountArticlesPage("/articles/linux-setup");
 
     try {
@@ -167,10 +180,12 @@ describe("ArticlesPage layout", () => {
 
       const sidebarHrefs = queryFakeElements(page.container, (el) => el.nodeName === "A")
         .map((link) => link.getAttribute("href"));
+
       expect(sidebarHrefs).toContain("/articles/introduction");
       expect(sidebarHrefs).toContain("/articles/linux-setup");
 
       const [content] = queryFakeElements(page.container, (el) => el.nodeName === "ARTICLE");
+
       expect(content?.textContent).toContain("Linux setup");
       expect(content?.textContent).toContain("Partition the disk.");
       expect(content?.textContent).not.toContain("Welcome aboard.");
@@ -192,7 +207,10 @@ describe("ArticlesPage layout", () => {
         page.container,
         (el) => el.nodeName === "BUTTON" && el.textContent === "Articles",
       );
-      if (trailButton === undefined) throw new Error("Expected the Articles trail button");
+
+      if (trailButton === undefined) {
+        throw new Error("Expected the Articles trail button");
+      }
 
       fireFakePointer(trailButton, "click");
       await settle();
@@ -210,6 +228,7 @@ describe("ArticlesPage layout", () => {
       "/api/content/introduction": respond(INTRODUCTION),
       "/api/content/linux-setup": respond(LINUX_SETUP),
     });
+
     const page = mountArticlesPage("/articles/linux-setup");
 
     try {
@@ -218,12 +237,16 @@ describe("ArticlesPage layout", () => {
         page.container,
         (el) => el.nodeName === "BUTTON" && el.textContent === "Articles",
       );
-      if (trailButton === undefined) throw new Error("Expected the Articles trail button");
+
+      if (trailButton === undefined) {
+        throw new Error("Expected the Articles trail button");
+      }
 
       fireFakePointer(trailButton, "click");
       await settle();
 
       const [content] = queryFakeElements(page.container, (el) => el.nodeName === "ARTICLE");
+
       expect(content?.textContent).toContain("Welcome aboard.");
       expect(content?.textContent).not.toContain("Partition the disk.");
     } finally {
@@ -237,6 +260,7 @@ describe("ArticlesPage layout", () => {
       "/api/content/introduction": respond(INTRODUCTION),
       "/api/content/linux-setup": respond(LINUX_SETUP),
     });
+
     const page = mountArticlesPage("/articles/linux-setup");
 
     try {
@@ -245,7 +269,11 @@ describe("ArticlesPage layout", () => {
         page.container,
         (el) => el.nodeName === "BUTTON" && el.textContent === "Articles",
       );
-      if (trailButton === undefined) throw new Error("Expected the Articles trail button");
+
+      if (trailButton === undefined) {
+        throw new Error("Expected the Articles trail button");
+      }
+
       fireFakePointer(trailButton, "click");
       await settle();
 
@@ -253,11 +281,16 @@ describe("ArticlesPage layout", () => {
         page.container,
         (el) => el.nodeName === "A" && el.getAttribute("href") === "/articles/linux-setup",
       );
-      if (linuxSetupLink === undefined) throw new Error("Expected the Linux setup sidebar link");
+
+      if (linuxSetupLink === undefined) {
+        throw new Error("Expected the Linux setup sidebar link");
+      }
+
       fireFakePointer(linuxSetupLink, "click");
       await settle();
 
       const [content] = queryFakeElements(page.container, (el) => el.nodeName === "ARTICLE");
+
       expect(content?.textContent).toContain("Partition the disk.");
       expect(content?.textContent).not.toContain("Welcome aboard.");
     } finally {
@@ -269,10 +302,12 @@ describe("ArticlesPage layout", () => {
 describe("ArticlesPage deep links", () => {
   test("scrolls to the heading named by the URL hash once the article renders", async () => {
     window.location.hash = "#setup-steps";
+
     routeFetch({
       [LIST_URL]: respond([summary("introduction", "Introduction")]),
       "/api/content/introduction": respond(INTRODUCTION),
     });
+
     const page = mountArticlesPage();
 
     try {
@@ -291,6 +326,7 @@ describe("ArticlesPage deep links", () => {
       [LIST_URL]: respond([summary("introduction", "Introduction")]),
       "/api/content/introduction": respond(INTRODUCTION),
     });
+
     const page = mountArticlesPage();
 
     try {

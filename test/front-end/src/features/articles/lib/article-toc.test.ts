@@ -19,6 +19,7 @@ describe("resolveActiveTocHeadingIds", () => {
       TOC_ITEMS,
       (id) => {
         const top = rects[id];
+
         return top === undefined ? null : { top };
       },
       300,

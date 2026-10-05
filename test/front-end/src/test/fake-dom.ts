@@ -202,61 +202,94 @@ class FakeNodeImpl implements FakeNode {
   }
 
   get nextSibling(): FakeNode | null {
-    if (this.parentNode === null) return null;
+    if (this.parentNode === null) {
+      return null;
+    }
+
     const siblings = this.parentNode.childNodes;
+
     return siblings[siblings.indexOf(this) + 1] ?? null;
   }
 
   get previousSibling(): FakeNode | null {
-    if (this.parentNode === null) return null;
+    if (this.parentNode === null) {
+      return null;
+    }
+
     const siblings = this.parentNode.childNodes;
+
     return siblings[siblings.indexOf(this) - 1] ?? null;
   }
 
   appendChild(child: FakeNode): FakeNode {
-    if (child.parentNode !== null) child.parentNode.removeChild(child);
+    if (child.parentNode !== null) {
+      child.parentNode.removeChild(child);
+    }
+
     child.parentNode = this;
     this.childNodes.push(child);
+
     return child;
   }
 
   insertBefore(child: FakeNode, before: FakeNode | null): FakeNode {
-    if (child.parentNode !== null) child.parentNode.removeChild(child);
+    if (child.parentNode !== null) {
+      child.parentNode.removeChild(child);
+    }
+
     child.parentNode = this;
     const index = before !== null ? this.childNodes.indexOf(before) : -1;
-    if (index === -1) this.childNodes.push(child);
-    else this.childNodes.splice(index, 0, child);
+
+    if (index === -1) {
+      this.childNodes.push(child);
+    } else {
+      this.childNodes.splice(index, 0, child);
+    }
+
     return child;
   }
 
   removeChild(child: FakeNode): FakeNode {
     const index = this.childNodes.indexOf(child);
-    if (index !== -1) this.childNodes.splice(index, 1);
+
+    if (index !== -1) {
+      this.childNodes.splice(index, 1);
+    }
+
     child.parentNode = null;
+
     return child;
   }
 
   replaceChild(newChild: FakeNode, oldChild: FakeNode): FakeNode {
     const index = this.childNodes.indexOf(oldChild);
+
     if (index !== -1) {
       oldChild.parentNode = null;
       newChild.parentNode = this;
       this.childNodes[index] = newChild;
     }
+
     return oldChild;
   }
 
   contains(other: FakeNode): boolean {
     let node: FakeNode | null = other;
+
     while (node !== null) {
-      if (node === this) return true;
+      if (node === this) {
+        return true;
+      }
+
       node = node.parentNode;
     }
+
     return false;
   }
 
   addEventListener(type: string, listener: (event: unknown) => void): void {
     const set = this.listeners.get(type) ?? new Set();
+
     set.add(listener);
     this.listeners.set(type, set);
   }
@@ -266,18 +299,23 @@ class FakeNodeImpl implements FakeNode {
   }
 
   dispatch(type: string, event: unknown): void {
-    for (const listener of this.listeners.get(type) ?? []) listener(event);
+    for (const listener of this.listeners.get(type) ?? []) {
+      listener(event);
+    }
   }
 
   dispatchEvent(event: FakeDomEvent): boolean {
     this.dispatch(event.type, event);
+
     if (event.bubbles === true) {
       let node = this.parentNode;
+
       while (node !== null) {
         node.dispatch(event.type, event);
         node = node.parentNode;
       }
     }
+
     return true;
   }
 }
@@ -306,10 +344,15 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
   rect = { width: 0, height: 0 };
   private attributes = new Map<string, string>();
   style: FakeElement["style"] = {
-    setProperty(name, value) { this[name] = value; },
-    removeProperty(name) { Reflect.deleteProperty(this, name); },
+    setProperty(name, value) {
+      this[name] = value;
+    },
+    removeProperty(name) {
+      Reflect.deleteProperty(this, name);
+    },
     getPropertyValue(name) {
       const value = this[name];
+
       return typeof value === "string" ? value : "";
     },
   };
@@ -347,6 +390,7 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
     width: number; height: number; x: number; y: number;
   } {
     const { width, height } = this.rect;
+
     return { left: 0, top: 0, right: width, bottom: height, width, height, x: 0, y: 0 };
   }
 
@@ -356,7 +400,10 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
 
   scrollTo(options: { left?: number; top?: number; behavior?: string }): void {
     this.scrollCalls.push({ ...options });
-    if (typeof options.left === "number") this.scrollLeft = options.left;
+
+    if (typeof options.left === "number") {
+      this.scrollLeft = options.left;
+    }
   }
 
   scrollIntoView(options: { behavior?: string; block?: string } = {}): void {
@@ -378,8 +425,13 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
   }
 
   set textContent(value: string) {
-    for (const child of [...this.childNodes]) this.removeChild(child);
-    if (value !== "") this.appendChild(new FakeTextImpl(value, this.ownerDocument));
+    for (const child of [...this.childNodes]) {
+      this.removeChild(child);
+    }
+
+    if (value !== "") {
+      this.appendChild(new FakeTextImpl(value, this.ownerDocument));
+    }
   }
 
   remove(): void {
@@ -387,12 +439,16 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
   }
 
   insertAdjacentElement(position: "beforebegin" | "afterbegin" | "beforeend" | "afterend", element: FakeNode): FakeNode | null {
-    if (position === "beforebegin" || position === "afterend") return null;
+    if (position === "beforebegin" || position === "afterend") {
+      return null;
+    }
+
     if (position === "afterbegin") {
       this.insertBefore(element, this.firstChild);
     } else {
       this.appendChild(element);
     }
+
     return element;
   }
 
@@ -406,7 +462,11 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
 
   querySelectorAll(selector: string): FakeElement[] {
     const constraints = attributeConstraints(selector);
-    if (constraints.length === 0) return [];
+
+    if (constraints.length === 0) {
+      return [];
+    }
+
     return queryFakeElements(this, (element) =>
       element !== this && matchesAttributeConstraints(element, constraints),
     );
@@ -414,13 +474,23 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
 
   get classList(): FakeElement["classList"] {
     const names = this.classNames;
+
     return {
-      add: (name: string) => { names.add(name); },
-      remove: (name: string) => { names.delete(name); },
+      add: (name: string) => {
+        names.add(name);
+      },
+      remove: (name: string) => {
+        names.delete(name);
+      },
       toggle: (name: string, force?: boolean) => {
         const enable = force ?? !names.has(name);
-        if (enable) names.add(name);
-        else names.delete(name);
+
+        if (enable) {
+          names.add(name);
+        } else {
+          names.delete(name);
+        }
+
         return enable;
       },
       contains: (name: string) => names.has(name),
@@ -464,6 +534,7 @@ class FakeResizeObserverImpl {
     entries: { target: FakeElement }[],
     observer: FakeResizeObserverImpl,
   ) => void;
+
   observedTargets: FakeElement[] = [];
   disconnected = false;
 
@@ -505,6 +576,7 @@ class FakeIntersectionObserverImpl {
     entries: (FakeIntersection & { isIntersecting: boolean })[],
     observer: FakeIntersectionObserverImpl,
   ) => void;
+
   observedTargets: FakeElement[] = [];
   disconnected = false;
 
@@ -523,6 +595,7 @@ class FakeIntersectionObserverImpl {
     if (!(target instanceof FakeElementImpl)) {
       throw new TypeError("IntersectionObserver.observe: target is not an Element");
     }
+
     this.observedTargets.push(target);
   }
 
@@ -554,7 +627,11 @@ function makeDocument(): FakeDocument {
     createComment: (value) => new FakeCommentImpl(value, document),
     querySelectorAll: (selector) => {
       const constraints = attributeConstraints(selector);
-      if (constraints.length === 0) return [];
+
+      if (constraints.length === 0) {
+        return [];
+      }
+
       return queryFakeElements(document.documentElement, (element) =>
         matchesAttributeConstraints(element, constraints),
       );
@@ -564,12 +641,14 @@ function makeDocument(): FakeDocument {
         document.documentElement,
         (element) => element.getAttribute("id") === id,
       );
+
       return found ?? null;
     },
     createTreeWalker: (root, whatToShow, filter) =>
       new FakeTreeWalkerImpl(root, whatToShow, filter),
     addEventListener: (type: string, listener: (event: unknown) => void) => {
       const set = documentListeners.get(type) ?? new Set();
+
       set.add(listener);
       documentListeners.set(type, set);
     },
@@ -577,15 +656,20 @@ function makeDocument(): FakeDocument {
       documentListeners.get(type)?.delete(listener);
     },
     dispatchEvent: (event: { type: string }) => {
-      for (const listener of documentListeners.get(event.type) ?? []) listener(event);
+      for (const listener of documentListeners.get(event.type) ?? []) {
+        listener(event);
+      }
+
       return true;
     },
   };
+
   document.documentElement = new FakeElementImpl("html", document);
   document.head = new FakeElementImpl("head", document);
   document.body = new FakeElementImpl("body", document);
   document.documentElement.appendChild(document.head);
   document.documentElement.appendChild(document.body);
+
   return document;
 }
 
@@ -635,11 +719,14 @@ let nextAnimationFrameId = 1;
 
 function requestFakeAnimationFrame(callback: (time: number) => void): number {
   const id = nextAnimationFrameId;
+
   nextAnimationFrameId += 1;
+
   pendingAnimationFrames.set(id, setTimeout(() => {
     pendingAnimationFrames.delete(id);
     callback(performance.now());
   }, 0));
+
   return id;
 }
 
@@ -652,9 +739,15 @@ function cancelFakeAnimationFrame(id: number): void {
 const fakeStorage = new Map<string, string>();
 const fakeLocalStorage = {
   getItem: (key: string) => fakeStorage.get(key) ?? null,
-  setItem: (key: string, value: string) => { fakeStorage.set(key, value); },
-  removeItem: (key: string) => { fakeStorage.delete(key); },
-  clear: () => { fakeStorage.clear(); },
+  setItem: (key: string, value: string) => {
+    fakeStorage.set(key, value);
+  },
+  removeItem: (key: string) => {
+    fakeStorage.delete(key);
+  },
+  clear: () => {
+    fakeStorage.clear();
+  },
 };
 
 let systemPrefersDark = false;
@@ -692,12 +785,22 @@ class FakeTreeWalkerImpl {
     while (this.index + 1 < this.elements.length) {
       this.index += 1;
       const node = this.elements[this.index];
-      if (!node) continue;
+
+      if (!node) {
+        continue;
+      }
+
       const verdict = this.filter?.acceptNode(node) ?? NODE_FILTER.FILTER_ACCEPT;
-      if (verdict !== NODE_FILTER.FILTER_ACCEPT) continue;
+
+      if (verdict !== NODE_FILTER.FILTER_ACCEPT) {
+        continue;
+      }
+
       this.currentNode = node;
+
       return true;
     }
+
     return false;
   }
 }
@@ -713,8 +816,13 @@ class FakeLocationImpl {
   search = "";
   private fragment = "";
 
-  get hash(): string { return this.fragment === "" ? "" : `#${this.fragment}`; }
-  set hash(value: string) { this.fragment = value.startsWith("#") ? value.slice(1) : value; }
+  get hash(): string {
+    return this.fragment === "" ? "" : `#${this.fragment}`;
+  }
+
+  set hash(value: string) {
+    this.fragment = value.startsWith("#") ? value.slice(1) : value;
+  }
 }
 
 const DARK_SCHEME_QUERY = "(prefers-color-scheme: dark)";
@@ -734,10 +842,13 @@ class FakeMediaQueryListImpl {
     createdMediaQueryLists.push(this);
   }
 
-  get matches(): boolean { return this.media === DARK_SCHEME_QUERY && systemPrefersDark; }
+  get matches(): boolean {
+    return this.media === DARK_SCHEME_QUERY && systemPrefersDark;
+  }
 
   addEventListener(type: string, listener: (event: unknown) => void): void {
     const set = this.listeners.get(type) ?? new Set();
+
     set.add(listener);
     this.listeners.set(type, set);
   }
@@ -746,12 +857,23 @@ class FakeMediaQueryListImpl {
     this.listeners.get(type)?.delete(listener);
   }
 
-  addListener(listener: (event: unknown) => void): void { this.addEventListener("change", listener); }
-  removeListener(listener: (event: unknown) => void): void { this.removeEventListener("change", listener); }
+  addListener(listener: (event: unknown) => void): void {
+    this.addEventListener("change", listener);
+  }
+
+  removeListener(listener: (event: unknown) => void): void {
+    this.removeEventListener("change", listener);
+  }
 
   dispatchEvent(event: { type: string }): boolean {
-    for (const listener of this.listeners.get(event.type) ?? []) listener(event);
-    if (event.type === "change" && this.onchange !== null) this.onchange(event);
+    for (const listener of this.listeners.get(event.type) ?? []) {
+      listener(event);
+    }
+
+    if (event.type === "change" && this.onchange !== null) {
+      this.onchange(event);
+    }
+
     return true;
   }
 }
@@ -760,13 +882,19 @@ class FakeMediaQueryListImpl {
 export function triggerFakeMediaPreferenceChange(prefersDark: boolean): void {
   systemPrefersDark = prefersDark;
   const event = { type: "change", matches: prefersDark };
+
   for (const mql of createdMediaQueryLists) {
-    if (mql.media === DARK_SCHEME_QUERY) mql.dispatchEvent(event);
+    if (mql.media === DARK_SCHEME_QUERY) {
+      mql.dispatchEvent(event);
+    }
   }
 }
 
 export function installFakeDom(): void {
-  if (installed) return;
+  if (installed) {
+    return;
+  }
+
   installed = true;
   windowListeners.clear();
   fakeStorage.clear();
@@ -798,6 +926,7 @@ export function installFakeDom(): void {
     document,
     addEventListener: (type: string, listener: (event: unknown) => void) => {
       const set = windowListeners.get(type) ?? new Set();
+
       set.add(listener);
       windowListeners.set(type, set);
     },
@@ -807,9 +936,13 @@ export function installFakeDom(): void {
     getComputedStyle: makeComputedStyle,
     // Radix primitives schedule timers via `window.setTimeout`/`clearTimeout`.
     setTimeout: (callback: () => void, ms?: number) => setTimeout(callback, ms),
-    clearTimeout: (id: number) => { clearTimeout(id); },
+    clearTimeout: (id: number) => {
+      clearTimeout(id);
+    },
     setInterval: (callback: () => void, ms?: number) => setInterval(callback, ms),
-    clearInterval: (id: number) => { clearInterval(id); },
+    clearInterval: (id: number) => {
+      clearInterval(id);
+    },
     localStorage: fakeLocalStorage,
     matchMedia: (query: string) => new FakeMediaQueryListImpl(query),
     requestAnimationFrame: requestFakeAnimationFrame,
@@ -822,7 +955,10 @@ export function installFakeDom(): void {
       state: null as unknown,
       replaceState(state: unknown, _unused: string, url?: string) {
         this.state = state;
-        if (url?.includes("#") === true) location.hash = url.slice(url.indexOf("#"));
+
+        if (url?.includes("#") === true) {
+          location.hash = url.slice(url.indexOf("#"));
+        }
       },
     },
     scrollY: 0,
@@ -831,6 +967,7 @@ export function installFakeDom(): void {
     IntersectionObserver: FakeIntersectionObserverImpl,
     ...domClasses,
   };
+
   document.defaultView = window;
 
   const globals = {
@@ -850,6 +987,7 @@ export function installFakeDom(): void {
     IntersectionObserver: FakeIntersectionObserverImpl,
     IS_REACT_ACT_ENVIRONMENT: true,
   };
+
   for (const [name, value] of Object.entries(globals)) {
     defineGlobal(name, value);
   }
@@ -880,13 +1018,22 @@ export function installPermanentFakeDom(): void {
 }
 
 export function uninstallFakeDom(): void {
-  if (!installed || permanent) return;
+  if (!installed || permanent) {
+    return;
+  }
+
   installed = false;
+
   for (const name of GLOBAL_NAMES) {
     const previous = previousGlobals[name];
-    if (previous === undefined) Reflect.deleteProperty(globalThis, name);
-    else defineGlobal(name, previous);
+
+    if (previous === undefined) {
+      Reflect.deleteProperty(globalThis, name);
+    } else {
+      defineGlobal(name, previous);
+    }
   }
+
   previousGlobals = {};
   windowListeners.clear();
 }
@@ -899,13 +1046,22 @@ export function queryFakeElements(
   const found: FakeElement[] = [];
   const visit = (node: FakeNode): void => {
     for (const child of node.childNodes) {
-      if (child.nodeType !== 1) continue;
+      if (child.nodeType !== 1) {
+        continue;
+      }
+
       const element = child as FakeElement;
-      if (predicate(element)) found.push(element);
+
+      if (predicate(element)) {
+        found.push(element);
+      }
+
       visit(element);
     }
   };
+
   visit(root);
+
   return found;
 }
 
@@ -926,6 +1082,7 @@ function matchesAttributeConstraints(
 ): boolean {
   return constraints.every((constraint) => {
     const actual = element.getAttribute(constraint.name);
+
     return constraint.value === null
       ? actual !== null
       : actual === constraint.value;
@@ -935,7 +1092,10 @@ function matchesAttributeConstraints(
 /** Invoke the callbacks of all connected fake ResizeObservers (test-side event dispatch). */
 export function triggerFakeResizeObservers(): void {
   for (const observer of FakeResizeObserverImpl.instances) {
-    if (observer.disconnected) continue;
+    if (observer.disconnected) {
+      continue;
+    }
+
     observer.callback(
       observer.observedTargets.map((target) => ({ target })),
       observer,
@@ -950,16 +1110,25 @@ export function triggerFakeResizeObservers(): void {
  */
 export function triggerFakeIntersections(intersections: FakeIntersection[]): void {
   for (const observer of FakeIntersectionObserverImpl.instances) {
-    if (observer.disconnected) continue;
+    if (observer.disconnected) {
+      continue;
+    }
+
     const entries = intersections
       .filter((entry) => observer.observedTargets.includes(entry.target))
       .map((entry) => ({ ...entry, isIntersecting: entry.intersectionRatio > 0 }));
-    if (entries.length > 0) observer.callback(entries, observer);
+
+    if (entries.length > 0) {
+      observer.callback(entries, observer);
+    }
   }
 }
 
 /** Invoke the fake window's listeners for `type` (`resize`, `scroll`, ...; test-side event dispatch). */
 export function triggerWindowEvent(type: string): void {
   const event = { type };
-  windowListeners.get(type)?.forEach((listener) => { listener(event); });
+
+  windowListeners.get(type)?.forEach((listener) => {
+    listener(event);
+  });
 }

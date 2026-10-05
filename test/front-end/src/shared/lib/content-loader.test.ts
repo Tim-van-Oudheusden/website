@@ -38,7 +38,9 @@ function articleData(overrides: Partial<ArticleData> = {}): ArticleData {
   };
 }
 
-function projectItem(overrides: Partial<ProjectFrontmatter & { body: string }> = {}): ProjectFrontmatter & { body: string } {
+function projectItem(
+  overrides: Partial<ProjectFrontmatter & { body: string }> = {},
+): ProjectFrontmatter & { body: string } {
   return {
     title: "Project",
     description: "Description",
@@ -59,12 +61,15 @@ function projectItem(overrides: Partial<ProjectFrontmatter & { body: string }> =
 
 function stubFetch(response: Response): Mock<(_url: string, _init?: RequestInit) => Promise<Response>> {
   const fetchMock = mock((_url: string, _init?: RequestInit) => Promise.resolve(response));
+
   globalThis.fetch = fetchMock as unknown as typeof fetch;
+
   return fetchMock;
 }
 
 function requestedPath(fetchMock: Mock<(_url: string, _init?: RequestInit) => Promise<Response>>): string {
   const [url] = fetchMock.mock.calls[0] ?? [];
+
   return url ?? "";
 }
 
@@ -95,6 +100,7 @@ describe("httpContentLoader", () => {
     expect(requestedPath(fetchMock)).toBe(
       `${API_BASE}${ROUTES.CONTENT_BY_SLUG.replace(":slug", "introduction")}`,
     );
+
     expect(article.slug).toBe("introduction");
     expect(article.body).toBe("# Heading");
   });

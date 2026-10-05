@@ -40,12 +40,17 @@ function mountHomePage(): FakeMount {
   // The recent-posts and start-here sections load content on mount; an empty
   // listing keeps them quiet without touching the network.
   globalThis.fetch = mock(() => Promise.resolve(jsonResponse([]))) as unknown as typeof globalThis.fetch;
+
   return mountIntoBody(createElement(MemoryRouter, null, createElement(HomePage)));
 }
 
 function sectionElement(id: string): FakeElement {
   const element = (document as unknown as FakeDocument).getElementById(id);
-  if (element === null) throw new Error(`Expected a section with id="${id}"`);
+
+  if (element === null) {
+    throw new Error(`Expected a section with id="${id}"`);
+  }
+
   return element;
 }
 
@@ -54,7 +59,11 @@ function anchorTo(root: FakeElement, sectionId: string, label: string): FakeElem
     root,
     (el) => el.nodeName === "A" && el.getAttribute("href") === `#${sectionId}` && el.textContent.includes(label),
   );
-  if (anchor === undefined) throw new Error(`Expected an anchor to #${sectionId} labelled "${label}"`);
+
+  if (anchor === undefined) {
+    throw new Error(`Expected an anchor to #${sectionId} labelled "${label}"`);
+  }
+
   return anchor;
 }
 
@@ -117,6 +126,7 @@ describe("HomePage section anchors", () => {
 
     try {
       const anchor = anchorTo(page.container, "proof", "conquer");
+
       sectionElement("proof").setAttribute("id", "proof-detached");
 
       const event = fireFakePointer(anchor, "click");

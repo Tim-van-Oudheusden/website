@@ -15,8 +15,8 @@ test.describe("Articles TOC navigation", () => {
       const tocIds = tocNav === null
         ? []
         : Array.from(tocNav.querySelectorAll('a[href^="#"]'))
-          .map((link) => (link.getAttribute("href") ?? "").slice(1))
-          .filter((id) => id.length > 0);
+            .map((link) => (link.getAttribute("href") ?? "").slice(1))
+            .filter((id) => id.length > 0);
 
       const headingIds = Array
         .from(document.querySelectorAll("article h1[id], article h2[id], article h3[id]"))
@@ -42,14 +42,17 @@ test.describe("Articles TOC navigation", () => {
     await page.goto("/articles", { waitUntil: "domcontentloaded" });
 
     const tableOfContents = page.locator("article aside nav").first();
+
     await expect(tableOfContents).toBeVisible();
 
     const tocLinks = tableOfContents.getByRole("link");
     const tocLinkCount = await tocLinks.count();
+
     expect(tocLinkCount).toBeGreaterThan(0);
 
     const targetLink = tocLinks.nth(tocLinkCount > 1 ? 1 : 0);
     const targetHref = await targetLink.getAttribute("href");
+
     expect(targetHref).not.toBeNull();
     expect(targetHref).toMatch(/^#.+/);
 

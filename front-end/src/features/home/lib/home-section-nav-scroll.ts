@@ -10,6 +10,7 @@ export function resolveAnchorScrollBehavior(matchMedia: MatchMediaFn | null): Sc
   }
 
   const reducedMotionPreference = matchMedia("(prefers-reduced-motion: reduce)");
+
   if (reducedMotionPreference.matches) {
     return "auto";
   }

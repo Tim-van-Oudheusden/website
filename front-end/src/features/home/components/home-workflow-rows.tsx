@@ -22,6 +22,7 @@ export function HomeWorkflowRows({ section }: HomeWorkflowRowsProps): React.JSX.
       <div className="flex flex-col gap-6">
         {features.map((feature, index) => {
           const reverse = index % 2 === 1;
+
           return (
             <article
               key={feature.title}

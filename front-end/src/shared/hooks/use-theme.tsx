@@ -17,9 +17,9 @@ const ThemeContext = createContext<{
 /** Toggle the document-level theme class for the given theme selection. */
 export function applyTheme(theme: Theme): void {
   const root = document.documentElement;
-  const isDark =
-    theme === "dark" ||
-    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const isDark
+    = theme === "dark"
+      || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
   root.classList.toggle("dark", isDark);
 }
@@ -27,6 +27,7 @@ export function applyTheme(theme: Theme): void {
 export function ThemeProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const [theme, setThemeState] = useState<Theme>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
+
     if (stored === "light" || stored === "dark" || stored === "system") {
       return stored;
     }
@@ -42,12 +43,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }): Reac
   useEffect(() => {
     applyTheme(theme);
 
-    if (theme !== "system") return;
+    if (theme !== "system") {
+      return;
+    }
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = (): void => { applyTheme("system"); };
+    const onChange = (): void => {
+      applyTheme("system");
+    };
+
     mq.addEventListener("change", onChange);
-    return () => { mq.removeEventListener("change", onChange); };
+
+    return () => {
+      mq.removeEventListener("change", onChange);
+    };
   }, [theme]);
 
   return (

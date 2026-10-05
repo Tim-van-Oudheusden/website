@@ -1,11 +1,11 @@
-export type HomeSectionId =
-  | "start"
-  | "for-you"
-  | "for-devs"
-  | "proof"
-  | "community-and-docs"
-  | "secondary-cta"
-  | "footer";
+export type HomeSectionId
+  = | "start"
+    | "for-you"
+    | "for-devs"
+    | "proof"
+    | "community-and-docs"
+    | "secondary-cta"
+    | "footer";
 
 export type HomeSectionContentDirection = "row" | "column";
 export type HomeSectionVariant = "default" | "start" | "carousel" | "footer" | "workflow" | "trust" | "recent-posts" | "start-here";

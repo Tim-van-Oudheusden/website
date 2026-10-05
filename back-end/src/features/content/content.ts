@@ -38,6 +38,7 @@ function normalizeString(value: unknown): string | undefined {
 
 function normalizeTimeframe(value: unknown): string | undefined {
   const stringValue = normalizeString(value);
+
   if (stringValue !== undefined) {
     return stringValue;
   }
@@ -109,9 +110,9 @@ export interface ContentError {
   value?: unknown;
 }
 
-export type NormalizeResult =
-  | { ok: true; value: ContentFrontmatter }
-  | { ok: false; error: ContentError };
+export type NormalizeResult
+  = | { ok: true; value: ContentFrontmatter }
+    | { ok: false; error: ContentError };
 
 function reject(file: string, field: string | undefined, message: string, value?: unknown): NormalizeResult {
   return { ok: false, error: { file, field, message, ...(value !== undefined ? { value } : {}) } };
@@ -125,6 +126,7 @@ interface ParsedContentFile {
 async function readMarkdownFile(contentDir: string, file: string): Promise<ParsedContentFile | null> {
   const raw = await readFile(join(contentDir, file), "utf-8");
   const parsed = parseFrontmatter(raw);
+
   if (parsed === null) {
     return null;
   }
@@ -146,11 +148,13 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
   const raw = value as Record<string, unknown>;
 
   const title = normalizeString(raw["title"]);
+
   if (title === undefined) {
     return reject(file, "title", "Missing required title");
   }
 
   const date = normalizeDate(raw["date"]) ?? normalizeDate(raw["publishDate"]);
+
   if (date === undefined) {
     return reject(file, "date", "Missing required date or publishDate");
   }
@@ -166,6 +170,7 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
 
   if (type === "article") {
     const category = normalizeString(raw["category"]);
+
     if (category === undefined || !(ARTICLE_CATEGORIES as readonly string[]).includes(category)) {
       return reject(file, "category", 'Article must declare a valid "category"');
     }
@@ -188,6 +193,7 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
 
   const coverImage = normalizeString(raw["coverImage"]);
   const coverImageAlt = normalizeString(raw["coverImageAlt"]);
+
   if (coverImage === undefined || coverImageAlt === undefined) {
     return reject(file, "coverImage", 'Project must declare "coverImage" and "coverImageAlt"');
   }
@@ -197,11 +203,13 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
   const projectStatus = status === undefined
     ? undefined
     : PROJECT_STATUSES.find((candidate) => candidate === status);
+
   if (rawStatus !== undefined && projectStatus === undefined) {
     return reject(file, "status", "Unknown project status value", rawStatus);
   }
 
   const prioritySlot = normalizePrioritySlot(raw["prioritySlot"]);
+
   if (raw["prioritySlot"] !== undefined && prioritySlot === undefined) {
     return reject(file, "prioritySlot", "prioritySlot must be 1, 2, or 3", raw["prioritySlot"]);
   }
@@ -243,10 +251,13 @@ export async function validateContentDir(contentDir: string): Promise<ContentErr
 
   for (const file of mdFiles) {
     const document = await readMarkdownFile(contentDir, file);
+
     if (document === null) {
       continue;
     }
+
     const result = normalizeContentDocument(file, document.parsed.data);
+
     if (!result.ok) {
       errors.push(result.error);
     }
@@ -268,13 +279,17 @@ export async function listContent(contentDir: string, options?: ListContentOptio
 
   for (const file of mdFiles) {
     const document = await readMarkdownFile(contentDir, file);
+
     if (document === null) {
       continue;
     }
+
     const result = normalizeContentDocument(file, document.parsed.data);
+
     if (!result.ok) {
       continue;
     }
+
     const frontmatter = result.value;
 
     if (process.env.NODE_ENV === "production" && frontmatter.draft) {
@@ -305,16 +320,22 @@ export async function getContentBySlug(
 
   for (const file of mdFiles) {
     const document = await readMarkdownFile(contentDir, file);
+
     if (document === null) {
       continue;
     }
+
     const result = normalizeContentDocument(file, document.parsed.data);
+
     if (!result.ok) {
       continue;
     }
+
     const frontmatter = result.value;
 
-    if (frontmatter.slug !== slug) continue;
+    if (frontmatter.slug !== slug) {
+      continue;
+    }
 
     if (process.env.NODE_ENV === "production" && frontmatter.draft) {
       return null;

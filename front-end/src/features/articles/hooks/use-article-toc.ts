@@ -28,8 +28,10 @@ export function useArticleToc(
   useEffect(() => {
     if (loadingArticle || article === null || tocItems.length === 0) {
       setVisibleTocHeadingIds([]);
+
       return;
     }
+
     let rafId: number | null = null;
 
     const updateActiveTocHeadings = (): void => {
@@ -38,6 +40,7 @@ export function useArticleToc(
         tocItems,
         (headingId) => {
           const headingElement = document.getElementById(headingId);
+
           if (headingElement === null) {
             return null;
           }
@@ -76,6 +79,7 @@ export function useArticleToc(
       window.removeEventListener("scroll", scheduleActiveTocHeadingUpdate);
       document.removeEventListener("scroll", scheduleActiveTocHeadingUpdate, true);
       window.removeEventListener("resize", scheduleActiveTocHeadingUpdate);
+
       if (rafId !== null) {
         window.cancelAnimationFrame(rafId);
       }

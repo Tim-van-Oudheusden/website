@@ -3,11 +3,13 @@ import { compareArticles, type ArticleSummary } from "shared/articles";
 
 export function getDefaultArticleSlug(articles: ArticleSummary[]): string | null {
   const intro = articles.find((article) => article.slug === DEFAULT_ARTICLE_SLUG);
+
   if (intro !== undefined) {
     return intro.slug;
   }
 
   const sorted = [...articles].sort(compareArticles);
+
   return sorted[0]?.slug ?? null;
 }
 
@@ -20,14 +22,15 @@ export function groupArticlesByCategory(
   articles: ArticleSummary[],
 ): Record<ArticleCategory, ArticleSummary[]> {
   const grouped: Record<ArticleCategory, ArticleSummary[]> = {
-    Introduction: [],
-    Linux: [],
-    Work: [],
+    "Introduction": [],
+    "Linux": [],
+    "Work": [],
     "Personal Life": [],
   };
 
   for (const article of [...articles].sort(compareArticles)) {
     const category = article.category;
+
     if (!ARTICLE_CATEGORIES.includes(category)) {
       continue;
     }

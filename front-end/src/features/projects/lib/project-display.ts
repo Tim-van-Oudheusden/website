@@ -16,6 +16,7 @@ export function sortProjectsForDisplay(projects: readonly ProjectFrontmatter[]):
 
 export function resolveFeaturedProject(projects: readonly ProjectFrontmatter[]): ProjectFrontmatter | null {
   const sortedProjects = sortProjectsForDisplay(projects);
+
   return sortedProjects.find((project) => project.featured) ?? sortedProjects[0] ?? null;
 }
 
@@ -29,6 +30,7 @@ export function resolvePriorityProjects(projects: readonly ProjectFrontmatter[])
   }
 
   const featured = resolveFeaturedProject(projects);
+
   if (featured !== null) {
     return [featured];
   }

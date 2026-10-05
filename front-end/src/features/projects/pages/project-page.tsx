@@ -93,7 +93,10 @@ export function ProjectPage(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!slug) return;
+    if (!slug) {
+      return;
+    }
+
     const contentSlug = slug;
 
     let cancelled = false;
@@ -101,6 +104,7 @@ export function ProjectPage(): React.JSX.Element {
     async function fetchProject(): Promise<void> {
       try {
         const data = await httpContentLoader.getProject(contentSlug);
+
         if (!cancelled) {
           setProject(data);
         }
@@ -110,9 +114,11 @@ export function ProjectPage(): React.JSX.Element {
             setNotFound(true);
           } else {
             let message = "Failed to load project";
+
             if (err instanceof ApiError) {
               message = err.message;
             }
+
             setError(message);
           }
         }
@@ -124,7 +130,10 @@ export function ProjectPage(): React.JSX.Element {
     }
 
     void fetchProject();
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   if (loading) {

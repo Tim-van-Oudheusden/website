@@ -29,13 +29,16 @@ function suggestion(text: string): string {
 
 function runApply(comments: ReviewComment[]): { status: number | null; output: string } {
   const commentsFile = join(checkoutDir, "..", `${checkoutDir.split("/").pop() ?? ""}-comments.json`);
+
   writeFileSync(commentsFile, JSON.stringify(comments));
   const result = spawnSync("bash", [scriptPath], {
     cwd: checkoutDir,
     encoding: "utf8",
     env: { PATH: process.env["PATH"] ?? "", COMMENTS_FILE: commentsFile },
   });
+
   rmSync(commentsFile, { force: true });
+
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
 }
 
@@ -74,6 +77,7 @@ describe("scripts/apply-review-suggestions.sh", () => {
 
   test("refuses paths outside the checkout and files that do not exist", () => {
     const outsideFile = `${checkoutDir}-outside.txt`;
+
     writeFileSync(outsideFile, "secret\n");
 
     try {
@@ -94,6 +98,7 @@ describe("scripts/apply-review-suggestions.sh", () => {
 
   test("refuses files reached through a symlinked directory that points outside the checkout", () => {
     const outsideDir = `${checkoutDir}-outside`;
+
     mkdirSync(outsideDir);
     writeFileSync(join(outsideDir, "secret.txt"), "secret\n");
     symlinkSync(outsideDir, join(checkoutDir, "linked"));

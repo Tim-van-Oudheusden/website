@@ -58,17 +58,25 @@ function project(overrides: Partial<ProjectFrontmatter> = {}): ProjectFrontmatte
 async function mountLoadedProjectsPage(response: Response): Promise<FakeMount> {
   stubFetch(response);
   const page = mountIntoBody(createElement(MemoryRouter, null, createElement(ProjectsPage)));
-  await act(async () => { await settleMicrotasks(); });
+
+  await act(async () => {
+    await settleMicrotasks();
+  });
+
   return page;
 }
 
 function section(page: FakeMount, headingId: string): FakeElement | undefined {
   const [found] = queryFakeElements(page.container, (el) => el.getAttribute("aria-labelledby") === headingId);
+
   return found;
 }
 
 function cardTitles(region: FakeElement | undefined): string[] {
-  if (region === undefined) throw new Error("Expected the project section to render");
+  if (region === undefined) {
+    throw new Error("Expected the project section to render");
+  }
+
   return findAllBySlot(region, "card-title").map((title) => title.textContent);
 }
 
@@ -102,7 +110,9 @@ describe("ProjectsPage", () => {
     const page = mountIntoBody(createElement(MemoryRouter, null, createElement(ProjectsPage)));
 
     try {
-      await act(async () => { await settleMicrotasks(); });
+      await act(async () => {
+        await settleMicrotasks();
+      });
 
       expect(page.container.textContent).toContain("Failed to load projects");
       expect(page.container.textContent).not.toContain("network dropped");
@@ -131,6 +141,7 @@ describe("ProjectsPage", () => {
 
     try {
       const featured = section(page, "featured-project-heading");
+
       expect(cardTitles(featured)).toEqual(["Flagship"]);
       expect(featured?.textContent).toContain("Why this matters");
       expect(featured?.textContent).toContain("Why the flagship exists.");
@@ -138,6 +149,7 @@ describe("ProjectsPage", () => {
         page.container,
         (el) => el.nodeName === "A" && el.textContent === "Read the case study",
       );
+
       expect(caseStudyLink?.getAttribute("href")).toBe("/projects/flagship");
 
       // Gallery: every non-featured project, newest first.
@@ -154,6 +166,7 @@ describe("ProjectsPage", () => {
 
     try {
       const featured = section(page, "featured-project-heading");
+
       expect(cardTitles(featured)).toEqual(["Solo"]);
       expect(featured?.textContent).toContain("Why this matters");
       expect(featured?.textContent).toContain("The only project so far.");
@@ -172,6 +185,7 @@ describe("ProjectsPage", () => {
 
     try {
       const featured = section(page, "featured-project-heading");
+
       expect(cardTitles(featured)).toEqual(["First", "Second"]);
       expect(featured?.textContent).not.toContain("Why this matters");
       expect(cardTitles(section(page, "more-projects-heading"))).toEqual(["Gallery"]);

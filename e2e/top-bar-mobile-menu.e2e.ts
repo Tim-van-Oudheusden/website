@@ -13,7 +13,9 @@ test.describe("Top bar mobile menu", () => {
     await page.getByRole("button", { name: "Open menu" }).click();
 
     const sheet = page.getByRole("dialog", { name: "Navigation" });
+
     await expect(sheet).toBeVisible();
+
     for (const label of ["Home", "Articles", "Projects"]) {
       await expect(sheet.getByRole("link", { name: label, exact: true })).toBeVisible();
     }

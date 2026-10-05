@@ -43,11 +43,13 @@ describe("ArticleTocNav", () => {
 
     const setupAnchor = /<a href="#setup" class="[^"]*">/.exec(html);
     const introAnchor = /<a href="#intro" class="[^"]*">/.exec(html);
+
     expect(setupAnchor).not.toBeNull();
     expect(introAnchor).not.toBeNull();
 
     const setupClasses = setupAnchor?.[0] ?? "";
     const introClasses = introAnchor?.[0] ?? "";
+
     expect(setupClasses).toContain(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkActive);
     expect(setupClasses).not.toContain(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkInactive);
     expect(introClasses).toContain(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkInactive);
@@ -59,6 +61,7 @@ describe("ArticleTocNav", () => {
 
     const configAnchor = /<a href="#config" class="([^"]*)">/.exec(html);
     const introAnchor = /<a href="#intro" class="([^"]*)">/.exec(html);
+
     expect(configAnchor?.[1]).toContain("pl-3");
     expect(introAnchor?.[1]).not.toContain("pl-3");
   });

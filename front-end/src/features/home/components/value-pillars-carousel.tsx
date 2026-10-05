@@ -39,11 +39,13 @@ function findNearestCardIndex(cardOffsetLefts: readonly number[], targetLeft: nu
 
   for (let index = 0; index < cardOffsetLefts.length; index += 1) {
     const cardOffsetLeft = cardOffsetLefts[index];
+
     if (cardOffsetLeft === undefined) {
       continue;
     }
 
     const distance = Math.abs(cardOffsetLeft - targetLeft);
+
     if (distance < nearestDistance) {
       nearestDistance = distance;
       nearestIndex = index;
@@ -66,6 +68,7 @@ export function resolvePagedCarouselScrollLeft({
 
   if (cardOffsetLefts.length === 1) {
     const onlyCardOffsetLeft = cardOffsetLefts[0];
+
     return onlyCardOffsetLeft === undefined
       ? currentScrollLeft
       : Math.max(0, onlyCardOffsetLeft - trackPaddingLeft);
@@ -73,11 +76,13 @@ export function resolvePagedCarouselScrollLeft({
 
   const firstCardOffsetLeft = cardOffsetLefts[0];
   const secondCardOffsetLeft = cardOffsetLefts[1];
+
   if (firstCardOffsetLeft === undefined || secondCardOffsetLeft === undefined) {
     return currentScrollLeft;
   }
 
   const cardStep = Math.abs(secondCardOffsetLeft - firstCardOffsetLeft);
+
   if (cardStep <= 0) {
     return currentScrollLeft;
   }
@@ -92,6 +97,7 @@ export function resolvePagedCarouselScrollLeft({
   );
 
   const targetCardOffsetLeft = cardOffsetLefts[targetIndex];
+
   return targetCardOffsetLeft === undefined
     ? currentScrollLeft
     : Math.max(0, targetCardOffsetLeft - trackPaddingLeft);
@@ -158,6 +164,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
 
   const handleMouseMove = React.useCallback((event: React.MouseEvent<HTMLDivElement>): void => {
     const bounds = event.currentTarget.getBoundingClientRect();
+
     setTiltAngles(calculateCardTiltAngles({
       pointerX: event.clientX - bounds.left,
       pointerY: event.clientY - bounds.top,
@@ -172,6 +179,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
 
   const updateDescriptionHeight = React.useCallback((): void => {
     const descriptionElement = descriptionRef.current;
+
     if (descriptionElement === null) {
       return;
     }
@@ -183,6 +191,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
     updateDescriptionHeight();
 
     const descriptionElement = descriptionRef.current;
+
     if (descriptionElement === null) {
       return;
     }
@@ -191,7 +200,9 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
       const resizeObserver = new ResizeObserver(() => {
         updateDescriptionHeight();
       });
+
       resizeObserver.observe(descriptionElement);
+
       return () => {
         resizeObserver.disconnect();
       };
@@ -199,6 +210,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
 
     if (typeof window !== "undefined") {
       window.addEventListener("resize", updateDescriptionHeight);
+
       return () => {
         window.removeEventListener("resize", updateDescriptionHeight);
       };
@@ -211,7 +223,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
-        transform: `perspective(900px) rotateX(${tiltAngles.rotateX}deg) rotateY(${tiltAngles.rotateY}deg)`,
+        "transform": `perspective(900px) rotateX(${tiltAngles.rotateX}deg) rotateY(${tiltAngles.rotateY}deg)`,
         "--value-pillar-description-height": `${descriptionHeight}px`,
       } as React.CSSProperties & { "--value-pillar-description-height": string }}
     >
@@ -255,6 +267,7 @@ export function ValuePillarsCarousel({
 
   const scrollByViewport = React.useCallback((direction: -1 | 1): void => {
     const scroller = scrollerRef.current;
+
     if (scroller === null) {
       return;
     }
@@ -264,6 +277,7 @@ export function ValuePillarsCarousel({
       .filter((offsetLeft): offsetLeft is number => offsetLeft !== undefined);
 
     let trackPaddingLeft = 0;
+
     if (typeof window !== "undefined") {
       trackPaddingLeft = Number.parseFloat(window.getComputedStyle(scroller).paddingLeft) || 0;
     }
@@ -311,7 +325,9 @@ export function ValuePillarsCarousel({
           size="icon"
           className="absolute top-1/2 left-0 z-10 -translate-y-1/2 rounded-full bg-black/50 text-white hover:bg-black/70"
           aria-label="Previous cards"
-          onClick={() => { scrollByViewport(-1); }}
+          onClick={() => {
+            scrollByViewport(-1);
+          }}
         >
           <ChevronLeftIcon className="size-5" />
         </Button>
@@ -324,7 +340,9 @@ export function ValuePillarsCarousel({
             {VALUE_PILLAR_ITEMS.map(({ title, artworkPath, description }, index) => (
               <article
                 key={title}
-                ref={(element) => { articleRefs.current[index] = element; }}
+                ref={(element) => {
+                  articleRefs.current[index] = element;
+                }}
                 className="basis-full shrink-0 snap-start sm:basis-1/3 lg:basis-1/3"
               >
                 <ValuePillarCard title={title} artworkPath={artworkPath} description={description} />
@@ -339,7 +357,9 @@ export function ValuePillarsCarousel({
           size="icon"
           className="absolute top-1/2 right-0 z-10 -translate-y-1/2 rounded-full bg-black/50 text-white hover:bg-black/70"
           aria-label="Next cards"
-          onClick={() => { scrollByViewport(1); }}
+          onClick={() => {
+            scrollByViewport(1);
+          }}
         >
           <ChevronRightIcon className="size-5" />
         </Button>

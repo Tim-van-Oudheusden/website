@@ -27,7 +27,9 @@ export interface TocHeadingRect {
 
 export const DEFAULT_TOC_NAVIGATION_DEPENDENCIES: TocNavigationDependencies = {
   getElementById: (id) => document.getElementById(id),
-  setHash: (headingId) => { window.location.hash = headingId; },
+  setHash: (headingId) => {
+    window.location.hash = headingId;
+  },
   getScrollY: () => window.scrollY,
   logNavigation: (_event) => {
     if ((window as Window & { __ADW_DEBUG_TOC__?: boolean }).__ADW_DEBUG_TOC__ !== true) {
@@ -50,8 +52,10 @@ export function navigateToArticleHeadingById(
 ): boolean {
   const scrollYBefore = dependencies.getScrollY();
   const targetHeading = dependencies.getElementById(headingId);
+
   if (targetHeading === null) {
     dependencies.setHash(headingId);
+
     dependencies.logNavigation({
       headingId,
       foundTarget: false,
@@ -59,11 +63,13 @@ export function navigateToArticleHeadingById(
       scrollYBefore,
       scrollYAfter: dependencies.getScrollY(),
     });
+
     return false;
   }
 
   targetHeading.scrollIntoView({ behavior: "smooth", block: "start" });
   dependencies.setHash(headingId);
+
   dependencies.logNavigation({
     headingId,
     foundTarget: true,
@@ -71,6 +77,7 @@ export function navigateToArticleHeadingById(
     scrollYBefore,
     scrollYAfter: dependencies.getScrollY(),
   });
+
   return true;
 }
 
@@ -82,6 +89,7 @@ export function resolveActiveTocHeadingIds(
   return tocItems
     .filter((heading) => {
       const rect = getHeadingRect(heading.id);
+
       if (rect === null) {
         return false;
       }

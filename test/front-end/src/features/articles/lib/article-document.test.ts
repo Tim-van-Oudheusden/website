@@ -21,6 +21,7 @@ describe("renderArticle", () => {
     const { html, toc } = renderArticle(COMPLEX_MARKDOWN);
 
     expect(toc.length).toBe(5);
+
     for (const item of toc) {
       expect(html).toContain(`id="${item.id}"`);
     }
@@ -58,6 +59,7 @@ describe("renderArticle", () => {
     const { html, toc } = renderArticle(markdown);
 
     expect(toc.map((item) => item.id)).toEqual(["alpha", "alpha-1", "title"]);
+
     for (const item of toc) {
       expect(html).toContain(`id="${item.id}"`);
     }

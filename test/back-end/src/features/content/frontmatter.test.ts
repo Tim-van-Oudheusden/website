@@ -43,6 +43,7 @@ tags:
 `;
 
     const result = parseFrontmatter(raw);
+
     expect(result!.data["tags"]).toEqual(["Bazzite", "Bluefin", "Docker"]);
   });
 
@@ -64,11 +65,13 @@ Body
 `;
 
     const result = parseFrontmatter(raw);
+
     expect(result!.data["title"]).toBe("Minimal Android Launcher");
     expect(result!.data["type"]).toBe("project");
     expect(result!.data["draft"]).toBe(false);
     expect(result!.data["featured"]).toBe(true);
     expect(result!.data["projectOrder"]).toBe(10);
+
     expect(result!.data["links"]).toEqual([
       {
         type: "repo",
@@ -93,6 +96,7 @@ Body
 `;
 
     const result = parseFrontmatter(raw);
+
     expect(result!.data["description"]).toBe(
       "See https://example.com/path and note the colon",
     );
@@ -109,6 +113,7 @@ created: 2026
 Body`;
 
     const result = parseFrontmatter(raw);
+
     expect(result!.data["created"]).toBe(2026);
   });
 
@@ -122,6 +127,7 @@ tags:
 this is the body`;
 
     const result = parseFrontmatter(raw);
+
     expect(result!.data["title"]).toBe("T");
     expect(result!.content).toBe("this is the body");
   });
@@ -130,6 +136,7 @@ this is the body`;
     const raw = `# Just a heading
 No frontmatter here.
 `;
+
     expect(parseFrontmatter(raw)).toBeNull();
   });
 
@@ -139,6 +146,7 @@ No frontmatter here.
 
 Body
 `;
+
     expect(parseFrontmatter(raw)).toBeNull();
   });
 

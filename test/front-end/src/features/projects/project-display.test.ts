@@ -96,6 +96,7 @@ describe("project-display helpers", () => {
       ];
 
       const result = resolvePriorityProjects(projects);
+
       expect(result.length).toBe(1);
       expect(result[0]?.slug).toBe("a");
     });
@@ -107,6 +108,7 @@ describe("project-display helpers", () => {
       ];
 
       const result = resolvePriorityProjects(projects);
+
       expect(result.length).toBe(1);
       expect(result[0]?.slug).toBe("featured");
     });
@@ -120,6 +122,7 @@ describe("project-display helpers", () => {
       ];
 
       const gallery = resolveGalleryProjects(projects);
+
       expect(gallery.map((item) => item.slug)).toEqual(["gallery-a", "gallery-b"]);
     });
   });

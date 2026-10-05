@@ -14,6 +14,7 @@ export function ArticleLocationTrail({
   if (!articleTitle) {
     return null;
   }
+
   return (
     <nav
       aria-label="Current location"

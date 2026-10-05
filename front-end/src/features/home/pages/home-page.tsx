@@ -12,6 +12,7 @@ function activateSectionAnchor(sectionId: HomeSectionId, event: React.MouseEvent
   }
 
   const targetElement = document.getElementById(sectionId);
+
   if (targetElement === null) {
     return;
   }
@@ -19,6 +20,7 @@ function activateSectionAnchor(sectionId: HomeSectionId, event: React.MouseEvent
   event.preventDefault();
 
   let matchMediaFn: ((query: string) => { matches: boolean }) | null = null;
+
   if (typeof window !== "undefined") {
     matchMediaFn = window.matchMedia.bind(window);
   }
@@ -33,6 +35,7 @@ function activateSectionAnchor(sectionId: HomeSectionId, event: React.MouseEvent
   }
 
   const fragment = `#${sectionId}`;
+
   window.history.replaceState(null, "", fragment);
 }
 

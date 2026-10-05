@@ -15,6 +15,7 @@ async function start(): Promise<void> {
   };
 
   const contentDir = process.env["CONTENT_DIR"];
+
   if (contentDir !== undefined) {
     appOptions.contentDir = contentDir;
   }
@@ -29,6 +30,7 @@ async function start(): Promise<void> {
   for (const signal of ["SIGTERM", "SIGINT"] as const) {
     process.once(signal, () => {
       app.log.info(`${signal} received, shutting down`);
+
       app.close().then(
         () => process.exit(0),
         (err: unknown) => {

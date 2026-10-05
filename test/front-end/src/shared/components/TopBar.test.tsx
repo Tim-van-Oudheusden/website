@@ -39,7 +39,11 @@ function setScrollY(offset: number): void {
 
 function headerOf(mount: FakeMount): FakeElement {
   const [header] = queryFakeElements(mount.container, (el) => el.nodeName === "HEADER");
-  if (header === undefined) throw new Error("Expected the top bar <header>");
+
+  if (header === undefined) {
+    throw new Error("Expected the top bar <header>");
+  }
+
   return header;
 }
 
@@ -85,11 +89,19 @@ describe("TopBar scroll state", () => {
       expect(headerOf(mount).getAttribute("data-scrolled")).toBe("false");
 
       setScrollY(120);
-      act(() => { triggerWindowEvent("scroll"); });
+
+      act(() => {
+        triggerWindowEvent("scroll");
+      });
+
       expect(headerOf(mount).getAttribute("data-scrolled")).toBe("true");
 
       setScrollY(0);
-      act(() => { triggerWindowEvent("scroll"); });
+
+      act(() => {
+        triggerWindowEvent("scroll");
+      });
+
       expect(headerOf(mount).getAttribute("data-scrolled")).toBe("false");
     } finally {
       unmountFakeDomRoot(mount);
@@ -119,19 +131,29 @@ describe("TopBar mobile menu", () => {
         mount.container,
         (el) => el.nodeName === "BUTTON" && el.textContent.includes("Open menu"),
       );
-      if (menuButton === undefined) throw new Error("Expected the mobile menu button");
+
+      if (menuButton === undefined) {
+        throw new Error("Expected the mobile menu button");
+      }
+
       fireFakePointer(menuButton, "click");
 
       const menu = findBySlot(fakeDocument.body, "sheet-content");
       const menuLinks = queryFakeElements(menu, (el) => el.nodeName === "A");
+
       expect(menuLinks.map((link) => link.getAttribute("href"))).toEqual(["/", "/articles", "/projects"]);
 
       const articlesLink = menuLinks[1];
-      if (articlesLink === undefined) throw new Error("Expected an Articles menu link");
+
+      if (articlesLink === undefined) {
+        throw new Error("Expected an Articles menu link");
+      }
+
       fireFakePointer(articlesLink, "click");
 
       expect(findAllBySlot(fakeDocument.body, "sheet-content")).toEqual([]);
       const activeLinks = queryFakeElements(mount.container, (el) => el.getAttribute("data-active-nav") === "true");
+
       expect(activeLinks.map((link) => link.getAttribute("href"))).toEqual(["/articles"]);
     } finally {
       unmountFakeDomRoot(mount);

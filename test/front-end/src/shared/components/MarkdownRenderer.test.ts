@@ -114,6 +114,7 @@ describe("MarkdownRenderer", () => {
 
   test("falls back to a slugified id and logs when a heading position is not in the toc set", () => {
     const errorSpy = spyOn(console, "error");
+
     try {
       const html = renderToStaticMarkup(
         createElement(MarkdownRenderer, {

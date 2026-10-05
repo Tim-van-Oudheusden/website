@@ -23,7 +23,11 @@ function floatingNav(sections: readonly HomeSectionDefinition[], activeSectionId
 
 function navAnchor(root: FakeElement, sectionId: HomeSectionId): FakeElement {
   const [anchor] = queryFakeElements(root, (el) => el.nodeName === "A" && el.getAttribute("href") === `#${sectionId}`);
-  if (anchor === undefined) throw new Error(`Expected a nav anchor to #${sectionId}`);
+
+  if (anchor === undefined) {
+    throw new Error(`Expected a nav anchor to #${sectionId}`);
+  }
+
   return anchor;
 }
 
@@ -60,9 +64,13 @@ describe("HomeFloatingNav active indicator", () => {
 
     try {
       navAnchor(mount.container, "start").rect = { width: 96, height: 40 };
-      act(() => { triggerWindowEvent("resize"); });
+
+      act(() => {
+        triggerWindowEvent("resize");
+      });
 
       const indicator = findBySlot(mount.container, "active-indicator");
+
       expect(indicator.style.getPropertyValue("opacity")).toBe("1");
       expect(indicator.style.getPropertyValue("width")).toBe("96px");
       expect(indicator.style.getPropertyValue("height")).toBe("40px");
@@ -77,7 +85,10 @@ describe("HomeFloatingNav active indicator", () => {
     try {
       navAnchor(mount.container, "start").rect = { width: 96, height: 40 };
       navAnchor(mount.container, "proof").rect = { width: 150, height: 40 };
-      act(() => { mount.root.render(floatingNav(HOME_SECTIONS, "proof")); });
+
+      act(() => {
+        mount.root.render(floatingNav(HOME_SECTIONS, "proof"));
+      });
 
       expect(findBySlot(mount.container, "active-indicator").style.getPropertyValue("width")).toBe("150px");
     } finally {
@@ -90,12 +101,20 @@ describe("HomeFloatingNav active indicator", () => {
 
     try {
       navAnchor(mount.container, "start").rect = { width: 96, height: 40 };
-      act(() => { triggerWindowEvent("resize"); });
+
+      act(() => {
+        triggerWindowEvent("resize");
+      });
+
       const indicator = findBySlot(mount.container, "active-indicator");
+
       expect(indicator.style.getPropertyValue("opacity")).toBe("1");
 
       const withoutProof = HOME_SECTIONS.filter((section) => section.id !== "proof");
-      act(() => { mount.root.render(floatingNav(withoutProof, "proof")); });
+
+      act(() => {
+        mount.root.render(floatingNav(withoutProof, "proof"));
+      });
 
       expect(indicator.style.getPropertyValue("opacity")).toBe("0");
       expect(indicator.style.getPropertyValue("width")).toBe("0px");

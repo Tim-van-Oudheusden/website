@@ -31,9 +31,11 @@ function article(overrides: Partial<ArticleFrontmatter> = {}): ArticleFrontmatte
 function headMeta(html: string): Map<string, string> {
   const head = /<head>([\s\S]*)<\/head>/.exec(html)?.[1] ?? "";
   const meta = new Map<string, string>();
+
   for (const match of head.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)"\s*\/?>/g)) {
     meta.set(match[1] ?? "", match[2] ?? "");
   }
+
   return meta;
 }
 

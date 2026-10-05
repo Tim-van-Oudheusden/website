@@ -25,7 +25,11 @@ export function HomeSectionFooter({ section }: HomeSectionFooterProps): React.JS
           GitHub
         </a>
         <p className="text-sm text-(--adw-dark-5)/60 dark:text-white/60">
-          © {currentYear} {SITE_AUTHOR}
+          ©
+          {" "}
+          {currentYear}
+          {" "}
+          {SITE_AUTHOR}
         </p>
       </div>
     </HomeSectionShell>

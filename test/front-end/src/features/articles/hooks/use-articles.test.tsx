@@ -71,21 +71,30 @@ function mountProbe(urlSlug?: string): Probe {
 
   function ArticlesProbe(): null {
     latestRef.current = useArticles(urlSlug);
+
     return null;
   }
 
   const mount = mountIntoBody(createElement(ArticlesProbe));
+
   return {
     latest: () => {
-      if (latestRef.current === null) throw new Error("Probe has not rendered");
+      if (latestRef.current === null) {
+        throw new Error("Probe has not rendered");
+      }
+
       return latestRef.current;
     },
-    cleanup: () => { unmountFakeDomRoot(mount); },
+    cleanup: () => {
+      unmountFakeDomRoot(mount);
+    },
   };
 }
 
 async function settle(): Promise<void> {
-  await act(async () => { await settleMicrotasks(); });
+  await act(async () => {
+    await settleMicrotasks();
+  });
 }
 
 describe("useArticles listing", () => {
@@ -107,12 +116,14 @@ describe("useArticles listing", () => {
       [LIST_URL]: respond([summary("linux-setup", { date: "2026-06-01T00:00:00Z" }), summary("introduction")]),
       "/api/content/introduction": respond(article("introduction")),
     });
+
     const probe = mountProbe();
 
     try {
       await settle();
 
       const result = probe.latest();
+
       expect(result.loadingArticles).toBe(false);
       expect(result.articles.map((item) => item.slug)).toEqual(["linux-setup", "introduction"]);
       expect(result.selectedSlug).toBe("introduction");
@@ -129,6 +140,7 @@ describe("useArticles listing", () => {
       [LIST_URL]: respond([summary("older", { date: "2025-01-01T00:00:00Z" }), summary("newer")]),
       "/api/content/newer": respond(article("newer")),
     });
+
     const probe = mountProbe();
 
     try {
@@ -147,6 +159,7 @@ describe("useArticles listing", () => {
       "/api/content/introduction": respond(article("introduction")),
       "/api/content/linux-setup": respond(article("linux-setup")),
     });
+
     const probe = mountProbe("linux-setup");
 
     try {
@@ -229,6 +242,7 @@ describe("useArticles selected article", () => {
       [LIST_URL]: respond([summary("introduction")]),
       "/api/content/introduction": failWith(404, "Not Found"),
     });
+
     const probe = mountProbe();
 
     try {
@@ -247,6 +261,7 @@ describe("useArticles selected article", () => {
       [LIST_URL]: respond([summary("introduction")]),
       "/api/content/introduction": () => Promise.reject(new TypeError("network dropped")),
     });
+
     const probe = mountProbe();
 
     try {
@@ -264,13 +279,17 @@ describe("useArticles selected article", () => {
       "/api/content/introduction": failWith(404, "Not Found"),
       "/api/content/linux-setup": respond(article("linux-setup")),
     });
+
     const probe = mountProbe();
 
     try {
       await settle();
       expect(probe.latest().articleError).toBe("Request failed: Not Found");
 
-      act(() => { probe.latest().selectSlug("linux-setup"); });
+      act(() => {
+        probe.latest().selectSlug("linux-setup");
+      });
+
       expect(probe.latest().loadingArticle).toBe(true);
       expect(probe.latest().articleError).toBeNull();
 
@@ -289,11 +308,16 @@ describe("useArticles selected article", () => {
       "/api/content/introduction": respond(article("introduction")),
       "/api/content/linux-setup": respond(article("linux-setup")),
     });
+
     const probe = mountProbe("linux-setup");
 
     try {
       await settle();
-      act(() => { probe.latest().selectSlug("introduction"); });
+
+      act(() => {
+        probe.latest().selectSlug("introduction");
+      });
+
       await settle();
 
       expect(probe.latest().selectedSlug).toBe("introduction");
@@ -305,17 +329,23 @@ describe("useArticles selected article", () => {
 
   test("a superseded article response that settles late is ignored", async () => {
     const slowIntroduction = Promise.withResolvers<Response>();
+
     routeFetch({
       [LIST_URL]: respond([summary("introduction"), summary("linux-setup")]),
       "/api/content/introduction": () => slowIntroduction.promise,
       "/api/content/linux-setup": respond(article("linux-setup")),
     });
+
     const probe = mountProbe();
 
     try {
       await settle();
+
       // The introduction request is still in flight when the reader moves on.
-      act(() => { probe.latest().selectSlug("linux-setup"); });
+      act(() => {
+        probe.latest().selectSlug("linux-setup");
+      });
+
       await settle();
       expect(probe.latest().selectedArticle?.slug).toBe("linux-setup");
 

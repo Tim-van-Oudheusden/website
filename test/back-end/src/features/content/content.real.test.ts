@@ -139,6 +139,7 @@ describe("content normalization against controlled fixtures", () => {
     for (const [fileName, content] of Object.entries(FIXTURES)) {
       await writeFile(join(contentDir, fileName), content);
     }
+
     await writeFile(join(invalidCategoryDir, "no-category.md"), INVALID_FIXTURES["no-category.md"]);
     await writeFile(join(invalidCoverDir, "no-cover.md"), INVALID_FIXTURES["no-cover.md"]);
   });
@@ -195,10 +196,12 @@ describe("content normalization against controlled fixtures", () => {
   test("skips drafts only in production", async () => {
     delete process.env.NODE_ENV;
     const draftsInDev = await listContent(contentDir);
+
     expect(draftsInDev.some((item) => item.slug === "draft")).toBe(true);
 
     setProduction();
     const draftsInProd = await listContent(contentDir);
+
     expect(draftsInProd.some((item) => item.slug === "draft")).toBe(false);
   });
 
@@ -207,6 +210,7 @@ describe("content normalization against controlled fixtures", () => {
     expect(await getContentBySlug("draft", contentDir)).toBeNull();
 
     const intro = await getContentBySlug("intro", contentDir);
+
     expect(intro?.title).toBe("Introduction");
   });
 
@@ -222,6 +226,7 @@ describe("content normalization against controlled fixtures", () => {
 
     expect(items.some((item) => item.slug === "bad-status")).toBe(false);
     const badLinks = items.find((item) => item.slug === "bad-links");
+
     expect((badLinks as ProjectFrontmatter | undefined)?.role).toBeUndefined();
   });
 
@@ -242,6 +247,7 @@ describe("content normalization against controlled fixtures", () => {
     expect((healthy as ProjectFrontmatter | undefined)?.links).toEqual([
       { type: "repo", label: "Source repository", href: "https://github.com/example/repo" },
     ]);
+
     expect((broken as ProjectFrontmatter | undefined)?.links).toEqual([
       { type: "repo", label: "Kept", href: "https://github.com/example/kept" },
     ]);
@@ -252,6 +258,7 @@ describe("content normalization against controlled fixtures", () => {
 
     expect(item).not.toBeNull();
     const project = item as ProjectFrontmatter & { body: string };
+
     expect(project.type).toBe("project");
     expect(project.status).toBe("In Progress");
     expect(project.role).toBe("Full-stack developer");
@@ -262,6 +269,7 @@ describe("content normalization against controlled fixtures", () => {
 
   test("skips an article without a valid category and audits it", async () => {
     expect(await listContent(invalidCategoryDir)).toEqual([]);
+
     expect(await validateContentDir(invalidCategoryDir)).toMatchObject([
       { file: "no-category.md", field: "category" },
     ]);
@@ -269,6 +277,7 @@ describe("content normalization against controlled fixtures", () => {
 
   test("skips a project missing coverImage and coverImageAlt and audits it", async () => {
     expect(await listContent(invalidCoverDir)).toEqual([]);
+
     expect(await validateContentDir(invalidCoverDir)).toMatchObject([
       { file: "no-cover.md", field: "coverImage" },
     ]);
@@ -278,14 +287,17 @@ describe("content normalization against controlled fixtures", () => {
 describe("real content directory sanity check", () => {
   test("parses all real markdown files as list items", async () => {
     const items = await listContent(REAL_CONTENT_DIR);
+
     expect(items.length).toBeGreaterThanOrEqual(8);
     const titles = items.map((i) => i.title);
+
     expect(titles).toContain("Introduction");
     expect(titles).toContain("Minimal Android Launcher");
   });
 
   test("resolves an article by slug with body intact", async () => {
     const item = await getContentBySlug("introduction", REAL_CONTENT_DIR);
+
     expect(item).not.toBeNull();
     expect(item!.title).toBe("Introduction");
     expect(item!.body).toContain("# Welcome");
@@ -293,9 +305,12 @@ describe("real content directory sanity check", () => {
 
   test("resolves a project with nested links by slug", async () => {
     const item = await getContentBySlug("minimal-android-launcher", REAL_CONTENT_DIR);
+
     expect(item).not.toBeNull();
     const project = item as ProjectFrontmatter & { body: string };
+
     expect(project.type).toBe("project");
+
     expect(project.links).toEqual([
       {
         type: "repo",
@@ -303,6 +318,7 @@ describe("real content directory sanity check", () => {
         href: "https://github.com/Tim-van-Oudheusden/website",
       },
     ]);
+
     expect(project.projectOrder).toBe(10);
   });
 });

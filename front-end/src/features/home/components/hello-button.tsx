@@ -19,6 +19,7 @@ export function HelloButtonView({
   onActivate,
 }: HelloButtonViewProps): React.JSX.Element {
   let buttonText = "Say Hello";
+
   if (loading) {
     buttonText = "Requesting...";
   }
@@ -52,7 +53,9 @@ export function HelloButton(): React.JSX.Element {
       loading={status === "loading"}
       message={data?.message ?? null}
       error={error}
-      onActivate={() => { void refetch(); }}
+      onActivate={() => {
+        void refetch();
+      }}
     />
   );
 }

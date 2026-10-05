@@ -45,6 +45,7 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
     async function fetchArticles(): Promise<void> {
       try {
         const items = await httpContentLoader.listArticles();
+
         if (!cancelled) {
           setArticles(items);
           setSelectedSlug((current) => current ?? getDefaultArticleSlug(items));
@@ -52,9 +53,11 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
       } catch (err) {
         if (!cancelled) {
           let message = "Failed to load articles";
+
           if (err instanceof ApiError) {
             message = err.message;
           }
+
           setListError(message);
         }
       } finally {
@@ -65,32 +68,40 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
     }
 
     void fetchArticles();
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     if (selectedSlug === null) {
       setSelectedArticle(null);
+
       return;
     }
 
     const contentSlug = selectedSlug;
     let cancelled = false;
+
     setLoadingArticle(true);
     setArticleError(null);
 
     async function fetchArticle(): Promise<void> {
       try {
         const data = await httpContentLoader.getArticle(contentSlug);
+
         if (!cancelled) {
           setSelectedArticle(data);
         }
       } catch (err) {
         if (!cancelled) {
           let message = "Failed to load article";
+
           if (err instanceof ApiError) {
             message = err.message;
           }
+
           setArticleError(message);
           setSelectedArticle(null);
         }
@@ -102,7 +113,10 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
     }
 
     void fetchArticle();
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedSlug]);
 
   const selectSlug = useCallback((slug: string) => {

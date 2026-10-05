@@ -34,6 +34,7 @@ function mountUpdater(instance: ErrorBoundary): void {
       inst.state = typeof partialState === "function"
         ? partialState(inst.state, inst.props)
         : { ...inst.state, ...partialState };
+
       if (callback !== undefined) {
         callback();
       }
@@ -54,6 +55,7 @@ describe("ErrorBoundary", () => {
 
   test("renders the default fallback with a retry control after a child error", () => {
     const instance = new ErrorBoundary({ children: HEALTHY_CHILD });
+
     applyErrorState(instance);
     const html = renderToStaticMarkup(instance.render());
 
@@ -65,6 +67,7 @@ describe("ErrorBoundary", () => {
 
   test("renders the provided custom fallback instead of the default", () => {
     const instance = new ErrorBoundary({ children: HEALTHY_CHILD, fallback: createElement("div", null, "custom fallback") });
+
     applyErrorState(instance);
     const html = renderToStaticMarkup(instance.render());
 
@@ -74,6 +77,7 @@ describe("ErrorBoundary", () => {
 
   test("recovers to children when retry() clears the captured error", () => {
     const instance = new ErrorBoundary({ children: HEALTHY_CHILD });
+
     applyErrorState(instance);
     mountUpdater(instance);
     expect(renderToStaticMarkup(instance.render())).toContain("Failed to render content.");

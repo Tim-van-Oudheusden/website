@@ -26,10 +26,13 @@ describe("back-end routes use shared ROUTES constants", () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
+
     const res = await app.inject({ method: "GET", url: ROUTES.HEALTH });
+
     expect(res.statusCode).toBe(200);
 
     const body = res.json();
+
     expect(body.status).toBe("ok");
     expect(body.name).toBe(APP_NAME);
     expect(typeof body.uptime).toBe("number");
@@ -39,10 +42,13 @@ describe("back-end routes use shared ROUTES constants", () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
+
     const res = await app.inject({ method: "GET", url: apiUrl(ROUTES.HELLO) });
+
     expect(res.statusCode).toBe(200);
 
     const body = res.json();
+
     expect(body.message).toBe("hello");
     expect(typeof body.timestamp).toBe("string");
   });
@@ -51,10 +57,13 @@ describe("back-end routes use shared ROUTES constants", () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
+
     const res = await app.inject({ method: "GET", url: apiUrl(ROUTES.ROOT) });
+
     expect(res.statusCode).toBe(200);
 
     const body = res.json();
+
     expect(body.name).toBe(APP_NAME);
     expect(typeof body.version).toBe("string");
   });
@@ -63,6 +72,7 @@ describe("back-end routes use shared ROUTES constants", () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
+
     expect((await app.inject({ method: "GET", url: ROUTES.HELLO })).statusCode).toBe(404);
     expect((await app.inject({ method: "GET", url: ROUTES.ROOT })).statusCode).toBe(404);
   });
@@ -71,10 +81,12 @@ describe("back-end routes use shared ROUTES constants", () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
+
     // Ensure routes are only registered at the shared constant paths.
     // If someone adds a duplicate route at a different path, this test won't
     // catch it, but the TypeScript compiler will enforce usage of ROUTES.
     const res = await app.inject({ method: "GET", url: "/nonexistent" });
+
     expect(res.statusCode).toBe(404);
   });
 
@@ -82,7 +94,9 @@ describe("back-end routes use shared ROUTES constants", () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
+
     const res = await app.inject({ method: "GET", url: ROUTES.HEALTH });
+
     expect(res.statusCode).toBe(200);
     expect(res.headers["x-frame-options"]).toBe("SAMEORIGIN");
     expect(res.headers["x-content-type-options"]).toBe("nosniff");
@@ -94,11 +108,13 @@ describe("back-end routes use shared ROUTES constants", () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
+
     let finalResponse = await app.inject({
       method: "GET",
       url: apiUrl(ROUTES.HELLO),
       remoteAddress: "127.0.0.1",
     });
+
     for (let i = 0; i < 60; i += 1) {
       finalResponse = await app.inject({
         method: "GET",
@@ -121,6 +137,7 @@ describe("back-end routes use shared ROUTES constants", () => {
       url: "/totally-missing",
       remoteAddress: "127.0.0.99",
     });
+
     for (let i = 0; i < 20; i += 1) {
       finalResponse = await app.inject({
         method: "GET",
@@ -137,6 +154,7 @@ describe("back-end routes use shared ROUTES constants", () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
+
     // Behind Cloudflare Tunnel the peer is always 127.0.0.1; the real client
     // identity arrives in CF-Connecting-IP, so each client must get its own bucket.
     const requestAs = (ip: string): Promise<{ statusCode: number }> => app!.inject({
@@ -147,12 +165,15 @@ describe("back-end routes use shared ROUTES constants", () => {
     });
 
     let last: { statusCode: number } | null = null;
+
     for (let i = 0; i < 51; i += 1) {
       last = await requestAs("198.51.100.10");
     }
+
     expect(last?.statusCode).toBe(429);
 
     const otherClient = await requestAs("198.51.100.11");
+
     expect(otherClient.statusCode).toBe(200);
   });
 
@@ -160,6 +181,7 @@ describe("back-end routes use shared ROUTES constants", () => {
     if (app === null) {
       throw new Error("App not initialized");
     }
+
     // A non-loopback peer (arbitrary caller) can set CF-Connecting-IP freely;
     // the limiter must key on the socket IP, ignoring the spoofable header.
     const requestAs = (ip: string): Promise<{ statusCode: number }> => app!.inject({
@@ -170,9 +192,11 @@ describe("back-end routes use shared ROUTES constants", () => {
     });
 
     let last: { statusCode: number } | null = null;
+
     for (let i = 0; i < 30; i += 1) {
       last = await requestAs("198.51.100.1");
     }
+
     for (let i = 0; i < 30; i += 1) {
       // Rotating the spoofed header must not reset the limit (same socket key).
       last = await requestAs("198.51.100.2");

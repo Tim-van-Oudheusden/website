@@ -37,6 +37,7 @@ export function selectActiveSectionId(
 
 export function useActiveHomeSection(sectionIds: readonly HomeSectionId[]): HomeSectionId {
   const firstSectionId = sectionIds[0];
+
   if (firstSectionId === undefined) {
     throw new Error("useActiveHomeSection requires at least one section id");
   }
@@ -73,6 +74,7 @@ export function useActiveHomeSection(sectionIds: readonly HomeSectionId[]): Home
 
     for (const id of sectionIds) {
       const element = document.getElementById(id);
+
       if (element === null) {
         continue;
       }

@@ -41,6 +41,7 @@ function runTuner(...args: string[]): { status: number | null; stdout: string; s
     [scriptPath, "--config", configPath, "--report", reportPath, ...args],
     { cwd: rootPath, encoding: "utf8" },
   );
+
   return { status: result.status, stdout: result.stdout, stderr: result.stderr };
 }
 
@@ -79,9 +80,10 @@ describe("scripts/auto-qa-tuner.ts", () => {
 
   test("keeps a workspace's floors when the report has no coverage for it", () => {
     writeConfig(2, {
-      shared: { functions: 90, lines: 90 },
+      "shared": { functions: 90, lines: 90 },
       "front-end": { functions: 91, lines: 91 },
     });
+
     writeReport(["| shared | ❌ n/a | ❌ n/a |"]);
 
     const { status, stdout } = runTuner();
@@ -94,8 +96,9 @@ describe("scripts/auto-qa-tuner.ts", () => {
   test("writes the proposed floors back to the config only with --write", () => {
     writeConfig(2, {
       "back-end": { functions: 95, lines: 90 },
-      shared: { functions: 90, lines: 90 },
+      "shared": { functions: 90, lines: 90 },
     });
+
     writeReport(["| back-end | 99.12% | 96.03% |", "| shared | ❌ n/a | ❌ n/a |"]);
     const original = readFileSync(configPath, "utf8");
 
@@ -103,11 +106,12 @@ describe("scripts/auto-qa-tuner.ts", () => {
     expect(readFileSync(configPath, "utf8")).toBe(original);
 
     expect(runTuner("--write").status).toBe(0);
+
     expect(JSON.parse(readFileSync(configPath, "utf8"))).toEqual({
       margin: 2,
       floors: {
         "back-end": { functions: 97, lines: 94 },
-        shared: { functions: 90, lines: 90 },
+        "shared": { functions: 90, lines: 90 },
       },
     });
   });

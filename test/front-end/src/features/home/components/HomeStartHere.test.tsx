@@ -72,11 +72,18 @@ function renderContent(items: ArticleSummary[] | null, loadError: boolean): stri
 const START_HERE_SECTION = HOME_SECTIONS.find((section) => section.id === "secondary-cta");
 
 async function mountStartHere(loader: ContentLoader): Promise<FakeMount> {
-  if (START_HERE_SECTION === undefined) throw new Error("Expected a secondary-cta home section");
+  if (START_HERE_SECTION === undefined) {
+    throw new Error("Expected a secondary-cta home section");
+  }
+
   const mount = mountIntoBody(
     createElement(MemoryRouter, null, createElement(HomeStartHere, { section: START_HERE_SECTION, loader })),
   );
-  await act(async () => { await settleMicrotasks(); });
+
+  await act(async () => {
+    await settleMicrotasks();
+  });
+
   return mount;
 }
 
@@ -157,11 +164,13 @@ describe("HomeStartHere", () => {
 
     try {
       const hrefs = queryFakeElements(mount.container, (el) => el.nodeName === "A").map((el) => el.getAttribute("href"));
+
       expect(hrefs).toEqual([
         "/articles/introduction",
         "/articles/my-operating-system-is-a-container-image-yes-really",
         "/articles/yoga-nidra-a-way-to-be-at-peace-in-chaos",
       ]);
+
       expect(mount.container.textContent).not.toContain("Loading reading list...");
     } finally {
       unmountFakeDomRoot(mount);

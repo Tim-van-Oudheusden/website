@@ -32,6 +32,7 @@ describe("HomeTrustStrip", () => {
 
     expect(html).toContain("Proof through honesty");
     expect(html).toContain("The site states only what is true.");
+
     for (const item of FIXTURE_ITEMS) {
       expect(html).toContain(item);
     }

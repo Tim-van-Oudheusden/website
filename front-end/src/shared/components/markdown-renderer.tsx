@@ -32,18 +32,20 @@ function flattenNodeText(node: React.ReactNode): string {
   }
 
   if (Array.isArray(node)) {
-     return node.map((child: React.ReactNode) => flattenNodeText(child)).join("");
-   }
+    return node.map((child: React.ReactNode) => flattenNodeText(child)).join("");
+  }
 
   if (React.isValidElement(node)) {
     const elementProps = node.props as { children?: React.ReactNode; alt?: string };
-  if (
-       (node.type === "img" || elementProps.children === null)
+
+    if (
+      (node.type === "img" || elementProps.children === null)
       && typeof elementProps.alt === "string"
       && elementProps.alt.length > 0
     ) {
       return elementProps.alt ?? "";
     }
+
     return flattenNodeText(elementProps.children);
   }
 
@@ -63,22 +65,26 @@ function parseObsidianCallout(children: React.ReactNode): ParsedObsidianCallout 
     .toArray(children)
     .filter((child) => !(typeof child === "string" && child.trim().length === 0));
   const firstNode = blockquoteChildren[0];
+
   if (!React.isValidElement(firstNode) || firstNode.type !== "p") {
     return null;
   }
 
   const firstParagraphElement = firstNode as React.ReactElement<{ children?: React.ReactNode }>;
   const firstParagraphChildren = React.Children.toArray(firstParagraphElement.props.children);
+
   if (firstParagraphChildren.length === 0 || typeof firstParagraphChildren[0] !== "string") {
     return null;
   }
 
   const markerMatch = OBSIDIAN_CALLOUT_MARKER_PATTERN.exec(firstParagraphChildren[0]);
+
   if (markerMatch === null) {
     return null;
   }
 
   const matchedType = markerMatch[1];
+
   if (matchedType === undefined) {
     return null;
   }
@@ -88,11 +94,13 @@ function parseObsidianCallout(children: React.ReactNode): ParsedObsidianCallout 
   const markerRemainder = markerMatch[3]?.trim() ?? "";
 
   const adjustedFirstParagraphChildren = firstParagraphChildren.slice(1);
+
   if (markerRemainder.length > 0) {
     adjustedFirstParagraphChildren.unshift(markerRemainder);
   }
 
   const calloutBodyNodes: React.ReactNode[] = [];
+
   if (flattenNodeText(adjustedFirstParagraphChildren).trim().length > 0) {
     calloutBodyNodes.push(React.cloneElement(firstParagraphElement, {
       key: "callout-body-first-paragraph",
@@ -120,6 +128,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
 }: MarkdownRendererProps): React.JSX.Element {
   const headingIdByOffset = React.useMemo(() => {
     const entries = extractMarkdownHeadingsWithOffsets(content, TOC_MAX_DEPTH);
+
     return {
       byOffset: new Map(entries.map((entry) => [entry.startOffset, entry.id])),
       byLineColumn: new Map(entries.map((entry) => [`${entry.startLine}:${entry.startColumn}`, entry.id])),
@@ -133,9 +142,10 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
       line?: number | undefined;
       column?: number | undefined;
     },
- ): string {
+  ): string {
     if (position?.offset !== undefined) {
       const resolvedId = headingIdByOffset.byOffset.get(position.offset);
+
       if (resolvedId !== undefined) {
         return resolvedId;
       }
@@ -143,6 +153,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
 
     if (position?.line !== undefined && position.column !== undefined) {
       const resolvedId = headingIdByOffset.byLineColumn.get(`${position.line}:${position.column}`);
+
       if (resolvedId !== undefined) {
         return resolvedId;
       }
@@ -154,6 +165,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     console.error(
       `[markdown-renderer] heading id lookup missed for "${headingText}"; TOC link may be absent.`,
     );
+
     return slugifyHeadingText(headingText) || "section";
   }
 
@@ -164,6 +176,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
         target?: string;
         rel?: string;
       } = {};
+
       if (isExternal) {
         externalLinkProps = { target: "_blank", rel: "noopener noreferrer" };
       }
@@ -181,6 +194,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     h1({ children, className, node, ...rest }) {
       const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
       const id = resolveHeadingIdFromPosition(headingText, node?.position?.start);
+
       return (
         <h1 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
           {children}
@@ -190,6 +204,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     h2({ children, className, node, ...rest }) {
       const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
       const id = resolveHeadingIdFromPosition(headingText, node?.position?.start);
+
       return (
         <h2 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
           {children}
@@ -199,6 +214,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
     h3({ children, className, node, ...rest }) {
       const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
       const id = resolveHeadingIdFromPosition(headingText, node?.position?.start);
+
       return (
         <h3 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
           {children}
@@ -206,9 +222,10 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
       );
     },
     blockquote({ children, className, ...rest }) {
-const callout = parseObsidianCallout(children);
-  if (callout === null) {
-    return (
+      const callout = parseObsidianCallout(children);
+
+      if (callout === null) {
+        return (
           <blockquote className={className} {...rest}>
             {children}
           </blockquote>

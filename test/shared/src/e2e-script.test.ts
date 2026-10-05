@@ -13,10 +13,12 @@ let callLog: string;
 // Each stub records its argv to the call log; STUB_FAIL_<NAME>=1 makes it exit 1.
 function writeStub(name: string): void {
   const stubPath = join(stubDir, name);
+
   writeFileSync(
     stubPath,
     `#!/usr/bin/env bash\necho "${name} $*" >> "${callLog}"\n[ "\${STUB_FAIL_${name.toUpperCase()}:-0}" = 1 ] && exit 1\nexit 0\n`,
   );
+
   chmodSync(stubPath, 0o755);
 }
 
@@ -32,6 +34,7 @@ function runScript(env: Record<string, string> = {}): { status: number | null; c
     },
   });
   const calls = readFileSync(callLog, "utf8").trim().split("\n");
+
   return { status: result.status, calls };
 }
 
@@ -39,6 +42,7 @@ beforeEach(() => {
   stubDir = mkdtempSync(join(tmpdir(), "e2e-script-"));
   callLog = join(stubDir, "calls.log");
   writeFileSync(callLog, "");
+
   for (const name of ["podman", "curl", "bun"]) {
     writeStub(name);
   }
@@ -53,6 +57,7 @@ describe("scripts/e2e.sh", () => {
     const { status, calls } = runScript();
 
     expect(status).toBe(0);
+
     expect(calls).toEqual([
       "podman build -f front-end/Dockerfile --target dev -t localhost/website/front-end:dev .",
       "podman build -f back-end/Dockerfile --target dev -t localhost/website/back-end:dev .",
@@ -78,6 +83,7 @@ describe("scripts/e2e.sh", () => {
     expect(status).not.toBe(0);
     expect(calls.filter((call) => call === "curl -fsS http://localhost:3001/health")).toHaveLength(3);
     expect(calls).not.toContain("bun run test:e2e");
+
     expect(calls.slice(-2)).toEqual([
       "podman pod logs website",
       "podman kube down deploy/kube/dev.yaml",
