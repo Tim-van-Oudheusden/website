@@ -163,6 +163,31 @@ Body
       ["---", "title: T", "tags:", "  - Linux", "  # - Retired tag", "  - Containers", "---", "Body"],
       { data: { title: "T", tags: ["Linux", "Containers"] }, content: "Body" },
     ],
+    [
+      "keeps list items after a blank line inside a block key's children",
+      ["---", "title: T", "tags:", "  - Linux", "", "  - Containers", "---", "Body"],
+      { data: { title: "T", tags: ["Linux", "Containers"] }, content: "Body" },
+    ],
+    [
+      "keeps an object item's fields after a blank line instead of hoisting them",
+      ["---", "title: T", "links:", "  - type: repo", "", "    url: https://x", "---", "Body"],
+      { data: { title: "T", links: [{ type: "repo", url: "https://x" }] }, content: "Body" },
+    ],
+    [
+      "does not let a nested field after a blank line overwrite a top-level key",
+      ["---", "title: Real", "links:", "  - type: repo", "", "    title: Hijack", "---", "Body"],
+      { data: { title: "Real", links: [{ type: "repo", title: "Hijack" }] }, content: "Body" },
+    ],
+    [
+      "ends a block at a top-level key that follows a blank line",
+      ["---", "tags:", "  - Linux", "", "title: T", "---", "Body"],
+      { data: { tags: ["Linux"], title: "T" }, content: "Body" },
+    ],
+    [
+      "ignores whitespace-only lines trailing a block",
+      ["---", "title: T", "links:", "  - type: repo", "    url: https://x", "  ", "", "---", "Body"],
+      { data: { title: "T", links: [{ type: "repo", url: "https://x" }] }, content: "Body" },
+    ],
   ])("%s", (_label, lines, expected) => {
     expect(parseFrontmatter(lines.join("\n"))).toEqual(expected);
   });
