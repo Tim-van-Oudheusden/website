@@ -1,5 +1,7 @@
-import * as React from "react";
+import type { JSX, ReactNode } from "react";
+
 import { cn } from "@/shared/lib/utils";
+
 import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionDefinition } from "../types/home-section";
 
@@ -16,7 +18,7 @@ interface HomeSectionShellProps {
   body?: string;
   /** Center the heading/body block and its container (trust / start-here layout). */
   centered?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 /**
@@ -33,7 +35,7 @@ export function HomeSectionShell({
   body,
   centered = false,
   children,
-}: HomeSectionShellProps): React.JSX.Element {
+}: HomeSectionShellProps): JSX.Element {
   const headingId = headingIdFor(section.id);
 
   const frameProps = {

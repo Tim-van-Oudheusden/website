@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
+
+import type { ArticleData, ArticleSummary } from "shared/articles";
+
 import { ApiError } from "@/shared/lib/api";
 import { httpContentLoader } from "@/shared/lib/content-loader";
-import type { ArticleData, ArticleSummary } from "shared/articles";
+
 import { getDefaultArticleSlug } from "../lib/articles-sidebar";
 
 export interface UseArticlesResult {
@@ -30,14 +33,17 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
   const [loadingArticle, setLoadingArticle] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
   const [articleError, setArticleError] = useState<string | null>(null);
+  const [syncedUrlSlug, setSyncedUrlSlug] = useState(urlSlug);
 
   // React to URL changes only: an in-page selectSlug must not be reverted
   // while the URL still names the slug the page was opened on.
-  useEffect(() => {
+  if (urlSlug !== syncedUrlSlug) {
+    setSyncedUrlSlug(urlSlug);
+
     if (urlSlug !== undefined) {
       setSelectedSlug(urlSlug);
     }
-  }, [urlSlug]);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -74,18 +80,24 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
     };
   }, []);
 
-  useEffect(() => {
-    if (selectedSlug === null) {
-      setSelectedArticle(null);
+  const [requestedSlug, setRequestedSlug] = useState<string | null>(null);
 
+  // A newly selected slug starts a fresh article request: flag loading and clear the
+  // previous error in the same render instead of after commit.
+  if (selectedSlug !== null && selectedSlug !== requestedSlug) {
+    setRequestedSlug(selectedSlug);
+    setLoadingArticle(true);
+    setArticleError(null);
+  }
+
+  useEffect(() => {
+    // selectedSlug only ever moves from null to a slug, so there is no article to clear here.
+    if (selectedSlug === null) {
       return;
     }
 
     const contentSlug = selectedSlug;
     let cancelled = false;
-
-    setLoadingArticle(true);
-    setArticleError(null);
 
     async function fetchArticle(): Promise<void> {
       try {

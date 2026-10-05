@@ -1,4 +1,5 @@
 import { APP_NAME } from "shared";
+
 import { buildApp } from "./app";
 import { getServerConfig } from "./core/server-config";
 

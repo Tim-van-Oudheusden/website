@@ -1,18 +1,12 @@
-import { afterAll, beforeEach, beforeAll, describe, expect, test } from "bun:test";
-import { act, createElement } from "react";
-import type * as UseThemeModule from "../../../../../front-end/src/shared/hooks/use-theme";
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 
-import {
-  uninstallFakeDom,
-  triggerFakeMediaPreferenceChange,
-  type FakeDocument,
-} from "../../../src/test/fake-dom";
-import {
-  initFakeDomHarness,
-  mountIntoBody,
-  unmountFakeDomRoot,
-  type FakeMount,
-} from "../../../src/test/dom-harness";
+import { act, createElement } from "react";
+
+import type * as UseThemeModule from "../../../../../front-end/src/shared/hooks/use-theme";
+import type { FakeMount } from "../../../src/test/dom-harness";
+import { initFakeDomHarness, mountIntoBody, unmountFakeDomRoot } from "../../../src/test/dom-harness";
+import type { FakeDocument } from "../../../src/test/fake-dom";
+import { triggerFakeMediaPreferenceChange, uninstallFakeDom } from "../../../src/test/fake-dom";
 
 // Module-loading boundary: react-dom captures `canUseDOM` at module load, so it
 // must be imported after the fake DOM is installed by the harness.
@@ -60,7 +54,7 @@ function mountThemeProvider(storedTheme: string | null): MountedProvider {
   }
 
   let currentTheme: string | null = null;
-  let setThemeFn: (theme: "light" | "dark" | "system") => void = () => undefined;
+  let setThemeFn: ((theme: "light" | "dark" | "system") => void) | null = null;
 
   function Probe(): null {
     const { theme, setTheme } = useTheme();
@@ -80,7 +74,7 @@ function mountThemeProvider(storedTheme: string | null): MountedProvider {
     probe: {
       theme: () => currentTheme,
       setTheme: (theme: "light" | "dark" | "system") => {
-        setThemeFn(theme);
+        setThemeFn?.(theme);
       },
     },
   };

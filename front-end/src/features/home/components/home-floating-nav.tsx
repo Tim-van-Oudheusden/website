@@ -1,23 +1,19 @@
-import * as React from "react";
-import {
-  CodeXml,
-  Dumbbell,
-  House,
-  ShieldCheck,
-  Sparkles,
-  Trophy,
-  UserRound,
-  type LucideIcon,
-} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { CodeXml, Dumbbell, House, ShieldCheck, Sparkles, Trophy, UserRound } from "lucide-react";
+import type { CSSProperties, JSX, MouseEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import { Badge } from "@/shared/components/ui/badge";
 import { cn } from "@/shared/lib/utils";
+
+import type { IndicatorMetrics } from "../lib/home-floating-nav-indicator";
+import { calculateIndicatorMetrics } from "../lib/home-floating-nav-indicator";
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
-import { calculateIndicatorMetrics, type IndicatorMetrics } from "../lib/home-floating-nav-indicator";
 
 interface HomeFloatingNavProps {
   sections: readonly HomeSectionDefinition[];
   activeSectionId: HomeSectionId;
-  onAnchorActivate: (sectionId: HomeSectionId, event: React.MouseEvent<HTMLAnchorElement>) => void;
+  onAnchorActivate: (sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void;
 }
 
 const HOME_NAV_ICONS: Record<HomeSectionId, LucideIcon> = {
@@ -34,14 +30,14 @@ export function HomeFloatingNav({
   sections,
   activeSectionId,
   onAnchorActivate,
-}: HomeFloatingNavProps): React.JSX.Element {
-  const navListRef = React.useRef<HTMLUListElement | null>(null);
-  const navItemRefs = React.useRef<Partial<Record<HomeSectionId, HTMLAnchorElement | null>>>({});
-  const [indicatorMetrics, setIndicatorMetrics] = React.useState<IndicatorMetrics | null>(null);
+}: HomeFloatingNavProps): JSX.Element {
+  const navListRef = useRef<HTMLUListElement | null>(null);
+  const navItemsRef = useRef<Partial<Record<HomeSectionId, HTMLAnchorElement | null>>>({});
+  const [indicatorMetrics, setIndicatorMetrics] = useState<IndicatorMetrics | null>(null);
 
-  const updateIndicatorMetrics = React.useCallback(() => {
+  const updateIndicatorMetrics = useCallback(() => {
     const navListElement = navListRef.current;
-    const activeNavItemElement = navItemRefs.current[activeSectionId];
+    const activeNavItemElement = navItemsRef.current[activeSectionId];
 
     if (navListElement === null || activeNavItemElement === null || activeNavItemElement === undefined) {
       setIndicatorMetrics(null);
@@ -57,7 +53,7 @@ export function HomeFloatingNav({
     );
   }, [activeSectionId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     updateIndicatorMetrics();
 
     if (typeof window === "undefined") {
@@ -78,7 +74,7 @@ export function HomeFloatingNav({
     };
   }, [updateIndicatorMetrics]);
 
-  const indicatorStyle: React.CSSProperties = indicatorMetrics === null
+  const indicatorStyle: CSSProperties = indicatorMetrics === null
     ? {
         opacity: 0,
         transform: "translate3d(0px, 0px, 0px)",
@@ -126,7 +122,7 @@ export function HomeFloatingNav({
                 <a
                   href={`#${section.id}`}
                   ref={(element) => {
-                    navItemRefs.current[section.id] = element;
+                    navItemsRef.current[section.id] = element;
                   }}
                   aria-current={isActive ? "location" : undefined}
                   onClick={(event) => {

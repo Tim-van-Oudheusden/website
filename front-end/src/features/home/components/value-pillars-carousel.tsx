@@ -1,5 +1,7 @@
-import * as React from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import type { CSSProperties, JSX, MouseEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { cn } from "@/shared/lib/utils";
@@ -157,12 +159,12 @@ interface ValuePillarItemProps {
   description: string;
 }
 
-function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemProps): React.JSX.Element {
-  const [tiltAngles, setTiltAngles] = React.useState<CardTiltAngles>({ rotateX: 0, rotateY: 0 });
-  const descriptionRef = React.useRef<HTMLParagraphElement | null>(null);
-  const [descriptionHeight, setDescriptionHeight] = React.useState(0);
+function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemProps): JSX.Element {
+  const [tiltAngles, setTiltAngles] = useState<CardTiltAngles>({ rotateX: 0, rotateY: 0 });
+  const descriptionRef = useRef<HTMLParagraphElement | null>(null);
+  const [descriptionHeight, setDescriptionHeight] = useState(0);
 
-  const handleMouseMove = React.useCallback((event: React.MouseEvent<HTMLDivElement>): void => {
+  const handleMouseMove = useCallback((event: MouseEvent<HTMLDivElement>): void => {
     const bounds = event.currentTarget.getBoundingClientRect();
 
     setTiltAngles(calculateCardTiltAngles({
@@ -173,11 +175,11 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
     }));
   }, []);
 
-  const handleMouseLeave = React.useCallback((): void => {
+  const handleMouseLeave = useCallback((): void => {
     setTiltAngles({ rotateX: 0, rotateY: 0 });
   }, []);
 
-  const updateDescriptionHeight = React.useCallback((): void => {
+  const updateDescriptionHeight = useCallback((): void => {
     const descriptionElement = descriptionRef.current;
 
     if (descriptionElement === null) {
@@ -187,7 +189,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
     setDescriptionHeight(descriptionElement.scrollHeight);
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     updateDescriptionHeight();
 
     const descriptionElement = descriptionRef.current;
@@ -225,7 +227,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
       style={{
         "transform": `perspective(900px) rotateX(${tiltAngles.rotateX}deg) rotateY(${tiltAngles.rotateY}deg)`,
         "--value-pillar-description-height": `${descriptionHeight}px`,
-      } as React.CSSProperties & { "--value-pillar-description-height": string }}
+      } as CSSProperties & { "--value-pillar-description-height": string }}
     >
       <img
         src={artworkPath}
@@ -261,18 +263,18 @@ export function ValuePillarsCarousel({
   heading,
   body,
   inWhiteWell = false,
-}: ValuePillarsCarouselProps): React.JSX.Element {
-  const scrollerRef = React.useRef<HTMLDivElement>(null);
-  const articleRefs = React.useRef<(HTMLElement | null)[]>([]);
+}: ValuePillarsCarouselProps): JSX.Element {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const articlesRef = useRef<(HTMLElement | null)[]>([]);
 
-  const scrollByViewport = React.useCallback((direction: -1 | 1): void => {
+  const scrollByViewport = useCallback((direction: -1 | 1): void => {
     const scroller = scrollerRef.current;
 
     if (scroller === null) {
       return;
     }
 
-    const cardOffsetLefts = articleRefs.current
+    const cardOffsetLefts = articlesRef.current
       .map((article) => article?.offsetLeft)
       .filter((offsetLeft): offsetLeft is number => offsetLeft !== undefined);
 
@@ -341,7 +343,7 @@ export function ValuePillarsCarousel({
               <article
                 key={title}
                 ref={(element) => {
-                  articleRefs.current[index] = element;
+                  articlesRef.current[index] = element;
                 }}
                 className="basis-full shrink-0 snap-start sm:basis-1/3 lg:basis-1/3"
               >

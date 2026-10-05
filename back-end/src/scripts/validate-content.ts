@@ -1,4 +1,5 @@
 import { resolve } from "path";
+
 import { validateContentDir } from "../features/content/content";
 
 /** CLI guard for content validity; fails with the invalid documents listed. */

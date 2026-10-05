@@ -1,9 +1,12 @@
 import { describe, expect, test } from "bun:test";
+
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
-import { ArticlesSidebar } from "../../../../../../front-end/src/features/articles/components/articles-sidebar";
+
 import type { ArticleSummary } from "shared/articles";
+
+import { ArticlesSidebar } from "../../../../../../front-end/src/features/articles/components/articles-sidebar";
 
 const FIXTURE_ARTICLES: ArticleSummary[] = [
   {

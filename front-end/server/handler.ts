@@ -1,6 +1,9 @@
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
-import { API_BASE, type ContentFrontmatter } from "shared";
+
+import type { ContentFrontmatter } from "shared";
+import { API_BASE } from "shared";
+
 import { renderSocialMeta } from "./social-meta";
 
 export interface RequestHandlerOptions {

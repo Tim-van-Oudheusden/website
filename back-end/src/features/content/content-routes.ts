@@ -1,9 +1,12 @@
-import type { FastifyInstance } from "fastify";
-import type { ContentType } from "shared";
-import { ROUTES, CONTENT_TYPES, ASSET_PATH_PREFIX } from "shared";
 import { readFile } from "fs/promises";
 import { resolve } from "path";
-import { listContent, getContentBySlug } from "./content";
+
+import type { FastifyInstance } from "fastify";
+
+import type { ContentType } from "shared";
+import { ASSET_PATH_PREFIX, CONTENT_TYPES, ROUTES } from "shared";
+
+import { getContentBySlug, listContent } from "./content";
 import { ASSET_CACHE_CONTROL, resolveContentAsset } from "./image-assets";
 
 /**

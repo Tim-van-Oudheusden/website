@@ -21,11 +21,14 @@
     "typecheck": "bun run --filter shared build && bun run --filter \"*\" typecheck && bun run typecheck:root"
   },
   "devDependencies": {
+    "@eslint-react/eslint-plugin": "5.24.4",
     "@eslint/js": "^9.39.5",
     "@playwright/test": "1.62.1",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/bun": "^1.4.0",
     "eslint": "^10.9.0",
+    "eslint-plugin-perfectionist": "5.12.1",
+    "eslint-plugin-react-hooks": "7.1.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.67.0"
   },

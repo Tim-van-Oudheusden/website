@@ -1,4 +1,5 @@
 import { useCallback, useReducer } from "react";
+
 import { apiGet } from "@/shared/lib/api";
 
 export type ApiGetStatus = "idle" | "loading" | "success" | "error";

@@ -1,20 +1,18 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+
 import { act, createElement } from "react";
-import { MemoryRouter } from "react-router";
 import { renderToStaticMarkup } from "react-dom/server";
-import { HOME_START_HERE_SLUGS, HomeStartHere, resolveStartHere, StartHereContent, StartHereLinks } from "../../../../../../front-end/src/features/home/components/home-start-here";
-import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
-import { createMemoryContentLoader, type ContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
+import { MemoryRouter } from "react-router";
+
 import type { ArticleSummary } from "shared/articles";
 
+import { HOME_START_HERE_SLUGS, HomeStartHere, resolveStartHere, StartHereContent, StartHereLinks } from "../../../../../../front-end/src/features/home/components/home-start-here";
+import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
+import type { ContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
+import { createMemoryContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
+import type { FakeMount } from "../../../../src/test/dom-harness";
+import { initFakeDomHarness, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
-import {
-  initFakeDomHarness,
-  mountIntoBody,
-  settleMicrotasks,
-  unmountFakeDomRoot,
-  type FakeMount,
-} from "../../../../src/test/dom-harness";
 
 beforeAll(async () => {
   await initFakeDomHarness();

@@ -1,23 +1,17 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+
 import { act, createElement } from "react";
 import type { createRoot as createRootValue, Root } from "react-dom/client";
 type CreateRootFn = typeof createRootValue;
 import { renderToStaticMarkup } from "react-dom/server";
+
 import {
   calculateCardTiltAngles,
   resolvePagedCarouselScrollLeft,
   ValuePillarsCarousel,
 } from "../../../../../../front-end/src/features/home/components/value-pillars-carousel";
-import {
-  installFakeDom,
-  queryFakeElements,
-  triggerFakeResizeObservers,
-  triggerWindowEvent,
-  uninstallFakeDom,
-  type FakeDocument,
-  type FakeElement,
-  type FakeNode,
-} from "../../../test/fake-dom";
+import type { FakeDocument, FakeElement, FakeNode } from "../../../test/fake-dom";
+import { installFakeDom, queryFakeElements, triggerFakeResizeObservers, triggerWindowEvent, uninstallFakeDom } from "../../../test/fake-dom";
 
 function renderCarousel(): string {
   return renderToStaticMarkup(

@@ -1,8 +1,13 @@
 import { describe, expect, test } from "bun:test";
+
 import { act, createElement } from "react";
-import { createRoot, type Container, type Root } from "react-dom/client";
-import { useArticleToc, type UseArticleTocResult } from "../../../../../../front-end/src/features/articles/hooks/use-article-toc";
+import type { Container, Root } from "react-dom/client";
+import { createRoot } from "react-dom/client";
+
 import type { ArticleData } from "shared/articles";
+
+import type { UseArticleTocResult } from "../../../../../../front-end/src/features/articles/hooks/use-article-toc";
+import { useArticleToc } from "../../../../../../front-end/src/features/articles/hooks/use-article-toc";
 
 interface FakeNode {
   nodeType: number;
@@ -180,8 +185,12 @@ function makeArticle(body: string): ArticleData {
 
 let currentResult: UseArticleTocResult = { tocItems: [], visibleTocHeadingIds: [] };
 
+function recordResult(result: UseArticleTocResult): void {
+  currentResult = result;
+}
+
 function Harness({ article, loading }: { article: ArticleData | null; loading: boolean }): null {
-  currentResult = useArticleToc(article, loading);
+  recordResult(useArticleToc(article, loading));
 
   return null;
 }

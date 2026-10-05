@@ -1,9 +1,12 @@
-import { describe, expect, test, beforeAll, afterAll } from "bun:test";
-import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+
 import type { FastifyInstance } from "fastify";
+
 import { API_BASE, ROUTES } from "shared";
+
 import { buildApp } from "../../../../../back-end/src/app";
 
 const ARTICLE_MARKDOWN = [

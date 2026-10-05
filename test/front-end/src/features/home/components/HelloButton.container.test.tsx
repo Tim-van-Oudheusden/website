@@ -1,19 +1,13 @@
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
+
 import { act, createElement } from "react";
+
 import type { HelloResponse } from "shared";
 
 import { HelloButton } from "../../../../../../front-end/src/features/home/components/hello-button";
-
+import type { FakeMount } from "../../../../src/test/dom-harness";
+import { fireFakePointer, initFakeDomHarness, jsonResponse, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
-import {
-  fireFakePointer,
-  initFakeDomHarness,
-  jsonResponse,
-  mountIntoBody,
-  settleMicrotasks,
-  unmountFakeDomRoot,
-  type FakeMount,
-} from "../../../../src/test/dom-harness";
 
 // Module-loading boundary: react-dom captures `canUseDOM` at module load, so it
 // must be imported after the fake DOM is installed by the harness. HelloButton

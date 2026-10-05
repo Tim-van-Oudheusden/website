@@ -1,12 +1,13 @@
-import * as React from "react";
-import type { HomeSectionId } from "../types/home-section";
-import { HOME_SECTIONS } from "../config/home-sections";
-import { HomeSection } from "../components/home-section";
-import { HomeFloatingNav } from "../components/home-floating-nav";
-import { resolveAnchorScrollBehavior } from "../lib/home-section-nav-scroll";
-import { useActiveHomeSection } from "../hooks/use-active-home-section";
+import type { JSX, MouseEvent } from "react";
 
-function activateSectionAnchor(sectionId: HomeSectionId, event: React.MouseEvent<HTMLAnchorElement>): void {
+import { HomeFloatingNav } from "../components/home-floating-nav";
+import { HomeSection } from "../components/home-section";
+import { HOME_SECTIONS } from "../config/home-sections";
+import { useActiveHomeSection } from "../hooks/use-active-home-section";
+import { resolveAnchorScrollBehavior } from "../lib/home-section-nav-scroll";
+import type { HomeSectionId } from "../types/home-section";
+
+function activateSectionAnchor(sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>): void {
   if (typeof document === "undefined") {
     return;
   }
@@ -39,7 +40,7 @@ function activateSectionAnchor(sectionId: HomeSectionId, event: React.MouseEvent
   window.history.replaceState(null, "", fragment);
 }
 
-export function HomePage(): React.JSX.Element {
+export function HomePage(): JSX.Element {
   const sectionIds = HOME_SECTIONS.map((section) => section.id);
   const activeSectionId = useActiveHomeSection(sectionIds);
 

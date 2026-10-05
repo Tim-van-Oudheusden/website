@@ -1,18 +1,14 @@
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
+
 import { act, createElement } from "react";
 import { MemoryRouter, Route, Routes } from "react-router";
-import type { ArticleData } from "shared/articles";
-import type * as ProjectPageModule from "../../../../../../front-end/src/features/projects/pages/project-page";
 
+import type { ArticleData } from "shared/articles";
+
+import type * as ProjectPageModule from "../../../../../../front-end/src/features/projects/pages/project-page";
+import type { FakeMount } from "../../../../src/test/dom-harness";
+import { initFakeDomHarness, jsonResponse, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import { uninstallFakeDom } from "../../../../src/test/fake-dom";
-import {
-  initFakeDomHarness,
-  jsonResponse,
-  mountIntoBody,
-  settleMicrotasks,
-  unmountFakeDomRoot,
-  type FakeMount,
-} from "../../../../src/test/dom-harness";
 
 // Module-loading boundary: react-dom captures `canUseDOM` at module load, so it
 // must be imported after the fake DOM is installed by the harness. ProjectPage

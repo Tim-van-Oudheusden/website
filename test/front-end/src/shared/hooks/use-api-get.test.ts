@@ -1,19 +1,15 @@
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
+
 import { act, createElement } from "react";
+
 import type {
   ApiGetAction,
   ApiGetState,
   UseApiGetResult,
 } from "../../../../../front-end/src/shared/hooks/use-api-get";
-
+import type { FakeMount } from "../../../src/test/dom-harness";
+import { initFakeDomHarness, jsonResponse, mountIntoBody, unmountFakeDomRoot } from "../../../src/test/dom-harness";
 import { uninstallFakeDom } from "../../../src/test/fake-dom";
-import {
-  initFakeDomHarness,
-  jsonResponse,
-  mountIntoBody,
-  unmountFakeDomRoot,
-  type FakeMount,
-} from "../../../src/test/dom-harness";
 
 interface HelloData {
   message: string;

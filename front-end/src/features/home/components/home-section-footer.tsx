@@ -1,5 +1,7 @@
-import * as React from "react";
+import type { JSX } from "react";
+
 import type { HomeSectionDefinition } from "../types/home-section";
+
 import { HomeSectionShell } from "./home-section-shell";
 
 const SITE_GITHUB_HREF = "https://github.com/Tim-van-Oudheusden/website";
@@ -10,7 +12,7 @@ interface HomeSectionFooterProps {
 }
 
 /** Home 'footer' variant: semantic footer with site identification + copyright. */
-export function HomeSectionFooter({ section }: HomeSectionFooterProps): React.JSX.Element {
+export function HomeSectionFooter({ section }: HomeSectionFooterProps): JSX.Element {
   const currentYear = new Date().getFullYear();
 
   return (

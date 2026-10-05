@@ -1,21 +1,25 @@
-import * as React from "react";
-import { useState } from "react";
 import { ChevronRight, FileText, Folder } from "lucide-react";
+import type { JSX } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
-import { ARTICLE_CATEGORIES, type ArticleCategory } from "shared";
+
+import type { ArticleCategory } from "shared";
+import { ARTICLE_CATEGORIES } from "shared";
 import type { ArticleSummary } from "shared/articles";
+
+import { Button } from "@/shared/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/shared/components/ui/collapsible";
-import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/utils";
-import { groupArticlesByCategory } from "../lib/articles-sidebar";
+
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
   ARTICLES_PAGE_TYPOGRAPHY_CLASSES,
 } from "../lib/articles-page-styles";
+import { groupArticlesByCategory } from "../lib/articles-sidebar";
 
 const INITIAL_OPEN_CATEGORIES: Record<ArticleCategory, boolean> = {
   "Introduction": true,
@@ -30,7 +34,7 @@ interface ArticlesSidebarProps {
 }
 
 /** Category-grouped article list; owns its per-category open/closed state. */
-export function ArticlesSidebar({ articles, selectedSlug }: ArticlesSidebarProps): React.JSX.Element {
+export function ArticlesSidebar({ articles, selectedSlug }: ArticlesSidebarProps): JSX.Element {
   const [openCategories, setOpenCategories] = useState<Record<ArticleCategory, boolean>>(INITIAL_OPEN_CATEGORIES);
   const groupedArticles = groupArticlesByCategory(articles);
 

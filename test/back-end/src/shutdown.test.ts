@@ -39,7 +39,7 @@ async function startBackEnd(): Promise<RunningBackEnd> {
     }
   })();
 
-  const logged = (text: string): Promise<void> => {
+  function logged(text: string): Promise<void> {
     if (output.includes(text)) {
       return Promise.resolve();
     }
@@ -49,7 +49,7 @@ async function startBackEnd(): Promise<RunningBackEnd> {
     waiters.push({ text, resolve });
 
     return promise;
-  };
+  }
 
   await logged("back-end listening on");
 

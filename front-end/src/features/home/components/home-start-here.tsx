@@ -1,9 +1,15 @@
-import * as React from "react";
+import type { JSX } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
+
 import type { ArticleSummary } from "shared/articles";
-import { httpContentLoader, type ContentLoader } from "@/shared/lib/content-loader";
-import { HomeSectionShell } from "./home-section-shell";
+
+import type { ContentLoader } from "@/shared/lib/content-loader";
+import { httpContentLoader } from "@/shared/lib/content-loader";
+
 import type { HomeSectionDefinition } from "../types/home-section";
+
+import { HomeSectionShell } from "./home-section-shell";
 
 /**
  * Small curated set of the site's strongest, most representative articles,
@@ -40,7 +46,7 @@ export function resolveStartHere(
 }
 
 /** A vertical list of curated entry-point article links. */
-export function StartHereLinks({ items }: { items: ArticleSummary[] }): React.JSX.Element {
+export function StartHereLinks({ items }: { items: ArticleSummary[] }): JSX.Element {
   return (
     <ol className="flex flex-col items-center gap-3">
       {items.map((item, index) => (
@@ -68,7 +74,7 @@ export function StartHereContent({
 }: {
   items: ArticleSummary[] | null;
   loadError: boolean;
-}): React.JSX.Element {
+}): JSX.Element {
   if (loadError) {
     return (
       <p role="alert" className="text-center text-sm text-red-600 dark:text-red-400">
@@ -93,11 +99,11 @@ interface HomeStartHereProps {
 export function HomeStartHere({
   section,
   loader = httpContentLoader,
-}: HomeStartHereProps): React.JSX.Element {
-  const [items, setItems] = React.useState<ArticleSummary[] | null>(null);
-  const [loadError, setLoadError] = React.useState(false);
+}: HomeStartHereProps): JSX.Element {
+  const [items, setItems] = useState<ArticleSummary[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
 
     loader.listArticles().then(

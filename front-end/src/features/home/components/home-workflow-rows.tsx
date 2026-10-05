@@ -1,7 +1,10 @@
-import * as React from "react";
+import type { JSX } from "react";
+
 import { cn } from "@/shared/lib/utils";
-import { HomeSectionShell } from "./home-section-shell";
+
 import type { HomeSectionDefinition } from "../types/home-section";
+
+import { HomeSectionShell } from "./home-section-shell";
 
 interface HomeWorkflowRowsProps {
   section: HomeSectionDefinition;
@@ -14,7 +17,7 @@ interface HomeWorkflowRowsProps {
  * alternate media-on-left / media-on-right so the list reads as a deliberate
  * workflow, not a feature dump.
  */
-export function HomeWorkflowRows({ section }: HomeWorkflowRowsProps): React.JSX.Element {
+export function HomeWorkflowRows({ section }: HomeWorkflowRowsProps): JSX.Element {
   const features = section.features ?? [];
 
   return (

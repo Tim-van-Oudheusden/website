@@ -1,19 +1,15 @@
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
+
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
+
 import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
 import { HomePage } from "../../../../../../front-end/src/features/home/pages/home-page";
-
-import { queryFakeElements, uninstallFakeDom, type FakeDocument, type FakeElement } from "../../../../src/test/fake-dom";
-import {
-  fireFakePointer,
-  initFakeDomHarness,
-  jsonResponse,
-  mountIntoBody,
-  unmountFakeDomRoot,
-  type FakeMount,
-} from "../../../../src/test/dom-harness";
+import type { FakeMount } from "../../../../src/test/dom-harness";
+import { fireFakePointer, initFakeDomHarness, jsonResponse, mountIntoBody, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import type { FakeDocument, FakeElement } from "../../../../src/test/fake-dom";
+import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 const ORIGINAL_FETCH = globalThis.fetch;
 

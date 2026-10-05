@@ -57,8 +57,6 @@ export async function registerRateLimiting(app: FastifyInstance): Promise<void> 
         keyGenerator,
       }),
     },
-    (_request, reply) => {
-      return reply.status(404).send({ error: "Not Found" });
-    },
+    (_request, reply) => reply.status(404).send({ error: "Not Found" }),
   );
 }

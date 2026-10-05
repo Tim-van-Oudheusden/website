@@ -1,18 +1,21 @@
-import * as React from "react";
+import type { JSX, MouseEvent } from "react";
+
 import { Button } from "@/shared/components/ui/button";
+
 import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
+
 import { HomeSectionShell } from "./home-section-shell";
 
 const START_SECTION_PORTRAIT_PATH = "/images/me.png";
 
 interface HomeSectionStartProps {
   section: HomeSectionDefinition;
-  onCtaActivate?: ((sectionId: HomeSectionId, event: React.MouseEvent<HTMLAnchorElement>) => void) | undefined;
+  onCtaActivate?: ((sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void) | undefined;
 }
 
 /** Home 'start' section: oversized hero with a bottom-right portrait and a CTA. */
-export function HomeSectionStart({ section, onCtaActivate }: HomeSectionStartProps): React.JSX.Element {
+export function HomeSectionStart({ section, onCtaActivate }: HomeSectionStartProps): JSX.Element {
   const ctaLabel = section.ctaLabel;
   const ctaTargetId = section.ctaTargetId;
   const hasCta = ctaLabel !== undefined && ctaTargetId !== undefined;

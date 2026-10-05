@@ -9,7 +9,9 @@
  *                   both containers share the pod's network namespace)
  */
 import { resolve } from "node:path";
+
 import { BACKEND_PORT } from "shared";
+
 import { createRequestHandler } from "./handler";
 
 /** Link previews are best-effort: never hold a page load on a slow back-end. */

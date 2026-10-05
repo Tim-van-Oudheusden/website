@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { renderArticle } from "../../../../../../front-end/src/features/articles/lib/article-document";
 
 const COMPLEX_MARKDOWN = `# Intro

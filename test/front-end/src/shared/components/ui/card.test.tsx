@@ -1,14 +1,17 @@
 import { describe, expect, test } from "bun:test";
-import { createElement, type ReactNode } from "react";
+
+import type { ReactNode } from "react";
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+
 import {
   Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
   CardAction,
-  CardDescription,
   CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "../../../../../../front-end/src/shared/components/ui/card";
 
 interface PrimitiveCase {

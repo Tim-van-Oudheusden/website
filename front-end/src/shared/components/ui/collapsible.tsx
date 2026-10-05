@@ -1,17 +1,15 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type --
-   These are thin Radix wrapper components where inferred return types are intentional. */
-import * as React from "react";
 import { Collapsible as CollapsiblePrimitive } from "radix-ui";
+import type { ComponentProps } from "react";
 
 function Collapsible({
   ...props
-}: React.ComponentProps<typeof CollapsiblePrimitive.Root>) {
+}: ComponentProps<typeof CollapsiblePrimitive.Root>) {
   return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />;
 }
 
 function CollapsibleTrigger({
   ...props
-}: React.ComponentProps<typeof CollapsiblePrimitive.Trigger>) {
+}: ComponentProps<typeof CollapsiblePrimitive.Trigger>) {
   return (
     <CollapsiblePrimitive.Trigger
       data-slot="collapsible-trigger"
@@ -22,7 +20,7 @@ function CollapsibleTrigger({
 
 function CollapsibleContent({
   ...props
-}: React.ComponentProps<typeof CollapsiblePrimitive.Content>) {
+}: ComponentProps<typeof CollapsiblePrimitive.Content>) {
   return (
     <CollapsiblePrimitive.Content
       data-slot="collapsible-content"
@@ -33,6 +31,6 @@ function CollapsibleContent({
 
 export {
   Collapsible,
-  CollapsibleTrigger,
   CollapsibleContent,
+  CollapsibleTrigger,
 };

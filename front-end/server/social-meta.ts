@@ -1,4 +1,5 @@
-import { ASSET_PATH_PREFIX, type ContentFrontmatter } from "shared";
+import type { ContentFrontmatter } from "shared";
+import { ASSET_PATH_PREFIX } from "shared";
 
 interface MetaTag {
   attribute: "name" | "property";

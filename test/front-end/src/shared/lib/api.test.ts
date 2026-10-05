@@ -1,6 +1,8 @@
-import { describe, expect, test, mock, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+
 import { API_BASE, BACKEND_HOST, BACKEND_PORT, ROUTES } from "shared";
-import { apiGet, apiFetch, ApiError } from "../../../../../front-end/src/shared/lib/api";
+
+import { ApiError, apiFetch, apiGet } from "../../../../../front-end/src/shared/lib/api";
 
 /**
  * Tests that the front-end API client correctly uses the shared route

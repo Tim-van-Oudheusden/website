@@ -87,11 +87,29 @@ Enforced by ESLint (`eslint.config.js`): strict type-checked TypeScript rules, w
 - Blank line before and after block statements (`if`, loops, `switch`, `try`, functions, classes) and multiline expressions, after `const`/`let` groups, and before `return`/`break`/`continue`/`throw`.
 - Object keys quoted only when one of them must be (`consistent-as-needed`); empty JSX elements self-close.
 
-Other rules:
+Code shape:
 
-- `no-explicit-any` is an error — type things properly.
-- Explicit return types on functions (warnings; keep them clean).
-- Unused vars are warnings; prefix deliberately-unused args with `_`.
+- Named functions are `function` declarations; arrows only for callbacks and inline expressions (`func-style`, `prefer-arrow-callback`, `arrow-body-style: as-needed`).
+- `interface` over `type` where both work; explicit return types on every function (test files exempt).
+- Named exports only; default exports are allowed solely in `playwright.config.ts`, `front-end/vite.config.ts`, and `test/front-end/vite.config.test.ts`.
+- Erasable TypeScript only: no `enum`, `namespace`, or parameter properties (also enforced by `erasableSyntaxOnly`). Use `as const` objects or unions.
+- Naming: camelCase variables/functions, PascalCase types and components, `UPPER_CASE` allowed for module-level constants, no `I`/`T` prefixes, leading `_` only on unused names.
+- `no-explicit-any`, `object-shorthand`, `prefer-template`, `no-else-return`, `no-nested-ternary`, `no-param-reassign` (property mutation allowed), `no-implicit-coercion` (`!!` allowed), `eqeqeq`.
+
+Imports:
+
+- Type-only imports use separate `import type { … }` statements, never inline `{ type X }`.
+- Sorted by `eslint-plugin-perfectionist` (natural, case-insensitive), groups separated by a blank line: builtins (`node:`/`bun:`) → packages → `shared` → `@/` → `../` → `./`. Type imports sit in their source's group.
+- React APIs are imported by name (`import { useState } from "react"`); no `import * as React` or default import.
+
+React (front-end and its tests):
+
+- `@eslint-react` `strict-type-checked` plus `eslint-plugin-react-hooks` `recommended`; the hooks plugin owns hook rules, so `@eslint-react`'s duplicates are off.
+- JSX: boolean shorthand (`disabled`), `<>` instead of an unkeyed `<Fragment>`, no needless curly braces, self-closing empty elements.
+
+Severity: only `no-unused-vars`, `no-console` (except `warn`/`error`), and `no-unnecessary-condition` warn; everything else errors. Warnings still fail `bun run lint`.
+
+Overrides: test files (`*.test.ts(x)`, `*.e2e.ts`) relax the `no-unsafe-*`, non-null-assertion, and return-type rules; shadcn components in `front-end/src/shared/components/ui/` skip naming, return-type, and function-style rules. The reformat commit is listed in `.git-blame-ignore-revs`.
 
 Run `bun run lint` and `bun run typecheck` frequently rather than at the end.
 

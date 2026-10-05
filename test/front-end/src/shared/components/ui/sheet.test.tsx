@@ -1,24 +1,14 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { createElement, type ReactNode } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import type * as SheetModule from "../../../../../../front-end/src/shared/components/ui/sheet";
 
-import {
-  uninstallFakeDom,
-  queryFakeElements,
-  type FakeDocument,
-  type FakeElement,
-} from "../../../../src/test/fake-dom";
-import {
-  findBySlot,
-  fireDocumentKey,
-  fireFakePointer,
-  initFakeDomHarness,
-  isFakeElement,
-  mountIntoBody,
-  unmountFakeDomRoot,
-  type FakeMount,
-} from "../../../../src/test/dom-harness";
+import type { ReactNode } from "react";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
+import type * as SheetModule from "../../../../../../front-end/src/shared/components/ui/sheet";
+import type { FakeMount } from "../../../../src/test/dom-harness";
+import { findBySlot, fireDocumentKey, fireFakePointer, initFakeDomHarness, isFakeElement, mountIntoBody, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import type { FakeDocument, FakeElement } from "../../../../src/test/fake-dom";
+import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 // Module-loading boundary: Radix captures `globalThis?.document` at module
 // load, so it must be imported after the fake DOM is installed by the harness.

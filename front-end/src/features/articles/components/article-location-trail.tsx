@@ -1,5 +1,5 @@
-import * as React from "react";
 import { House } from "lucide-react";
+import type { JSX } from "react";
 import { Link } from "react-router";
 
 interface ArticleLocationTrailProps {
@@ -10,7 +10,7 @@ interface ArticleLocationTrailProps {
 export function ArticleLocationTrail({
   articleTitle,
   onArticlesActivate,
-}: ArticleLocationTrailProps): React.JSX.Element | null {
+}: ArticleLocationTrailProps): JSX.Element | null {
   if (!articleTitle) {
     return null;
   }

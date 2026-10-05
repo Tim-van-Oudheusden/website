@@ -1,12 +1,15 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { act, createElement, type ReactElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
-import { HomeFloatingNav } from "../../../../../../front-end/src/features/home/components/home-floating-nav";
-import type { HomeSectionDefinition, HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
 
-import { queryFakeElements, triggerWindowEvent, uninstallFakeDom, type FakeElement } from "../../../../src/test/fake-dom";
+import type { ReactElement } from "react";
+import { act, createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
+import { HomeFloatingNav } from "../../../../../../front-end/src/features/home/components/home-floating-nav";
+import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
+import type { HomeSectionDefinition, HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
 import { findBySlot, initFakeDomHarness, mountIntoBody, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import type { FakeElement } from "../../../../src/test/fake-dom";
+import { queryFakeElements, triggerWindowEvent, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 beforeAll(async () => {
   await initFakeDomHarness();

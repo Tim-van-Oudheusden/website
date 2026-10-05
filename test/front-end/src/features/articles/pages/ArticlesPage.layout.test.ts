@@ -1,18 +1,17 @@
 import { describe, expect, test } from "bun:test";
+
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
+
+import { ArticleLocationTrail } from "../../../../../../front-end/src/features/articles/components/article-location-trail";
+import type { TocNavigationDebugEvent } from "../../../../../../front-end/src/features/articles/lib/article-toc";
+import { extractArticleTableOfContents, navigateToArticleHeadingById } from "../../../../../../front-end/src/features/articles/lib/article-toc";
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
   ARTICLES_PAGE_TYPOGRAPHY_CLASSES,
 } from "../../../../../../front-end/src/features/articles/lib/articles-page-styles";
-import { ArticleLocationTrail } from "../../../../../../front-end/src/features/articles/components/article-location-trail";
 import { resolveArticlesTrailTargetSlug } from "../../../../../../front-end/src/features/articles/lib/articles-sidebar";
-import {
-  extractArticleTableOfContents,
-  navigateToArticleHeadingById,
-  type TocNavigationDebugEvent,
-} from "../../../../../../front-end/src/features/articles/lib/article-toc";
 
 describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
   test("uses edge-to-edge split layout with a tokenized desktop sidebar and no divider line", () => {

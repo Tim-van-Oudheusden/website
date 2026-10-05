@@ -1,7 +1,7 @@
-import * as React from "react";
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
+import type { JSX } from "react";
+
 import { Button } from "@/shared/components/ui/button";
-import { cn } from "@/shared/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,13 +9,14 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { useTheme } from "@/shared/hooks/use-theme";
+import { cn } from "@/shared/lib/utils";
 
 interface ThemeToggleProps {
   triggerClassName?: string;
   iconClassName?: string;
 }
 
-export function ThemeToggle({ triggerClassName, iconClassName }: ThemeToggleProps): React.JSX.Element {
+export function ThemeToggle({ triggerClassName, iconClassName }: ThemeToggleProps): JSX.Element {
   const { theme, setTheme } = useTheme();
 
   return (

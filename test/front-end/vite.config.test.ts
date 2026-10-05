@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import * as path from "path";
+
 import config from "../../front-end/vite.config";
 
 describe("vite production build defaults", () => {
