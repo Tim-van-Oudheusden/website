@@ -197,14 +197,21 @@ export function parseFrontmatter(raw: string): ParseResult | null {
     }
 
     // A parent key (`tags:`, `links:`) consumes its indented block children.
+    // Blank lines never end the block; only a non-blank line indented no
+    // deeper than the parent key does, so children cannot leak to top level.
     const children: string[] = [];
     let next = i + 1;
     while (next < block.length) {
       const child = block[next];
-      if (child === undefined || indentOf(child) <= indent) {
+      if (child === undefined) {
         break;
       }
-      children.push(child);
+      if (child.trim() !== "") {
+        if (indentOf(child) <= indent) {
+          break;
+        }
+        children.push(child);
+      }
       next += 1;
     }
     data[key] = parseBlockChildren(children);
