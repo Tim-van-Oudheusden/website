@@ -1,0 +1,40 @@
+# Risk-tier policy for pull requests. Evaluated by scripts/tier-classify.sh;
+# what each tier asks of reviewers is in docs/risk-tiers.md.
+#
+# One rule per line: `<tier> <glob>`, where tier is low, medium or high.
+# A changed path takes the tier of the FIRST rule whose glob matches it, so
+# high-risk rules come before the broad low-risk ones (AGENTS.md is high even
+# though *.md is low). `*` matches across `/`. A path matching no rule is
+# medium. Blank lines and lines starting with `#` are ignored.
+
+# CI gates, review rubric, release job, and this policy itself.
+high    .github/*
+
+# Runtime and image configuration.
+high    deploy/*
+high    Dockerfile*
+high    */Dockerfile
+high    .devcontainer/*
+
+# Gate and release tooling.
+high    scripts/*
+
+# Dependencies (supply chain).
+high    package.json
+high    */package.json
+high    bun.lock
+
+# Agent instructions and governance.
+high    AGENTS.md
+high    CLAUDE.md
+high    .claude/*
+high    .cursor/*
+high    .beads/*
+high    prompts/*
+
+# Prose and static assets that do not execute.
+low     content/*
+low     docs/*
+low     research/*
+low     public/*
+low     *.md

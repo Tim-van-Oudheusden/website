@@ -52,6 +52,13 @@ is left on anything meant for release.
 
 ## Changing the tiers
 
-The rules live in the `rank` function of `scripts/tier-classify.sh` and are
-covered by `test/shared/src/tier-classifier-script.test.ts`. Update the script,
-its tests, and this document together; a change to them is itself high risk.
+The rules are policy as code in `.github/policies/risk-tiers.policy`: one
+`<tier> <glob>` rule per line, where the **first matching rule wins** — keep
+high-risk rules above broad low-risk globs such as `*.md`. `*` matches across
+`/`. `scripts/tier-classify.sh` evaluates the policy and fails without a tier
+if a rule is malformed or names an unknown tier; set `RISK_TIER_POLICY` to try
+a different policy file locally.
+
+The engine and the shipped rules are covered by
+`test/shared/src/tier-classifier-script.test.ts`. Update the policy, its tests,
+and the tables above together; a change to any of them is itself high risk.
