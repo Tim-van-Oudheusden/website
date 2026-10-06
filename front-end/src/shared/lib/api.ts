@@ -21,6 +21,7 @@ export class ApiError extends Error {
 /**
  * Generic fetch wrapper that prepends the API base path and handles errors.
  */
+// eslint-disable-next-line no-restricted-syntax -- `init` mirrors the optional `RequestInit` of `fetch(input, init?)`
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${API_BASE}${path}`;
 

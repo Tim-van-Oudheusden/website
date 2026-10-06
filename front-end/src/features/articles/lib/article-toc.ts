@@ -7,7 +7,7 @@ export interface ArticleTableOfContentsItem {
 }
 
 export interface TocNavigationDependencies {
-  getElementById: (id: string) => { scrollIntoView: (options?: ScrollIntoViewOptions) => void } | null;
+  getElementById: (id: string) => Pick<Element, "scrollIntoView"> | null;
   setHash: (headingId: string) => void;
   getScrollY: () => number;
   logNavigation: (event: TocNavigationDebugEvent) => void;
@@ -31,10 +31,8 @@ export const DEFAULT_TOC_NAVIGATION_DEPENDENCIES: TocNavigationDependencies = {
     window.location.hash = headingId;
   },
   getScrollY: () => window.scrollY,
-  logNavigation: (_event) => {
-    if ((window as Window & { __ADW_DEBUG_TOC__?: boolean }).__ADW_DEBUG_TOC__ !== true) {
-      return;
-    }
+  logNavigation: () => {
+    // Production navigation is not logged; tests inject a recorder to observe events.
   },
 };
 

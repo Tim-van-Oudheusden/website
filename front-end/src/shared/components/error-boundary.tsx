@@ -2,12 +2,29 @@ import type { ReactNode } from "react";
 import { Component } from "react";
 
 export interface ErrorBoundaryProps {
-  fallback?: ReactNode;
+  /** Rendered after a child error; calling `retry` re-renders the children. */
+  fallback: (retry: () => void) => ReactNode;
   children: ReactNode;
 }
 
 export interface ErrorBoundaryState {
   hasError: boolean;
+}
+
+/** Default fallback: an error notice with a "Try again" control wired to `retry`. */
+export function renderErrorFallback(retry: () => void): ReactNode {
+  return (
+    <div className="rounded-md border border-destructive bg-destructive/10 p-4">
+      <p className="text-destructive font-medium">Failed to render content.</p>
+      <button
+        type="button"
+        onClick={retry}
+        className="mt-2 text-sm font-medium text-(--adw-dark-5) underline-offset-4 hover:underline dark:text-white/80"
+      >
+        Try again
+      </button>
+    </div>
+  );
 }
 
 /**
@@ -24,25 +41,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true };
   }
 
-  /** Re-render children after a captured failure (wired to the fallback retry button). */
+  /** Re-render children after a captured failure (passed to `fallback`). */
   retry = (): void => {
     this.setState({ hasError: false });
   };
 
   override render(): ReactNode {
     if (this.state.hasError) {
-      return this.props.fallback ?? (
-        <div className="rounded-md border border-destructive bg-destructive/10 p-4">
-          <p className="text-destructive font-medium">Failed to render content.</p>
-          <button
-            type="button"
-            onClick={this.retry}
-            className="mt-2 text-sm font-medium text-(--adw-dark-5) underline-offset-4 hover:underline dark:text-white/80"
-          >
-            Try again
-          </button>
-        </div>
-      );
+      return this.props.fallback(this.retry);
     }
 
     return this.props.children;

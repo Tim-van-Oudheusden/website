@@ -25,6 +25,11 @@ const projectAliases = workspaceAliasRootDir === configDir
 
 const reactNamedImportsMessage = "Import React APIs by name (`import { useState } from \"react\"`), not as a namespace or default.";
 
+const defaultExportSyntax = {
+  selector: "ExportDefaultDeclaration",
+  message: "Use named exports; default exports are only allowed in tool config files.",
+};
+
 /* Syntax banned everywhere; tool config files only get the default-export exemption. */
 const restrictedSyntax = [
   { selector: "TSEnumDeclaration", message: "Use an `as const` object or a union type instead of `enum`." },
@@ -51,7 +56,7 @@ const restrictedSyntax = [
 
 const optionalMemberMessage = "Model a complete type instead of an optional member: required field, `T | null`, or a discriminated union (see CONTRIBUTING.md \"Code shape\").";
 
-/* Optional members (`foo?: T`, `foo?(…)`, `fn(x?: T)`); enabled per area until the rollout in #545 completes. */
+/* Optional members (`foo?: T`, `foo?(…)`, `fn(x?: T)`); banned everywhere except `optionalMemberExemptFiles`. */
 const optionalMemberSyntax = [
   { selector: "TSPropertySignature[optional=true]", message: optionalMemberMessage },
   { selector: "PropertyDefinition[optional=true]", message: optionalMemberMessage },
@@ -61,9 +66,10 @@ const optionalMemberSyntax = [
   },
 ];
 
-const optionalMemberFiles = ["shared/src/**/*.ts", "back-end/src/**/*.ts", "front-end/src/features/home/**"];
+/* shadcn-generated components and tests may use optional members (see CONTRIBUTING.md "Code shape"). */
+const optionalMemberExemptFiles = ["front-end/src/shared/components/ui/**", "test/**"];
 
-const defaultExportFiles = ["playwright.config.ts", "front-end/vite.config.ts", "test/front-end/vite.config.test.ts"];
+const defaultExportFiles = ["playwright.config.ts", "front-end/vite.config.ts"];
 
 /* React code: the front-end app and its tests (hooks also live in .ts files). */
 const reactFiles = ["front-end/src/**/*.{ts,tsx}", "test/front-end/**/*.{ts,tsx}"];
@@ -217,14 +223,7 @@ export default tseslint.config(
       ],
 
       /* ── Code shape ── */
-      "no-restricted-syntax": [
-        "error",
-        {
-          selector: "ExportDefaultDeclaration",
-          message: "Use named exports; default exports are only allowed in tool config files.",
-        },
-        ...restrictedSyntax,
-      ],
+      "no-restricted-syntax": ["error", defaultExportSyntax, ...restrictedSyntax, ...optionalMemberSyntax],
       "func-style": ["error", "declaration", { allowArrowFunctions: false }],
       "prefer-arrow-callback": "error",
       "arrow-body-style": ["error", "as-needed"],
@@ -275,23 +274,15 @@ export default tseslint.config(
     rules: eslintReactHooksDuplicates,
   },
   {
-    files: defaultExportFiles,
+    files: optionalMemberExemptFiles,
     rules: {
-      "no-restricted-syntax": ["error", ...restrictedSyntax],
+      "no-restricted-syntax": ["error", defaultExportSyntax, ...restrictedSyntax],
     },
   },
   {
-    files: optionalMemberFiles,
+    files: defaultExportFiles,
     rules: {
-      "no-restricted-syntax": [
-        "error",
-        {
-          selector: "ExportDefaultDeclaration",
-          message: "Use named exports; default exports are only allowed in tool config files.",
-        },
-        ...restrictedSyntax,
-        ...optionalMemberSyntax,
-      ],
+      "no-restricted-syntax": ["error", ...restrictedSyntax, ...optionalMemberSyntax],
     },
   },
   {

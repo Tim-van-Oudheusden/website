@@ -41,10 +41,10 @@ export const PROJECTS_PAGE_TEXT = {
 
 interface ProjectCardProps {
   project: ProjectFrontmatter;
-  featured?: boolean;
+  featured: boolean;
 }
 
-export function ProjectCard({ project, featured = false }: ProjectCardProps): JSX.Element {
+export function ProjectCard({ project, featured }: ProjectCardProps): JSX.Element {
   return (
     <Card className="group h-full overflow-hidden border-border bg-(--site-section-well-bg) p-0 transition-[border-color,box-shadow] hover:border-[var(--adw-dark-5)] hover:ring-1 hover:ring-[var(--adw-dark-5)] dark:hover:border-[var(--adw-light-1)] dark:hover:ring-[var(--adw-light-1)]">
       <Link to={`/projects/${project.slug}`} className="flex h-full flex-col gap-6">
@@ -167,7 +167,7 @@ export function ProjectsPage(): JSX.Element {
               <ProjectCard project={primaryProject} featured />
               <div className="flex flex-col gap-4">
                 {secondaryProjects.map((project) => (
-                  <ProjectCard key={project.slug} project={project} />
+                  <ProjectCard key={project.slug} project={project} featured={false} />
                 ))}
                 {secondaryProjects.length === 0 && (
                   <div className="rounded-[2rem] bg-(--site-section-well-bg) p-5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:p-6">
@@ -190,7 +190,7 @@ export function ProjectsPage(): JSX.Element {
             <h2 id="more-projects-heading" className={PROJECTS_PAGE_TYPOGRAPHY_CLASSES.sectionTitle}>{PROJECTS_PAGE_TEXT.galleryHeading}</h2>
             <div className={PROJECTS_PAGE_LAYOUT_CLASSES.galleryGrid}>
               {galleryProjects.map((project) => (
-                <ProjectCard key={project.slug} project={project} />
+                <ProjectCard key={project.slug} project={project} featured={false} />
               ))}
             </div>
           </section>

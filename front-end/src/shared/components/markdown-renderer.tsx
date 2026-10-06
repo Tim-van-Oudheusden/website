@@ -1,7 +1,7 @@
 import type { JSX, ReactElement, ReactNode } from "react";
 import { Children, isValidElement, memo, useMemo } from "react";
 import Markdown from "react-markdown";
-import type { Components } from "react-markdown";
+import type { Components, ExtraProps } from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 import "highlight.js/styles/github.css";
@@ -25,6 +25,9 @@ interface ParsedObsidianCallout {
   bodyNodes: ReactNode[];
 }
 
+/** Source start point of a rendered hast node (`node.position.start`); generated nodes have none. */
+type HastPoint = NonNullable<NonNullable<ExtraProps["node"]>["position"]>["start"];
+
 const OBSIDIAN_CALLOUT_MARKER_PATTERN = /^\s*\[!([a-z0-9_-]+)\](?:[ \t]+([^\n]+))?(?:\n([\s\S]*))?$/i;
 
 function flattenNodeText(node: ReactNode): string {
@@ -37,14 +40,14 @@ function flattenNodeText(node: ReactNode): string {
   }
 
   if (isValidElement(node)) {
-    const elementProps = node.props as { children?: ReactNode; alt?: string };
+    const elementProps = node.props as { children: ReactNode; alt: string | undefined };
 
     if (
       (node.type === "img" || elementProps.children === null)
       && typeof elementProps.alt === "string"
       && elementProps.alt.length > 0
     ) {
-      return elementProps.alt ?? "";
+      return elementProps.alt;
     }
 
     return flattenNodeText(elementProps.children);
@@ -73,7 +76,7 @@ function parseObsidianCallout(children: ReactNode): ParsedObsidianCallout | null
     return null;
   }
 
-  const firstParagraphElement = firstNode as ReactElement<{ children?: ReactNode }>;
+  const firstParagraphElement = firstNode as ReactElement<{ children: ReactNode }>;
   // eslint-disable-next-line @eslint-react/no-children-to-array -- flattens the paragraph text to detect the marker
   const firstParagraphChildren = Children.toArray(firstParagraphElement.props.children);
 
@@ -130,11 +133,7 @@ interface HeadingIdLookup {
 function resolveHeadingIdFromPosition(
   headingIds: HeadingIdLookup,
   headingText: string,
-  position?: {
-    offset?: number | undefined;
-    line?: number | undefined;
-    column?: number | undefined;
-  },
+  position: HastPoint | undefined,
 ): string {
   if (position?.offset !== undefined) {
     const resolvedId = headingIds.byOffset.get(position.offset);
@@ -144,7 +143,7 @@ function resolveHeadingIdFromPosition(
     }
   }
 
-  if (position?.line !== undefined && position.column !== undefined) {
+  if (position !== undefined) {
     const resolvedId = headingIds.byLineColumn.get(`${position.line}:${position.column}`);
 
     if (resolvedId !== undefined) {
@@ -183,14 +182,7 @@ export const MarkdownRenderer = memo(({
   const components = useMemo<Components>(() => ({
     a({ href, children, ...rest }) {
       const isExternal = href?.startsWith("http") === true;
-      let externalLinkProps: {
-        target?: string;
-        rel?: string;
-      } = {};
-
-      if (isExternal) {
-        externalLinkProps = { target: "_blank", rel: "noopener noreferrer" };
-      }
+      const externalLinkProps = isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {};
 
       return (
         <a

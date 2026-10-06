@@ -12,7 +12,9 @@ import { useTheme } from "@/shared/hooks/use-theme";
 import { cn } from "@/shared/lib/utils";
 
 interface ThemeToggleProps {
+  // eslint-disable-next-line no-restricted-syntax -- DOM `className` passthrough; omitted adds no classes
   triggerClassName?: string;
+  // eslint-disable-next-line no-restricted-syntax -- DOM `className` passthrough; omitted adds no classes
   iconClassName?: string;
 }
 
