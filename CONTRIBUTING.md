@@ -141,6 +141,8 @@ AI agents working in this repo are bounded by several layers, each catching what
 
 The security side of these layers (trust boundaries, secrets, supply chain, review focus, reporting) is set out in [`docs/security/SECURITY-AI.md`](docs/security/SECURITY-AI.md).
 
+What these layers produce is measurable: quality gates, coverage and its floors, PR acceptance (agent vs. other), and nightly compliance are catalogued in [`docs/metrics/`](docs/metrics/README.md) with where each is published and how to reproduce it.
+
 ## Release notes
 
 Deployment details (server bootstrap, pod manifests, image publishing) live in `docs/deploy.md` and `README.md`; keep them in sync when you change infrastructure.
