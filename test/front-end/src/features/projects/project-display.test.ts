@@ -23,6 +23,12 @@ function project(overrides: Partial<ProjectFrontmatter>): ProjectFrontmatter {
     featured: false,
     projectOrder: 0,
     links: [],
+    socialImage: null,
+    prioritySlot: null,
+    status: null,
+    role: null,
+    created: null,
+    info: null,
     ...overrides,
   };
 }
@@ -85,7 +91,7 @@ describe("project-display helpers", () => {
     test("returns partial results when fewer than three priority slots are set", () => {
       const projects = [
         project({ slug: "first", prioritySlot: 1 }),
-        project({ slug: "gallery", prioritySlot: undefined }),
+        project({ slug: "gallery", prioritySlot: null }),
       ];
 
       expect(resolvePriorityProjects(projects).map((item) => item.slug)).toEqual(["first"]);

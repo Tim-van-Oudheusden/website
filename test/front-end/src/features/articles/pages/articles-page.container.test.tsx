@@ -38,6 +38,7 @@ function summary(slug: string, title: string): ArticleSummary {
     date: "2026-01-01T00:00:00Z",
     tags: [],
     type: "article",
+    socialImage: null,
     draft: false,
     category: slug === "introduction" ? "Introduction" : "Linux",
     slug,

@@ -1,5 +1,3 @@
-import { resolve } from "path";
-
 import type { FastifyInstance } from "fastify";
 import Fastify from "fastify";
 
@@ -16,13 +14,14 @@ import { registerHelloRoute } from "./features/hello/register-hello-route";
 import { registerRootRoute } from "./features/root/register-root-route";
 
 interface BuildAppOptions {
-  contentDir?: string;
-  logger?: boolean | Record<string, unknown>;
+  /** Directory holding the markdown content and its `images/` folder. */
+  contentDir: string;
+  logger: boolean | Record<string, unknown>;
 }
 
-export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyInstance> {
+export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
   const app = Fastify({
-    logger: options.logger ?? false,
+    logger: options.logger,
     // Honor proxied client metadata (X-Forwarded-For, X-Forwarded-Proto) only
     // when the immediate peer is loopback — i.e. the local cloudflared tunnel —
     // never from arbitrary callers who can set those headers themselves.
@@ -36,7 +35,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   // README all target /health.
   registerHealthRoute(app);
 
-  const contentDir = options.contentDir ?? resolve(import.meta.dirname, "../../content");
+  const { contentDir } = options;
 
   // JSON API routes live under API_BASE so dev (Vite proxy, no rewrite) and
   // prod (cloudflared ingress) share the same request paths.

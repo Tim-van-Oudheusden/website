@@ -49,6 +49,20 @@ const restrictedSyntax = [
   },
 ];
 
+const optionalMemberMessage = "Model a complete type instead of an optional member: required field, `T | null`, or a discriminated union (see CONTRIBUTING.md \"Code shape\").";
+
+/* Optional members (`foo?: T`, `foo?(…)`, `fn(x?: T)`); enabled per area until the rollout in #545 completes. */
+const optionalMemberSyntax = [
+  { selector: "TSPropertySignature[optional=true]", message: optionalMemberMessage },
+  { selector: "PropertyDefinition[optional=true]", message: optionalMemberMessage },
+  {
+    selector: ":matches(Identifier, AssignmentPattern, ObjectPattern, ArrayPattern)[optional=true]",
+    message: optionalMemberMessage,
+  },
+];
+
+const optionalMemberFiles = ["shared/src/**/*.ts", "back-end/src/**/*.ts"];
+
 const defaultExportFiles = ["playwright.config.ts", "front-end/vite.config.ts", "test/front-end/vite.config.test.ts"];
 
 /* React code: the front-end app and its tests (hooks also live in .ts files). */
@@ -84,6 +98,9 @@ const eslintReactHooksDuplicates = Object.fromEntries(
 );
 
 export default tseslint.config(
+  {
+    linterOptions: { reportUnusedDisableDirectives: "error" },
+  },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
@@ -261,6 +278,20 @@ export default tseslint.config(
     files: defaultExportFiles,
     rules: {
       "no-restricted-syntax": ["error", ...restrictedSyntax],
+    },
+  },
+  {
+    files: optionalMemberFiles,
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "ExportDefaultDeclaration",
+          message: "Use named exports; default exports are only allowed in tool config files.",
+        },
+        ...restrictedSyntax,
+        ...optionalMemberSyntax,
+      ],
     },
   },
   {

@@ -52,6 +52,11 @@ function projectItem(): ProjectPageModule.ProjectData {
     featured: false,
     projectOrder: 0,
     links: [],
+    socialImage: null,
+    prioritySlot: null,
+    role: null,
+    created: null,
+    info: null,
     body: "Sweet app body",
   };
 }
@@ -63,6 +68,7 @@ function articleItem(): ArticleData {
     date: "2026-01-01T00:00:00Z",
     tags: [],
     type: "article",
+    socialImage: null,
     draft: false,
     category: "Linux",
     slug: "sweet-app",

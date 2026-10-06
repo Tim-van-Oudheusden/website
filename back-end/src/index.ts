@@ -1,3 +1,5 @@
+import { resolve } from "path";
+
 import { APP_NAME } from "shared";
 
 import { buildApp } from "./app";
@@ -6,22 +8,12 @@ import { getServerConfig } from "./core/server-config";
 const { host: HOST, port: PORT } = getServerConfig(process.env);
 
 async function start(): Promise<void> {
-  const appOptions: {
-    logger: { level: string };
-    contentDir?: string;
-  } = {
+  const app = await buildApp({
+    contentDir: process.env["CONTENT_DIR"] ?? resolve(import.meta.dirname, "../../content"),
     logger: {
       level: process.env["LOG_LEVEL"] ?? "info",
     },
-  };
-
-  const contentDir = process.env["CONTENT_DIR"];
-
-  if (contentDir !== undefined) {
-    appOptions.contentDir = contentDir;
-  }
-
-  const app = await buildApp(appOptions);
+  });
 
   // In the container this process is PID 1, where the kernel ignores signals we
   // don't handle: `podman stop` would wait 10 s and SIGKILL (#482). Close

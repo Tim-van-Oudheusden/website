@@ -13,12 +13,12 @@ export type ContentListItem = ContentFrontmatter;
 /** Content item with frontmatter and raw markdown body. */
 export type ContentItem = ContentFrontmatter & { body: string };
 
-/** Optional filters for listing content. */
+/** Filters for listing content; `type: null` lists every content type. */
 export interface ListContentOptions {
-  type?: ContentType | undefined;
+  type: ContentType | null;
 }
 
-function normalizeDate(value: unknown): string | undefined {
+function normalizeDate(value: unknown): string | null {
   if (typeof value === "string" && value.trim() !== "") {
     return value;
   }
@@ -27,21 +27,21 @@ function normalizeDate(value: unknown): string | undefined {
     return value.toISOString();
   }
 
-  return undefined;
+  return null;
 }
 
-function normalizeString(value: unknown): string | undefined {
+function normalizeString(value: unknown): string | null {
   if (typeof value === "string" && value.trim() !== "") {
     return value;
   }
 
-  return undefined;
+  return null;
 }
 
-function normalizeTimeframe(value: unknown): string | undefined {
+function normalizeTimeframe(value: unknown): string | null {
   const stringValue = normalizeString(value);
 
-  if (stringValue !== undefined) {
+  if (stringValue !== null) {
     return stringValue;
   }
 
@@ -49,7 +49,7 @@ function normalizeTimeframe(value: unknown): string | undefined {
     return String(value);
   }
 
-  return undefined;
+  return null;
 }
 
 function normalizeBoolean(value: unknown, fallback: boolean): boolean {
@@ -68,12 +68,12 @@ function normalizeNumber(value: unknown, fallback: number): number {
   return fallback;
 }
 
-function normalizePrioritySlot(value: unknown): 1 | 2 | 3 | undefined {
+function normalizePrioritySlot(value: unknown): 1 | 2 | 3 | null {
   if (value === 1 || value === 2 || value === 3) {
     return value;
   }
 
-  return undefined;
+  return null;
 }
 
 function normalizeProjectLinks(value: unknown): ProjectLink[] {
@@ -94,8 +94,8 @@ function normalizeProjectLinks(value: unknown): ProjectLink[] {
     if (
       typeof type !== "string"
       || !(PROJECT_LINK_TYPES as readonly string[]).includes(type)
-      || label === undefined
-      || href === undefined
+      || label === null
+      || href === null
     ) {
       return [];
     }
@@ -106,18 +106,19 @@ function normalizeProjectLinks(value: unknown): ProjectLink[] {
 
 export interface ContentError {
   file: string;
-  field?: string | undefined;
+  /** The offending frontmatter field; null when the document as a whole is invalid. */
+  field: string | null;
   message: string;
-  /** The offending value, when present. */
-  value?: unknown;
+  /** The offending raw value; `undefined` when the error is about a missing field. */
+  value: unknown;
 }
 
 export type NormalizeResult
   = | { ok: true; value: ContentFrontmatter }
     | { ok: false; error: ContentError };
 
-function reject(file: string, field: string | undefined, message: string, value?: unknown): NormalizeResult {
-  return { ok: false, error: { file, field, message, ...(value !== undefined ? { value } : {}) } };
+function reject(file: string, field: string | null, message: string): NormalizeResult {
+  return { ok: false, error: { file, field, message, value: undefined } };
 }
 
 interface ParsedContentFile {
@@ -144,20 +145,20 @@ async function readMarkdownFile(contentDir: string, file: string): Promise<Parse
  */
 export function normalizeContentDocument(file: string, value: unknown): NormalizeResult {
   if (typeof value !== "object" || value === null) {
-    return reject(file, undefined, "Frontmatter is not an object");
+    return reject(file, null, "Frontmatter is not an object");
   }
 
   const raw = value as Record<string, unknown>;
 
   const title = normalizeString(raw["title"]);
 
-  if (title === undefined) {
+  if (title === null) {
     return reject(file, "title", "Missing required title");
   }
 
   const date = normalizeDate(raw["date"]) ?? normalizeDate(raw["publishDate"]);
 
-  if (date === undefined) {
+  if (date === null) {
     return reject(file, "date", "Missing required date or publishDate");
   }
 
@@ -173,7 +174,7 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
   if (type === "article") {
     const category = normalizeString(raw["category"]);
 
-    if (category === undefined || !(ARTICLE_CATEGORIES as readonly string[]).includes(category)) {
+    if (category === null || !(ARTICLE_CATEGORIES as readonly string[]).includes(category)) {
       return reject(file, "category", 'Article must declare a valid "category"');
     }
 
@@ -188,7 +189,7 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
         draft,
         category: category as ArticleCategory,
         slug,
-        ...(socialImage !== undefined ? { socialImage } : {}),
+        socialImage,
       },
     };
   }
@@ -196,24 +197,27 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
   const coverImage = normalizeString(raw["coverImage"]);
   const coverImageAlt = normalizeString(raw["coverImageAlt"]);
 
-  if (coverImage === undefined || coverImageAlt === undefined) {
+  if (coverImage === null || coverImageAlt === null) {
     return reject(file, "coverImage", 'Project must declare "coverImage" and "coverImageAlt"');
   }
 
   const rawStatus = raw["status"];
   const status = normalizeString(rawStatus);
-  const projectStatus = status === undefined
-    ? undefined
-    : PROJECT_STATUSES.find((candidate) => candidate === status);
+  const projectStatus = status === null
+    ? null
+    : PROJECT_STATUSES.find((candidate) => candidate === status) ?? null;
 
-  if (rawStatus !== undefined && projectStatus === undefined) {
-    return reject(file, "status", "Unknown project status value", rawStatus);
+  if (rawStatus !== undefined && projectStatus === null) {
+    return { ok: false, error: { file, field: "status", message: "Unknown project status value", value: rawStatus } };
   }
 
   const prioritySlot = normalizePrioritySlot(raw["prioritySlot"]);
 
-  if (raw["prioritySlot"] !== undefined && prioritySlot === undefined) {
-    return reject(file, "prioritySlot", "prioritySlot must be 1, 2, or 3", raw["prioritySlot"]);
+  if (raw["prioritySlot"] !== undefined && prioritySlot === null) {
+    return {
+      ok: false,
+      error: { file, field: "prioritySlot", message: "prioritySlot must be 1, 2, or 3", value: raw["prioritySlot"] },
+    };
   }
 
   return {
@@ -226,6 +230,7 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
       type,
       draft,
       slug,
+      socialImage,
       coverImage,
       coverImageAlt,
       featured: normalizeBoolean(raw["featured"], false),
@@ -235,8 +240,7 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
       created: normalizeTimeframe(raw["created"]),
       links: normalizeProjectLinks(raw["links"]),
       info: normalizeString(raw["info"]),
-      ...(prioritySlot !== undefined ? { prioritySlot } : {}),
-      ...(socialImage !== undefined ? { socialImage } : {}),
+      prioritySlot,
     },
   };
 }
@@ -271,9 +275,9 @@ export async function validateContentDir(contentDir: string): Promise<ContentErr
 /**
  * List all content items with frontmatter only (no body).
  * Invalid documents are skipped, never fatal. Filters out drafts when
- * NODE_ENV is "production". Optionally filters by content type.
+ * NODE_ENV is "production". Filters by content type unless `options.type` is null.
  */
-export async function listContent(contentDir: string, options?: ListContentOptions): Promise<ContentListItem[]> {
+export async function listContent(contentDir: string, options: ListContentOptions): Promise<ContentListItem[]> {
   const files = await readdir(contentDir);
   const mdFiles = files.filter((f) => f.endsWith(".md"));
 
@@ -298,7 +302,7 @@ export async function listContent(contentDir: string, options?: ListContentOptio
       continue;
     }
 
-    if (options?.type !== undefined && frontmatter.type !== options.type) {
+    if (options.type !== null && frontmatter.type !== options.type) {
       continue;
     }
 

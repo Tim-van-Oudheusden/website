@@ -14,6 +14,7 @@ const FIXTURE_ARTICLE: ArticleData = {
   date: "2026-02-08",
   tags: ["Introduction"],
   type: "article",
+  socialImage: null,
   draft: false,
   category: "Introduction",
   slug: "introduction",

@@ -176,6 +176,7 @@ function makeArticle(body: string): ArticleData {
     date: "2026-01-01",
     tags: [],
     type: "article",
+    socialImage: null,
     draft: false,
     category: "Introduction",
     slug: "test-article",

@@ -58,14 +58,14 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps): JS
         </div>
         <CardHeader className="gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            {project.status !== undefined && <Badge variant="secondary">{project.status}</Badge>}
-            {project.created !== undefined && <span className="text-muted-foreground text-xs font-medium">{project.created}</span>}
+            {project.status !== null && <Badge variant="secondary">{project.status}</Badge>}
+            {project.created !== null && <span className="text-muted-foreground text-xs font-medium">{project.created}</span>}
           </div>
           <CardTitle className={PROJECTS_PAGE_TYPOGRAPHY_CLASSES.cardTitle}>{project.title}</CardTitle>
           <CardDescription className={PROJECTS_PAGE_TYPOGRAPHY_CLASSES.cardDescription}>{project.description}</CardDescription>
         </CardHeader>
         <CardContent className="mt-auto flex flex-col gap-4 pb-6">
-          {project.info !== undefined && (
+          {project.info !== null && (
             <p className="text-sm font-medium text-(--adw-dark-4) dark:text-(--adw-light-2)">{project.info}</p>
           )}
           <div className="flex flex-wrap gap-1.5">
