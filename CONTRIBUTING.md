@@ -120,13 +120,7 @@ Run `bun run lint` and `bun run typecheck` frequently rather than at the end.
 
 ## Content authoring
 
-Markdown content lives in `content/` and is authored in Obsidian. See the "Obsidian Content Authoring" section of `README.md` for the required settings (attachment folder `content/images`, relative-path links, wikilinks off). Canonical image syntax:
-
-```md
-![Tracking pixel](/content-assets/images/pixel.gif)
-```
-
-Image routes are served by the back-end and map to files in `content/images`.
+Markdown content lives in `content/` and is authored in Obsidian. The "Obsidian Content Authoring" section of `README.md` is the single reference for authors: Obsidian settings, image syntax, the frontmatter reference (required fields and allowed values), and the `bun run --filter back-end validate:content` check. A document with invalid frontmatter is silently left out of the site, so run that check before pushing content changes.
 
 ## Dependencies
 
