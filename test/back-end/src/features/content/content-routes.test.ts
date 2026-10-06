@@ -57,6 +57,8 @@ describe("content routes mount JSON under /api and images at the root", () => {
       "# Bad Status",
     ].join("\n"));
 
+    await writeFile(join(contentDir, "unclosed.md"), ["---", "title: Unclosed", "date: 2026-01-01", "# Unclosed"].join("\n"));
+
     app = await buildApp({ logger: false, contentDir });
     await app.ready();
   });
