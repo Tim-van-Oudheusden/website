@@ -245,33 +245,54 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
   };
 }
 
+/** One directory entry after the read-and-normalize walk: its raw body plus its result. */
+interface ContentDocument {
+  file: string;
+  rawBody: string;
+  result: NormalizeResult;
+}
+
 /**
- * Audit every markdown document in a directory, returning the errors for any
- * document `listContent` would skip. Empty array means all documents are valid.
+ * Single read-and-normalize walk shared by every content.ts entry point:
+ * list `.md` files, read each, and normalize its frontmatter. Each caller
+ * folds over the result list instead of repeating the walk itself.
  */
-export async function validateContentDir(contentDir: string): Promise<ContentError[]> {
+async function loadContentDocuments(contentDir: string): Promise<ContentDocument[]> {
   const files = await readdir(contentDir);
   const mdFiles = files.filter((f) => f.endsWith(".md"));
 
-  const errors: ContentError[] = [];
+  const documents: ContentDocument[] = [];
 
   for (const file of mdFiles) {
     const document = await readMarkdownFile(contentDir, file);
 
     if (!document.ok) {
-      errors.push(document.error);
+      documents.push({ file, rawBody: "", result: { ok: false, error: document.error } });
 
       continue;
     }
 
-    const result = normalizeContentDocument(file, document.parsed.data);
-
-    if (!result.ok) {
-      errors.push(result.error);
-    }
+    documents.push({
+      file,
+      rawBody: document.parsed.content,
+      result: normalizeContentDocument(file, document.parsed.data),
+    });
   }
 
-  return errors;
+  return documents;
+}
+
+/**
+ * Audit every markdown document in a directory, returning the errors for any
+ * document `listContent` would skip. Empty array means all documents are valid.
+ */
+export async function validateContentDir(contentDir: string): Promise<ContentError[]> {
+  const documents = await loadContentDocuments(contentDir);
+
+  return documents
+    .filter((document): document is ContentDocument & { result: { ok: false; error: ContentError } } =>
+      !document.result.ok)
+    .map((document) => document.result.error);
 }
 
 /**
@@ -280,25 +301,16 @@ export async function validateContentDir(contentDir: string): Promise<ContentErr
  * NODE_ENV is "production". Filters by content type unless `options.type` is null.
  */
 export async function listContent(contentDir: string, options: ListContentOptions): Promise<ContentListItem[]> {
-  const files = await readdir(contentDir);
-  const mdFiles = files.filter((f) => f.endsWith(".md"));
+  const documents = await loadContentDocuments(contentDir);
 
   const items: ContentListItem[] = [];
 
-  for (const file of mdFiles) {
-    const document = await readMarkdownFile(contentDir, file);
-
-    if (!document.ok) {
+  for (const document of documents) {
+    if (!document.result.ok) {
       continue;
     }
 
-    const result = normalizeContentDocument(file, document.parsed.data);
-
-    if (!result.ok) {
-      continue;
-    }
-
-    const frontmatter = result.value;
+    const frontmatter = document.result.value;
 
     if (process.env.NODE_ENV === "production" && frontmatter.draft) {
       continue;
@@ -323,23 +335,14 @@ export async function getContentBySlug(
   slug: string,
   contentDir: string,
 ): Promise<ContentItem | null> {
-  const files = await readdir(contentDir);
-  const mdFiles = files.filter((f) => f.endsWith(".md"));
+  const documents = await loadContentDocuments(contentDir);
 
-  for (const file of mdFiles) {
-    const document = await readMarkdownFile(contentDir, file);
-
-    if (!document.ok) {
+  for (const document of documents) {
+    if (!document.result.ok) {
       continue;
     }
 
-    const result = normalizeContentDocument(file, document.parsed.data);
-
-    if (!result.ok) {
-      continue;
-    }
-
-    const frontmatter = result.value;
+    const frontmatter = document.result.value;
 
     if (frontmatter.slug !== slug) {
       continue;
@@ -349,7 +352,7 @@ export async function getContentBySlug(
       return null;
     }
 
-    return { ...frontmatter, body: rewriteObsidianImageEmbeds(document.parsed.content) };
+    return { ...frontmatter, body: rewriteObsidianImageEmbeds(document.rawBody) };
   }
 
   return null;
