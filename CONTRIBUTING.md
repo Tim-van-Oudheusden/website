@@ -75,6 +75,10 @@ CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, and build on e
 
 Comment `/apply-suggestions` on a pull request to have `.github/workflows/auto-review.yml` commit every GitHub ```` ```suggestion ```` block on the PR's current diff (`scripts/apply-review-suggestions.sh`). Only comments from `OWNER`/`MEMBER`/`COLLABORATOR` trigger it or have their suggestions applied; outdated, overlapping, and out-of-checkout suggestions are skipped, and fork PRs are refused. The run reports what it applied and skipped as a PR comment. Its commit is pushed with `GITHUB_TOKEN`, which does not start CI, so CI runs again on your next push.
 
+### Handing work to Claude Code
+
+`.github/workflows/claude.yml` runs [Claude Code](https://github.com/anthropics/claude-code-action) in CI. Label an issue `ai-fix-requested`, or mention `@claude` in an issue comment, PR review, or review comment, and Claude works the request on a `claude/*` branch and opens a pull request; it never pushes to `main`. Mentions only count from `OWNER`/`MEMBER`/`COLLABORATOR`, and the label can only be applied by triagers, so outside commenters cannot start or steer a run. Its PRs go through the same CI and human review as any other. The workflow needs the `CLAUDE_CODE_OAUTH_TOKEN` repo secret and the Claude GitHub App.
+
 ## Code style
 
 Enforced by ESLint (`eslint.config.js`): strict type-checked TypeScript rules, with `@stylistic` as the only formatter (no Prettier). `bun run lint` fails on any warning (`--max-warnings 0`); `bun run lint:fix` applies every autofix. Formatting, from `stylistic.configs.customize()` plus overrides:
