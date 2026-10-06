@@ -232,11 +232,12 @@ describe("content normalization against controlled fixtures", () => {
     expect((badLinks as ProjectFrontmatter | undefined)?.role).toBeNull();
   });
 
-  test("reports invalid and untitled documents via the directory audit", async () => {
+  test("reports invalid, untitled, and unparseable documents via the directory audit", async () => {
     const errors = await validateContentDir(contentDir);
 
     expect(errors.map((error) => [error.file, error.field]).sort()).toEqual([
       ["bad-status.md", "status"],
+      ["no-frontmatter.md", null],
       ["no-title.md", "title"],
     ]);
   });

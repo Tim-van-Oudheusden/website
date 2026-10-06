@@ -275,6 +275,24 @@ describe("validateContentDir", () => {
     }
   });
 
+  test.each([
+    ["no opening fence", "no-fence.md", ["title: No Fence", "date: 2026-01-01", "# Body"], /opening ---/],
+    ["an unclosed fence", "unclosed.md", ["---", "title: Unclosed", "date: 2026-01-01", "# Body"], /never closed/],
+    ["an empty frontmatter block", "empty.md", ["---", "---", "# Body"], /no fields/],
+  ])("reports a document with %s", async (_label, file, lines, message) => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, file), lines.join("\n"));
+
+      expect(await validateContentDir(dir)).toMatchObject([
+        { file, field: null, message: expect.stringMatching(message) },
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   test("passes the real content directory", async () => {
     expect(await validateContentDir(REAL_CONTENT_DIR)).toEqual([]);
   });

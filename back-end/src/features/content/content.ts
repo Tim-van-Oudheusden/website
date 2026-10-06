@@ -4,7 +4,8 @@ import { basename, join } from "path";
 import { ARTICLE_CATEGORIES, CONTENT_TYPES, PROJECT_LINK_TYPES, PROJECT_STATUSES } from "shared";
 import type { ArticleCategory, ContentFrontmatter, ContentType, ProjectLink } from "shared";
 
-import { parseFrontmatter } from "./frontmatter";
+import type { ParseResult } from "./frontmatter";
+import { readFrontmatter } from "./frontmatter";
 import { rewriteObsidianImageEmbeds } from "./obsidian";
 
 /** Content item with frontmatter only (for listing pages). */
@@ -121,20 +122,19 @@ function reject(file: string, field: string | null, message: string): NormalizeR
   return { ok: false, error: { file, field, message, value: undefined } };
 }
 
-interface ParsedContentFile {
-  raw: string;
-  parsed: NonNullable<ReturnType<typeof parseFrontmatter>>;
-}
+type MarkdownFileResult
+  = | { ok: true; parsed: ParseResult }
+    | { ok: false; error: ContentError };
 
-async function readMarkdownFile(contentDir: string, file: string): Promise<ParsedContentFile | null> {
+async function readMarkdownFile(contentDir: string, file: string): Promise<MarkdownFileResult> {
   const raw = await readFile(join(contentDir, file), "utf-8");
-  const parsed = parseFrontmatter(raw);
+  const read = readFrontmatter(raw);
 
-  if (parsed === null) {
-    return null;
+  if (!read.ok) {
+    return { ok: false, error: { file, field: null, message: read.reason, value: undefined } };
   }
 
-  return { raw, parsed };
+  return { ok: true, parsed: read.result };
 }
 
 /**
@@ -258,7 +258,9 @@ export async function validateContentDir(contentDir: string): Promise<ContentErr
   for (const file of mdFiles) {
     const document = await readMarkdownFile(contentDir, file);
 
-    if (document === null) {
+    if (!document.ok) {
+      errors.push(document.error);
+
       continue;
     }
 
@@ -286,7 +288,7 @@ export async function listContent(contentDir: string, options: ListContentOption
   for (const file of mdFiles) {
     const document = await readMarkdownFile(contentDir, file);
 
-    if (document === null) {
+    if (!document.ok) {
       continue;
     }
 
@@ -327,7 +329,7 @@ export async function getContentBySlug(
   for (const file of mdFiles) {
     const document = await readMarkdownFile(contentDir, file);
 
-    if (document === null) {
+    if (!document.ok) {
       continue;
     }
 

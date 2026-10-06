@@ -18,8 +18,9 @@
  *       label: Label
  *       href: https://example.com
  *
- * Returns the parsed data object plus the body after the closing `---`, or
- * null when no valid leading frontmatter block exists.
+ * `readFrontmatter` returns the parsed data object plus the body after the
+ * closing `---`, or the reason no valid leading frontmatter block exists;
+ * `parseFrontmatter` is the same parse with the reason collapsed to null.
  */
 
 type Scalar = string | number | boolean;
@@ -152,9 +153,13 @@ function parseBlockChildren(children: string[]): FrontmatterValue {
   return items;
 }
 
-export function parseFrontmatter(raw: string): ParseResult | null {
+export type FrontmatterRead
+  = | { ok: true; result: ParseResult }
+    | { ok: false; reason: string };
+
+export function readFrontmatter(raw: string): FrontmatterRead {
   if (!raw.startsWith("---")) {
-    return null;
+    return { ok: false, reason: "Frontmatter is missing its opening --- fence" };
   }
 
   const lines = raw.split("\n");
@@ -183,7 +188,7 @@ export function parseFrontmatter(raw: string): ParseResult | null {
   }
 
   if (!closed) {
-    return null;
+    return { ok: false, reason: "Frontmatter block is never closed with ---" };
   }
 
   const content = lines.slice(index).join("\n");
@@ -262,8 +267,14 @@ export function parseFrontmatter(raw: string): ParseResult | null {
   }
 
   if (Object.keys(data).length === 0) {
-    return null;
+    return { ok: false, reason: "Frontmatter block has no fields" };
   }
 
-  return { data, content };
+  return { ok: true, result: { data, content } };
+}
+
+export function parseFrontmatter(raw: string): ParseResult | null {
+  const read = readFrontmatter(raw);
+
+  return read.ok ? read.result : null;
 }
