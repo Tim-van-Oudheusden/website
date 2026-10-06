@@ -61,7 +61,7 @@ const optionalMemberSyntax = [
   },
 ];
 
-const optionalMemberFiles = ["shared/src/**/*.ts", "back-end/src/**/*.ts"];
+const optionalMemberFiles = ["shared/src/**/*.ts", "back-end/src/**/*.ts", "front-end/src/features/home/**"];
 
 const defaultExportFiles = ["playwright.config.ts", "front-end/vite.config.ts", "test/front-end/vite.config.test.ts"];
 

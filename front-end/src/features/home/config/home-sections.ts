@@ -28,7 +28,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     bgColor: "var(--adw-page-brown-bg)",
     contentDirection: "row",
     variant: "carousel",
-    surfaceVariant: "white-well",
+    carouselFrame: "well",
   },
   {
     id: "for-devs",

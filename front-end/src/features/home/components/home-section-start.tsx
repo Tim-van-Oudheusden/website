@@ -3,25 +3,23 @@ import type { JSX, MouseEvent } from "react";
 import { Button } from "@/shared/components/ui/button";
 
 import { headingIdFor } from "../config/home-sections";
-import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
+import type { HomeSectionId, HomeStartSection } from "../types/home-section";
 
-import { HomeSectionShell } from "./home-section-shell";
+import { HOME_SECTION_FRAME_CLASSES, HomeSectionFrame } from "./home-section-shell";
 
 const START_SECTION_PORTRAIT_PATH = "/images/me.png";
 
 interface HomeSectionStartProps {
-  section: HomeSectionDefinition;
-  onCtaActivate?: ((sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void) | undefined;
+  section: HomeStartSection;
+  onCtaActivate: (sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void;
 }
 
 /** Home 'start' section: oversized hero with a bottom-right portrait and a CTA. */
 export function HomeSectionStart({ section, onCtaActivate }: HomeSectionStartProps): JSX.Element {
-  const ctaLabel = section.ctaLabel;
-  const ctaTargetId = section.ctaTargetId;
-  const hasCta = ctaLabel !== undefined && ctaTargetId !== undefined;
+  const { ctaLabel, ctaTargetId } = section;
 
   return (
-    <HomeSectionShell section={section}>
+    <HomeSectionFrame section={section} as="section" className={HOME_SECTION_FRAME_CLASSES}>
       <div
         data-testid="start-white-box"
         className="relative w-full max-w-6xl lg:max-w-332 min-h-116 rounded-[2rem] bg-(--site-section-well-bg) shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] overflow-visible"
@@ -38,25 +36,21 @@ export function HomeSectionStart({ section, onCtaActivate }: HomeSectionStartPro
               <p className="max-w-[60ch] text-lg sm:text-xl leading-[1.55] text-(--adw-dark-5) dark:text-white/80">
                 {section.body}
               </p>
-              {hasCta && (
-                <Button
-                  asChild
-                  variant="secondary"
-                  size="lg"
-                  className="w-fit h-14 px-10 text-lg font-semibold tracking-wide bg-(--adw-dark-5) text-white hover:bg-black/90"
+              <Button
+                asChild
+                variant="secondary"
+                size="lg"
+                className="w-fit h-14 px-10 text-lg font-semibold tracking-wide bg-(--adw-dark-5) text-white hover:bg-black/90"
+              >
+                <a
+                  href={`#${ctaTargetId}`}
+                  onClick={(event) => {
+                    onCtaActivate(ctaTargetId, event);
+                  }}
                 >
-                  <a
-                    href={`#${ctaTargetId}`}
-                    onClick={(event) => {
-                      if (onCtaActivate !== undefined) {
-                        onCtaActivate(ctaTargetId, event);
-                      }
-                    }}
-                  >
-                    {ctaLabel}
-                  </a>
-                </Button>
-              )}
+                  {ctaLabel}
+                </a>
+              </Button>
             </div>
           </div>
         </div>
@@ -71,6 +65,6 @@ export function HomeSectionStart({ section, onCtaActivate }: HomeSectionStartPro
           />
         </div>
       </div>
-    </HomeSectionShell>
+    </HomeSectionFrame>
   );
 }

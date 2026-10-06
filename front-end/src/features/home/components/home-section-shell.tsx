@@ -5,101 +5,92 @@ import { cn } from "@/shared/lib/utils";
 import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionDefinition } from "../types/home-section";
 
-const DEFAULT_FRAME_CLASSES
+export const HOME_SECTION_FRAME_CLASSES
   = "flex min-h-svh items-center justify-center px-6 py-12 sm:px-10 sm:py-16 lg:px-6";
 
-interface HomeSectionShellProps {
+export type HomeSectionFrameElement = "section" | "footer";
+
+interface HomeSectionFrameProps {
   section: HomeSectionDefinition;
-  className?: string;
   /** Render the frame as a semantic `<footer>` instead of `<section>`. */
-  as?: "section" | "footer";
-  /** Shared heading/body block rendered above the children, when provided. */
-  heading?: string;
-  body?: string;
-  /** Center the heading/body block and its container (trust / start-here layout). */
-  centered?: boolean;
+  as: HomeSectionFrameElement;
+  className: string;
   children: ReactNode;
 }
 
 /**
  * Single section frame for every variant: owns the section id, `aria-labelledby`
- * (single-sourced from `headingIdFor`), and the bgColor/bgImage surface. Variants
- * that render their own heading markup pass only `children`; the five content-only
- * variants pass `heading`/`body` so the heading markup lives here exactly once.
+ * (single-sourced from `headingIdFor`), and the bgColor surface. Variants that
+ * render their own heading markup use the frame directly; the rest go through
+ * `HomeHeadedSectionShell` so the shared heading markup lives in one place.
  */
-export function HomeSectionShell({
-  section,
-  className,
-  as = "section",
-  heading,
-  body,
-  centered = false,
-  children,
-}: HomeSectionShellProps): JSX.Element {
-  const headingId = headingIdFor(section.id);
-
+export function HomeSectionFrame({ section, as, className, children }: HomeSectionFrameProps): JSX.Element {
   const frameProps = {
     "id": section.id,
-    "aria-labelledby": headingId,
-    "className": className ?? DEFAULT_FRAME_CLASSES,
-    "style": {
-      backgroundColor: section.bgColor,
-      ...(section.bgImage !== undefined
-        ? {
-            backgroundImage: `url(${section.bgImage})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }
-        : {}),
-    },
+    "aria-labelledby": headingIdFor(section.id),
+    className,
+    "style": { backgroundColor: section.bgColor },
   };
-
-  const content
-    = heading === undefined && body === undefined
-      ? (
-          children
-        )
-      : (
-          <div className="w-full">
-            <div
-              className={cn(
-                "mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296",
-                centered ? "items-center" : "",
-              )}
-            >
-              <div className={cn("flex flex-1 flex-col", centered ? "items-center gap-4" : "gap-5")}>
-                {heading !== undefined && (
-                  <h2
-                    id={headingId}
-                    className={cn(
-                      "font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]",
-                      centered ? "text-center" : "",
-                    )}
-                  >
-                    {heading}
-                  </h2>
-                )}
-                {body !== undefined && (
-                  <p
-                    className={cn(
-                      "max-w-[65ch] text-base sm:text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80",
-                      centered ? "text-center" : "",
-                    )}
-                  >
-                    {body}
-                  </p>
-                )}
-              </div>
-              {children}
-            </div>
-          </div>
-        );
 
   return as === "footer"
     ? (
-        <footer {...frameProps}>{content}</footer>
+        <footer {...frameProps}>{children}</footer>
       )
     : (
-        <section {...frameProps}>{content}</section>
+        <section {...frameProps}>{children}</section>
       );
+}
+
+interface HomeHeadedSectionShellProps {
+  section: HomeSectionDefinition;
+  as: HomeSectionFrameElement;
+  heading: string;
+  body: string;
+  /** Center the heading/body block and its container (trust / start-here layout). */
+  centered: boolean;
+  children: ReactNode;
+}
+
+/** Section frame with the shared heading/body block rendered above the variant content. */
+export function HomeHeadedSectionShell({
+  section,
+  as,
+  heading,
+  body,
+  centered,
+  children,
+}: HomeHeadedSectionShellProps): JSX.Element {
+  return (
+    <HomeSectionFrame section={section} as={as} className={HOME_SECTION_FRAME_CLASSES}>
+      <div className="w-full">
+        <div
+          className={cn(
+            "mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296",
+            centered ? "items-center" : "",
+          )}
+        >
+          <div className={cn("flex flex-1 flex-col", centered ? "items-center gap-4" : "gap-5")}>
+            <h2
+              id={headingIdFor(section.id)}
+              className={cn(
+                "font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]",
+                centered ? "text-center" : "",
+              )}
+            >
+              {heading}
+            </h2>
+            <p
+              className={cn(
+                "max-w-[65ch] text-base sm:text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80",
+                centered ? "text-center" : "",
+              )}
+            >
+              {body}
+            </p>
+          </div>
+          {children}
+        </div>
+      </div>
+    </HomeSectionFrame>
+  );
 }

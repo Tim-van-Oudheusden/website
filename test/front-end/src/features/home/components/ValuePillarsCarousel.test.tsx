@@ -19,7 +19,7 @@ function renderCarousel(): string {
       headingId: "test-heading",
       heading: "Test heading",
       body: "Test body",
-      inWhiteWell: true,
+      inWell: true,
     }),
   );
 }
@@ -57,6 +57,7 @@ function renderCarouselContainer(): { container: FakeElement; root: Root } {
         headingId: "values-heading",
         heading: "Values",
         body: "Why we do what we do.",
+        inWell: true,
       }),
     );
   });
@@ -209,7 +210,7 @@ describe("ValuePillarsCarousel", () => {
 });
 
 describe("calculateCardTiltAngles", () => {
-  const CARD = { width: 300, height: 400 };
+  const CARD = { width: 300, height: 400, maxTiltDegrees: 4 };
 
   test("returns zero tilt at the card centre, without signed zeros", () => {
     const angles = calculateCardTiltAngles({ pointerX: 150, pointerY: 200, ...CARD });
@@ -226,10 +227,10 @@ describe("calculateCardTiltAngles", () => {
   });
 
   test("returns zero tilt for zero or negative card sizes", () => {
-    expect(calculateCardTiltAngles({ pointerX: 150, pointerY: 200, width: 0, height: 400 }))
+    expect(calculateCardTiltAngles({ ...CARD, pointerX: 150, pointerY: 200, width: 0 }))
       .toEqual({ rotateX: 0, rotateY: 0 });
 
-    expect(calculateCardTiltAngles({ pointerX: 150, pointerY: 200, width: 300, height: -5 }))
+    expect(calculateCardTiltAngles({ ...CARD, pointerX: 150, pointerY: 200, height: -5 }))
       .toEqual({ rotateX: 0, rotateY: 0 });
   });
 

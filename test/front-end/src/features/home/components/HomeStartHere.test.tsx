@@ -8,6 +8,7 @@ import type { ArticleSummary } from "shared/articles";
 
 import { HOME_START_HERE_SLUGS, HomeStartHere, resolveStartHere, StartHereContent, StartHereLinks } from "../../../../../../front-end/src/features/home/components/home-start-here";
 import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
+import type { HomeStartHereSection } from "../../../../../../front-end/src/features/home/types/home-section";
 import type { ContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
 import { createMemoryContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
 import type { FakeMount } from "../../../../src/test/dom-harness";
@@ -70,7 +71,9 @@ function renderContent(items: ArticleSummary[] | null, loadError: boolean): stri
   );
 }
 
-const START_HERE_SECTION = HOME_SECTIONS.find((section) => section.id === "secondary-cta");
+const START_HERE_SECTION = HOME_SECTIONS.find(
+  (section): section is HomeStartHereSection => section.variant === "start-here",
+);
 
 async function mountStartHere(loader: ContentLoader): Promise<FakeMount> {
   if (START_HERE_SECTION === undefined) {

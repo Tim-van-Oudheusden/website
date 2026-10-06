@@ -6,11 +6,10 @@ import type { ArticleSummary } from "shared/articles";
 import { compareArticles } from "shared/articles";
 
 import type { ContentLoader } from "@/shared/lib/content-loader";
-import { httpContentLoader } from "@/shared/lib/content-loader";
 
-import type { HomeSectionDefinition } from "../types/home-section";
+import type { HomeRecentPostsSection } from "../types/home-section";
 
-import { HomeSectionShell } from "./home-section-shell";
+import { HomeHeadedSectionShell } from "./home-section-shell";
 
 export const RECENT_POSTS_COUNT = 4;
 
@@ -69,15 +68,12 @@ export function RecentPostsContent({
 }
 
 interface HomeRecentPostsProps {
-  section: HomeSectionDefinition;
-  loader?: ContentLoader;
+  section: HomeRecentPostsSection;
+  loader: ContentLoader;
 }
 
 /** Home 'community-and-docs' section: a self-updating recent-posts strip from real content. */
-export function HomeRecentPosts({
-  section,
-  loader = httpContentLoader,
-}: HomeRecentPostsProps): JSX.Element {
+export function HomeRecentPosts({ section, loader }: HomeRecentPostsProps): JSX.Element {
   const [posts, setPosts] = useState<ArticleSummary[] | null>(null);
   const [loadError, setLoadError] = useState(false);
 
@@ -103,8 +99,14 @@ export function HomeRecentPosts({
   }, [loader]);
 
   return (
-    <HomeSectionShell section={section} heading={section.heading} body={section.body}>
+    <HomeHeadedSectionShell
+      as="section"
+      section={section}
+      heading={section.heading}
+      body={section.body}
+      centered={false}
+    >
       <RecentPostsContent posts={posts} loadError={loadError} />
-    </HomeSectionShell>
+    </HomeHeadedSectionShell>
   );
 }

@@ -1,5 +1,7 @@
 import type { JSX, MouseEvent } from "react";
 
+import { httpContentLoader } from "@/shared/lib/content-loader";
+
 import { HomeFloatingNav } from "../components/home-floating-nav";
 import { HomeSection } from "../components/home-section";
 import { HOME_SECTIONS } from "../config/home-sections";
@@ -47,7 +49,12 @@ export function HomePage(): JSX.Element {
   return (
     <main className="flex-1 scroll-smooth motion-reduce:scroll-auto">
       {HOME_SECTIONS.map((section) => (
-        <HomeSection key={section.id} section={section} onCtaActivate={activateSectionAnchor} />
+        <HomeSection
+          key={section.id}
+          section={section}
+          onCtaActivate={activateSectionAnchor}
+          loader={httpContentLoader}
+        />
       ))}
       <HomeFloatingNav
         sections={HOME_SECTIONS}
