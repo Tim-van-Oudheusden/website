@@ -8,6 +8,7 @@ import type { ArticleSummary } from "shared/articles";
 
 import { HomeRecentPosts, RecentPostsContent, RecentPostsList, selectRecentPosts } from "../../../../../../front-end/src/features/home/components/home-recent-posts";
 import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
+import type { HomeRecentPostsSection } from "../../../../../../front-end/src/features/home/types/home-section";
 import type { ContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
 import { createMemoryContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
 import type { FakeMount } from "../../../../src/test/dom-harness";
@@ -70,7 +71,9 @@ function renderContent(posts: ArticleSummary[] | null, loadError: boolean): stri
   );
 }
 
-const RECENT_POSTS_SECTION = HOME_SECTIONS.find((section) => section.id === "community-and-docs");
+const RECENT_POSTS_SECTION = HOME_SECTIONS.find(
+  (section): section is HomeRecentPostsSection => section.variant === "recent-posts",
+);
 
 async function mountRecentPosts(loader: ContentLoader): Promise<FakeMount> {
   if (RECENT_POSTS_SECTION === undefined) {

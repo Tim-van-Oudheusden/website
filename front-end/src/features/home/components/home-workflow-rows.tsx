@@ -2,12 +2,12 @@ import type { JSX } from "react";
 
 import { cn } from "@/shared/lib/utils";
 
-import type { HomeSectionDefinition } from "../types/home-section";
+import type { HomeWorkflowSection } from "../types/home-section";
 
-import { HomeSectionShell } from "./home-section-shell";
+import { HomeHeadedSectionShell } from "./home-section-shell";
 
 interface HomeWorkflowRowsProps {
-  section: HomeSectionDefinition;
+  section: HomeWorkflowSection;
 }
 
 /**
@@ -18,12 +18,16 @@ interface HomeWorkflowRowsProps {
  * workflow, not a feature dump.
  */
 export function HomeWorkflowRows({ section }: HomeWorkflowRowsProps): JSX.Element {
-  const features = section.features ?? [];
-
   return (
-    <HomeSectionShell section={section} heading={section.heading} body={section.body}>
+    <HomeHeadedSectionShell
+      as="section"
+      section={section}
+      heading={section.heading}
+      body={section.body}
+      centered={false}
+    >
       <div className="flex flex-col gap-6">
-        {features.map((feature, index) => {
+        {section.features.map((feature, index) => {
           const reverse = index % 2 === 1;
 
           return (
@@ -56,6 +60,6 @@ export function HomeWorkflowRows({ section }: HomeWorkflowRowsProps): JSX.Elemen
           );
         })}
       </div>
-    </HomeSectionShell>
+    </HomeHeadedSectionShell>
   );
 }

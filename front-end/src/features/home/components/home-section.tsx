@@ -1,10 +1,11 @@
 import type { JSX, MouseEvent } from "react";
 
+import type { ContentLoader } from "@/shared/lib/content-loader";
+
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
 
 import { HomeRecentPosts } from "./home-recent-posts";
 import { HomeSectionCarousel } from "./home-section-carousel";
-import { HomeSectionDefault } from "./home-section-default";
 import { HomeSectionFooter } from "./home-section-footer";
 import { HomeSectionStart } from "./home-section-start";
 import { HomeStartHere } from "./home-start-here";
@@ -13,14 +14,13 @@ import { HomeWorkflowRows } from "./home-workflow-rows";
 
 export interface HomeSectionProps {
   section: HomeSectionDefinition;
-  onCtaActivate?: (sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void;
+  onCtaActivate: (sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void;
+  /** Content source for the sections that list real articles. */
+  loader: ContentLoader;
 }
 
-/**
- * Dispatches a home section definition to the renderer responsible for its
- * variant. The default-variant `start` section renders as a hero.
- */
-export function HomeSection({ section, onCtaActivate }: HomeSectionProps): JSX.Element {
+/** Dispatches a home section definition to the renderer responsible for its variant. */
+export function HomeSection({ section, onCtaActivate, loader }: HomeSectionProps): JSX.Element {
   switch (section.variant) {
     case "start":
       return <HomeSectionStart section={section} onCtaActivate={onCtaActivate} />;
@@ -33,10 +33,13 @@ export function HomeSection({ section, onCtaActivate }: HomeSectionProps): JSX.E
     case "trust":
       return <HomeTrustStrip section={section} />;
     case "recent-posts":
-      return <HomeRecentPosts section={section} />;
+      return <HomeRecentPosts section={section} loader={loader} />;
     case "start-here":
-      return <HomeStartHere section={section} />;
-    default:
-      return <HomeSectionDefault section={section} onCtaActivate={onCtaActivate} />;
+      return <HomeStartHere section={section} loader={loader} />;
+    default: {
+      const unhandled: never = section;
+
+      throw new Error(`Unhandled home section variant: ${JSON.stringify(unhandled)}`);
+    }
   }
 }

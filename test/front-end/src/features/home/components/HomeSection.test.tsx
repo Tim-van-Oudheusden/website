@@ -1,18 +1,12 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
-import { act, createElement } from "react";
-import type { MouseEvent } from "react";
-import type { createRoot as createRootValue, Root } from "react-dom/client";
-type CreateRootFn = typeof createRootValue;
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { HomeSection } from "../../../../../../front-end/src/features/home/components/home-section";
-import { HomeSectionDefault } from "../../../../../../front-end/src/features/home/components/home-section-default";
-import { HomeSectionShell } from "../../../../../../front-end/src/features/home/components/home-section-shell";
 import { headingIdFor, HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
 import type { HomeSectionDefinition, HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
-import type { FakeDocument, FakeElement } from "../../../test/fake-dom";
-import { installFakeDom, queryFakeElements, uninstallFakeDom } from "../../../test/fake-dom";
+import { createMemoryContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
 
 function findHomeSection(sectionId: HomeSectionId): HomeSectionDefinition {
   const section = HOME_SECTIONS.find((candidateSection) => candidateSection.id === sectionId);
@@ -24,10 +18,28 @@ function findHomeSection(sectionId: HomeSectionId): HomeSectionDefinition {
   return section;
 }
 
-function renderSection(sectionId: HomeSectionId): string {
+function forYouWithFrame(carouselFrame: "well" | "bare"): HomeSectionDefinition {
+  const section = findHomeSection("for-you");
+
+  if (section.variant !== "carousel") {
+    throw new Error("Expected the for-you section to use the carousel variant");
+  }
+
+  return { ...section, carouselFrame };
+}
+
+function renderHomeSection(section: HomeSectionDefinition): string {
   return renderToStaticMarkup(
-    createElement(HomeSection, { section: findHomeSection(sectionId) }),
+    createElement(HomeSection, {
+      section,
+      onCtaActivate: () => undefined,
+      loader: createMemoryContentLoader([]),
+    }),
   );
+}
+
+function renderSection(sectionId: HomeSectionId): string {
+  return renderHomeSection(findHomeSection(sectionId));
 }
 
 function countOccurrences(haystack: string, needle: string): number {
@@ -42,49 +54,6 @@ function countOccurrences(haystack: string, needle: string): number {
   return count;
 }
 
-// react-dom/client is the only deferred import: react-dom captures `canUseDOM`
-// at module load, so the fake DOM globals must be installed before it evaluates
-// (module loading boundary, not a runtime-selected specifier).
-let createRoot: CreateRootFn;
-
-beforeAll(async () => {
-  installFakeDom();
-  ({ createRoot } = await import("react-dom/client"));
-});
-
-afterAll(() => {
-  uninstallFakeDom();
-});
-
-function renderDefaultSectionContainer(
-  section: HomeSectionDefinition,
-  onCtaActivate: ((sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void) | undefined,
-): { container: FakeElement; root: Root } {
-  const fakeDocument = document as unknown as FakeDocument;
-  const container = fakeDocument.createElement("div");
-
-  fakeDocument.body.appendChild(container);
-  const root = createRoot(container as unknown as Element);
-
-  act(() => {
-    root.render(createElement(HomeSectionDefault, { section, onCtaActivate }));
-  });
-
-  return { container, root };
-}
-
-function clickElement(container: FakeElement, target: FakeElement): void {
-  act(() => {
-    container.dispatch("click", {
-      type: "click",
-      target,
-      currentTarget: target,
-      preventDefault: () => undefined,
-      stopPropagation: () => undefined,
-    });
-  });
-}
-
 describe("HomeSection", () => {
   test("renders the start hero with its bottom-right anchored portrait", () => {
     const html = renderSection("start");
@@ -96,34 +65,13 @@ describe("HomeSection", () => {
 
   test("renders the start CTA linking to its configured target section", () => {
     const html = renderSection("start");
-    const ctaTargetId = findHomeSection("start").ctaTargetId;
 
-    expect(ctaTargetId).toBeDefined();
     expect(html).toContain("Discover");
-    expect(html).toContain(`href="#${ctaTargetId}"`);
+    expect(html).toContain('href="#for-you"');
   });
 
   test("declares the hero as an explicit variant, not an id string match", () => {
     expect(findHomeSection("start").variant).toBe("start");
-  });
-
-  test("does not render a default-variant section with the start id as the hero", () => {
-    const html = renderToStaticMarkup(
-      createElement(HomeSection, {
-        section: {
-          id: "start",
-          label: "start",
-          heading: "Plain section",
-          body: "Not the hero.",
-          bgColor: "var(--adw-page-brown-bg)",
-          contentDirection: "row",
-          variant: "default",
-        },
-      }),
-    );
-
-    expect(html).not.toContain('data-testid="start-portrait"');
-    expect(html).toContain("Plain section");
   });
 
   test("renders each configured section's real heading and body copy", () => {
@@ -141,6 +89,21 @@ describe("HomeSection", () => {
     const html = renderSection("for-you");
 
     expect(html).toContain("For you");
+  });
+
+  test("renders a well-framed carousel inside the well with well text colours", () => {
+    const html = renderHomeSection(forYouWithFrame("well"));
+
+    expect(html).toMatch(/class="[^"]*bg-\(--site-section-well-bg\)[^"]*"[^>]*>[\s\S]*id="for-you-heading"/);
+    expect(html).toMatch(/<h2 id="for-you-heading" class="[^"]*--adw-dark-4/);
+  });
+
+  test("renders a bare-framed carousel without the well or well text colours", () => {
+    const html = renderHomeSection(forYouWithFrame("bare"));
+
+    expect(html).not.toContain("--site-section-well-bg");
+    expect(html).not.toContain("--adw-dark-4");
+    expect(html).toMatch(/<h2 id="for-you-heading" class="[^"]*text-white/);
   });
 
   test("renders the footer as a semantic footer with site identification", () => {
@@ -182,126 +145,5 @@ describe("HomeSection", () => {
       expect(html).toContain(`aria-labelledby="${headingId}"`);
       expect(countOccurrences(html, `id="${headingId}"`)).toBe(1);
     }
-  });
-
-  test("renders the shell background image when the section defines one", () => {
-    const html = renderToStaticMarkup(
-      <HomeSectionShell
-        section={{
-          id: "proof",
-          label: "Proof",
-          heading: "Proof",
-          body: "Body",
-          bgColor: "white",
-          bgImage: "/images/proof-bg.png",
-          contentDirection: "column",
-        }}
-      >
-        content
-      </HomeSectionShell>,
-    );
-
-    expect(html).toContain("background-image:url(/images/proof-bg.png)");
-    expect(html).toContain("background-size:cover");
-    expect(html).toContain("background-position:center");
-  });
-
-  test("omits the background image styles when the section has no bgImage", () => {
-    const html = renderToStaticMarkup(
-      <HomeSectionShell
-        section={{
-          id: "proof",
-          label: "Proof",
-          heading: "Proof",
-          body: "Body",
-          bgColor: "white",
-          contentDirection: "column",
-        }}
-      >
-        content
-      </HomeSectionShell>,
-    );
-
-    expect(html).not.toContain("background-image");
-  });
-
-  test("renders the default variant CTA as an anchor to its target section", () => {
-    const html = renderToStaticMarkup(
-      createElement(HomeSectionDefault, {
-        section: {
-          id: "for-devs",
-          label: "For devs",
-          heading: "For devs",
-          body: "Body",
-          bgColor: "white",
-          ctaLabel: "See the tools",
-          ctaTargetId: "for-you",
-          contentDirection: "column",
-        },
-      }),
-    );
-
-    expect(html).toContain('href="#for-you"');
-    expect(html).toContain("See the tools");
-  });
-
-  test("omits the CTA when either the label or the target is missing", () => {
-    const base = {
-      id: "for-devs" as HomeSectionId,
-      label: "For devs",
-      heading: "For devs",
-      body: "Body",
-      bgColor: "white",
-      contentDirection: "column" as const,
-    };
-
-    const labelOnly = renderToStaticMarkup(
-      createElement(HomeSectionDefault, { section: { ...base, ctaLabel: "See the tools" } }),
-    );
-
-    expect(labelOnly).not.toContain("<a ");
-
-    const targetOnly = renderToStaticMarkup(
-      createElement(HomeSectionDefault, { section: { ...base, ctaTargetId: "for-you" } }),
-    );
-
-    expect(targetOnly).not.toContain("<a ");
-  });
-});
-
-describe("HomeSectionDefault interaction", () => {
-  test("invokes onCtaActivate with the target section id and the anchor element on CTA click", () => {
-    const ctaActivations: { sectionId: HomeSectionId; targetTag: string; href: string | null }[] = [];
-    const { container } = renderDefaultSectionContainer(
-      {
-        id: "start",
-        label: "Start",
-        heading: "Start",
-        body: "Body text",
-        bgColor: "white",
-        contentDirection: "row",
-        ctaLabel: "Get started",
-        ctaTargetId: "for-you",
-      },
-      (sectionId, event) => {
-        ctaActivations.push({
-          sectionId,
-          targetTag: event.currentTarget.tagName,
-          href: event.currentTarget.getAttribute("href"),
-        });
-      },
-    );
-
-    const anchors = queryFakeElements(container, (element) => element.tagName === "A");
-
-    expect(anchors.length).toBe(1);
-    const anchor = anchors[0];
-
-    if (anchor === undefined) {
-      throw new Error("Expected a CTA anchor");
-    }
-
-    clickElement(container, anchor);
-    expect(ctaActivations).toEqual([{ sectionId: "for-you", targetTag: "A", href: "#for-you" }]);
   });
 });

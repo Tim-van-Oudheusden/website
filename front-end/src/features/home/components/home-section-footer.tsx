@@ -1,14 +1,14 @@
 import type { JSX } from "react";
 
-import type { HomeSectionDefinition } from "../types/home-section";
+import type { HomeFooterSection } from "../types/home-section";
 
-import { HomeSectionShell } from "./home-section-shell";
+import { HomeHeadedSectionShell } from "./home-section-shell";
 
 const SITE_GITHUB_HREF = "https://github.com/Tim-van-Oudheusden/website";
 const SITE_AUTHOR = "Tim van Oudheusden";
 
 interface HomeSectionFooterProps {
-  section: HomeSectionDefinition;
+  section: HomeFooterSection;
 }
 
 /** Home 'footer' variant: semantic footer with site identification + copyright. */
@@ -16,7 +16,13 @@ export function HomeSectionFooter({ section }: HomeSectionFooterProps): JSX.Elem
   const currentYear = new Date().getFullYear();
 
   return (
-    <HomeSectionShell as="footer" section={section} heading={section.heading} body={section.body}>
+    <HomeHeadedSectionShell
+      as="footer"
+      section={section}
+      heading={section.heading}
+      body={section.body}
+      centered={false}
+    >
       <div className="flex flex-col gap-4">
         <a
           href={SITE_GITHUB_HREF}
@@ -34,6 +40,6 @@ export function HomeSectionFooter({ section }: HomeSectionFooterProps): JSX.Elem
           {SITE_AUTHOR}
         </p>
       </div>
-    </HomeSectionShell>
+    </HomeHeadedSectionShell>
   );
 }

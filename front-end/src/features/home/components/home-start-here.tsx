@@ -5,11 +5,10 @@ import { Link } from "react-router";
 import type { ArticleSummary } from "shared/articles";
 
 import type { ContentLoader } from "@/shared/lib/content-loader";
-import { httpContentLoader } from "@/shared/lib/content-loader";
 
-import type { HomeSectionDefinition } from "../types/home-section";
+import type { HomeStartHereSection } from "../types/home-section";
 
-import { HomeSectionShell } from "./home-section-shell";
+import { HomeHeadedSectionShell } from "./home-section-shell";
 
 /**
  * Small curated set of the site's strongest, most representative articles,
@@ -91,15 +90,12 @@ export function StartHereContent({
 }
 
 interface HomeStartHereProps {
-  section: HomeSectionDefinition;
-  loader?: ContentLoader;
+  section: HomeStartHereSection;
+  loader: ContentLoader;
 }
 
 /** Home 'secondary-cta' section: a 'Start here' reading list of real articles. */
-export function HomeStartHere({
-  section,
-  loader = httpContentLoader,
-}: HomeStartHereProps): JSX.Element {
+export function HomeStartHere({ section, loader }: HomeStartHereProps): JSX.Element {
   const [items, setItems] = useState<ArticleSummary[] | null>(null);
   const [loadError, setLoadError] = useState(false);
 
@@ -125,8 +121,8 @@ export function HomeStartHere({
   }, [loader]);
 
   return (
-    <HomeSectionShell section={section} heading={section.heading} body={section.body} centered>
+    <HomeHeadedSectionShell as="section" section={section} heading={section.heading} body={section.body} centered>
       <StartHereContent items={items} loadError={loadError} />
-    </HomeSectionShell>
+    </HomeHeadedSectionShell>
   );
 }

@@ -11,7 +11,7 @@ interface CardTiltCalculationInput {
   pointerY: number;
   width: number;
   height: number;
-  maxTiltDegrees?: number;
+  maxTiltDegrees: number;
 }
 
 interface CardTiltAngles {
@@ -110,7 +110,7 @@ export function calculateCardTiltAngles({
   pointerY,
   width,
   height,
-  maxTiltDegrees = 4,
+  maxTiltDegrees,
 }: CardTiltCalculationInput): CardTiltAngles {
   if (width <= 0 || height <= 0) {
     return { rotateX: 0, rotateY: 0 };
@@ -124,6 +124,8 @@ export function calculateCardTiltAngles({
     rotateY: normalizeSignedZero(normalizedX * maxTiltDegrees),
   };
 }
+
+const CARD_MAX_TILT_DEGREES = 4;
 
 const VALUE_PILLAR_ITEMS = [
   {
@@ -172,6 +174,7 @@ function ValuePillarCard({ title, artworkPath, description }: ValuePillarItemPro
       pointerY: event.clientY - bounds.top,
       width: bounds.width,
       height: bounds.height,
+      maxTiltDegrees: CARD_MAX_TILT_DEGREES,
     }));
   }, []);
 
@@ -255,14 +258,14 @@ interface ValuePillarsCarouselProps {
   headingId: string;
   heading: string;
   body: string;
-  inWhiteWell?: boolean;
+  inWell: boolean;
 }
 
 export function ValuePillarsCarousel({
   headingId,
   heading,
   body,
-  inWhiteWell = false,
+  inWell,
 }: ValuePillarsCarouselProps): JSX.Element {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const articlesRef = useRef<(HTMLElement | null)[]>([]);
@@ -305,7 +308,7 @@ export function ValuePillarsCarousel({
           id={headingId}
           className={cn(
             "font-semibold tracking-tight text-[1.75rem] sm:text-[2rem]",
-            inWhiteWell ? "text-[var(--adw-dark-4)] dark:text-[var(--adw-light-1)]" : "text-white",
+            inWell ? "text-[var(--adw-dark-4)] dark:text-[var(--adw-light-1)]" : "text-white",
           )}
         >
           {heading}
@@ -313,7 +316,7 @@ export function ValuePillarsCarousel({
         <p
           className={cn(
             "mx-auto mt-4 max-w-[65ch] text-base sm:text-lg leading-relaxed",
-            inWhiteWell ? "text-[var(--adw-dark-2)] dark:text-white/80" : "text-white/80",
+            inWell ? "text-[var(--adw-dark-2)] dark:text-white/80" : "text-white/80",
           )}
         >
           {body}
