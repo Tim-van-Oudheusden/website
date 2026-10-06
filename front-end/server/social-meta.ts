@@ -18,10 +18,10 @@ export function renderSocialMeta(html: string, item: ContentFrontmatter, origin:
     { attribute: "property", key: "og:type", content: "article" },
     { attribute: "property", key: "og:title", content: item.title },
     { attribute: "property", key: "og:description", content: item.description },
-    { attribute: "property", key: "og:url", content: `${origin}/articles/${item.slug ?? ""}` },
+    { attribute: "property", key: "og:url", content: `${origin}/articles/${item.slug}` },
   ];
 
-  if (item.socialImage === undefined) {
+  if (item.socialImage === null) {
     tags.push({ attribute: "name", key: "twitter:card", content: "summary" });
   } else {
     // "/images/me.png" is a site path (public/); "images/cover.png" is relative

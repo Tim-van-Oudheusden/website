@@ -1,10 +1,13 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { resolve } from "node:path";
 
 import type { FastifyInstance } from "fastify";
 
 import { API_BASE, APP_NAME, ROUTES } from "shared";
 
 import { buildApp } from "../../../back-end/src/app";
+
+const REAL_CONTENT_DIR = resolve(import.meta.dir, "../../../content");
 
 /** JSON API routes live under API_BASE; only /health stays at the root. */
 function apiUrl(path: string): string {
@@ -15,7 +18,7 @@ describe("back-end routes use shared ROUTES constants", () => {
   let app: FastifyInstance | null = null;
 
   beforeAll(async () => {
-    app = await buildApp({ logger: false });
+    app = await buildApp({ logger: false, contentDir: REAL_CONTENT_DIR });
     await app.ready();
   });
 

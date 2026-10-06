@@ -103,6 +103,7 @@ describe("front-end prod server process", () => {
           draft: false,
           category: "Personal Life",
           slug: "yoga-nidra",
+          socialImage: null,
         });
       },
     });

@@ -85,10 +85,10 @@ interface BaseContentFrontmatter {
   date: string;
   tags: string[];
   draft: boolean;
-  /** Derived from filename if absent. */
-  slug?: string | undefined;
-  /** Optional social/cover image path used by article listing surfaces. */
-  socialImage?: string | undefined;
+  /** Derived from the filename when the frontmatter omits it. */
+  slug: string;
+  /** Social/cover image path used by article listing surfaces; null when unset. */
+  socialImage: string | null;
 }
 
 /**
@@ -114,13 +114,13 @@ export interface ProjectFrontmatter extends BaseContentFrontmatter {
   coverImageAlt: string;
   featured: boolean;
   projectOrder: number;
-  /** Optional priority slot (1, 2, or 3) for prominent placement on the Projects page. */
-  prioritySlot?: 1 | 2 | 3 | undefined;
-  status?: ProjectStatus | undefined;
-  role?: string | undefined;
-  created?: string | undefined;
+  /** Priority slot (1, 2, or 3) for prominent placement on the Projects page; null when unplaced. */
+  prioritySlot: 1 | 2 | 3 | null;
+  status: ProjectStatus | null;
+  role: string | null;
+  created: string | null;
   links: ProjectLink[];
-  info?: string | undefined;
+  info: string | null;
 }
 
 export type ContentFrontmatter = ArticleFrontmatter | ProjectFrontmatter;

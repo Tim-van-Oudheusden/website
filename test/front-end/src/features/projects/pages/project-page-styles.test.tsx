@@ -23,6 +23,12 @@ function project(overrides: Partial<ProjectFrontmatter> = {}): ProjectFrontmatte
     featured: false,
     projectOrder: 0,
     links: [],
+    socialImage: null,
+    prioritySlot: null,
+    status: null,
+    role: null,
+    created: null,
+    info: null,
     ...overrides,
   };
 }
@@ -53,7 +59,7 @@ describe("ProjectCard", () => {
 
   test("renders the project status badge when one is set, and omits it otherwise", () => {
     const withStatus = project({ status: "Shipped" });
-    const withoutStatus = project({ status: undefined, title: "Untitled" });
+    const withoutStatus = project({ status: null, title: "Untitled" });
 
     const withStatusHtml = renderWithRouter(createElement(ProjectCard, { project: withStatus }));
     const withoutStatusHtml = renderWithRouter(createElement(ProjectCard, { project: withoutStatus }));

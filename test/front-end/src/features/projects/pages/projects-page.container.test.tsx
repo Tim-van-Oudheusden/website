@@ -46,6 +46,12 @@ function project(overrides: Partial<ProjectFrontmatter> = {}): ProjectFrontmatte
     featured: false,
     projectOrder: 0,
     links: [],
+    socialImage: null,
+    prioritySlot: null,
+    status: null,
+    role: null,
+    created: null,
+    info: null,
     ...overrides,
   };
 }

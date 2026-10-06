@@ -164,6 +164,40 @@ describe("normalizeContentDocument", () => {
     }
   });
 
+  test("emits every absent optional project field as null", () => {
+    const result = normalizeContentDocument("minimal.md", {
+      title: "Minimal",
+      date: "2026-01-01",
+      type: "project",
+      coverImage: "/img.png",
+      coverImageAlt: "img",
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        title: "Minimal",
+        description: "",
+        date: "2026-01-01",
+        tags: [],
+        type: "project",
+        draft: false,
+        slug: "minimal",
+        socialImage: null,
+        coverImage: "/img.png",
+        coverImageAlt: "img",
+        featured: false,
+        projectOrder: 0,
+        prioritySlot: null,
+        status: null,
+        role: null,
+        created: null,
+        links: [],
+        info: null,
+      },
+    });
+  });
+
   test("rejects non-object and untitled inputs", () => {
     expect(normalizeContentDocument("x.md", "not an object").ok).toBe(false);
     expect(normalizeContentDocument("x.md", { date: "2026-01-01" }).ok).toBe(false);
@@ -184,7 +218,7 @@ describe("normalizeContentDocument", () => {
 
     expect(result).toEqual({
       ok: false,
-      error: { file: "undated.md", field: "date", message: "Missing required date or publishDate" },
+      error: { file: "undated.md", field: "date", message: "Missing required date or publishDate", value: undefined },
     });
   });
 

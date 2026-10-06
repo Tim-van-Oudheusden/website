@@ -89,6 +89,15 @@ describe("content routes mount JSON under /api and images at the root", () => {
     expect(res.json().title).toBe("Hello World");
   });
 
+  test("emits absent optional frontmatter as explicit null in the JSON", async () => {
+    const url = `${API_BASE}${ROUTES.CONTENT_BY_SLUG.replace(":slug", "hello-world")}`;
+    const res = await app!.inject({ method: "GET", url });
+
+    const body: Record<string, unknown> = res.json();
+
+    expect(body["socialImage"]).toBeNull();
+  });
+
   test("GET /content at the root no longer serves JSON", async () => {
     const res = await app!.inject({ method: "GET", url: ROUTES.CONTENT });
 

@@ -45,26 +45,26 @@ export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): JSX.Elem
       <p className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.description}>{project.description}</p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <time className="text-muted-foreground text-sm font-medium">{new Date(project.date).toLocaleDateString()}</time>
-        {project.status !== undefined && <Badge variant="secondary" className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.tagBadge}>{project.status}</Badge>}
+        {project.status !== null && <Badge variant="secondary" className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.tagBadge}>{project.status}</Badge>}
         {project.tags.map((tag) => (
           <Badge key={tag} variant="outline" className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.tagBadge}>{tag}</Badge>
         ))}
       </div>
       <div className={PROJECT_PAGE_LAYOUT_CLASSES.metadataPanel}>
         <dl className="grid gap-4 sm:grid-cols-3">
-          {project.role !== undefined && (
+          {project.role !== null && (
             <div>
               <dt className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaLabel}>Role</dt>
               <dd className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaValue}>{project.role}</dd>
             </div>
           )}
-          {project.created !== undefined && (
+          {project.created !== null && (
             <div>
               <dt className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaLabel}>Created</dt>
               <dd className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaValue}>{project.created}</dd>
             </div>
           )}
-          {project.info !== undefined && (
+          {project.info !== null && (
             <div className="sm:col-span-3">
               <dt className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaLabel}>Info</dt>
               <dd className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.metaValue}>{project.info}</dd>

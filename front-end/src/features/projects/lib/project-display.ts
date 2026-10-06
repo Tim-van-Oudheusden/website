@@ -22,7 +22,7 @@ export function resolveFeaturedProject(projects: readonly ProjectFrontmatter[]):
 
 export function resolvePriorityProjects(projects: readonly ProjectFrontmatter[]): ProjectFrontmatter[] {
   const explicitSlots = sortProjectsForDisplay(projects)
-    .filter((p) => p.prioritySlot !== undefined)
+    .filter((p) => p.prioritySlot !== null)
     .sort((a, b) => (a.prioritySlot ?? 0) - (b.prioritySlot ?? 0));
 
   if (explicitSlots.length > 0) {

@@ -169,14 +169,14 @@ describe("content normalization against controlled fixtures", () => {
   }
 
   test("falls back from date to publishDate", async () => {
-    const items = await listContent(contentDir);
+    const items = await listContent(contentDir, { type: null });
     const intro = items.find((item) => item.title === "Introduction");
 
     expect(intro?.date).toBe("2026-06-10");
   });
 
   test("defaults unknown types to article", async () => {
-    const items = await listContent(contentDir);
+    const items = await listContent(contentDir, { type: null });
     const video = items.find((item) => item.slug === "unknown-type");
 
     expect(video?.type).toBe("article");
@@ -197,12 +197,12 @@ describe("content normalization against controlled fixtures", () => {
 
   test("skips drafts only in production", async () => {
     delete process.env.NODE_ENV;
-    const draftsInDev = await listContent(contentDir);
+    const draftsInDev = await listContent(contentDir, { type: null });
 
     expect(draftsInDev.some((item) => item.slug === "draft")).toBe(true);
 
     setProduction();
-    const draftsInProd = await listContent(contentDir);
+    const draftsInProd = await listContent(contentDir, { type: null });
 
     expect(draftsInProd.some((item) => item.slug === "draft")).toBe(false);
   });
@@ -217,19 +217,19 @@ describe("content normalization against controlled fixtures", () => {
   });
 
   test("skips documents without a frontmatter block or title", async () => {
-    const items = await listContent(contentDir);
+    const items = await listContent(contentDir, { type: null });
 
     expect(items.some((item) => item.slug === "no-frontmatter")).toBe(false);
     expect(items.some((item) => item.slug === "no-title")).toBe(false);
   });
 
   test("skips documents with an invalid status and drops blank roles", async () => {
-    const items = await listContent(contentDir);
+    const items = await listContent(contentDir, { type: null });
 
     expect(items.some((item) => item.slug === "bad-status")).toBe(false);
     const badLinks = items.find((item) => item.slug === "bad-links");
 
-    expect((badLinks as ProjectFrontmatter | undefined)?.role).toBeUndefined();
+    expect((badLinks as ProjectFrontmatter | undefined)?.role).toBeNull();
   });
 
   test("reports invalid and untitled documents via the directory audit", async () => {
@@ -242,7 +242,7 @@ describe("content normalization against controlled fixtures", () => {
   });
 
   test("keeps valid links and drops invalid link entries", async () => {
-    const items = await listContent(contentDir);
+    const items = await listContent(contentDir, { type: null });
     const healthy = items.find((item) => item.slug === "launcher");
     const broken = items.find((item) => item.slug === "bad-links");
 
@@ -270,7 +270,7 @@ describe("content normalization against controlled fixtures", () => {
   });
 
   test("skips an article without a valid category and audits it", async () => {
-    expect(await listContent(invalidCategoryDir)).toEqual([]);
+    expect(await listContent(invalidCategoryDir, { type: null })).toEqual([]);
 
     expect(await validateContentDir(invalidCategoryDir)).toMatchObject([
       { file: "no-category.md", field: "category" },
@@ -278,7 +278,7 @@ describe("content normalization against controlled fixtures", () => {
   });
 
   test("skips a project missing coverImage and coverImageAlt and audits it", async () => {
-    expect(await listContent(invalidCoverDir)).toEqual([]);
+    expect(await listContent(invalidCoverDir, { type: null })).toEqual([]);
 
     expect(await validateContentDir(invalidCoverDir)).toMatchObject([
       { file: "no-cover.md", field: "coverImage" },
@@ -288,7 +288,7 @@ describe("content normalization against controlled fixtures", () => {
 
 describe("real content directory sanity check", () => {
   test("parses all real markdown files as list items", async () => {
-    const items = await listContent(REAL_CONTENT_DIR);
+    const items = await listContent(REAL_CONTENT_DIR, { type: null });
 
     expect(items.length).toBeGreaterThanOrEqual(8);
     const titles = items.map((i) => i.title);

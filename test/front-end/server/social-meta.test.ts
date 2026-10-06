@@ -18,6 +18,7 @@ const ORIGIN = "https://buildwithtim.dev";
 function article(overrides: Partial<ArticleFrontmatter> = {}): ArticleFrontmatter {
   return {
     type: "article",
+    socialImage: null,
     title: "Apt-get out of my life, hello flatpak",
     description: "Why I moved my desktop apps to Flatpak.",
     date: "2026-09-01",

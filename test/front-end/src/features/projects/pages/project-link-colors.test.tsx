@@ -23,6 +23,12 @@ function project(overrides: Partial<ProjectData> = {}): ProjectData {
     featured: false,
     projectOrder: 0,
     links: [],
+    socialImage: null,
+    prioritySlot: null,
+    status: null,
+    role: null,
+    created: null,
+    info: null,
     body: "Project body",
     ...overrides,
   };

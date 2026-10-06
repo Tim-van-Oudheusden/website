@@ -16,11 +16,11 @@ import { ASSET_CACHE_CONTROL, resolveContentAsset } from "./image-assets";
  * - GET /content/:slug — get a single content item (frontmatter + body)
  */
 export function registerContentRoutes(app: FastifyInstance, contentDir: string): void {
-  app.get<{ Querystring: { type?: string } }>(ROUTES.CONTENT, async (request) => {
+  app.get<{ Querystring: { type: string | undefined } }>(ROUTES.CONTENT, async (request) => {
     const { type } = request.query;
     const typeFilter = type !== undefined && (CONTENT_TYPES as readonly string[]).includes(type)
       ? (type as ContentType)
-      : undefined;
+      : null;
 
     return listContent(contentDir, { type: typeFilter });
   });
