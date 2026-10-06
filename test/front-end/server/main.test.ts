@@ -13,8 +13,36 @@ const INDEX_HTML = `<!doctype html>
   <body><div id="root"></div></body>
 </html>`;
 
+const PROXY_BYPASS_VARS = ["NO_PROXY", "no_proxy"] as const;
+const LOOPBACK_HOSTS = "127.0.0.1,localhost";
+
 let root: string;
 let serverScript: string;
+const savedProxyBypass = new Map<string, string | undefined>();
+
+// Every request in this suite is loopback. Behind an HTTP(S)_PROXY, Bun's
+// fetch sends it to the proxy, which answers 502 for a port nobody listens on
+// yet: the readiness poll would take that for the server and signal it before
+// main.ts installs its handlers. The spawned server inherits the bypass for its
+// BACKEND_ORIGIN fetch.
+beforeAll(() => {
+  for (const name of PROXY_BYPASS_VARS) {
+    const current = process.env[name];
+
+    savedProxyBypass.set(name, current);
+    process.env[name] = current === undefined || current === "" ? LOOPBACK_HOSTS : `${current},${LOOPBACK_HOSTS}`;
+  }
+});
+
+afterAll(() => {
+  for (const [name, value] of savedProxyBypass) {
+    if (value === undefined) {
+      Reflect.deleteProperty(process.env, name);
+    } else {
+      process.env[name] = value;
+    }
+  }
+});
 
 // Mirror the prod image layout: the Dockerfile bundles main.ts into
 // server/main.js and ships the Vite build as the sibling dist/.
