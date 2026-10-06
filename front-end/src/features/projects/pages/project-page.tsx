@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router";
 
 import type { ProjectFrontmatter } from "shared";
 
-import { ErrorBoundary } from "@/shared/components/error-boundary";
+import { ErrorBoundary, renderErrorFallback } from "@/shared/components/error-boundary";
 import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -169,7 +169,7 @@ export function ProjectPage(): JSX.Element {
     <main className={PROJECT_PAGE_LAYOUT_CLASSES.main}>
       <article className={PROJECT_PAGE_LAYOUT_CLASSES.articleMeasure}>
         <ProjectMetaHeader project={project} />
-        <ErrorBoundary>
+        <ErrorBoundary fallback={renderErrorFallback}>
           <MarkdownRenderer content={project.body} />
         </ErrorBoundary>
       </article>

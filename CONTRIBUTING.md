@@ -91,8 +91,9 @@ Code shape:
 
 - Named functions are `function` declarations; arrows only for callbacks and inline expressions (`func-style`, `prefer-arrow-callback`, `arrow-body-style: as-needed`).
 - `interface` over `type` where both work; explicit return types on every function (test files exempt).
-- Named exports only; default exports are allowed solely in `playwright.config.ts`, `front-end/vite.config.ts`, and `test/front-end/vite.config.test.ts`.
+- Named exports only; default exports are allowed solely in `playwright.config.ts` and `front-end/vite.config.ts`.
 - Erasable TypeScript only: no `enum`, `namespace`, or parameter properties (also enforced by `erasableSyntaxOnly`). Use `as const` objects or unions.
+- No optional members (`foo?: T`, `foo?(): T`, `fn(x?: T)`); lint bans them via `no-restricted-syntax`. Model complete types instead: required fields, discriminated unions, and required injected dependencies; for serialized data use `T | null`, never `undefined`. See [*Effective TypeScript* Item 37 "Limit the Use of Optional Properties"](https://github.com/danvk/effective-typescript) and ["Parse, don't validate"](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/). Exempt: shadcn components in `front-end/src/shared/components/ui/` and everything under `test/`. Elsewhere a `?` is allowed only where it mirrors an external signature (e.g. `fetch`'s `init?`) or is a pure DOM `className` passthrough, and only with `// eslint-disable-next-line no-restricted-syntax -- <reason>`.
 - Naming: camelCase variables/functions, PascalCase types and components, `UPPER_CASE` allowed for module-level constants, no `I`/`T` prefixes, leading `_` only on unused names.
 - `no-explicit-any`, `object-shorthand`, `prefer-template`, `no-else-return`, `no-nested-ternary`, `no-param-reassign` (property mutation allowed), `no-implicit-coercion` (`!!` allowed), `eqeqeq`.
 
@@ -109,7 +110,7 @@ React (front-end and its tests):
 
 Severity: only `no-unused-vars`, `no-console` (except `warn`/`error`), and `no-unnecessary-condition` warn; everything else errors. Warnings still fail `bun run lint`.
 
-Overrides: test files (`*.test.ts(x)`, `*.e2e.ts`) relax the `no-unsafe-*`, non-null-assertion, and return-type rules; shadcn components in `front-end/src/shared/components/ui/` skip naming, return-type, and function-style rules. The reformat commit is listed in `.git-blame-ignore-revs`.
+Overrides: test files (`*.test.ts(x)`, `*.e2e.ts`) relax the `no-unsafe-*`, non-null-assertion, and return-type rules; shadcn components in `front-end/src/shared/components/ui/` skip naming, return-type, and function-style rules; both `front-end/src/shared/components/ui/` and `test/` are exempt from the optional-member ban. The reformat commit is listed in `.git-blame-ignore-revs`.
 
 Run `bun run lint` and `bun run typecheck` frequently rather than at the end.
 

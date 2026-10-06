@@ -41,7 +41,7 @@ function renderWithRouter(element: ReactElement): string {
 
 describe("ProjectCard", () => {
   test("renders the project title, description, and cover image", () => {
-    const html = renderWithRouter(createElement(ProjectCard, { project: project() }));
+    const html = renderWithRouter(createElement(ProjectCard, { project: project(), featured: false }));
 
     expect(html).toContain("Project");
     expect(html).toContain("Description");
@@ -51,7 +51,7 @@ describe("ProjectCard", () => {
 
   test("renders every project tag as a badge on the card", () => {
     const tagged = project({ tags: ["automation", "android"] });
-    const html = renderWithRouter(createElement(ProjectCard, { project: tagged }));
+    const html = renderWithRouter(createElement(ProjectCard, { project: tagged, featured: false }));
 
     expect(html).toContain("automation");
     expect(html).toContain("android");
@@ -61,8 +61,8 @@ describe("ProjectCard", () => {
     const withStatus = project({ status: "Shipped" });
     const withoutStatus = project({ status: null, title: "Untitled" });
 
-    const withStatusHtml = renderWithRouter(createElement(ProjectCard, { project: withStatus }));
-    const withoutStatusHtml = renderWithRouter(createElement(ProjectCard, { project: withoutStatus }));
+    const withStatusHtml = renderWithRouter(createElement(ProjectCard, { project: withStatus, featured: false }));
+    const withoutStatusHtml = renderWithRouter(createElement(ProjectCard, { project: withoutStatus, featured: false }));
 
     expect(withStatusHtml).toContain("Shipped");
     expect(withoutStatusHtml).not.toContain("Shipped");

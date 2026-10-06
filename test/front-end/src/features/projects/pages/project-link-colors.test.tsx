@@ -42,7 +42,7 @@ function renderWithRouter(element: ReactElement): string {
 
 describe("project navigation links", () => {
   test("card links to its case study page and offers a view-project affordance", () => {
-    const html = renderWithRouter(createElement(ProjectCard, { project: project() }));
+    const html = renderWithRouter(createElement(ProjectCard, { project: project(), featured: false }));
 
     expect(html).toMatch(/<a[^>]*href="\/projects\/project"/);
     expect(html).toContain("View project");

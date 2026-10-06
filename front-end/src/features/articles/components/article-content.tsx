@@ -2,7 +2,7 @@ import type { JSX } from "react";
 
 import type { ArticleData } from "shared/articles";
 
-import { ErrorBoundary } from "@/shared/components/error-boundary";
+import { ErrorBoundary, renderErrorFallback } from "@/shared/components/error-boundary";
 import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
 import { Badge } from "@/shared/components/ui/badge";
 import { cn } from "@/shared/lib/utils";
@@ -65,7 +65,7 @@ export function ArticleContent({
                 ))}
               </div>
             </header>
-            <ErrorBoundary>
+            <ErrorBoundary fallback={renderErrorFallback}>
               <MarkdownRenderer content={article.body} />
             </ErrorBoundary>
           </div>

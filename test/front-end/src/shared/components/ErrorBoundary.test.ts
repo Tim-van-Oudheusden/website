@@ -4,7 +4,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import type { ErrorBoundaryProps, ErrorBoundaryState } from "../../../../../front-end/src/shared/components/error-boundary";
-import { ErrorBoundary } from "../../../../../front-end/src/shared/components/error-boundary";
+import { ErrorBoundary, renderErrorFallback } from "../../../../../front-end/src/shared/components/error-boundary";
 
 const HEALTHY_CHILD = createElement("span", null, "healthy content");
 
@@ -47,7 +47,7 @@ function mountUpdater(instance: ErrorBoundary): void {
 
 describe("ErrorBoundary", () => {
   test("renders children normally when no error has occurred", () => {
-    const instance = new ErrorBoundary({ children: HEALTHY_CHILD });
+    const instance = new ErrorBoundary({ children: HEALTHY_CHILD, fallback: renderErrorFallback });
 
     expect(renderToStaticMarkup(instance.render())).toContain("healthy content");
   });
@@ -57,7 +57,7 @@ describe("ErrorBoundary", () => {
   });
 
   test("renders the default fallback with a retry control after a child error", () => {
-    const instance = new ErrorBoundary({ children: HEALTHY_CHILD });
+    const instance = new ErrorBoundary({ children: HEALTHY_CHILD, fallback: renderErrorFallback });
 
     applyErrorState(instance);
     const html = renderToStaticMarkup(instance.render());
@@ -68,24 +68,25 @@ describe("ErrorBoundary", () => {
     expect(html).not.toContain("healthy content");
   });
 
-  test("renders the provided custom fallback instead of the default", () => {
-    const instance = new ErrorBoundary({ children: HEALTHY_CHILD, fallback: createElement("div", null, "custom fallback") });
+  test("renders the provided fallback with a retry that recovers the children", () => {
+    const retries: (() => void)[] = [];
+    const instance = new ErrorBoundary({
+      children: HEALTHY_CHILD,
+      fallback: (retry) => {
+        retries.push(retry);
+
+        return createElement("div", null, "custom fallback");
+      },
+    });
 
     applyErrorState(instance);
+    mountUpdater(instance);
     const html = renderToStaticMarkup(instance.render());
 
     expect(html).toContain("custom fallback");
     expect(html).not.toContain("Failed to render content.");
-  });
 
-  test("recovers to children when retry() clears the captured error", () => {
-    const instance = new ErrorBoundary({ children: HEALTHY_CHILD });
-
-    applyErrorState(instance);
-    mountUpdater(instance);
-    expect(renderToStaticMarkup(instance.render())).toContain("Failed to render content.");
-
-    instance.retry();
+    retries[0]?.();
     expect(renderToStaticMarkup(instance.render())).toContain("healthy content");
   });
 });
