@@ -1,0 +1,26 @@
+# Weekly update PRs for the workflow actions and the bun workspaces.
+# Dependabot only proposes changes; every PR still goes through CI and review.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+    groups:
+      github-actions:
+        patterns: ['*']
+
+  # The root bun.lock covers the front-end, back-end and shared workspaces.
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: fix(deps)
+    open-pull-requests-limit: 5
+    groups:
+      # Majors stay as one PR each: AGENTS.md makes a major upgrade its own task.
+      minor-and-patch:
+        update-types: [minor, patch]
