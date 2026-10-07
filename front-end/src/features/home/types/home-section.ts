@@ -9,15 +9,6 @@ export type HomeSectionId
 
 export type HomeSectionContentDirection = "row" | "column";
 
-/** One pairing of a real tool with what it enables, used by the for-devs workflow section. */
-export interface HomeFeatureRow {
-  title: string;
-  /** What the tool enables. */
-  description: string;
-  /** Short label for the empty media placeholder slot beside the row. */
-  mediaLabel: string;
-}
-
 interface HomeSectionBase {
   id: HomeSectionId;
   label: string;
@@ -41,10 +32,14 @@ export interface HomeRecommendationsSection extends HomeSectionBase {
   linkTo: string;
 }
 
-export interface HomeWorkflowSection extends HomeSectionBase {
-  variant: "workflow";
-  /** Real capability/workflow rows. */
-  features: HomeFeatureRow[];
+export interface HomeProjectsSection extends HomeSectionBase {
+  variant: "projects";
+  /** Label of the "see all" link beside the heading. */
+  linkLabel: string;
+  /** Route the "see all" link opens. */
+  linkTo: string;
+  /** Subheading once the featured project is known; `body` shows until then. */
+  featuredSubheading: (featuredTitle: string) => string;
 }
 
 export interface HomeTrustSection extends HomeSectionBase {
@@ -68,7 +63,7 @@ export interface HomeFooterSection extends HomeSectionBase {
 export type HomeSectionDefinition
   = | HomeStartSection
     | HomeRecommendationsSection
-    | HomeWorkflowSection
+    | HomeProjectsSection
     | HomeTrustSection
     | HomeRecentPostsSection
     | HomeStartHereSection

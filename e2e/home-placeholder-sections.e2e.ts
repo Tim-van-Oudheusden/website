@@ -15,15 +15,22 @@ test.describe("Home placeholder sections implemented", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
   });
 
-  test("renders the 'How I work' workflow rows from real content", async ({ page }) => {
+  test("showcases real projects, featured first, linking to GitHub or the case study", async ({ page }) => {
     const section = page.locator("section#for-devs");
 
     scrollToSection(page, "for-devs");
-    await expect(section.getByRole("heading", { name: "How I work" })).toBeVisible();
-    await expect(section.getByText("Obsidian content pipeline", { exact: true })).toBeVisible();
-    await expect(section.getByText("Pi sandbox automation", { exact: true })).toBeVisible();
-    await expect(section.getByText("Container-OS desktop", { exact: true })).toBeVisible();
-    await expect(section).not.toContainText(/placeholder alternating feature/i);
+    await expect(section.getByRole("heading", { level: 2, name: "Open-source projects" })).toBeVisible();
+    await expect(section.getByRole("heading", { level: 3 }).first()).toHaveText("Minimal Android Launcher");
+
+    const github = section.getByRole("link", { name: "View on GitHub: Pi Sandbox Automation (opens in a new tab)" });
+
+    await expect(github).toHaveAttribute("href", "https://github.com/Tim-van-Oudheusden/website");
+    await expect(github).toHaveAttribute("target", "_blank");
+
+    await expect(section.getByRole("link", { name: "Read case study: Obsidian Content Pipeline" })).toHaveAttribute(
+      "href",
+      "/projects/obsidian-content-pipeline",
+    );
   });
 
   test("renders the honest proof trust strip without fabricated metrics", async ({ page }) => {

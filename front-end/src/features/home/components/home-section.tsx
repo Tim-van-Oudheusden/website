@@ -4,18 +4,18 @@ import type { ContentLoader } from "@/shared/lib/content-loader";
 
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
 
+import { HomeProjectShowcase } from "./home-project-showcase";
 import { HomeRecentPosts } from "./home-recent-posts";
 import { HomeRecommendations } from "./home-recommendations";
 import { HomeSectionFooter } from "./home-section-footer";
 import { HomeSectionStart } from "./home-section-start";
 import { HomeStartHere } from "./home-start-here";
 import { HomeTrustStrip } from "./home-trust-strip";
-import { HomeWorkflowRows } from "./home-workflow-rows";
 
 export interface HomeSectionProps {
   section: HomeSectionDefinition;
   onCtaActivate: (sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => void;
-  /** Content source for the sections that list real articles. */
+  /** Content source for the sections that list real articles and projects. */
   loader: ContentLoader;
 }
 
@@ -28,8 +28,8 @@ export function HomeSection({ section, onCtaActivate, loader }: HomeSectionProps
       return <HomeSectionFooter section={section} />;
     case "recommendations":
       return <HomeRecommendations section={section} loader={loader} />;
-    case "workflow":
-      return <HomeWorkflowRows section={section} />;
+    case "projects":
+      return <HomeProjectShowcase section={section} loader={loader} />;
     case "trust":
       return <HomeTrustStrip section={section} />;
     case "recent-posts":
