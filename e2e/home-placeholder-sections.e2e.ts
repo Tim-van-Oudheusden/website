@@ -69,4 +69,21 @@ test.describe("Home placeholder sections implemented", () => {
     await expect(section.getByRole("listitem").first()).toContainText("2024 — Present");
     await expect(section.getByRole("link", { name: "View full profile on LinkedIn (opens in a new tab)" })).toBeVisible();
   });
+
+  test("ends the page with a socials footer linking to GitHub and LinkedIn", async ({ page }) => {
+    const footer = page.locator("footer#socials");
+
+    scrollToSection(page, "socials");
+    await expect(footer.getByRole("heading", { level: 2, name: "Socials" })).toBeVisible();
+
+    const github = footer.getByRole("link", { name: "GitHub (opens in a new tab)" });
+
+    await expect(github).toHaveAttribute("href", "https://github.com/Tim-van-Oudheusden");
+    await expect(github).toHaveAttribute("target", "_blank");
+
+    await expect(footer.getByRole("link", { name: "LinkedIn (opens in a new tab)" })).toHaveAttribute(
+      "href",
+      "https://www.linkedin.com/in/tim-van-oudheusden",
+    );
+  });
 });

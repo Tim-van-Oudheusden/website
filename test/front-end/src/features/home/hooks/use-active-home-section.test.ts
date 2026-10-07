@@ -20,7 +20,7 @@ afterAll(() => {
   uninstallFakeDom();
 });
 
-const VALID_IDS: readonly HomeSectionId[] = ["start", "for-you", "footer"];
+const VALID_IDS: readonly HomeSectionId[] = ["start", "for-you", "socials"];
 
 function entry(id: string, ratio: number, isIntersecting = true): ObservedSectionEntry {
   return { id, intersectionRatio: ratio, isIntersecting };
@@ -55,14 +55,14 @@ describe("selectActiveSectionId", () => {
 
   test("prefers the first strictly greater ratio on ties", () => {
     expect(selectActiveSectionId(
-      [entry("start", 0.5), entry("for-you", 0.5)], VALID_IDS, "footer",
+      [entry("start", 0.5), entry("for-you", 0.5)], VALID_IDS, "socials",
     )).toBe("start");
   });
 });
 
 // "about-me" is tracked but never rendered, so the hook must skip its missing element.
-const TRACKED_IDS: readonly HomeSectionId[] = ["start", "for-you", "about-me", "footer"];
-const RENDERED_IDS: readonly HomeSectionId[] = ["start", "for-you", "footer"];
+const TRACKED_IDS: readonly HomeSectionId[] = ["start", "for-you", "about-me", "socials"];
+const RENDERED_IDS: readonly HomeSectionId[] = ["start", "for-you", "socials"];
 
 function ActiveSectionProbe({ sectionIds }: { sectionIds: readonly HomeSectionId[] }): ReactElement {
   const activeSectionId = useActiveHomeSection(sectionIds);
@@ -122,11 +122,11 @@ describe("useActiveHomeSection", () => {
       act(() => {
         triggerFakeIntersections([
           { target: section("for-you"), intersectionRatio: 0 },
-          { target: section("footer"), intersectionRatio: 0.4 },
+          { target: section("socials"), intersectionRatio: 0.4 },
         ]);
       });
 
-      expect(activeSection(mount)).toBe("footer");
+      expect(activeSection(mount)).toBe("socials");
     } finally {
       unmountFakeDomRoot(mount);
     }
@@ -137,14 +137,14 @@ describe("useActiveHomeSection", () => {
 
     try {
       act(() => {
-        triggerFakeIntersections([{ target: section("footer"), intersectionRatio: 0.8 }]);
+        triggerFakeIntersections([{ target: section("socials"), intersectionRatio: 0.8 }]);
       });
 
       act(() => {
-        triggerFakeIntersections([{ target: section("footer"), intersectionRatio: 0 }]);
+        triggerFakeIntersections([{ target: section("socials"), intersectionRatio: 0 }]);
       });
 
-      expect(activeSection(mount)).toBe("footer");
+      expect(activeSection(mount)).toBe("socials");
     } finally {
       unmountFakeDomRoot(mount);
     }
@@ -160,7 +160,7 @@ describe("useActiveHomeSection", () => {
 
       try {
         act(() => {
-          triggerFakeIntersections([{ target: section("footer"), intersectionRatio: 1 }]);
+          triggerFakeIntersections([{ target: section("socials"), intersectionRatio: 1 }]);
         });
 
         expect(activeSection(mount)).toBe("start");

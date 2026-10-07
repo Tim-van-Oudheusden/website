@@ -1,6 +1,6 @@
 import { cn } from "cn";
 import type { LucideIcon } from "lucide-react";
-import { BriefcaseBusiness, CodeXml, House, IdCard, Newspaper, Sparkles, UserRound } from "lucide-react";
+import { AtSign, BriefcaseBusiness, CodeXml, House, IdCard, Newspaper, UserRound } from "lucide-react";
 import type { CSSProperties, JSX, MouseEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -23,7 +23,7 @@ const HOME_NAV_ICONS: Record<HomeSectionId, LucideIcon> = {
   "about-me": IdCard,
   "whats-new": Newspaper,
   "experience": BriefcaseBusiness,
-  "footer": Sparkles,
+  "socials": AtSign,
 };
 
 export function HomeFloatingNav({

@@ -1,3 +1,5 @@
+import type { SocialLink } from "@/shared/config/social-links";
+
 import type { ExperienceEntry } from "../config/experience";
 
 export type HomeSectionId
@@ -7,7 +9,7 @@ export type HomeSectionId
     | "about-me"
     | "whats-new"
     | "experience"
-    | "footer";
+    | "socials";
 
 export type HomeSectionContentDirection = "row" | "column";
 
@@ -64,8 +66,11 @@ export interface HomeExperienceSection extends HomeSectionBase {
   profileUrl: string;
 }
 
-export interface HomeFooterSection extends HomeSectionBase {
-  variant: "footer";
+/** The last block on the page, rendered as the semantic `<footer>`. */
+export interface HomeSocialsSection extends HomeSectionBase {
+  variant: "socials";
+  /** Profiles, shown as links in this order. */
+  links: SocialLink[];
 }
 
 export type HomeSectionDefinition
@@ -75,6 +80,6 @@ export type HomeSectionDefinition
     | HomeAboutSection
     | HomeRecentPostsSection
     | HomeExperienceSection
-    | HomeFooterSection;
+    | HomeSocialsSection;
 
 export type HomeSectionVariant = HomeSectionDefinition["variant"];

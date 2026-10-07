@@ -81,6 +81,13 @@ describe("HomeFloatingNav", () => {
     expect(anchor).toContain("lucide-briefcase-business");
     expect(anchor).toContain("experience");
   });
+
+  test("lists the socials section as \"socials\" with the at-sign icon, linking to #socials", () => {
+    const anchor = /<a [^>]*href="#socials"[^>]*>[\s\S]*?<\/a>/.exec(renderFloatingNav())?.[0] ?? "";
+
+    expect(anchor).toContain("lucide-at-sign");
+    expect(anchor).toContain("socials");
+  });
 });
 
 describe("HomeFloatingNav active indicator", () => {

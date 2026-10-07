@@ -41,7 +41,7 @@ function section(entries: ExperienceEntry[]): HomeExperienceSection {
     contentDirection: "row",
     variant: "experience",
     entries,
-    profileUrl: "https://www.linkedin.com/in/tim-vanoudheusden",
+    profileUrl: "https://www.linkedin.com/in/tim-van-oudheusden",
   };
 }
 
@@ -137,7 +137,7 @@ describe("HomeExperience", () => {
 
   test("links to the full LinkedIn profile", () => {
     withRows([entry({ companyUrl: null })], (_rows, mount) => {
-      const profile = queryFakeElements(mount.container, (el) => el.nodeName === "A" && el.getAttribute("href") === "https://www.linkedin.com/in/tim-vanoudheusden")[0];
+      const profile = queryFakeElements(mount.container, (el) => el.nodeName === "A" && el.getAttribute("href") === "https://www.linkedin.com/in/tim-van-oudheusden")[0];
 
       expect(profile?.textContent).toContain("View full profile on LinkedIn");
       expect(profile?.getAttribute("target")).toBe("_blank");
