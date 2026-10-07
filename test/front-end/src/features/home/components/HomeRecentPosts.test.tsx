@@ -77,7 +77,7 @@ const RECENT_POSTS_SECTION = HOME_SECTIONS.find(
 
 async function mountRecentPosts(loader: ContentLoader): Promise<FakeMount> {
   if (RECENT_POSTS_SECTION === undefined) {
-    throw new Error("Expected a community-and-docs home section");
+    throw new Error("Expected a whats-new home section");
   }
 
   const mount = mountIntoBody(

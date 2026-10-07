@@ -3,7 +3,7 @@ export type HomeSectionId
     | "for-you"
     | "for-devs"
     | "about-me"
-    | "community-and-docs"
+    | "whats-new"
     | "secondary-cta"
     | "footer";
 

@@ -72,7 +72,7 @@ interface HomeRecentPostsProps {
   loader: ContentLoader;
 }
 
-/** Home 'community-and-docs' section: a self-updating recent-posts strip from real content. */
+/** Home 'whats-new' section: a self-updating recent-posts strip from real content. */
 export function HomeRecentPosts({ section, loader }: HomeRecentPostsProps): JSX.Element {
   const [posts, setPosts] = useState<ArticleSummary[] | null>(null);
   const [loadError, setLoadError] = useState(false);
