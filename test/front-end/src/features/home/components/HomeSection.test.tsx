@@ -106,7 +106,7 @@ describe("HomeSection", () => {
 
   test("derives the heading id from the section id via one seam", () => {
     expect(headingIdFor("start")).toBe("start-heading");
-    expect(headingIdFor("community-and-docs")).toBe("community-and-docs-heading");
+    expect(headingIdFor("whats-new")).toBe("whats-new-heading");
     expect(headingIdFor("footer")).toBe("footer-heading");
   });
 

@@ -43,9 +43,9 @@ test.describe("Home placeholder sections implemented", () => {
   });
 
   test("renders the recent-posts strip linked to real article pages", async ({ page }) => {
-    const section = page.locator("section#community-and-docs");
+    const section = page.locator("section#whats-new");
 
-    scrollToSection(page, "community-and-docs");
+    scrollToSection(page, "whats-new");
     await expect(section.getByRole("heading", { name: "What's new from the blog" })).toBeVisible();
     const introLink = section.getByRole("link", { name: /Introduction/ }).first();
 

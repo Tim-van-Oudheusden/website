@@ -53,6 +53,14 @@ describe("HomeFloatingNav", () => {
     expect(html).not.toContain("dark:bg-(--adw-page-brown-bg)");
   });
 
+  test("shows the recent-posts entry as what's new with the newspaper icon, linking to #whats-new", () => {
+    const html = renderFloatingNav();
+    const anchor = /<a[^>]*href="#whats-new"[^>]*>(.*?)<\/a>/.exec(html);
+
+    expect(anchor?.[1]).toContain("lucide-newspaper");
+    expect(anchor?.[1]?.replaceAll("&#x27;", "'")).toContain("what's new");
+  });
+
   test("keeps active nav text white in dark mode while indicator remains black", () => {
     const html = renderFloatingNav();
 

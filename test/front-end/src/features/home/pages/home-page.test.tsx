@@ -11,7 +11,7 @@ import { HomePage } from "../../../../../../front-end/src/features/home/pages/ho
 import type { FakeMount } from "../../../../src/test/dom-harness";
 import { fireFakePointer, initFakeDomHarness, jsonResponse, mountIntoBody, routeFetch, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import type { FakeDocument, FakeElement } from "../../../../src/test/fake-dom";
-import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
+import { queryFakeElements, triggerFakeIntersections, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 const ORIGINAL_FETCH = globalThis.fetch;
 
@@ -151,6 +151,40 @@ describe("HomePage section anchors", () => {
       expect(event.defaultPrevented).toBe(false);
       expect(sectionElement("about-me-detached").scrollIntoViewCalls).toEqual([]);
       expect(window.location.hash).toBe("");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+});
+
+describe("HomePage what's new section", () => {
+  test("the what's new nav entry scrolls to the recent-posts section at #whats-new", () => {
+    const page = mountHomePage();
+
+    try {
+      fireFakePointer(anchorTo(page.container, "whats-new", "what's new"), "click");
+
+      expect(sectionElement("whats-new").scrollIntoViewCalls).toEqual([{ behavior: "smooth", block: "start" }]);
+      expect(sectionElement("whats-new").textContent).toContain("What's new from the blog");
+      expect(window.location.hash).toBe("#whats-new");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("scroll-spy marks what's new active once its section is the most visible", () => {
+    const page = mountHomePage();
+
+    try {
+      act(() => {
+        triggerFakeIntersections([
+          { target: sectionElement("about-me"), intersectionRatio: 0.2 },
+          { target: sectionElement("whats-new"), intersectionRatio: 0.7 },
+        ]);
+      });
+
+      expect(anchorTo(page.container, "whats-new", "what's new").getAttribute("aria-current")).toBe("location");
+      expect(anchorTo(page.container, "about-me", "about me").getAttribute("aria-current")).toBeNull();
     } finally {
       unmountFakeDomRoot(page);
     }
