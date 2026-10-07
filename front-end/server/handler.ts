@@ -67,6 +67,16 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
       return new Response(Bun.file(filePath), { headers: SECURITY_HEADERS });
     }
 
+    // Browsers probe /favicon.ico regardless of <link rel="icon">; the app shell
+    // is not an icon. Only this path: article slugs may contain dots, so a
+    // general "has an extension" 404 would break real pages.
+    if (url.pathname === "/favicon.ico") {
+      return new Response("Not Found", {
+        status: 404,
+        headers: { ...SECURITY_HEADERS, "content-type": "text/plain; charset=utf-8" },
+      });
+    }
+
     const indexHtml = await indexFile.text();
     const slug = ARTICLE_PATH.exec(url.pathname)?.[1];
     const article = slug === undefined ? null : await fetchArticle(options.fetchBackend, slug, backendHeaders);
