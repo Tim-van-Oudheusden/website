@@ -1,5 +1,10 @@
 # Weekly update PRs for the workflow actions and the bun workspaces.
 # Dependabot only proposes changes; every PR still goes through CI and review.
+#
+# Majors stay as one PR each in both ecosystems: AGENTS.md makes a major upgrade
+# its own task. Known Dependabot limitation (dependabot/dependabot-core#14202):
+# no new major PRs open while that ecosystem's minor/patch group PR is open, so
+# merge or close the group PR before the next weekly run.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -10,7 +15,7 @@ updates:
       prefix: ci
     groups:
       github-actions:
-        patterns: ['*']
+        update-types: [minor, patch]
 
   # The root bun.lock covers the front-end, back-end and shared workspaces.
   - package-ecosystem: bun
@@ -21,6 +26,11 @@ updates:
       prefix: fix(deps)
     open-pull-requests-limit: 5
     groups:
-      # Majors stay as one PR each: AGENTS.md makes a major upgrade its own task.
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # typescript-eslint 8 declares peer typescript ">=4.8.4 <6.1.0", and
+      # TypeScript 7 crashes `bun run lint` (#612). Remove this once
+      # typescript-eslint widens its peer range.
+      - dependency-name: typescript
+        versions: [">=6.1.0"]
