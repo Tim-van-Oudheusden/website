@@ -1,6 +1,6 @@
 ---
 title: Minimal Android Launcher
-description: A full-stack personal website for articles, projects, and long-form markdown content.
+description: A minimal Android launcher for Android phones, inspired by MinUI.
 date: 2026-06-10
 tags:
   - Android
@@ -9,7 +9,7 @@ type: project
 draft: false
 slug: minimal-android-launcher
 coverImage: /images/projects/placeholder_phone_project.png
-coverImageAlt: Yet to be decided
+coverImageAlt: Sepia illustration of a smartphone with a physical QWERTY keyboard, its screen showing a forest scene, framed by ferns and wildflowers.
 featured: true
 projectOrder: 10
 status: In Progress
@@ -22,18 +22,8 @@ links:
 info: A new launcher heavily inspired by MinUI for various retro handhelds
 ---
 
-# Personal Website Platform
+# Minimal Android Launcher
 
-This project is the full-stack platform behind this website. It combines a React front end, a Fastify back end, and a shared TypeScript package so routes, content types, and API contracts stay aligned.
+A new Android launcher heavily inspired by MinUI for various Android phones.
 
-## Problem
-
-I wanted a personal site that could grow from a homepage and articles into a broader system for projects, recommendations, and experiments without turning every page into a one-off implementation.
-
-## Approach
-
-The implementation keeps content in markdown, exposes it through a small content API, and renders it with reusable page components and shared design tokens.
-
-## Outcome
-
-The site now has a clearer foundation for publishing long-form articles and credibility-focused project pages from the same content pipeline.
+This project is still in progress; more details will be added as it develops.
