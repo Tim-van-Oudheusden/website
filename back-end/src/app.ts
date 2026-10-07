@@ -31,11 +31,11 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   registerSecurityHeaders(app);
   await registerRateLimiting(app);
 
+  const { contentDir } = options;
+
   // Probe endpoint stays at the root: kube probes, the CI wait loop, and the
   // README all target /health.
-  registerHealthRoute(app);
-
-  const { contentDir } = options;
+  registerHealthRoute(app, contentDir);
 
   // JSON API routes live under API_BASE so dev (Vite proxy, no rewrite) and
   // prod (cloudflared ingress) share the same request paths.

@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { resolve } from "node:path";
+import { chmod, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
 import type { FastifyInstance } from "fastify";
 
@@ -213,5 +215,51 @@ describe("back-end routes use shared ROUTES constants", () => {
     }
 
     expect(last?.statusCode).toBe(429);
+  });
+});
+
+describe(`GET ${ROUTES.HEALTH} reflects content directory availability`, () => {
+  test("returns 503 with status \"error\" when contentDir is missing", async () => {
+    const app = await buildApp({
+      logger: false,
+      contentDir: resolve(import.meta.dir, "../../../content-does-not-exist"),
+    });
+
+    await app.ready();
+
+    try {
+      const res = await app.inject({ method: "GET", url: ROUTES.HEALTH });
+
+      expect(res.statusCode).toBe(503);
+
+      const body = res.json();
+
+      expect(body.status).toBe("error");
+      expect(body.name).toBe(APP_NAME);
+      expect(typeof body.error).toBe("string");
+    } finally {
+      await app.close();
+    }
+  });
+
+  test("returns 503 when contentDir exists but cannot be read", async () => {
+    const unreadableDir = await mkdtemp(join(tmpdir(), "health-unreadable-"));
+
+    await chmod(unreadableDir, 0o000);
+
+    const app = await buildApp({ logger: false, contentDir: unreadableDir });
+
+    await app.ready();
+
+    try {
+      const res = await app.inject({ method: "GET", url: ROUTES.HEALTH });
+
+      expect(res.statusCode).toBe(503);
+      expect(res.json().status).toBe("error");
+    } finally {
+      await app.close();
+      await chmod(unreadableDir, 0o700);
+      await rm(unreadableDir, { recursive: true });
+    }
   });
 });

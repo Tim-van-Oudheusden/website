@@ -146,6 +146,8 @@ export interface HealthCheckResponse {
   status: ServiceStatus;
   name: string;
   uptime: number;
+  /** The failing dependency check when status is not "ok"; null when "ok". */
+  error: string | null;
 }
 
 /* ── Shared Types ── */
