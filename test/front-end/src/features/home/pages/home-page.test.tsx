@@ -1,13 +1,15 @@
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
 
-import { createElement } from "react";
+import { act, createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
+
+import { API_BASE, ROUTES } from "shared";
 
 import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
 import { HomePage } from "../../../../../../front-end/src/features/home/pages/home-page";
 import type { FakeMount } from "../../../../src/test/dom-harness";
-import { fireFakePointer, initFakeDomHarness, jsonResponse, mountIntoBody, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import { fireFakePointer, initFakeDomHarness, jsonResponse, mountIntoBody, routeFetch, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import type { FakeDocument, FakeElement } from "../../../../src/test/fake-dom";
 import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
@@ -86,6 +88,21 @@ describe("HomePage", () => {
 
     expect(html).toContain('aria-label="Page sections"');
     expect(html).toContain('data-slot="active-indicator"');
+  });
+
+  test("requests the article list once for all the sections that list articles", async () => {
+    const requested = routeFetch({ [`${API_BASE}${ROUTES.CONTENT}?type=article`]: () => Promise.resolve(jsonResponse([])) });
+    const page = mountIntoBody(createElement(MemoryRouter, null, createElement(HomePage)));
+
+    try {
+      await act(async () => {
+        await settleMicrotasks();
+      });
+
+      expect(requested).toEqual([`${API_BASE}${ROUTES.CONTENT}?type=article`]);
+    } finally {
+      unmountFakeDomRoot(page);
+    }
   });
 });
 

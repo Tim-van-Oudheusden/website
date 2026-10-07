@@ -6,6 +6,7 @@ import type { ArticleSummary } from "shared/articles";
 
 import type { ContentLoader } from "@/shared/lib/content-loader";
 
+import { resolveCuratedArticles } from "../lib/recommended-articles";
 import type { HomeStartHereSection } from "../types/home-section";
 
 import { HomeHeadedSectionShell } from "./home-section-shell";
@@ -21,28 +22,6 @@ export const HOME_START_HERE_SLUGS: readonly string[] = [
   "yoga-nidra-a-way-to-be-at-peace-in-chaos",
   "making-my-work-easier-with-notes-in-obsidian",
 ];
-
-/**
- * Resolve a curated set of articles, preserving the stated slug order and
- * skipping slugs that do not exist in the real content.
- */
-export function resolveStartHere(
-  articles: ArticleSummary[],
-  slugOrder: readonly string[] = HOME_START_HERE_SLUGS,
-): ArticleSummary[] {
-  const bySlug = new Map(articles.map((article) => [article.slug, article]));
-  const ordered: ArticleSummary[] = [];
-
-  for (const slug of slugOrder) {
-    const article = bySlug.get(slug);
-
-    if (article !== undefined) {
-      ordered.push(article);
-    }
-  }
-
-  return ordered;
-}
 
 /** A vertical list of curated entry-point article links. */
 export function StartHereLinks({ items }: { items: ArticleSummary[] }): JSX.Element {
@@ -105,7 +84,7 @@ export function HomeStartHere({ section, loader }: HomeStartHereProps): JSX.Elem
     loader.listArticles().then(
       (articles) => {
         if (!cancelled) {
-          setItems(resolveStartHere(articles));
+          setItems(resolveCuratedArticles(articles, HOME_START_HERE_SLUGS));
         }
       },
       () => {

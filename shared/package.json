@@ -6,7 +6,8 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./articles": "./src/articles.ts"
+    "./articles": "./src/articles.ts",
+    "./social-image": "./src/social-image.ts"
   },
   "scripts": {
     "build": "tsc -b .",

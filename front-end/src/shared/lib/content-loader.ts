@@ -52,6 +52,24 @@ export const httpContentLoader: ContentLoader = {
   },
 };
 
+/**
+ * Wrap `loader` so every `listArticles` call shares one request. A page with
+ * several article-listing sections then costs one API call, not one per
+ * section (the back-end rate-limits per client).
+ */
+export function shareArticleList(loader: ContentLoader): ContentLoader {
+  let articles: Promise<ArticleSummary[]> | null = null;
+
+  return {
+    ...loader,
+    listArticles(): Promise<ArticleSummary[]> {
+      articles ??= loader.listArticles();
+
+      return articles;
+    },
+  };
+}
+
 /** In-memory test double serving the same surface without any network. */
 export function createMemoryContentLoader(items: ContentItem[]): ContentLoader {
   return {

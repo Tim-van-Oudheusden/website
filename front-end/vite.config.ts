@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-import { API_BASE, BACKEND_HOST, BACKEND_PORT, FRONTEND_PORT } from "../shared/src/index";
+import { API_BASE, ASSET_PATH_PREFIX, BACKEND_HOST, BACKEND_PORT, FRONTEND_PORT } from "../shared/src/index";
 
 /**
  * Resolve the back-end proxy target.
@@ -34,6 +34,11 @@ export default defineConfig({
       // Forward /api/* unchanged so dev paths match prod (cloudflared) paths;
       // the back-end serves the /api prefix itself.
       [API_BASE]: {
+        target: proxyTarget,
+        changeOrigin: true,
+      },
+      // Content images (article social images, embeds) live on the back-end too.
+      [ASSET_PATH_PREFIX]: {
         target: proxyTarget,
         changeOrigin: true,
       },

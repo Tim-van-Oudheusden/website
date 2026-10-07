@@ -1,5 +1,5 @@
 import type { ContentFrontmatter } from "shared";
-import { ASSET_PATH_PREFIX } from "shared";
+import { resolveSocialImagePath } from "shared/social-image";
 
 interface MetaTag {
   attribute: "name" | "property";
@@ -21,15 +21,11 @@ export function renderSocialMeta(html: string, item: ContentFrontmatter, origin:
     { attribute: "property", key: "og:url", content: `${origin}/articles/${item.slug}` },
   ];
 
-  if (item.socialImage === null) {
+  const imagePath = resolveSocialImagePath(item.socialImage);
+
+  if (imagePath === null) {
     tags.push({ attribute: "name", key: "twitter:card", content: "summary" });
   } else {
-    // "/images/me.png" is a site path (public/); "images/cover.png" is relative
-    // to the content directory, which the back-end serves under ASSET_PATH_PREFIX.
-    const imagePath = item.socialImage.startsWith("/")
-      ? item.socialImage
-      : `${ASSET_PATH_PREFIX}${item.socialImage.replace(/^images\//, "")}`;
-
     tags.push({ attribute: "property", key: "og:image", content: `${origin}${imagePath}` });
     tags.push({ attribute: "name", key: "twitter:card", content: "summary_large_image" });
   }

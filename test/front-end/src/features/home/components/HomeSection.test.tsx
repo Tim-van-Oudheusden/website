@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { MemoryRouter } from "react-router";
 
 import { HomeSection } from "../../../../../../front-end/src/features/home/components/home-section";
 import { headingIdFor, HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
@@ -18,23 +19,17 @@ function findHomeSection(sectionId: HomeSectionId): HomeSectionDefinition {
   return section;
 }
 
-function forYouWithFrame(carouselFrame: "well" | "bare"): HomeSectionDefinition {
-  const section = findHomeSection("for-you");
-
-  if (section.variant !== "carousel") {
-    throw new Error("Expected the for-you section to use the carousel variant");
-  }
-
-  return { ...section, carouselFrame };
-}
-
 function renderHomeSection(section: HomeSectionDefinition): string {
   return renderToStaticMarkup(
-    createElement(HomeSection, {
-      section,
-      onCtaActivate: () => undefined,
-      loader: createMemoryContentLoader([]),
-    }),
+    createElement(
+      MemoryRouter,
+      null,
+      createElement(HomeSection, {
+        section,
+        onCtaActivate: () => undefined,
+        loader: createMemoryContentLoader([]),
+      }),
+    ),
   );
 }
 
@@ -83,27 +78,6 @@ describe("HomeSection", () => {
       expect(text).toContain(section.heading);
       expect(text).toContain(section.body);
     }
-  });
-
-  test("renders the for-you section through its carousel variant", () => {
-    const html = renderSection("for-you");
-
-    expect(html).toContain("For you");
-  });
-
-  test("renders a well-framed carousel inside the well with well text colours", () => {
-    const html = renderHomeSection(forYouWithFrame("well"));
-
-    expect(html).toMatch(/class="[^"]*bg-\(--site-section-well-bg\)[^"]*"[^>]*>[\s\S]*id="for-you-heading"/);
-    expect(html).toMatch(/<h2 id="for-you-heading" class="[^"]*--adw-dark-4/);
-  });
-
-  test("renders a bare-framed carousel without the well or well text colours", () => {
-    const html = renderHomeSection(forYouWithFrame("bare"));
-
-    expect(html).not.toContain("--site-section-well-bg");
-    expect(html).not.toContain("--adw-dark-4");
-    expect(html).toMatch(/<h2 id="for-you-heading" class="[^"]*text-white/);
   });
 
   test("renders the footer as a semantic footer with site identification", () => {

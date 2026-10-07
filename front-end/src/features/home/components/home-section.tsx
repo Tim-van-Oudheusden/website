@@ -5,7 +5,7 @@ import type { ContentLoader } from "@/shared/lib/content-loader";
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
 
 import { HomeRecentPosts } from "./home-recent-posts";
-import { HomeSectionCarousel } from "./home-section-carousel";
+import { HomeRecommendations } from "./home-recommendations";
 import { HomeSectionFooter } from "./home-section-footer";
 import { HomeSectionStart } from "./home-section-start";
 import { HomeStartHere } from "./home-start-here";
@@ -26,8 +26,8 @@ export function HomeSection({ section, onCtaActivate, loader }: HomeSectionProps
       return <HomeSectionStart section={section} onCtaActivate={onCtaActivate} />;
     case "footer":
       return <HomeSectionFooter section={section} />;
-    case "carousel":
-      return <HomeSectionCarousel section={section} />;
+    case "recommendations":
+      return <HomeRecommendations section={section} loader={loader} />;
     case "workflow":
       return <HomeWorkflowRows section={section} />;
     case "trust":

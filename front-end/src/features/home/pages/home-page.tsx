@@ -1,6 +1,7 @@
 import type { JSX, MouseEvent } from "react";
+import { useState } from "react";
 
-import { httpContentLoader } from "@/shared/lib/content-loader";
+import { httpContentLoader, shareArticleList } from "@/shared/lib/content-loader";
 
 import { HomeFloatingNav } from "../components/home-floating-nav";
 import { HomeSection } from "../components/home-section";
@@ -45,6 +46,8 @@ function activateSectionAnchor(sectionId: HomeSectionId, event: MouseEvent<HTMLA
 export function HomePage(): JSX.Element {
   const sectionIds = HOME_SECTIONS.map((section) => section.id);
   const activeSectionId = useActiveHomeSection(sectionIds);
+  // One article-list request per page visit, shared by every section that lists articles.
+  const [loader] = useState(() => shareArticleList(httpContentLoader));
 
   return (
     <main className="flex-1 scroll-smooth motion-reduce:scroll-auto">
@@ -53,7 +56,7 @@ export function HomePage(): JSX.Element {
           key={section.id}
           section={section}
           onCtaActivate={activateSectionAnchor}
-          loader={httpContentLoader}
+          loader={loader}
         />
       ))}
       <HomeFloatingNav

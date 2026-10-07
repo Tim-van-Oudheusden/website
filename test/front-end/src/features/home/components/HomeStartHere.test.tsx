@@ -6,8 +6,9 @@ import { MemoryRouter } from "react-router";
 
 import type { ArticleSummary } from "shared/articles";
 
-import { HOME_START_HERE_SLUGS, HomeStartHere, resolveStartHere, StartHereContent, StartHereLinks } from "../../../../../../front-end/src/features/home/components/home-start-here";
+import { HOME_START_HERE_SLUGS, HomeStartHere, StartHereContent, StartHereLinks } from "../../../../../../front-end/src/features/home/components/home-start-here";
 import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
+import { resolveCuratedArticles } from "../../../../../../front-end/src/features/home/lib/recommended-articles";
 import type { HomeStartHereSection } from "../../../../../../front-end/src/features/home/types/home-section";
 import type { ContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
 import { createMemoryContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
@@ -91,34 +92,9 @@ async function mountStartHere(loader: ContentLoader): Promise<FakeMount> {
   return mount;
 }
 
-describe("resolveStartHere", () => {
-  test("keeps only curated slugs and preserves their stated order", () => {
-    const result = resolveStartHere(FIXTURE_ARTICLES, HOME_START_HERE_SLUGS);
-
-    expect(result.map((a) => a.slug)).toEqual([
-      "introduction",
-      "my-operating-system-is-a-container-image-yes-really",
-      "yoga-nidra-a-way-to-be-at-peace-in-chaos",
-    ]);
-  });
-
-  test("skips curated slugs that do not exist in the content", () => {
-    const result = resolveStartHere(FIXTURE_ARTICLES, [
-      "introduction",
-      "no-such-post",
-      "yoga-nidra-a-way-to-be-at-peace-in-chaos",
-    ]);
-
-    expect(result.map((a) => a.slug)).toEqual([
-      "introduction",
-      "yoga-nidra-a-way-to-be-at-peace-in-chaos",
-    ]);
-  });
-});
-
 describe("StartHereLinks", () => {
   test("renders each curated title as a link to its real article page", () => {
-    const html = renderStartHere(resolveStartHere(FIXTURE_ARTICLES, HOME_START_HERE_SLUGS));
+    const html = renderStartHere(resolveCuratedArticles(FIXTURE_ARTICLES, HOME_START_HERE_SLUGS));
 
     expect(html).toContain("/articles/introduction");
     expect(html).toContain("/articles/my-operating-system-is-a-container-image-yes-really");
@@ -127,7 +103,7 @@ describe("StartHereLinks", () => {
   });
 
   test("renders only real links, no invented newsletter or shop CTA", () => {
-    const html = renderStartHere(resolveStartHere(FIXTURE_ARTICLES, HOME_START_HERE_SLUGS));
+    const html = renderStartHere(resolveCuratedArticles(FIXTURE_ARTICLES, HOME_START_HERE_SLUGS));
 
     expect(html).not.toMatch(/newsletter/i);
     expect(html).not.toMatch(/shop/i);
