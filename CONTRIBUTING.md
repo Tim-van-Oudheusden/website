@@ -25,7 +25,7 @@ Dependencies are managed with Bun and pinned in `bun.lock`. Install with `bun in
 ## Finding and claiming work
 
 - GitHub issues are the **primary source of truth** for issue information. Browse open issues, and claim/assign one you intend to work on.
-- Issues are also mirrored into the local `bd` (beads) tracker; run `bd ready` to see available work. When closing an issue, close it on GitHub and run `bd github sync` to mirror state back.
+- Issues are also mirrored into the local `bd` (beads) tracker; run `bd ready` to see available work. An issue closes when the pull request that says `Fixes #<number>` merges; run `bd github sync --pull-only` to mirror that state back.
 
 We favour small, focused changes tied to a tracked issue.
 
@@ -34,7 +34,7 @@ We favour small, focused changes tied to a tracked issue.
 1. Create a branch off `main`.
 2. Pick an issue, and work it **test-first** (see below).
 3. Commit early and often, with [Conventional Commits][conventional-commits] messages, e.g. `feat(home): add contact form`, `fix(deps): tighten route`, `docs(agents): clarify e2e flow`.
-4. Open a pull request; fill in the PR template (which links the issue and pastes evidence).
+4. Open a pull request; fill in the PR template (which links the issue and pastes evidence). `main` is protected: changes land only through pull requests, and CI must pass before merge.
 
 [conventional-commits]: https://www.conventionalcommits.org/
 

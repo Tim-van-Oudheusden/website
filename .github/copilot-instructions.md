@@ -6,8 +6,9 @@ when this file conflicts with AGENTS.md, AGENTS.md wins.**
 
 ## Issue tracking
 
-- GitHub issues are the primary source of truth. Read, claim, and close issues
-  through `gh`; never through local mirrors.
+- GitHub issues are the primary source of truth. Read and claim issues through
+  `gh`, never through local mirrors; an issue closes when the PR that says
+  `Fixes #<number>` merges.
 - Beads (`bd`) mirrors issue state locally — run `export GITHUB_TOKEN="$(gh auth token)"`
   before `bd github` commands, and use `bd github sync --pull-only` after
   GitHub-only changes. Never make a standalone sync commit; if the repo's own
@@ -30,8 +31,10 @@ when this file conflicts with AGENTS.md, AGENTS.md wins.**
 - No new dependencies without explicit approval; always an exact version;
   never `--force` / `--legacy-peer-deps`.
 - Conventional Commits, one commit per issue, referencing the issue number.
-- Push after each issue: `git pull --rebase`, `bd dolt push`, `git push`, then
-  confirm `git status` shows up to date with origin.
+- Land each issue through a pull request: branch `<type>/<number>-<slug>` off
+  `main`, `bd dolt push`, `git push -u origin HEAD`, then `gh pr create` with
+  `Fixes #<number>` in the body. `main` is protected; the maintainer merges
+  once the required checks pass.
 
 See `CONTRIBUTING.md` for contributor workflow and `AGENTS.md` for the full
 agent ruleset.
