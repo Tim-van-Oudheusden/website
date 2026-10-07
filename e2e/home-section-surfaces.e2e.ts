@@ -1,142 +1,10 @@
 import { expect, test } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
 
-type Rgb = [number, number, number];
-
-interface TextSample {
-  text: string;
-  color: Rgb;
-  backdrop: Rgb;
-}
-
-interface SurfaceSample {
-  /** What the surface element itself is painted on (its own background included). */
-  backdrop: Rgb;
-  /** What each `<h3>` inside the surface is painted on. */
-  headingBackdrops: Rgb[];
-  /** Every visible piece of text inside the surface, with the colour it is painted on. */
-  texts: TextSample[];
-}
-
-/**
- * Parity with the start section, not full WCAG AA: its own body copy (white/80) reaches about 3.5:1 on the
- * dark well, so text on the other wells must clear 3:1 (the AA ratio for large text).
- */
-const WELL_TEXT_CONTRAST_FLOOR = 3;
+import { AA_NON_TEXT_CONTRAST, contrastRatio, lowContrastTexts, sampleSurface } from "./surface-colours";
 
 /** Experience companies with several positions: the ones shown on a panel. */
 const EXPERIENCE_PANELS = "section#experience li:has(> ol > li + li)";
-
-/**
- * Samples the colours a surface really shows: every background from the page root down is composited
- * (and text colour on top of that, scaled by opacity) on a 1px canvas, so translucent layers count.
- */
-async function sampleSurface(surface: Locator): Promise<SurfaceSample> {
-  return surface.evaluate((root): SurfaceSample => {
-    const context = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
-
-    if (context === null) {
-      throw new Error("No 2D canvas context");
-    }
-
-    const ctx: CanvasRenderingContext2D = context;
-
-    function paint(color: string, alpha = 1): void {
-      const sentinel = "#010203";
-
-      ctx.fillStyle = sentinel;
-      ctx.fillStyle = color;
-
-      if (ctx.fillStyle === sentinel && color !== sentinel) {
-        throw new Error(`Canvas cannot parse colour ${color}`);
-      }
-
-      ctx.globalAlpha = alpha;
-      ctx.fillRect(0, 0, 1, 1);
-      ctx.globalAlpha = 1;
-    }
-
-    function pixel(): Rgb {
-      const [r = 0, g = 0, b = 0] = ctx.getImageData(0, 0, 1, 1).data;
-
-      return [r, g, b];
-    }
-
-    /** The element and its ancestors, outermost first. */
-    function lineage(element: Element): Element[] {
-      const chain: Element[] = [];
-
-      for (let node: Element | null = element; node !== null; node = node.parentElement) {
-        chain.unshift(node);
-      }
-
-      return chain;
-    }
-
-    function paintBackdrop(element: Element): void {
-      paint("#ffffff");
-
-      for (const node of lineage(element)) {
-        paint(getComputedStyle(node).backgroundColor);
-      }
-    }
-
-    function backdropOf(element: Element): Rgb {
-      paintBackdrop(element);
-
-      return pixel();
-    }
-
-    const texts: TextSample[] = [];
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-
-    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
-      const parent = node.parentElement;
-      const text = node.textContent?.trim() ?? "";
-
-      if (parent === null || text === "" || !parent.checkVisibility()) {
-        continue;
-      }
-
-      const backdrop = backdropOf(parent);
-      const opacity = lineage(parent).reduce((total, element) => total * Number(getComputedStyle(element).opacity), 1);
-
-      paintBackdrop(parent);
-      paint(getComputedStyle(parent).color, opacity);
-      texts.push({ text, color: pixel(), backdrop });
-    }
-
-    return {
-      backdrop: backdropOf(root),
-      headingBackdrops: [...root.querySelectorAll("h3")].map(backdropOf),
-      texts,
-    };
-  });
-}
-
-function relativeLuminance([r, g, b]: Rgb): number {
-  function linear(channel: number): number {
-    const srgb = channel / 255;
-
-    return srgb <= 0.040_45 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
-  }
-
-  return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
-}
-
-function contrastRatio(a: Rgb, b: Rgb): number {
-  const [lighter, darker] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x) as [number, number];
-
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-/** Every text in the sample below the contrast floor, as `"text" (ratio:1)`; empty when all are readable. */
-function lowContrastTexts(sample: SurfaceSample): string[] {
-  return sample.texts
-    .map(({ text, color, backdrop }) => ({ text, ratio: contrastRatio(color, backdrop) }))
-    .filter(({ ratio }) => ratio < WELL_TEXT_CONTRAST_FLOOR)
-    .map(({ text, ratio }) => `"${text}" (${ratio.toFixed(2)}:1)`);
-}
 
 /** Asserts every surface's headings sit on the start section's well colour and all its text stays readable. */
 async function expectOnWell(page: Page, surfaces: Locator): Promise<void> {
@@ -154,6 +22,15 @@ async function expectOnWell(page: Page, surfaces: Locator): Promise<void> {
     }
 
     expect(lowContrastTexts(sample)).toEqual([]);
+  }
+}
+
+/** Asserts all text inside each surface meets WCAG AA against what it is painted on. */
+async function expectReadable(surfaces: Locator): Promise<void> {
+  expect(await surfaces.count()).toBeGreaterThan(0);
+
+  for (const surface of await surfaces.all()) {
+    expect(lowContrastTexts(await sampleSurface(surface))).toEqual([]);
   }
 }
 
@@ -201,10 +78,16 @@ test.describe("Home section surfaces", () => {
       await expectOnWell(page, page.locator(EXPERIENCE_PANELS));
     });
 
-    test("keeps role titles on the experience panels readable while hovered or focused", async ({ page }) => {
-      // The links skip their colour transition under reduced motion, so a sample shows the settled colour.
-      await page.emulateMedia({ reducedMotion: "reduce" });
+    test("keeps all text on the other home wells at WCAG AA contrast", async ({ page }) => {
+      await expect(page.locator("section#whats-new li a").first()).toBeVisible();
 
+      await expectReadable(page.getByTestId("start-white-box"));
+      await expectReadable(page.locator("section#about-me ul"));
+      await expectReadable(page.locator("section#whats-new li a"));
+      await expectReadable(page.getByRole("navigation", { name: "Page sections" }).locator("ul"));
+    });
+
+    test("keeps role titles on the experience panels readable while hovered or focused", async ({ page }) => {
       const titleLinks = page.locator(`${EXPERIENCE_PANELS} h3 a`);
 
       expect(await titleLinks.count()).toBeGreaterThan(0);
@@ -219,6 +102,18 @@ test.describe("Home section surfaces", () => {
         expect(lowContrastTexts(await sampleSurface(link))).toEqual([]);
         await link.blur();
       }
+    });
+
+    test("draws the default focus outline at WCAG AA non-text contrast on the well", async ({ page }) => {
+      // The floating nav sits on the well in dark mode and keeps the site-wide default focus outline.
+      const navLink = page.getByRole("navigation", { name: "Page sections" }).getByRole("link").first();
+
+      await navLink.focus();
+      expect(await navLink.evaluate((element) => element.matches(":focus-visible"))).toBe(true);
+
+      const { outline, surround } = await sampleSurface(navLink);
+
+      expect(contrastRatio(outline, surround)).toBeGreaterThanOrEqual(AA_NON_TEXT_CONTRAST);
     });
   });
 });

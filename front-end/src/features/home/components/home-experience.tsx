@@ -47,7 +47,7 @@ function RoleDates({ start, end, textClasses }: RoleDatesProps): JSX.Element {
   );
 }
 
-function RoleTitle({ role, onWell }: { role: ExperienceEntry; onWell: boolean }): JSX.Element {
+function RoleTitle({ role }: { role: ExperienceEntry }): JSX.Element {
   const text = (
     <>
       {role.title}
@@ -70,20 +70,12 @@ function RoleTitle({ role, onWell }: { role: ExperienceEntry; onWell: boolean })
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${role.title} at ${role.company} (opens in a new tab)`}
-              className={cn(
-                "group/link inline-flex items-baseline leading-tight transition-colors duration-150 hover:text-(--adw-accent-color) focus-visible:text-(--adw-accent-color) lg:focus-visible:outline-none motion-reduce:transition-none",
-                // The light accent is unreadable on the dark-mode well; the title keeps its colour there.
-                onWell ? "dark:hover:text-(--adw-light-1) dark:focus-visible:text-(--adw-light-1)" : "",
-              )}
+              className="group/link inline-flex items-baseline leading-tight transition-colors duration-150 hover:text-(--adw-accent-color) focus-visible:text-(--adw-accent-color) lg:focus-visible:outline-none motion-reduce:transition-none"
             >
               {/* Stretched link: from 1024px the whole card is clickable and shows the focus ring. */}
               <span
                 aria-hidden="true"
-                className={cn(
-                  "absolute hidden rounded-md group-focus-visible/link:ring-2 group-focus-visible/link:ring-(--adw-accent-color) lg:block",
-                  onWell ? "dark:group-focus-visible/link:ring-(--adw-light-1)" : "",
-                  CARD_AREA_CLASSES,
-                )}
+                className={cn("absolute hidden rounded-md group-focus-visible/link:ring-2 group-focus-visible/link:ring-(--adw-accent-color) lg:block", CARD_AREA_CLASSES)}
               />
               <span>{text}</span>
             </a>
@@ -130,7 +122,7 @@ function RoleRow({ role, lastInGroup, onWell }: RoleRowProps): JSX.Element {
               CARD_AREA_CLASSES,
             )}
           />
-          <RoleTitle role={role} onWell={onWell} />
+          <RoleTitle role={role} />
           <p className={cn("mt-2 text-sm leading-normal whitespace-pre-line", secondaryTextClasses)}>
             {role.description}
           </p>

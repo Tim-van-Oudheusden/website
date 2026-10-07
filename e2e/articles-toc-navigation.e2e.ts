@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { lowContrastTexts, sampleSurface } from "./surface-colours";
+
 test.describe("Articles TOC navigation", () => {
   test("renders the articles page with a visible TOC", async ({ page }) => {
     await page.goto("/articles", { waitUntil: "domcontentloaded" });
@@ -77,5 +79,22 @@ test.describe("Articles TOC navigation", () => {
 
     expect(clickDiagnostics.targetByHashExists).toBe(true);
     expect(clickDiagnostics.shiftedIdExists).toBe(false);
+  });
+
+  test("keeps active and inactive TOC entries at WCAG AA contrast on the dark-mode well", async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("theme", "dark");
+    });
+
+    // A long article: from the top, its later headings are off screen, so their TOC entries are inactive.
+    await page.goto("/articles/my-operating-system-is-a-container-image-yes-really", { waitUntil: "domcontentloaded" });
+
+    const tableOfContents = page.locator("article aside nav").first();
+
+    await expect(tableOfContents).toBeVisible();
+    await expect(page.locator("html")).toHaveClass(/\bdark\b/);
+    expect(await tableOfContents.getByRole("link").count()).toBeGreaterThan(3);
+
+    expect(lowContrastTexts(await sampleSurface(tableOfContents))).toEqual([]);
   });
 });
