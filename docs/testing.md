@@ -77,8 +77,9 @@ step, so a local run exercises the same path CI does:
 
 1. `podman build … --target dev` for the front-end and back-end images
 2. `podman kube play deploy/kube/dev.yaml`
-3. poll `http://localhost:3001/health` and `http://localhost:5173/` (60 × 5 s);
-   on timeout, dump `podman pod logs website` and fail
+3. poll `http://localhost:3001/health` and `http://localhost:5173/` (60 × 5 s,
+   each request capped at 5 s by `curl --max-time`); on timeout, dump
+   `podman pod logs website` and fail
 4. `bun run test:e2e`
 5. `podman kube down deploy/kube/dev.yaml` — always, even when a step fails
 
