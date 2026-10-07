@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { ContentFrontmatter } from "shared";
 import { API_BASE, CF_CONNECTING_IP_HEADER, ROUTES } from "shared";
 
-import { renderRobotsTxt, renderSitemap } from "./seo";
+import { renderFeed, renderRobotsTxt, renderSitemap } from "./seo";
 import { renderHomeMeta, renderSocialMeta } from "./social-meta";
 
 export interface RequestHandlerOptions {
@@ -32,7 +32,8 @@ const SECURITY_HEADERS: Readonly<Record<string, string>> = {
  * Production request handler for the front-end: serves the built SPA, and for
  * article URLs injects that article's link-preview tags into index.html, and
  * the homepage gets its description, canonical URL and preview tags. It
- * also answers /robots.txt and /sitemap.xml, which cloudflared routes here.
+ * also answers /robots.txt, /sitemap.xml and /feed.xml, which cloudflared
+ * routes here.
  */
 export function createRequestHandler(options: RequestHandlerOptions): (request: Request) => Promise<Response> {
   const indexFile = Bun.file(join(options.distDir, "index.html"));
@@ -51,10 +52,26 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     }
 
     if (url.pathname === "/sitemap.xml") {
-      const items = await fetchContentList(options.fetchBackend, backendHeaders);
+      const items = await fetchContentList(options.fetchBackend, backendHeaders) ?? [];
 
       return new Response(renderSitemap(requestOrigin(request, url), items), {
         headers: { ...SECURITY_HEADERS, "content-type": "application/xml; charset=utf-8" },
+      });
+    }
+
+    if (url.pathname === "/feed.xml") {
+      const items = await fetchContentList(options.fetchBackend, backendHeaders);
+
+      // An empty feed would read as "no articles"; a 503 tells feed readers to retry.
+      if (items === null) {
+        return new Response("Feed temporarily unavailable", {
+          status: 503,
+          headers: { ...SECURITY_HEADERS, "content-type": "text/plain; charset=utf-8" },
+        });
+      }
+
+      return new Response(renderFeed(requestOrigin(request, url), items), {
+        headers: { ...SECURITY_HEADERS, "content-type": "application/atom+xml; charset=utf-8" },
       });
     }
 
@@ -109,25 +126,25 @@ function requestOrigin(request: Request, url: URL): string {
 }
 
 /**
- * List published content for the sitemap. Any failure yields an empty list:
- * the sitemap then still names the fixed pages instead of erroring.
+ * List published content for the sitemap and feed. Any failure yields null:
+ * the sitemap then still names the fixed pages, and the feed answers 503.
  */
 async function fetchContentList(
   fetchBackend: RequestHandlerOptions["fetchBackend"],
   headers: Record<string, string>,
-): Promise<ContentFrontmatter[]> {
+): Promise<ContentFrontmatter[] | null> {
   try {
     const response = await fetchBackend(`${API_BASE}${ROUTES.CONTENT}`, headers);
 
     if (!response.ok) {
-      return [];
+      return null;
     }
 
     const items = await response.json() as ContentFrontmatter[];
 
-    return Array.isArray(items) ? items : [];
+    return Array.isArray(items) ? items : null;
   } catch {
-    return [];
+    return null;
   }
 }
 
