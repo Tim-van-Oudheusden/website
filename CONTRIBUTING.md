@@ -22,6 +22,29 @@ Host source is bind-mounted, so edits hot-reload without a rebuild. In container
 
 Dependencies are managed with Bun and pinned in `bun.lock`. Install with `bun install`.
 
+## Project layout
+
+Three Bun workspaces hold the application code; unit tests live in a separate top-level `test/` tree.
+
+```text
+back-end/src/
+  features/<name>/     one folder per route group (content, health, hello, root)
+  core/                cross-cutting server code: metrics, rate limit, security headers, server config
+  scripts/             CLI entry points, e.g. validate-content.ts
+  app.ts, index.ts     app assembly and process entry
+front-end/
+  src/features/<name>/ one folder per area (articles, home, projects), split into components/ hooks/ lib/ pages/ as needed
+  src/shared/          code used across features: components (shadcn primitives in components/ui/), config, hooks, lib
+  server/              production server for the built app (link-preview tags)
+shared/src/            types, route constants and helpers imported by both apps
+test/<workspace>/      unit tests, one tree per workspace (see below)
+e2e/                   Playwright specs (*.e2e.ts), run against the dev pod
+scripts/               dev, E2E, CI and report scripts
+content/               articles and projects (Markdown)
+```
+
+**Where a unit test goes.** Put it under `test/<workspace>/`, in the same relative directory as the code it covers. For example, a test for `back-end/src/core/server-config.ts` goes in `test/back-end/src/core/`, and one for `front-end/server/seo.ts` goes in `test/front-end/server/`. Name it `*.test.ts` (or `*.test.tsx`). Each workspace's `test` script runs only its own tree (`bun test ../test/<workspace>`), so a test placed next to the source file is never run. Tests of repository tooling (scripts, workflows, Dockerfiles, kube manifests, lint rules) live in `test/shared/src/`. Front-end tests get a fake DOM from `test/front-end/src/test/`, preloaded by `front-end/bunfig.toml`.
+
 ## Finding and claiming work
 
 - GitHub issues are the **primary source of truth** for issue information. Browse open issues, and claim/assign one you intend to work on.
