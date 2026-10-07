@@ -82,6 +82,9 @@ test.describe("Articles TOC navigation", () => {
   });
 
   test("keeps active and inactive TOC entries at WCAG AA contrast on the dark-mode well", async ({ page }) => {
+    // Images never change a sampled colour; skip them to stay within the back-end's shared rate limit.
+    await page.route((url) => url.pathname.startsWith("/content-assets/"), async (route) => route.abort());
+
     await page.addInitScript(() => {
       localStorage.setItem("theme", "dark");
     });

@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
+import { openHome } from "./home-page";
+
 function scrollToSection(page: Page, sectionId: string): void {
   void page.evaluate((id) => {
     const element = document.getElementById(id);
@@ -12,10 +14,11 @@ function scrollToSection(page: Page, sectionId: string): void {
 test.describe("Home placeholder sections implemented", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/", { waitUntil: "domcontentloaded" });
   });
 
   test("showcases real projects, featured first, linking to GitHub or the case study", async ({ page }) => {
+    await openHome(page, { theme: "light", content: ["project"] });
+
     const section = page.locator("section#for-devs");
 
     scrollToSection(page, "for-devs");
@@ -34,6 +37,8 @@ test.describe("Home placeholder sections implemented", () => {
   });
 
   test("renders the about-me brick list and portrait", async ({ page }) => {
+    await openHome(page, { theme: "light", content: [] });
+
     const section = page.locator("section#about-me");
 
     scrollToSection(page, "about-me");
@@ -43,6 +48,8 @@ test.describe("Home placeholder sections implemented", () => {
   });
 
   test("renders the recent-posts strip linked to real article pages", async ({ page }) => {
+    await openHome(page, { theme: "light", content: ["article"] });
+
     const section = page.locator("section#whats-new");
 
     scrollToSection(page, "whats-new");
@@ -58,6 +65,8 @@ test.describe("Home placeholder sections implemented", () => {
   });
 
   test("renders the experience timeline from the LinkedIn positions", async ({ page }) => {
+    await openHome(page, { theme: "light", content: [] });
+
     const section = page.locator("section#experience");
 
     scrollToSection(page, "experience");
@@ -71,6 +80,8 @@ test.describe("Home placeholder sections implemented", () => {
   });
 
   test("ends the page with a socials footer linking to GitHub and LinkedIn", async ({ page }) => {
+    await openHome(page, { theme: "light", content: [] });
+
     const footer = page.locator("footer#socials");
 
     scrollToSection(page, "socials");

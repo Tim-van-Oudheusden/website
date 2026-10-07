@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
 
+import { openHome } from "./home-page";
 import { AA_NON_TEXT_CONTRAST, contrastRatio, lowContrastTexts, sampleSurface } from "./surface-colours";
 
 /** Experience companies with several positions: the ones shown on a panel. */
@@ -40,7 +41,7 @@ test.describe("Home section surfaces", () => {
   });
 
   test("centers the experience column, heading and timeline together, in the section", async ({ page }) => {
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await openHome(page, { theme: "light", content: [] });
 
     const section = page.locator("section#experience");
     const sectionBox = await section.boundingBox();
@@ -59,26 +60,21 @@ test.describe("Home section surfaces", () => {
   });
 
   test.describe("in dark mode", () => {
-    test.beforeEach(async ({ page }) => {
-      await page.addInitScript(() => {
-        localStorage.setItem("theme", "dark");
-      });
-
-      await page.goto("/", { waitUntil: "domcontentloaded" });
-      await expect(page.locator("html")).toHaveClass(/\bdark\b/);
-    });
-
     test("puts the project cards on the start section's well, with readable text", async ({ page }) => {
+      await openHome(page, { theme: "dark", content: ["project"] });
       await expect(page.locator("section#for-devs h3").first()).toBeVisible();
 
       await expectOnWell(page, page.locator("section#for-devs li"));
     });
 
     test("puts the experience company panels on the start section's well, with readable text", async ({ page }) => {
+      await openHome(page, { theme: "dark", content: [] });
+
       await expectOnWell(page, page.locator(EXPERIENCE_PANELS));
     });
 
     test("keeps all text on the other home wells at WCAG AA contrast", async ({ page }) => {
+      await openHome(page, { theme: "dark", content: ["article"] });
       await expect(page.locator("section#whats-new li a").first()).toBeVisible();
 
       await expectReadable(page.getByTestId("start-white-box"));
@@ -88,6 +84,8 @@ test.describe("Home section surfaces", () => {
     });
 
     test("keeps role titles on the experience panels readable while hovered or focused", async ({ page }) => {
+      await openHome(page, { theme: "dark", content: [] });
+
       const titleLinks = page.locator(`${EXPERIENCE_PANELS} h3 a`);
 
       expect(await titleLinks.count()).toBeGreaterThan(0);
@@ -105,6 +103,8 @@ test.describe("Home section surfaces", () => {
     });
 
     test("draws the default focus outline at WCAG AA non-text contrast on the well", async ({ page }) => {
+      await openHome(page, { theme: "dark", content: [] });
+
       // The floating nav sits on the well in dark mode and keeps the site-wide default focus outline.
       const navLink = page.getByRole("navigation", { name: "Page sections" }).getByRole("link").first();
 
