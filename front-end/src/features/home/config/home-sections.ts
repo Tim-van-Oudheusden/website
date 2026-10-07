@@ -34,28 +34,14 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
   {
     id: "for-devs",
     label: "for devs",
-    heading: "How I work",
-    body: "Read the real stack behind the site: a note-driven Obsidian pipeline, a container-OS desktop, and a Pi sandbox that keeps everything running.",
+    heading: "Open-source projects",
+    body: "Start with the featured project, then explore the rest on GitHub.",
     bgColor: "var(--adw-page-brown-bg)",
     contentDirection: "row",
-    variant: "workflow",
-    features: [
-      {
-        title: "Obsidian content pipeline",
-        description: "Articles start as notes in an Obsidian vault and publish through one repeatable pipeline, from the same tools used to write and stay organised.",
-        mediaLabel: "Vault to article",
-      },
-      {
-        title: "Container-OS desktop",
-        description: "The operating system runs as a container image (Bazzite / Bluefin) — portability, isolation and recovery without a heavy rebuild.",
-        mediaLabel: "Desktop as container",
-      },
-      {
-        title: "Pi sandbox automation",
-        description: "This site builds and verifies itself inside a sandbox managed from a tiny Raspberry Pi — self-hosted tooling over big-cloud defaults.",
-        mediaLabel: "Sandboxed build",
-      },
-    ],
+    variant: "projects",
+    linkLabel: "See all projects",
+    linkTo: "/projects",
+    featuredSubheading: (featuredTitle) => `Start with ${featuredTitle}, then explore the rest on GitHub.`,
   },
   {
     id: "proof",

@@ -91,7 +91,11 @@ describe("HomePage", () => {
   });
 
   test("requests the article list once for all the sections that list articles", async () => {
-    const requested = routeFetch({ [`${API_BASE}${ROUTES.CONTENT}?type=article`]: () => Promise.resolve(jsonResponse([])) });
+    const articleList = `${API_BASE}${ROUTES.CONTENT}?type=article`;
+    const requested = routeFetch({
+      [articleList]: () => Promise.resolve(jsonResponse([])),
+      [`${API_BASE}${ROUTES.CONTENT}?type=project`]: () => Promise.resolve(jsonResponse([])),
+    });
     const page = mountIntoBody(createElement(MemoryRouter, null, createElement(HomePage)));
 
     try {
@@ -99,7 +103,7 @@ describe("HomePage", () => {
         await settleMicrotasks();
       });
 
-      expect(requested).toEqual([`${API_BASE}${ROUTES.CONTENT}?type=article`]);
+      expect(requested.filter((url) => url === articleList)).toEqual([articleList]);
     } finally {
       unmountFakeDomRoot(page);
     }
