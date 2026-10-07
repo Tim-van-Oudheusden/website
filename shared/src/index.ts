@@ -53,6 +53,15 @@ export const ROUTES = {
  */
 export const ASSET_PATH_PREFIX = "/content-assets/images/";
 
+/**
+ * Request header carrying the visitor's real IP behind Cloudflare Tunnel.
+ * Used by the back-end rate limiter (to key limits per visitor) and the
+ * front-end server (to forward it when proxying article-preview fetches),
+ * so a mismatch between the two can never silently collapse rate limiting
+ * into one shared bucket.
+ */
+export const CF_CONNECTING_IP_HEADER = "cf-connecting-ip";
+
 /* ── Content Schema ── */
 
 /** The valid content types for Obsidian frontmatter entries. */
