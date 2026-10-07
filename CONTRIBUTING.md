@@ -18,7 +18,7 @@ The pod publishes:
 - Front-end (Vite dev server, HMR): <http://localhost:5173>
 - Back-end (Fastify): <http://localhost:3001> — `/health` at the root
 
-Host source is bind-mounted, so edits hot-reload without a rebuild. In containers, the back-end needs `HOST=0.0.0.0`; local host runs default to `127.0.0.1` (see `README.md`).
+Host source is bind-mounted, so edits hot-reload without a rebuild. In containers, the back-end needs `HOST=0.0.0.0`; local host runs default to `127.0.0.1` (see the note under "Quick start" in [`README.md`](README.md#quick-start)).
 
 Dependencies are managed with Bun and pinned in `bun.lock`. Install with `bun install`.
 
@@ -121,7 +121,7 @@ Run `bun run lint` and `bun run typecheck` frequently rather than at the end.
 
 ## Content authoring
 
-Markdown content lives in `content/` and is authored in Obsidian. The "Obsidian Content Authoring" section of `README.md` is the single reference for authors: Obsidian settings, image syntax, the frontmatter reference (required fields and allowed values), and the `bun run --filter back-end validate:content` check. A document with invalid frontmatter is silently left out of the site, so run that check before pushing content changes.
+Markdown content lives in `content/` and is authored in Obsidian. [`docs/content-authoring.md`](docs/content-authoring.md) is the single reference for authors: Obsidian settings, image syntax, the frontmatter reference (required fields and allowed values), and the `bun run --filter back-end validate:content` check. A document with invalid frontmatter is silently left out of the site, so run that check before pushing content changes.
 
 ## Dependencies
 
@@ -144,4 +144,4 @@ What these layers produce is measurable: quality gates, coverage and its floors,
 
 ## Release notes
 
-Deployment details (server bootstrap, pod manifests, image publishing) live in `docs/deploy.md` and `README.md`; keep them in sync when you change infrastructure.
+Deployment details (server bootstrap, pod manifests, image publishing) live in [`docs/deploy.md`](docs/deploy.md), and the README's [Architecture](README.md#architecture) diagram summarises them; keep both in sync when you change infrastructure.
