@@ -24,6 +24,12 @@ describe("renderSitemap", () => {
     expect(xml).not.toContain("<roll>");
   });
 
+  test("XML-escapes an apostrophe, which percent-encoding leaves in the slug", () => {
+    const xml = renderSitemap("https://buildwithtim.dev", [{ ...ARTICLE, slug: "tim's-notes" }]);
+
+    expect(xml).toContain("<loc>https://buildwithtim.dev/articles/tim&apos;s-notes</loc>");
+  });
+
   test("is a sitemaps.org urlset document", () => {
     const xml = renderSitemap("https://buildwithtim.dev", []);
 
