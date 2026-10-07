@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import { ChevronRight, FileText, Folder } from "lucide-react";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -13,7 +14,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/shared/components/ui/collapsible";
-import { cn } from "@/shared/lib/utils";
 
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,

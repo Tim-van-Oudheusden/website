@@ -1,10 +1,11 @@
+import { cn } from "cn";
 import type { JSX, ReactElement, ReactNode } from "react";
 import { Children, isValidElement, memo, useMemo } from "react";
 import Markdown from "react-markdown";
 import type { Components, ExtraProps } from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
-import remarkGfm from "remark-gfm";
 import "highlight.js/styles/github.css";
+import remarkGfm from "remark-gfm";
 
 import {
   extractMarkdownHeadingsWithOffsets,
@@ -12,7 +13,6 @@ import {
   slugifyHeadingText,
   TOC_MAX_DEPTH,
 } from "@/shared/lib/markdown-headings";
-import { cn } from "@/shared/lib/utils";
 
 export interface MarkdownRendererProps {
   /** Raw markdown string (frontmatter already stripped). */

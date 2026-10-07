@@ -1,7 +1,6 @@
+import { cn } from "cn";
 import type { JSX } from "react";
 import { useMemo } from "react";
-
-import { cn } from "@/shared/lib/utils";
 
 import type { ArticleTableOfContentsItem } from "../lib/article-toc";
 import { resolveTocLinkIndentClass } from "../lib/article-toc";

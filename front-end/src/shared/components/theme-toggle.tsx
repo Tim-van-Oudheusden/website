@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import type { JSX } from "react";
 
@@ -9,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { useTheme } from "@/shared/hooks/use-theme";
-import { cn } from "@/shared/lib/utils";
 
 interface ThemeToggleProps {
   // eslint-disable-next-line no-restricted-syntax -- DOM `className` passthrough; omitted adds no classes

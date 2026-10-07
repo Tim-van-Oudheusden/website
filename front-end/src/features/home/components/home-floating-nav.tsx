@@ -1,10 +1,10 @@
+import { cn } from "cn";
 import type { LucideIcon } from "lucide-react";
 import { CodeXml, Dumbbell, House, ShieldCheck, Sparkles, Trophy, UserRound } from "lucide-react";
 import type { CSSProperties, JSX, MouseEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Badge } from "@/shared/components/ui/badge";
-import { cn } from "@/shared/lib/utils";
 
 import type { IndicatorMetrics } from "../lib/home-floating-nav-indicator";
 import { calculateIndicatorMetrics } from "../lib/home-floating-nav-indicator";

@@ -103,7 +103,7 @@ describe("lint house style", () => {
 
   test("reports code-shape, import, naming, and React rule violations", () => {
     const source = [
-      "import { cn } from \"@/shared/lib/utils\";",
+      "import { cn } from \"cn\";",
       "import { ARTICLE_CATEGORIES } from \"shared\";",
       "import { type ReactNode, Fragment } from \"react\";",
       "import { useState } from \"react\";",
@@ -185,6 +185,26 @@ describe("lint house style", () => {
       "`<>`",
     ]) {
       expect(restrictedSyntaxMessages).toContain(expected);
+    }
+  }, 30_000);
+
+  test("rejects clsx and tailwind-merge imports in favour of the `cn` package", () => {
+    const source = [
+      "import { clsx } from \"clsx\";",
+      "import { twMerge } from \"tailwind-merge\";",
+      "",
+      "export const classes = twMerge(clsx(\"a\", \"b\"));",
+      "",
+    ].join("\n");
+
+    const restrictedImportMessages = eslintRun(source, frontEndFixture, false).messages
+      .filter((message) => message.ruleId === "no-restricted-imports")
+      .map((message) => message.message);
+
+    expect(restrictedImportMessages).toHaveLength(2);
+
+    for (const message of restrictedImportMessages) {
+      expect(message).toContain("\"cn\"");
     }
   }, 30_000);
 });

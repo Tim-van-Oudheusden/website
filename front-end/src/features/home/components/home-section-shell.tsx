@@ -1,6 +1,5 @@
+import { cn } from "cn";
 import type { JSX, ReactNode } from "react";
-
-import { cn } from "@/shared/lib/utils";
 
 import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionDefinition } from "../types/home-section";

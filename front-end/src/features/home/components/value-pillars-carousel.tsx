@@ -1,10 +1,10 @@
+import { cn } from "cn";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import type { CSSProperties, JSX, MouseEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
-import { cn } from "@/shared/lib/utils";
 
 interface CardTiltCalculationInput {
   pointerX: number;
