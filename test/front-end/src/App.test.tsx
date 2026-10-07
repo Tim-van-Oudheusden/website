@@ -28,7 +28,8 @@ describe("AppRoutes", () => {
     const html = renderRoute("/");
 
     expect(html).toContain('aria-label="Page sections"');
-    expect(html).toContain("Reboot With Me");
+    expect(html).toMatch(/<section[^>]*aria-labelledby="start-heading"[\s\S]*?<h2 id="start-heading"/);
+    expect(html).toMatch(/aria-labelledby="start-heading"[\s\S]*?href="#for-you"/);
   });
 
   test("resolves /projects to the projects list page", () => {

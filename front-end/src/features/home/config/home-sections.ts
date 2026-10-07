@@ -12,8 +12,8 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
   {
     id: "start",
     label: "start",
-    heading: "Reboot With Me",
-    body: "A new-age way of saying: getting your life back on track. The core principle of the website and project, unfolding in various ways.",
+    heading: "Build with Tim.",
+    body: "I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.",
     bgColor: "var(--adw-page-brown-bg)",
     ctaLabel: "Discover",
     ctaTargetId: "for-you",
