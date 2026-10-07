@@ -35,6 +35,9 @@ COPY package.json tsconfig.json ./
 WORKDIR /app/back-end
 ENV HOST=0.0.0.0
 EXPOSE 3001
+# Drop root: the server only reads the image, so files stay root-owned and
+# the base image's unprivileged `bun` user (uid 1000) cannot modify them.
+USER bun
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD bun -e "fetch('http://localhost:3001/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 CMD ["bun", "run", "src/index.ts"]

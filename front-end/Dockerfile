@@ -41,4 +41,7 @@ WORKDIR /app/front-end
 COPY --from=build /app/front-end/dist ./dist
 COPY --from=build /app/front-end/server-dist/main.js ./server/main.js
 EXPOSE 3000
+# Drop root: the server only reads dist/, so files stay root-owned and the
+# base image's unprivileged `bun` user (uid 1000) cannot modify them.
+USER bun
 CMD ["bun", "server/main.js"]
