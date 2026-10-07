@@ -2,7 +2,7 @@ import { stat } from "node:fs/promises";
 import { join } from "node:path";
 
 import type { ContentFrontmatter } from "shared";
-import { API_BASE, ROUTES } from "shared";
+import { API_BASE, CF_CONNECTING_IP_HEADER, ROUTES } from "shared";
 
 import { renderRobotsTxt, renderSitemap } from "./seo";
 import { renderHomeMeta, renderSocialMeta } from "./social-meta";
@@ -41,8 +41,8 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     const url = new URL(request.url);
     // The back-end rate-limits per CF-Connecting-IP (trusted from loopback, which
     // we are). Without it every article view would share one bucket (#479).
-    const visitorIp = request.headers.get("cf-connecting-ip");
-    const backendHeaders: Record<string, string> = visitorIp === null ? {} : { "cf-connecting-ip": visitorIp };
+    const visitorIp = request.headers.get(CF_CONNECTING_IP_HEADER);
+    const backendHeaders: Record<string, string> = visitorIp === null ? {} : { [CF_CONNECTING_IP_HEADER]: visitorIp };
 
     if (url.pathname === "/robots.txt") {
       return new Response(renderRobotsTxt(requestOrigin(request, url)), {

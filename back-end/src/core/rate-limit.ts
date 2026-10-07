@@ -1,11 +1,12 @@
 import rateLimit from "@fastify/rate-limit";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 
+import { CF_CONNECTING_IP_HEADER } from "shared";
+
 const GLOBAL_MAX_REQUESTS = 50;
 const GLOBAL_TIME_WINDOW = "1 minute";
 const NOT_FOUND_MAX_REQUESTS = 10;
 const NOT_FOUND_TIME_WINDOW = "1 minute";
-const CF_CONNECTING_IP_HEADER = "cf-connecting-ip";
 
 /**
  * Whether an address is the local loopback, where cloudflared terminates.
