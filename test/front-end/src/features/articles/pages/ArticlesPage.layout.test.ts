@@ -91,7 +91,7 @@ describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {
 describe("ArticleLocationTrail", () => {
   test("resolves the articles trail target to the default introduction slug", () => {
     expect(resolveArticlesTrailTargetSlug([
-      { slug: "work-item", title: "Work", description: "w", date: "2024-02-01", tags: [], category: "Work", type: "article", draft: false, socialImage: null },
+      { slug: "work-item", title: "Work", description: "w", date: "2024-02-01", tags: [], category: "Work", type: "article", draft: false, homeRecommended: false, socialImage: null },
       {
         slug: "introduction",
         title: "Intro",
@@ -102,6 +102,7 @@ describe("ArticleLocationTrail", () => {
         type: "article",
         socialImage: null,
         draft: false,
+        homeRecommended: false,
       },
     ])).toBe("introduction");
   });

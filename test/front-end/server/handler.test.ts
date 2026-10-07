@@ -22,6 +22,7 @@ const ARTICLE: ArticleFrontmatter & { body: string } = {
   date: "2026-09-01",
   tags: [],
   draft: false,
+  homeRecommended: false,
   category: "Personal Life",
   slug: "yoga-nidra",
   socialImage: "images/cover.png",

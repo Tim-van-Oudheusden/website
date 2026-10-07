@@ -112,10 +112,9 @@ export interface ArticleFrontmatter extends BaseContentFrontmatter {
   /**
    * Opts the article into the homepage "for you" curated pool (mirrors
    * projects' `featured`/`prioritySlot`: editorial priority as content, not
-   * code). Optional so that existing fixtures/tests built before this field
-   * existed keep compiling; absent is equivalent to `false`.
+   * code).
    */
-  homeRecommended?: boolean;
+  homeRecommended: boolean;
 }
 
 export interface ProjectLink {

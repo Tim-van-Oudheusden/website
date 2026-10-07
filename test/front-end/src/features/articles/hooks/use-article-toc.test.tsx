@@ -178,6 +178,7 @@ function makeArticle(body: string): ArticleData {
     type: "article",
     socialImage: null,
     draft: false,
+    homeRecommended: false,
     category: "Introduction",
     slug: "test-article",
     body,

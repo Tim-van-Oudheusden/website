@@ -4,7 +4,7 @@ import type { ArticleSummary } from "shared/articles";
 
 import { resolveCuratedArticles, resolveRecommendedPool, selectRecommendedArticles } from "../../../../../../front-end/src/features/home/lib/recommended-articles";
 
-function article(slug: string, date: string, homeRecommended?: boolean): ArticleSummary {
+function article(slug: string, date: string, homeRecommended = false): ArticleSummary {
   return {
     title: slug,
     slug,

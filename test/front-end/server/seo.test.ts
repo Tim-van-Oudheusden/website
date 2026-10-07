@@ -11,6 +11,7 @@ const ARTICLE: ArticleFrontmatter = {
   date: "2026-09-01",
   tags: [],
   draft: false,
+  homeRecommended: false,
   category: "Personal Life",
   slug: "rock-&-<roll>",
   socialImage: null,

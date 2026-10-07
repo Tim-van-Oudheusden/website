@@ -43,6 +43,7 @@ function summary(slug: string, overrides: Partial<ArticleSummary> = {}): Article
     type: "article",
     socialImage: null,
     draft: false,
+    homeRecommended: false,
     category: "Linux",
     slug,
     ...overrides,

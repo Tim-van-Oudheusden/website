@@ -309,7 +309,7 @@ describe("real content directory sanity check", () => {
   test("the home-recommended article pool matches the curated real content", async () => {
     const articles = await listContent(REAL_CONTENT_DIR, { type: "article" });
     const recommendedSlugs = articles
-      .filter((item): item is ArticleFrontmatter => item.type === "article" && item.homeRecommended === true)
+      .filter((item): item is ArticleFrontmatter => item.type === "article" && item.homeRecommended)
       .map((item) => item.slug)
       .sort();
 

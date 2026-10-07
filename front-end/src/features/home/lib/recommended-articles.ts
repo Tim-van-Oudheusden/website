@@ -12,7 +12,7 @@ export const RECOMMENDED_ARTICLES_COUNT = 3;
  * instead of a code-owned list.
  */
 export function resolveRecommendedPool(articles: readonly ArticleSummary[]): readonly string[] {
-  return articles.filter((article) => article.homeRecommended === true).map((article) => article.slug);
+  return articles.filter((article) => article.homeRecommended).map((article) => article.slug);
 }
 
 /**
