@@ -11,6 +11,7 @@
 | `scripts/quality-report.sh`     | Markdown report of all gates + coverage per workspace | no           |
 | `scripts/nightly-compliance.sh` | Markdown report of dependency audit + draft guard     | no           |
 | `bun scripts/auto-qa-tuner.ts` | Propose ratcheted coverage floors from a quality report | no           |
+| `bun run screenshots:readme`    | README screenshots + social preview from the dev pod | yes          |
 
 ## Quality report
 
@@ -130,6 +131,34 @@ covers that gap:
 3. fetch every non-dotfile under `public/` and require it to be byte-identical
    to the file in the repo
 4. remove the container, always
+
+## Regenerate the README screenshots
+
+The README's light/dark home-page screenshots and the repo's social preview
+(`docs/assets/readme/`) come from `scripts/readme-screenshots.ts`. It runs
+manually only (no CI job); rerun it when the home page changes visibly and
+commit the PNGs.
+
+```bash
+scripts/dev.sh                 # dev pod up first (other terminal)
+bun run screenshots:readme     # writes the three PNGs
+scripts/dev-down.sh
+```
+
+| Output                                  | Theme   | Viewport |
+| --------------------------------------- | ------- | -------- |
+| `docs/assets/readme/home-light.png`     | `light` | 1280×800 |
+| `docs/assets/readme/home-dark.png`      | `dark`  | 1280×800 |
+| `docs/assets/readme/social-preview.png` | `light` | 1280×640 |
+
+The captures are defined in `scripts/readme-screenshot-plan.ts`. For each one
+the script pins `localStorage.theme`, reloads, waits for the network and fonts
+to settle, and screenshots with animations disabled. It targets
+`E2E_BASE_URL` (default `http://localhost:5173`) and exits non-zero when that
+cannot be reached. It needs the Playwright Chromium build from
+[Prerequisites](#prerequisites) (`bunx playwright install chromium`). The
+social preview is uploaded by hand under Settings → General → Social preview;
+GitHub has no API for it.
 
 ## Agent sandbox: what runs where
 

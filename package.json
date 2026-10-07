@@ -17,6 +17,7 @@
     "test": "bun run --filter '*' test",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed --project=chromium",
+    "screenshots:readme": "bun scripts/readme-screenshots.ts",
     "typecheck:root": "tsc -p tsconfig.eslint.json --noEmit && tsc -p e2e/tsconfig.eslint.json --noEmit",
     "typecheck": "bun run --filter shared build && bun run --filter \"*\" typecheck && bun run typecheck:root"
   },
