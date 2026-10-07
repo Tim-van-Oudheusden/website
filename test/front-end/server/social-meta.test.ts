@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import type { ArticleFrontmatter } from "shared";
 
-import { renderSocialMeta } from "../../../front-end/server/social-meta";
+import { renderHomeMeta, renderSocialMeta } from "../../../front-end/server/social-meta";
 
 const INDEX_HTML = `<!doctype html>
 <html lang="en">
@@ -91,5 +91,28 @@ describe("renderSocialMeta", () => {
     const meta = headMeta(renderSocialMeta(INDEX_HTML, article({ socialImage: "/images/me.png" }), ORIGIN));
 
     expect(meta.get("og:image")).toBe("https://buildwithtim.dev/images/me.png");
+  });
+});
+
+describe("renderSocialMeta page identity", () => {
+  test("retitles the page after the article and percent-encodes the slug in og:url", () => {
+    const html = renderSocialMeta(INDEX_HTML, article({ title: "A & B", slug: "a b" }), ORIGIN);
+
+    expect(html).toContain("<title>A &amp; B | Build with Tim</title>");
+    expect(html).not.toContain("<title>Tim V.O.</title>");
+    expect(headMeta(html).get("og:url")).toBe("https://buildwithtim.dev/articles/a%20b");
+  });
+});
+
+describe("renderHomeMeta", () => {
+  test("adds the description, canonical link and preview tags for the homepage", () => {
+    const html = renderHomeMeta(INDEX_HTML, ORIGIN);
+    const meta = headMeta(html);
+
+    expect(html).toContain('<link rel="canonical" href="https://buildwithtim.dev/" />');
+    expect(meta.get("og:type")).toBe("website");
+    expect(meta.get("og:title")).toBe("Build with Tim");
+    expect(meta.get("og:url")).toBe("https://buildwithtim.dev/");
+    expect(meta.get("description")).toContain("self-hosted tools");
   });
 });
