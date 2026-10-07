@@ -4,6 +4,7 @@ import Fastify from "fastify";
 import { API_BASE } from "shared";
 
 import { isLoopbackAddress, registerRateLimiting } from "./core/rate-limit";
+import { registerMetrics } from "./core/register-metrics";
 import { registerSecurityHeaders } from "./core/security-headers";
 import {
   registerContentImageRoutes,
@@ -30,6 +31,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
 
   registerSecurityHeaders(app);
   await registerRateLimiting(app);
+  registerMetrics(app);
 
   // Probe endpoint stays at the root: kube probes, the CI wait loop, and the
   // README all target /health.
