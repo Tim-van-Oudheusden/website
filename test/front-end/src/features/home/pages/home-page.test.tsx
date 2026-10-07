@@ -115,11 +115,11 @@ describe("HomePage section anchors", () => {
     const page = mountHomePage();
 
     try {
-      const event = fireFakePointer(anchorTo(page.container, "proof", "conquer"), "click");
+      const event = fireFakePointer(anchorTo(page.container, "about-me", "about me"), "click");
 
       expect(event.defaultPrevented).toBe(true);
-      expect(sectionElement("proof").scrollIntoViewCalls).toEqual([{ behavior: "smooth", block: "start" }]);
-      expect(window.location.hash).toBe("#proof");
+      expect(sectionElement("about-me").scrollIntoViewCalls).toEqual([{ behavior: "smooth", block: "start" }]);
+      expect(window.location.hash).toBe("#about-me");
     } finally {
       unmountFakeDomRoot(page);
     }
@@ -142,14 +142,14 @@ describe("HomePage section anchors", () => {
     const page = mountHomePage();
 
     try {
-      const anchor = anchorTo(page.container, "proof", "conquer");
+      const anchor = anchorTo(page.container, "about-me", "about me");
 
-      sectionElement("proof").setAttribute("id", "proof-detached");
+      sectionElement("about-me").setAttribute("id", "about-me-detached");
 
       const event = fireFakePointer(anchor, "click");
 
       expect(event.defaultPrevented).toBe(false);
-      expect(sectionElement("proof-detached").scrollIntoViewCalls).toEqual([]);
+      expect(sectionElement("about-me-detached").scrollIntoViewCalls).toEqual([]);
       expect(window.location.hash).toBe("");
     } finally {
       unmountFakeDomRoot(page);

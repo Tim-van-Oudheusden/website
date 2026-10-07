@@ -60,8 +60,8 @@ describe("selectActiveSectionId", () => {
   });
 });
 
-// "proof" is tracked but never rendered, so the hook must skip its missing element.
-const TRACKED_IDS: readonly HomeSectionId[] = ["start", "for-you", "proof", "footer"];
+// "about-me" is tracked but never rendered, so the hook must skip its missing element.
+const TRACKED_IDS: readonly HomeSectionId[] = ["start", "for-you", "about-me", "footer"];
 const RENDERED_IDS: readonly HomeSectionId[] = ["start", "for-you", "footer"];
 
 function ActiveSectionProbe({ sectionIds }: { sectionIds: readonly HomeSectionId[] }): ReactElement {
