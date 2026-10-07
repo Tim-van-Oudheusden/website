@@ -2,7 +2,7 @@ export type HomeSectionId
   = | "start"
     | "for-you"
     | "for-devs"
-    | "proof"
+    | "about-me"
     | "community-and-docs"
     | "secondary-cta"
     | "footer";
@@ -42,10 +42,12 @@ export interface HomeProjectsSection extends HomeSectionBase {
   featuredSubheading: (featuredTitle: string) => string;
 }
 
-export interface HomeTrustSection extends HomeSectionBase {
-  variant: "trust";
-  /** Honest, verifiable claims shown as the commitment strip. */
-  trustItems: string[];
+export interface HomeAboutSection extends HomeSectionBase {
+  variant: "about";
+  /** Short facts, each shown as one brick in the brick wall. */
+  aboutItems: string[];
+  imageSrc: string;
+  imageAlt: string;
 }
 
 export interface HomeRecentPostsSection extends HomeSectionBase {
@@ -64,7 +66,7 @@ export type HomeSectionDefinition
   = | HomeStartSection
     | HomeRecommendationsSection
     | HomeProjectsSection
-    | HomeTrustSection
+    | HomeAboutSection
     | HomeRecentPostsSection
     | HomeStartHereSection
     | HomeFooterSection;

@@ -1,6 +1,6 @@
 import { cn } from "cn";
 import type { LucideIcon } from "lucide-react";
-import { CodeXml, Dumbbell, House, ShieldCheck, Sparkles, Trophy, UserRound } from "lucide-react";
+import { CodeXml, Dumbbell, House, IdCard, ShieldCheck, Sparkles, UserRound } from "lucide-react";
 import type { CSSProperties, JSX, MouseEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -20,7 +20,7 @@ const HOME_NAV_ICONS: Record<HomeSectionId, LucideIcon> = {
   "start": House,
   "for-you": UserRound,
   "for-devs": CodeXml,
-  "proof": Trophy,
+  "about-me": IdCard,
   "community-and-docs": Dumbbell,
   "secondary-cta": ShieldCheck,
   "footer": Sparkles,

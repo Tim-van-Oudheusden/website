@@ -4,13 +4,13 @@ import type { ContentLoader } from "@/shared/lib/content-loader";
 
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
 
+import { HomeAboutMe } from "./home-about-me";
 import { HomeProjectShowcase } from "./home-project-showcase";
 import { HomeRecentPosts } from "./home-recent-posts";
 import { HomeRecommendations } from "./home-recommendations";
 import { HomeSectionFooter } from "./home-section-footer";
 import { HomeSectionStart } from "./home-section-start";
 import { HomeStartHere } from "./home-start-here";
-import { HomeTrustStrip } from "./home-trust-strip";
 
 export interface HomeSectionProps {
   section: HomeSectionDefinition;
@@ -30,8 +30,8 @@ export function HomeSection({ section, onCtaActivate, loader }: HomeSectionProps
       return <HomeRecommendations section={section} loader={loader} />;
     case "projects":
       return <HomeProjectShowcase section={section} loader={loader} />;
-    case "trust":
-      return <HomeTrustStrip section={section} />;
+    case "about":
+      return <HomeAboutMe section={section} />;
     case "recent-posts":
       return <HomeRecentPosts section={section} loader={loader} />;
     case "start-here":

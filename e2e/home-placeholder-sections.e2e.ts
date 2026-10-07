@@ -33,13 +33,13 @@ test.describe("Home placeholder sections implemented", () => {
     );
   });
 
-  test("renders the honest proof trust strip without fabricated metrics", async ({ page }) => {
-    const section = page.locator("section#proof");
+  test("renders the about-me brick list and portrait", async ({ page }) => {
+    const section = page.locator("section#about-me");
 
-    scrollToSection(page, "proof");
-    await expect(section.getByRole("heading", { name: "Proof, honestly" })).toBeVisible();
-    await expect(section.getByText("Open source, from the repo to every article file", { exact: true })).toBeVisible();
-    await expect(section).not.toContainText(/[0-9]%/);
+    scrollToSection(page, "about-me");
+    await expect(section.getByRole("heading", { level: 2, name: "About me" })).toBeVisible();
+    await expect(section.getByRole("listitem").first()).toBeVisible();
+    await expect(section.getByRole("img", { name: "Portrait of Tim van Oudheusden" })).toBeVisible();
   });
 
   test("renders the recent-posts strip linked to real article pages", async ({ page }) => {

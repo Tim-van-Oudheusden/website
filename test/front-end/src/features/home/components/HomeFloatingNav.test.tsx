@@ -59,6 +59,13 @@ describe("HomeFloatingNav", () => {
     expect(html).toContain("dark:text-(--adw-light-1)");
     expect(html).toContain("bg-(--adw-dark-5)");
   });
+
+  test("lists the about-me section as \"about me\" with the id-card icon, linking to #about-me", () => {
+    const anchor = /<a [^>]*href="#about-me"[^>]*>[\s\S]*?<\/a>/.exec(renderFloatingNav())?.[0] ?? "";
+
+    expect(anchor).toContain("lucide-id-card");
+    expect(anchor).toContain("about me");
+  });
 });
 
 describe("HomeFloatingNav active indicator", () => {
@@ -87,10 +94,10 @@ describe("HomeFloatingNav active indicator", () => {
 
     try {
       navAnchor(mount.container, "start").rect = { width: 96, height: 40 };
-      navAnchor(mount.container, "proof").rect = { width: 150, height: 40 };
+      navAnchor(mount.container, "about-me").rect = { width: 150, height: 40 };
 
       act(() => {
-        mount.root.render(floatingNav(HOME_SECTIONS, "proof"));
+        mount.root.render(floatingNav(HOME_SECTIONS, "about-me"));
       });
 
       expect(findBySlot(mount.container, "active-indicator").style.getPropertyValue("width")).toBe("150px");
@@ -113,10 +120,10 @@ describe("HomeFloatingNav active indicator", () => {
 
       expect(indicator.style.getPropertyValue("opacity")).toBe("1");
 
-      const withoutProof = HOME_SECTIONS.filter((section) => section.id !== "proof");
+      const withoutAboutMe = HOME_SECTIONS.filter((section) => section.id !== "about-me");
 
       act(() => {
-        mount.root.render(floatingNav(withoutProof, "proof"));
+        mount.root.render(floatingNav(withoutAboutMe, "about-me"));
       });
 
       expect(indicator.style.getPropertyValue("opacity")).toBe("0");
