@@ -1,6 +1,5 @@
+import { cn } from "cn";
 import type { ComponentProps, JSX } from "react";
-
-import { cn } from "@/shared/lib/utils";
 
 function Card({ className, ...props }: ComponentProps<"div">): JSX.Element {
   return (

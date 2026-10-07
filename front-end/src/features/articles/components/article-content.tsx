@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import type { JSX } from "react";
 
 import type { ArticleData } from "shared/articles";
@@ -5,7 +6,6 @@ import type { ArticleData } from "shared/articles";
 import { ErrorBoundary, renderErrorFallback } from "@/shared/components/error-boundary";
 import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
 import { Badge } from "@/shared/components/ui/badge";
-import { cn } from "@/shared/lib/utils";
 
 import type { ArticleTableOfContentsItem } from "../lib/article-toc";
 import {

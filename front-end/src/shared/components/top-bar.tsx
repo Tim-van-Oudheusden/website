@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import { MenuIcon } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
@@ -12,7 +13,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
-import { cn } from "@/shared/lib/utils";
 
 const navLinks = [
   { label: "Home", href: "/" },

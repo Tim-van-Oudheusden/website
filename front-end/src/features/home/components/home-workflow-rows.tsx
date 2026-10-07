@@ -1,6 +1,5 @@
+import { cn } from "cn";
 import type { JSX } from "react";
-
-import { cn } from "@/shared/lib/utils";
 
 import type { HomeWorkflowSection } from "../types/home-section";
 

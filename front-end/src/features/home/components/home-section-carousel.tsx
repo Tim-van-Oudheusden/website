@@ -1,6 +1,5 @@
+import { cn } from "cn";
 import type { JSX } from "react";
-
-import { cn } from "@/shared/lib/utils";
 
 import { headingIdFor } from "../config/home-sections";
 import type { HomeCarouselSection } from "../types/home-section";

@@ -54,6 +54,14 @@ const restrictedSyntax = [
   },
 ];
 
+const cnPackageMessage = "Import `cn` from \"cn\"; it is the only class-merge helper (#586). A shadcn `utils` registry item reintroduces clsx + tailwind-merge: delete it and drop those dependencies.";
+
+/* One class-merge implementation: shadcn's new-york-v4 registry imports `cn` from the `cn` package (#586). */
+const restrictedImports = [
+  { name: "clsx", message: cnPackageMessage },
+  { name: "tailwind-merge", message: cnPackageMessage },
+];
+
 const optionalMemberMessage = "Model a complete type instead of an optional member: required field, `T | null`, or a discriminated union (see CONTRIBUTING.md \"Code shape\").";
 
 /* Optional members (`foo?: T`, `foo?(…)`, `fn(x?: T)`); banned everywhere except `optionalMemberExemptFiles`. */
@@ -224,6 +232,7 @@ export default tseslint.config(
 
       /* ── Code shape ── */
       "no-restricted-syntax": ["error", defaultExportSyntax, ...restrictedSyntax, ...optionalMemberSyntax],
+      "no-restricted-imports": ["error", { paths: restrictedImports }],
       "func-style": ["error", "declaration", { allowArrowFunctions: false }],
       "prefer-arrow-callback": "error",
       "arrow-body-style": ["error", "as-needed"],
