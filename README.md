@@ -142,9 +142,9 @@ Otherwise it lists each invalid file with the offending field, then exits 1:
 Content validation failed: 1 invalid document(s).
 ```
 
-It reports the first broken rule per file, so rerun it after each fix. Files
-without a frontmatter block are not reported yet (#558). CI runs the same check
-on committed content via the back-end test suite.
+It reports the first broken rule per file, so rerun it after each fix. A file
+with a missing or unclosed frontmatter block is reported as a `(document)`
+error. CI runs the same check on committed content via the back-end test suite.
 
 ### Link previews (`socialImage`)
 
