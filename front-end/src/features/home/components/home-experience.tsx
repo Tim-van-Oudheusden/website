@@ -21,14 +21,24 @@ const LINK_ARROW_CLASSES = "ml-1 inline-block size-4 translate-y-px transition-t
  */
 const CARD_AREA_CLASSES = "lg:-inset-y-4 lg:-right-6 lg:-left-3.5";
 
-function RoleDates({ start, end }: { start: string; end: string | null }): JSX.Element {
+/** Secondary copy (dates, descriptions): grey on the page; on the dark-mode well, the start section's white/80. */
+const SECONDARY_TEXT_CLASSES = "text-(--adw-dark-2) dark:text-(--adw-light-5)";
+const WELL_SECONDARY_TEXT_CLASSES = "text-(--adw-dark-2) dark:text-white/80";
+
+interface RoleDatesProps {
+  start: string;
+  end: string | null;
+  textClasses: string;
+}
+
+function RoleDates({ start, end, textClasses }: RoleDatesProps): JSX.Element {
   const { label, spoken } = formatExperienceRange(start, end);
   const [from = label, to = ""] = label.split(" — ");
 
   return (
     <header
       aria-label={spoken}
-      className="relative z-10 mt-1 mb-2 text-xs font-semibold tracking-wide uppercase text-(--adw-dark-2) dark:text-(--adw-light-5) sm:col-span-2"
+      className={cn("relative z-10 mt-1 mb-2 text-xs font-semibold tracking-wide uppercase sm:col-span-2", textClasses)}
     >
       <time dateTime={start}>{from}</time>
       {" — "}
@@ -37,7 +47,7 @@ function RoleDates({ start, end }: { start: string; end: string | null }): JSX.E
   );
 }
 
-function RoleTitle({ role }: { role: ExperienceEntry }): JSX.Element {
+function RoleTitle({ role, onWell }: { role: ExperienceEntry; onWell: boolean }): JSX.Element {
   const text = (
     <>
       {role.title}
@@ -60,12 +70,20 @@ function RoleTitle({ role }: { role: ExperienceEntry }): JSX.Element {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${role.title} at ${role.company} (opens in a new tab)`}
-              className="group/link inline-flex items-baseline leading-tight transition-colors duration-150 hover:text-(--adw-accent-color) focus-visible:text-(--adw-accent-color) lg:focus-visible:outline-none motion-reduce:transition-none"
+              className={cn(
+                "group/link inline-flex items-baseline leading-tight transition-colors duration-150 hover:text-(--adw-accent-color) focus-visible:text-(--adw-accent-color) lg:focus-visible:outline-none motion-reduce:transition-none",
+                // The light accent is unreadable on the dark-mode well; the title keeps its colour there.
+                onWell ? "dark:hover:text-(--adw-light-1) dark:focus-visible:text-(--adw-light-1)" : "",
+              )}
             >
               {/* Stretched link: from 1024px the whole card is clickable and shows the focus ring. */}
               <span
                 aria-hidden="true"
-                className={cn("absolute hidden rounded-md group-focus-visible/link:ring-2 group-focus-visible/link:ring-(--adw-accent-color) lg:block", CARD_AREA_CLASSES)}
+                className={cn(
+                  "absolute hidden rounded-md group-focus-visible/link:ring-2 group-focus-visible/link:ring-(--adw-accent-color) lg:block",
+                  onWell ? "dark:group-focus-visible/link:ring-(--adw-light-1)" : "",
+                  CARD_AREA_CLASSES,
+                )}
               />
               <span>{text}</span>
             </a>
@@ -74,8 +92,16 @@ function RoleTitle({ role }: { role: ExperienceEntry }): JSX.Element {
   );
 }
 
-function RoleRow({ role, lastInGroup }: { role: ExperienceEntry; lastInGroup: boolean }): JSX.Element {
+interface RoleRowProps {
+  role: ExperienceEntry;
+  lastInGroup: boolean;
+  /** The row sits in a company panel, which shows the section well in dark mode. */
+  onWell: boolean;
+}
+
+function RoleRow({ role, lastInGroup, onWell }: RoleRowProps): JSX.Element {
   const current = role.end === null;
+  const secondaryTextClasses = onWell ? WELL_SECONDARY_TEXT_CLASSES : SECONDARY_TEXT_CLASSES;
 
   return (
     <li data-role="" className={cn("group relative pl-6 sm:pl-0", lastInGroup ? "" : "mb-12")}>
@@ -94,7 +120,7 @@ function RoleRow({ role, lastInGroup }: { role: ExperienceEntry; lastInGroup: bo
         )}
       />
       <div className="grid pb-1 transition-opacity duration-150 motion-reduce:transition-none sm:grid-cols-8 sm:gap-8 md:gap-4 lg:gap-x-12">
-        <RoleDates start={role.start} end={role.end} />
+        <RoleDates start={role.start} end={role.end} textClasses={secondaryTextClasses} />
         {/* Its own stacking context, so the card (-z-10) sits behind the text but above the section. */}
         <div className="relative z-10 sm:col-span-6">
           <div
@@ -104,8 +130,8 @@ function RoleRow({ role, lastInGroup }: { role: ExperienceEntry; lastInGroup: bo
               CARD_AREA_CLASSES,
             )}
           />
-          <RoleTitle role={role} />
-          <p className="mt-2 text-sm leading-normal whitespace-pre-line text-(--adw-dark-2) dark:text-(--adw-light-5)">
+          <RoleTitle role={role} onWell={onWell} />
+          <p className={cn("mt-2 text-sm leading-normal whitespace-pre-line", secondaryTextClasses)}>
             {role.description}
           </p>
           {role.skills.length === 0
@@ -114,7 +140,13 @@ function RoleRow({ role, lastInGroup }: { role: ExperienceEntry; lastInGroup: bo
                 <ul aria-label="Technologies used" className="mt-2 flex flex-wrap">
                   {role.skills.map((skill) => (
                     <li key={skill} className="mt-2 mr-1.5">
-                      <Badge className="rounded-full border-transparent bg-[color-mix(in_oklab,var(--adw-accent-color)_10%,transparent)] px-3 py-1 text-xs leading-5 font-medium text-(--adw-accent-color)">
+                      <Badge
+                        className={cn(
+                          "rounded-full border-transparent bg-[color-mix(in_oklab,var(--adw-accent-color)_10%,transparent)] px-3 py-1 text-xs leading-5 font-medium text-(--adw-accent-color)",
+                          // On the dark-mode well, pills match the about-me bricks.
+                          onWell ? "dark:border-white/20 dark:bg-white/10 dark:text-(--adw-light-1)" : "",
+                        )}
+                      >
                         {skill}
                       </Badge>
                     </li>
@@ -160,7 +192,8 @@ export function HomeExperience({ section }: HomeExperienceProps): JSX.Element {
 
   return (
     <HomeSectionFrame section={section} as="section" className={HOME_SECTION_FRAME_CLASSES}>
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-10 md:max-w-3xl lg:max-w-296">
+      {/* One column, as wide as the timeline, centered in the section: the heading stays aligned with the rows. */}
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-10 md:max-w-3xl">
         <div className="flex flex-col gap-3">
           <h2
             id={headingIdFor(section.id)}
@@ -170,28 +203,37 @@ export function HomeExperience({ section }: HomeExperienceProps): JSX.Element {
           </h2>
           <p className="text-lg leading-relaxed text-(--adw-dark-2) dark:text-(--adw-light-5)">{section.body}</p>
         </div>
-        <div className="max-w-3xl">
+        <div>
           <ol className="lg:[&:has([data-role]:focus-within)_[data-role]:not(:focus-within)>div]:opacity-50 lg:[&:has([data-role]:hover)_[data-role]:not(:hover)>div]:opacity-50">
-            {groups.map((group, index) => (
-              <li
-                key={`${group[0]?.company ?? ""}-${group[0]?.start ?? ""}`}
-                // Every company keeps the same side padding (pulled back out with a negative margin) so all rows align;
-                // only a company with several positions shows the panel.
-                className={cn(
-                  "-mx-4 px-4 sm:-mx-6 sm:px-6",
-                  index === groups.length - 1 ? "" : "mb-12",
-                  group.length > 1
-                    ? "rounded-2xl bg-(--adw-light-1)/50 py-6 ring-1 ring-black/5 ring-inset dark:bg-white/[0.03] dark:ring-white/10"
-                    : "",
-                )}
-              >
-                <ol>
-                  {group.map((role, roleIndex) => (
-                    <RoleRow key={`${role.company}-${role.start}`} role={role} lastInGroup={roleIndex === group.length - 1} />
-                  ))}
-                </ol>
-              </li>
-            ))}
+            {groups.map((group, index) => {
+              const onWell = group.length > 1;
+
+              return (
+                <li
+                  key={`${group[0]?.company ?? ""}-${group[0]?.start ?? ""}`}
+                  // Every company keeps the same side padding (pulled back out with a negative margin) so all rows
+                  // align; only a company with several positions shows the panel.
+                  className={cn(
+                    "-mx-4 px-4 sm:-mx-6 sm:px-6",
+                    index === groups.length - 1 ? "" : "mb-12",
+                    onWell
+                      ? "rounded-2xl bg-(--adw-light-1)/50 py-6 ring-1 ring-black/5 ring-inset dark:bg-(--site-section-well-bg) dark:ring-white/10"
+                      : "",
+                  )}
+                >
+                  <ol>
+                    {group.map((role, roleIndex) => (
+                      <RoleRow
+                        key={`${role.company}-${role.start}`}
+                        role={role}
+                        lastInGroup={roleIndex === group.length - 1}
+                        onWell={onWell}
+                      />
+                    ))}
+                  </ol>
+                </li>
+              );
+            })}
           </ol>
           <a
             href={section.profileUrl}
