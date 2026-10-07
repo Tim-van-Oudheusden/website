@@ -84,8 +84,11 @@ Agent changes go through the same gates as human ones, with no shortcuts:
   (`.github/workflows/review.yml`) run as well.
 - A human reviews and merges every PR. Look harder at changes that touch:
   - `.github/workflows/`: keep `permissions:` least-privilege. Don't add
-    `pull_request_target` or interpolate untrusted event fields straight into
-    `run:` (pass them through `env:`, as `review.yml` does).
+    `pull_request_target` to a job that checks out or runs PR code, and don't
+    interpolate untrusted event fields straight into `run:` (pass them through
+    `env:`, as `review.yml` does). `labeler.yml` is the sanctioned
+    `pull_request_target` exception: it checks out nothing, runs only
+    `actions/labeler`, and holds `contents: read` + `pull-requests: write`.
   - `.claude/settings.json`, `AGENTS.md`, `CLAUDE.md`, and this file: any change
     that loosens agent boundaries needs explicit maintainer approval.
   - `deploy/`, `Dockerfile.sandbox`, and the container images: no secret
