@@ -1,5 +1,7 @@
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
 
+import { EXPERIENCE, LINKEDIN_PROFILE_URL } from "./experience";
+
 /**
  * Single id-derivation seam: DOM id, heading id, URL hash, nav key, and observer key
  * all project from the section id.
@@ -73,13 +75,15 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     variant: "recent-posts",
   },
   {
-    id: "secondary-cta",
-    label: "independence",
-    heading: "Start here",
-    body: "Four posts that give the fastest honest read of what this site is about.",
+    id: "experience",
+    label: "experience",
+    heading: "Experience",
+    body: "Where I have worked so far, newest first.",
     bgColor: "var(--adw-page-brown-bg)",
     contentDirection: "column",
-    variant: "start-here",
+    variant: "experience",
+    entries: EXPERIENCE,
+    profileUrl: LINKEDIN_PROFILE_URL,
   },
   {
     id: "footer",

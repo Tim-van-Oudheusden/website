@@ -1,4 +1,3 @@
-import { cn } from "cn";
 import type { JSX, ReactNode } from "react";
 
 import { headingIdFor } from "../config/home-sections";
@@ -45,8 +44,6 @@ interface HomeHeadedSectionShellProps {
   as: HomeSectionFrameElement;
   heading: string;
   body: string;
-  /** Center the heading/body block and its container (trust / start-here layout). */
-  centered: boolean;
   children: ReactNode;
 }
 
@@ -56,34 +53,20 @@ export function HomeHeadedSectionShell({
   as,
   heading,
   body,
-  centered,
   children,
 }: HomeHeadedSectionShellProps): JSX.Element {
   return (
     <HomeSectionFrame section={section} as={as} className={HOME_SECTION_FRAME_CLASSES}>
       <div className="w-full">
-        <div
-          className={cn(
-            "mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296",
-            centered ? "items-center" : "",
-          )}
-        >
-          <div className={cn("flex flex-1 flex-col", centered ? "items-center gap-4" : "gap-5")}>
+        <div className="mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296">
+          <div className="flex flex-1 flex-col gap-5">
             <h2
               id={headingIdFor(section.id)}
-              className={cn(
-                "font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]",
-                centered ? "text-center" : "",
-              )}
+              className="font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]"
             >
               {heading}
             </h2>
-            <p
-              className={cn(
-                "max-w-[65ch] text-base sm:text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80",
-                centered ? "text-center" : "",
-              )}
-            >
+            <p className="max-w-[65ch] text-base sm:text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80">
               {body}
             </p>
           </div>

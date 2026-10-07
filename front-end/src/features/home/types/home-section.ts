@@ -1,10 +1,12 @@
+import type { ExperienceEntry } from "../config/experience";
+
 export type HomeSectionId
   = | "start"
     | "for-you"
     | "for-devs"
     | "about-me"
     | "whats-new"
-    | "secondary-cta"
+    | "experience"
     | "footer";
 
 export type HomeSectionContentDirection = "row" | "column";
@@ -54,8 +56,12 @@ export interface HomeRecentPostsSection extends HomeSectionBase {
   variant: "recent-posts";
 }
 
-export interface HomeStartHereSection extends HomeSectionBase {
-  variant: "start-here";
+export interface HomeExperienceSection extends HomeSectionBase {
+  variant: "experience";
+  /** Positions in any order; the section lists them newest first. */
+  entries: ExperienceEntry[];
+  /** The full LinkedIn profile, linked below the list. */
+  profileUrl: string;
 }
 
 export interface HomeFooterSection extends HomeSectionBase {
@@ -68,7 +74,7 @@ export type HomeSectionDefinition
     | HomeProjectsSection
     | HomeAboutSection
     | HomeRecentPostsSection
-    | HomeStartHereSection
+    | HomeExperienceSection
     | HomeFooterSection;
 
 export type HomeSectionVariant = HomeSectionDefinition["variant"];

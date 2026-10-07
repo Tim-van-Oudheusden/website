@@ -104,7 +104,6 @@ export function HomeRecentPosts({ section, loader }: HomeRecentPostsProps): JSX.
       section={section}
       heading={section.heading}
       body={section.body}
-      centered={false}
     >
       <RecentPostsContent posts={posts} loadError={loadError} />
     </HomeHeadedSectionShell>

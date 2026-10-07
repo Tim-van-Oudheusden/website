@@ -4,10 +4,7 @@ import { compareArticles } from "shared/articles";
 /** How many recommended articles the for-you section shows. */
 export const RECOMMENDED_ARTICLES_COUNT = 3;
 
-/**
- * Curated pool the for-you section picks its recommendations from on every
- * page load (seeded from the start-here reading list).
- */
+/** Curated pool the for-you section picks its recommendations from on every page load. */
 export const HOME_RECOMMENDED_SLUGS: readonly string[] = [
   "introduction",
   "my-operating-system-is-a-container-image-yes-really",

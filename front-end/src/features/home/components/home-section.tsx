@@ -5,12 +5,12 @@ import type { ContentLoader } from "@/shared/lib/content-loader";
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
 
 import { HomeAboutMe } from "./home-about-me";
+import { HomeExperience } from "./home-experience";
 import { HomeProjectShowcase } from "./home-project-showcase";
 import { HomeRecentPosts } from "./home-recent-posts";
 import { HomeRecommendations } from "./home-recommendations";
 import { HomeSectionFooter } from "./home-section-footer";
 import { HomeSectionStart } from "./home-section-start";
-import { HomeStartHere } from "./home-start-here";
 
 export interface HomeSectionProps {
   section: HomeSectionDefinition;
@@ -34,8 +34,8 @@ export function HomeSection({ section, onCtaActivate, loader }: HomeSectionProps
       return <HomeAboutMe section={section} />;
     case "recent-posts":
       return <HomeRecentPosts section={section} loader={loader} />;
-    case "start-here":
-      return <HomeStartHere section={section} loader={loader} />;
+    case "experience":
+      return <HomeExperience section={section} />;
     default: {
       const unhandled: never = section;
 
