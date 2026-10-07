@@ -35,6 +35,7 @@ function article(overrides: Partial<ArticleSummary> = {}): ArticleSummary {
     type: "article",
     socialImage: "images/cover.png",
     draft: false,
+    homeRecommended: false,
     category: "Personal Life",
     description: "How Eastern methods can help in a western life",
     ...overrides,

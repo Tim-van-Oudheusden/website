@@ -190,6 +190,7 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
         category: category as ArticleCategory,
         slug,
         socialImage,
+        homeRecommended: normalizeBoolean(raw["homeRecommended"], false),
       },
     };
   }

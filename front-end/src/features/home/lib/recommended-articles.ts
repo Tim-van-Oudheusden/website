@@ -4,13 +4,16 @@ import { compareArticles } from "shared/articles";
 /** How many recommended articles the for-you section shows. */
 export const RECOMMENDED_ARTICLES_COUNT = 3;
 
-/** Curated pool the for-you section picks its recommendations from on every page load. */
-export const HOME_RECOMMENDED_SLUGS: readonly string[] = [
-  "introduction",
-  "my-operating-system-is-a-container-image-yes-really",
-  "yoga-nidra-a-way-to-be-at-peace-in-chaos",
-  "making-my-work-easier-with-notes-in-obsidian",
-];
+/**
+ * Curated pool the for-you section picks its recommendations from on every
+ * page load: every article whose own frontmatter opts it in, in listing
+ * order. Mirrors how `resolveFeaturedProject`/`resolvePriorityProjects`
+ * (projects/lib/project-display.ts) read editorial priority from content
+ * instead of a code-owned list.
+ */
+export function resolveRecommendedPool(articles: readonly ArticleSummary[]): readonly string[] {
+  return articles.filter((article) => article.homeRecommended).map((article) => article.slug);
+}
 
 /**
  * Resolve a curated slug list to articles, preserving the stated slug order,

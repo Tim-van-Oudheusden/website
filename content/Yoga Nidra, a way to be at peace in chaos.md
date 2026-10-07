@@ -6,6 +6,7 @@ type: article
 category: Personal Life
 socialImage: images/cover.png
 publishDate: 2025-01-17
+homeRecommended: true
 tags:
   - Meditation
 ---

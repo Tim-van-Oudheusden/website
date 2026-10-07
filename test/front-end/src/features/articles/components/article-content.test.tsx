@@ -16,6 +16,7 @@ const FIXTURE_ARTICLE: ArticleData = {
   type: "article",
   socialImage: null,
   draft: false,
+  homeRecommended: false,
   category: "Introduction",
   slug: "introduction",
   body: "# Intro\n\nThe first post.",

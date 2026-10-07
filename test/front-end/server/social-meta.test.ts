@@ -24,6 +24,7 @@ function article(overrides: Partial<ArticleFrontmatter> = {}): ArticleFrontmatte
     date: "2026-09-01",
     tags: [],
     draft: false,
+    homeRecommended: false,
     category: "Linux",
     slug: "apt-get-out-of-my-life-hello-flatpak",
     ...overrides,

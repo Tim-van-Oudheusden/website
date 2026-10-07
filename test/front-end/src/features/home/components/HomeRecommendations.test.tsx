@@ -31,6 +31,7 @@ function article(slug: string, date: string): ArticleData {
     type: "article",
     socialImage: null,
     draft: false,
+    homeRecommended: false,
     category: "Linux",
     description: `About ${slug}.`,
     body: "",

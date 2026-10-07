@@ -6,6 +6,7 @@ type: article
 category: Linux
 socialImage: images/cover.png
 publishDate: 2025-04-13
+homeRecommended: true
 tags:
   - Bazzite
   - Bluefin

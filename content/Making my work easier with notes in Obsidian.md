@@ -6,6 +6,7 @@ type: article
 category: Work
 socialImage: images/cover.png
 publishDate: 2025-01-17
+homeRecommended: true
 tags:
   - Obsidian
 ---

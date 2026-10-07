@@ -109,6 +109,12 @@ interface BaseContentFrontmatter {
 export interface ArticleFrontmatter extends BaseContentFrontmatter {
   type: "article";
   category: ArticleCategory;
+  /**
+   * Opts the article into the homepage "for you" curated pool (mirrors
+   * projects' `featured`/`prioritySlot`: editorial priority as content, not
+   * code).
+   */
+  homeRecommended: boolean;
 }
 
 export interface ProjectLink {

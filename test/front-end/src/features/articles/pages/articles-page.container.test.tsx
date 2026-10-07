@@ -40,6 +40,7 @@ function summary(slug: string, title: string): ArticleSummary {
     type: "article",
     socialImage: null,
     draft: false,
+    homeRecommended: false,
     category: slug === "introduction" ? "Introduction" : "Linux",
     slug,
   };

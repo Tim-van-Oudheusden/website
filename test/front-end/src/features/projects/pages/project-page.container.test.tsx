@@ -70,6 +70,7 @@ function articleItem(): ArticleData {
     type: "article",
     socialImage: null,
     draft: false,
+    homeRecommended: false,
     category: "Linux",
     slug: "sweet-app",
     body: "# Sweet App",

@@ -30,6 +30,7 @@ function articleSummary(overrides: Partial<ArticleSummary> = {}): ArticleSummary
     type: "article",
     socialImage: null,
     draft: false,
+    homeRecommended: false,
     category: "Linux",
     slug: "article",
     ...overrides,
