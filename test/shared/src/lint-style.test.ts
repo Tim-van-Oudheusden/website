@@ -187,4 +187,20 @@ describe("lint house style", () => {
       expect(restrictedSyntaxMessages).toContain(expected);
     }
   }, 30_000);
+
+  test("rejects the shadcn registry's `cn` package import in favour of the shared helper", () => {
+    const source = [
+      "import { cn } from \"cn\";",
+      "",
+      "export const classes = cn(\"a\", \"b\");",
+      "",
+    ].join("\n");
+
+    const restrictedImportMessages = eslintRun(source, frontEndFixture, false).messages
+      .filter((message) => message.ruleId === "no-restricted-imports")
+      .map((message) => message.message);
+
+    expect(restrictedImportMessages).toHaveLength(1);
+    expect(restrictedImportMessages[0]).toContain("@/shared/lib/utils");
+  }, 30_000);
 });

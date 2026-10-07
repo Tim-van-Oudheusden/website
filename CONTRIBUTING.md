@@ -106,6 +106,7 @@ Imports:
 - Type-only imports use separate `import type { … }` statements, never inline `{ type X }`.
 - Sorted by `eslint-plugin-perfectionist` (natural, case-insensitive), groups separated by a blank line: builtins (`node:`/`bun:`) → packages → `shared` → `@/` → `../` → `./`. Type imports sit in their source's group.
 - React APIs are imported by name (`import { useState } from "react"`); no `import * as React` or default import.
+- `cn` comes from `@/shared/lib/utils`, never the `cn` package. shadcn's registry generates `import { cn } from "cn"` and adds that package, so after `shadcn add` rewrite the import and drop the dependency (`no-restricted-imports`).
 
 React (front-end and its tests):
 

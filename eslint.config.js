@@ -54,6 +54,14 @@ const restrictedSyntax = [
   },
 ];
 
+/* shadcn's new-york-v4 registry imports `cn` from its own `cn` package; keep one class-merge helper (#586). */
+const restrictedImports = [
+  {
+    name: "cn",
+    message: "Import `cn` from \"@/shared/lib/utils\". After `shadcn add`, rewrite the generated import and drop the `cn` dependency it adds.",
+  },
+];
+
 const optionalMemberMessage = "Model a complete type instead of an optional member: required field, `T | null`, or a discriminated union (see CONTRIBUTING.md \"Code shape\").";
 
 /* Optional members (`foo?: T`, `foo?(…)`, `fn(x?: T)`); banned everywhere except `optionalMemberExemptFiles`. */
@@ -224,6 +232,7 @@ export default tseslint.config(
 
       /* ── Code shape ── */
       "no-restricted-syntax": ["error", defaultExportSyntax, ...restrictedSyntax, ...optionalMemberSyntax],
+      "no-restricted-imports": ["error", { paths: restrictedImports }],
       "func-style": ["error", "declaration", { allowArrowFunctions: false }],
       "prefer-arrow-callback": "error",
       "arrow-body-style": ["error", "as-needed"],
