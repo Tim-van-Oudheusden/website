@@ -1,10 +1,11 @@
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { Link } from "react-router";
 
 import type { ArticleSummary } from "shared/articles";
 import { compareArticles } from "shared/articles";
 
+import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import type { ContentLoader } from "@/shared/lib/content-loader";
 
 import type { HomeRecentPostsSection } from "../types/home-section";
@@ -74,29 +75,8 @@ interface HomeRecentPostsProps {
 
 /** Home 'whats-new' section: a self-updating recent-posts strip from real content. */
 export function HomeRecentPosts({ section, loader }: HomeRecentPostsProps): JSX.Element {
-  const [posts, setPosts] = useState<ArticleSummary[] | null>(null);
-  const [loadError, setLoadError] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    loader.listArticles().then(
-      (articles) => {
-        if (!cancelled) {
-          setPosts(selectRecentPosts(articles));
-        }
-      },
-      () => {
-        if (!cancelled) {
-          setLoadError(true);
-        }
-      },
-    );
-
-    return () => {
-      cancelled = true;
-    };
-  }, [loader]);
+  const load = useCallback(async () => selectRecentPosts(await loader.listArticles()), [loader]);
+  const { status, data: posts } = useLoadOnMount(load, "Failed to load recent posts");
 
   return (
     <HomeHeadedSectionShell
@@ -105,7 +85,7 @@ export function HomeRecentPosts({ section, loader }: HomeRecentPostsProps): JSX.
       heading={section.heading}
       body={section.body}
     >
-      <RecentPostsContent posts={posts} loadError={loadError} />
+      <RecentPostsContent posts={posts} loadError={status === "error"} />
     </HomeHeadedSectionShell>
   );
 }

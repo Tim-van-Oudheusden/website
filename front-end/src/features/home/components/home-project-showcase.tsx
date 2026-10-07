@@ -1,8 +1,9 @@
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 
 import type { ProjectFrontmatter } from "shared";
 
+import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import type { ContentLoader } from "@/shared/lib/content-loader";
 
 import { headingIdFor } from "../config/home-sections";
@@ -52,29 +53,8 @@ interface HomeProjectShowcaseProps {
 
 /** Home 'for-devs' section: Kent C. Dodds-style flagship showcase of Tim's projects, featured first. */
 export function HomeProjectShowcase({ section, loader }: HomeProjectShowcaseProps): JSX.Element {
-  const [projects, setProjects] = useState<ProjectFrontmatter[] | null>(null);
-  const [loadError, setLoadError] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    loader.listProjects().then(
-      (loaded) => {
-        if (!cancelled) {
-          setProjects(selectShowcaseProjects(loaded));
-        }
-      },
-      () => {
-        if (!cancelled) {
-          setLoadError(true);
-        }
-      },
-    );
-
-    return () => {
-      cancelled = true;
-    };
-  }, [loader]);
+  const load = useCallback(async () => selectShowcaseProjects(await loader.listProjects()), [loader]);
+  const { status, data: projects } = useLoadOnMount(load, "Failed to load projects");
 
   const featured = projects?.[0];
 
@@ -88,7 +68,7 @@ export function HomeProjectShowcase({ section, loader }: HomeProjectShowcaseProp
           linkLabel={section.linkLabel}
           linkTo={section.linkTo}
         />
-        <ShowcaseContent projects={projects} loadError={loadError} />
+        <ShowcaseContent projects={projects} loadError={status === "error"} />
       </div>
     </HomeSectionFrame>
   );

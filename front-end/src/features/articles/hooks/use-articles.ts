@@ -1,11 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import type { ArticleData, ArticleSummary } from "shared/articles";
 
-import { ApiError } from "@/shared/lib/api";
+import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import { httpContentLoader } from "@/shared/lib/content-loader";
 
 import { getDefaultArticleSlug } from "../lib/articles-sidebar";
+
+function loadArticles(): Promise<ArticleSummary[]> {
+  return httpContentLoader.listArticles();
+}
+
+const NO_ARTICLES: ArticleSummary[] = [];
 
 export interface UseArticlesResult {
   articles: ArticleSummary[];
@@ -26,13 +32,7 @@ export interface UseArticlesResult {
  * returned tuple; the page stays a pure composition of the result.
  */
 export function useArticles(urlSlug: string | undefined): UseArticlesResult {
-  const [articles, setArticles] = useState<ArticleSummary[]>([]);
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(urlSlug ?? null);
-  const [selectedArticle, setSelectedArticle] = useState<ArticleData | null>(null);
-  const [loadingArticles, setLoadingArticles] = useState(true);
-  const [loadingArticle, setLoadingArticle] = useState(false);
-  const [listError, setListError] = useState<string | null>(null);
-  const [articleError, setArticleError] = useState<string | null>(null);
+  const [pickedSlug, setPickedSlug] = useState<string | null>(urlSlug ?? null);
   const [syncedUrlSlug, setSyncedUrlSlug] = useState(urlSlug);
 
   // React to URL changes only: an in-page selectSlug must not be reverted
@@ -41,108 +41,32 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
     setSyncedUrlSlug(urlSlug);
 
     if (urlSlug !== undefined) {
-      setSelectedSlug(urlSlug);
+      setPickedSlug(urlSlug);
     }
   }
 
-  useEffect(() => {
-    let cancelled = false;
+  const list = useLoadOnMount(loadArticles, "Failed to load articles");
+  const articles = list.data ?? NO_ARTICLES;
+  const selectedSlug = pickedSlug ?? (list.data === null ? null : getDefaultArticleSlug(list.data));
 
-    async function fetchArticles(): Promise<void> {
-      try {
-        const items = await httpContentLoader.listArticles();
-
-        if (!cancelled) {
-          setArticles(items);
-          setSelectedSlug((current) => current ?? getDefaultArticleSlug(items));
-        }
-      } catch (err) {
-        if (!cancelled) {
-          let message = "Failed to load articles";
-
-          if (err instanceof ApiError) {
-            message = err.message;
-          }
-
-          setListError(message);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingArticles(false);
-        }
-      }
-    }
-
-    void fetchArticles();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const [requestedSlug, setRequestedSlug] = useState<string | null>(null);
-
-  // A newly selected slug starts a fresh article request: flag loading and clear the
-  // previous error in the same render instead of after commit.
-  if (selectedSlug !== null && selectedSlug !== requestedSlug) {
-    setRequestedSlug(selectedSlug);
-    setLoadingArticle(true);
-    setArticleError(null);
-  }
-
-  useEffect(() => {
-    // selectedSlug only ever moves from null to a slug, so there is no article to clear here.
-    if (selectedSlug === null) {
-      return;
-    }
-
-    const contentSlug = selectedSlug;
-    let cancelled = false;
-
-    async function fetchArticle(): Promise<void> {
-      try {
-        const data = await httpContentLoader.getArticle(contentSlug);
-
-        if (!cancelled) {
-          setSelectedArticle(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          let message = "Failed to load article";
-
-          if (err instanceof ApiError) {
-            message = err.message;
-          }
-
-          setArticleError(message);
-          setSelectedArticle(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingArticle(false);
-        }
-      }
-    }
-
-    void fetchArticle();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedSlug]);
+  const loadSelectedArticle = useMemo(
+    () => (selectedSlug === null ? null : () => httpContentLoader.getArticle(selectedSlug)),
+    [selectedSlug],
+  );
+  const article = useLoadOnMount(loadSelectedArticle, "Failed to load article");
 
   const selectSlug = useCallback((slug: string) => {
-    setSelectedSlug(slug);
+    setPickedSlug(slug);
   }, []);
 
   return {
     articles,
     selectedSlug,
-    selectedArticle,
-    loadingArticles,
-    loadingArticle,
-    listError,
-    articleError,
+    selectedArticle: article.data,
+    loadingArticles: list.status === "loading",
+    loadingArticle: article.status === "loading",
+    listError: list.error,
+    articleError: article.error,
     selectSlug,
   };
 }

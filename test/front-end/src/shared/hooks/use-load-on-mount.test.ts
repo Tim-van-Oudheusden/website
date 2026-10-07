@@ -9,7 +9,7 @@ import { uninstallFakeDom } from "../../../src/test/fake-dom";
 
 // Module-loading boundary: react-dom captures `canUseDOM` at module load, so the
 // hook is imported after the fake DOM is installed by the harness.
-type UseLoadOnMountFn = <T>(load: () => Promise<T>, fallbackError: string) => ApiGetState<T>;
+type UseLoadOnMountFn = <T>(load: (() => Promise<T>) | null, fallbackError: string) => ApiGetState<T>;
 let useLoadOnMount: UseLoadOnMountFn;
 
 beforeAll(async () => {
@@ -112,6 +112,96 @@ describe("useLoadOnMount", () => {
       await settle();
 
       expect(probe.latest()).toEqual({ status: "error", data: null, error: "Failed to load things" });
+    } finally {
+      probe.cleanup();
+    }
+  });
+});
+
+interface ReloadableProbe {
+  latest: () => ApiGetState<string> | null;
+  rerender: (load: (() => Promise<string>) | null) => void;
+  cleanup: () => void;
+}
+
+function mountReloadableProbe(initial: (() => Promise<string>) | null): ReloadableProbe {
+  const latestRef: { current: ApiGetState<string> | null } = { current: null };
+
+  function Probe({ load }: { load: (() => Promise<string>) | null }): null {
+    latestRef.current = useLoadOnMount(load, "Failed to load things");
+
+    return null;
+  }
+
+  const mount = mountIntoBody(createElement(Probe, { load: initial }));
+
+  return {
+    latest: () => latestRef.current,
+    rerender: (load) => {
+      act(() => {
+        mount.root.render(createElement(Probe, { load }));
+      });
+    },
+    cleanup: () => {
+      unmountFakeDomRoot(mount);
+    },
+  };
+}
+
+function loadsSecond(): Promise<string> {
+  return Promise.resolve("second");
+}
+
+describe("useLoadOnMount with a changing load", () => {
+  test("is idle while there is nothing to load, then loads once a load is given", async () => {
+    const probe = mountReloadableProbe(null);
+
+    try {
+      await settle();
+      expect(probe.latest()).toEqual({ status: "idle", data: null, error: null });
+
+      probe.rerender(loadsThings);
+      expect(probe.latest()?.status).toBe("loading");
+
+      await settle();
+      expect(probe.latest()).toEqual({ status: "success", data: "things", error: null });
+    } finally {
+      probe.cleanup();
+    }
+  });
+
+  test("a new load reads as loading at once and never shows the previous result", async () => {
+    const probe = mountReloadableProbe(loadsThings);
+
+    try {
+      await settle();
+      expect(probe.latest()?.data).toBe("things");
+
+      probe.rerender(neverSettles);
+      expect(probe.latest()).toEqual({ status: "loading", data: null, error: null });
+    } finally {
+      probe.cleanup();
+    }
+  });
+
+  test("a superseded load that settles late is ignored", async () => {
+    const firstRequest: { resolve: ((value: string) => void) | null } = { resolve: null };
+
+    function first(): Promise<string> {
+      return new Promise<string>((resolve) => {
+        firstRequest.resolve = resolve;
+      });
+    }
+
+    const probe = mountReloadableProbe(first);
+
+    try {
+      probe.rerender(loadsSecond);
+      await settle();
+      firstRequest.resolve?.("first");
+      await settle();
+
+      expect(probe.latest()).toEqual({ status: "success", data: "second", error: null });
     } finally {
       probe.cleanup();
     }

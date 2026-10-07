@@ -1,39 +1,50 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useState } from "react";
 
 import { ApiError } from "@/shared/lib/api";
 
 import type { ApiGetState } from "./use-api-get";
-import { reduceApiGetState } from "./use-api-get";
 
-function initialLoadingState<T>(): ApiGetState<T> {
-  return { status: "loading", data: null, error: null };
+const LOADING: ApiGetState<never> = { status: "loading", data: null, error: null };
+const IDLE: ApiGetState<never> = { status: "idle", data: null, error: null };
+
+interface Settled<T> {
+  /** The `load` this outcome belongs to, so an outcome is never read for another load. */
+  load: () => Promise<T>;
+  outcome: ApiGetState<T>;
 }
 
 /**
- * Runs `load` once on mount and tracks its loading/error/data state, for pages
+ * Runs `load` on mount and tracks its loading/error/data state, for pages
  * that fetch their content up front. An `ApiError` shows its own message; any
  * other failure shows `fallbackError`, so transport details never reach the UI.
  *
- * `load` must be stable (module-level or memoised): a new function re-runs it.
- * A result that settles after unmount, or after `load` changed, is dropped.
+ * `load` must be stable (module-level or memoised): a new function re-runs it,
+ * and the state reads as loading from that very render. `null` means there is
+ * nothing to load yet and the state stays idle. A result that settles after
+ * unmount, or after `load` changed, is dropped.
  */
-export function useLoadOnMount<T>(load: () => Promise<T>, fallbackError: string): ApiGetState<T> {
-  const [state, dispatch] = useReducer(reduceApiGetState<T>, undefined, initialLoadingState);
+export function useLoadOnMount<T>(load: (() => Promise<T>) | null, fallbackError: string): ApiGetState<T> {
+  const [settled, setSettled] = useState<Settled<T> | null>(null);
 
   useEffect(() => {
+    if (load === null) {
+      return;
+    }
+
+    const currentLoad = load;
     let cancelled = false;
 
     async function run(): Promise<void> {
-      try {
-        const data = await load();
+      let outcome: ApiGetState<T>;
 
-        if (!cancelled) {
-          dispatch({ type: "success", data });
-        }
+      try {
+        outcome = { status: "success", data: await currentLoad(), error: null };
       } catch (err: unknown) {
-        if (!cancelled) {
-          dispatch({ type: "error", error: err instanceof ApiError ? err.message : fallbackError });
-        }
+        outcome = { status: "error", data: null, error: err instanceof ApiError ? err.message : fallbackError };
+      }
+
+      if (!cancelled) {
+        setSettled({ load: currentLoad, outcome });
       }
     }
 
@@ -44,5 +55,9 @@ export function useLoadOnMount<T>(load: () => Promise<T>, fallbackError: string)
     };
   }, [load, fallbackError]);
 
-  return state;
+  if (load === null) {
+    return IDLE;
+  }
+
+  return settled?.load === load ? settled.outcome : LOADING;
 }
