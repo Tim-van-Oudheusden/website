@@ -1,5 +1,4 @@
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
 import type { ProjectFrontmatter } from "shared";
@@ -7,7 +6,7 @@ import type { ProjectFrontmatter } from "shared";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { ApiError } from "@/shared/lib/api";
+import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import { httpContentLoader } from "@/shared/lib/content-loader";
 
 import { resolveGalleryProjects, resolvePriorityProjects } from "../lib/project-display";
@@ -82,46 +81,14 @@ export function ProjectCard({ project, featured }: ProjectCardProps): JSX.Elemen
   );
 }
 
+function loadProjects(): Promise<ProjectFrontmatter[]> {
+  return httpContentLoader.listProjects();
+}
+
 export function ProjectsPage(): JSX.Element {
-  const [projects, setProjects] = useState<ProjectFrontmatter[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { status, data: projects, error } = useLoadOnMount(loadProjects, "Failed to load projects");
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchProjects(): Promise<void> {
-      try {
-        const data = await httpContentLoader.listProjects();
-
-        if (!cancelled) {
-          setProjects(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          let message = "Failed to load projects";
-
-          if (err instanceof ApiError) {
-            message = err.message;
-          }
-
-          setError(message);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void fetchProjects();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (loading) {
+  if (status === "loading") {
     return (
       <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-muted-foreground">Loading projects...</p>
@@ -129,7 +96,7 @@ export function ProjectsPage(): JSX.Element {
     );
   }
 
-  if (error !== null) {
+  if (projects === null) {
     return (
       <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
         <p className="text-destructive">{error}</p>
