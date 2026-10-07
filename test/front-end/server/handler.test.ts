@@ -37,6 +37,8 @@ beforeAll(() => {
   mkdirSync(join(distDir, "images"), { recursive: true });
   writeFileSync(join(distDir, "index.html"), INDEX_HTML);
   writeFileSync(join(distDir, "images", "me.png"), Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  mkdirSync(join(distDir, "fonts"), { recursive: true });
+  writeFileSync(join(distDir, "fonts", "face.woff2"), Uint8Array.from([0x77, 0x4f, 0x46, 0x32]));
   writeFileSync(join(root, "secret.txt"), "outside dist");
 });
 
@@ -58,6 +60,16 @@ function backend(path: string): Promise<Response> {
 }
 
 describe("front-end request handler", () => {
+  test("serves a self-hosted woff2 font as a font, not as the SPA shell", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+
+    const response = await handle(new Request("https://buildwithtim.dev/fonts/face.woff2"));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("font/woff2");
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(Uint8Array.from([0x77, 0x4f, 0x46, 0x32]));
+  });
+
   test("serves an article URL as the app shell carrying that article's link-preview tags", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
