@@ -62,8 +62,8 @@ describe("scripts/e2e.sh", () => {
       "podman build -f front-end/Dockerfile --target dev -t localhost/website/front-end:dev .",
       "podman build -f back-end/Dockerfile --target dev -t localhost/website/back-end:dev .",
       "podman kube play deploy/kube/dev.yaml",
-      "curl -fsS http://localhost:3001/health",
-      "curl -fsS http://localhost:5173/",
+      "curl -fsS --max-time 5 http://localhost:3001/health",
+      "curl -fsS --max-time 5 http://localhost:5173/",
       "bun run test:e2e",
       "podman kube down deploy/kube/dev.yaml",
     ]);
@@ -81,12 +81,21 @@ describe("scripts/e2e.sh", () => {
     const { status, calls } = runScript({ STUB_FAIL_CURL: "1", E2E_WAIT_ATTEMPTS: "3" });
 
     expect(status).not.toBe(0);
-    expect(calls.filter((call) => call === "curl -fsS http://localhost:3001/health")).toHaveLength(3);
+    expect(calls.filter((call) => call === "curl -fsS --max-time 5 http://localhost:3001/health")).toHaveLength(3);
     expect(calls).not.toContain("bun run test:e2e");
 
     expect(calls.slice(-2)).toEqual([
       "podman pod logs website",
       "podman kube down deploy/kube/dev.yaml",
+    ]);
+  });
+
+  test("bounds every readiness poll so a service that accepts but never answers cannot hang the run", () => {
+    const { calls } = runScript({ E2E_CURL_MAX_TIME: "2" });
+
+    expect(calls.filter((call) => call.startsWith("curl "))).toEqual([
+      "curl -fsS --max-time 2 http://localhost:3001/health",
+      "curl -fsS --max-time 2 http://localhost:5173/",
     ]);
   });
 });

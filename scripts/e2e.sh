@@ -10,6 +10,8 @@
 # Tunables:
 #   E2E_WAIT_ATTEMPTS  readiness polls before giving up (default 60, as CI)
 #   E2E_WAIT_INTERVAL  seconds between polls (default 5, as CI)
+#   E2E_CURL_MAX_TIME  seconds each readiness request may take (default 5);
+#                      a service that accepts but never answers must not hang the run
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -17,6 +19,7 @@ cd "$ROOT"
 
 WAIT_ATTEMPTS="${E2E_WAIT_ATTEMPTS:-60}"
 WAIT_INTERVAL="${E2E_WAIT_INTERVAL:-5}"
+CURL_MAX_TIME="${E2E_CURL_MAX_TIME:-5}"
 
 echo "Building dev images…"
 podman build -f front-end/Dockerfile --target dev -t localhost/website/front-end:dev .
@@ -29,7 +32,8 @@ trap 'echo "Stopping dev pod…"; podman kube down deploy/kube/dev.yaml' EXIT
 echo "Waiting for services…"
 ready=0
 for _ in $(seq 1 "$WAIT_ATTEMPTS"); do
-  if curl -fsS http://localhost:3001/health >/dev/null && curl -fsS http://localhost:5173/ >/dev/null; then
+  if curl -fsS --max-time "$CURL_MAX_TIME" http://localhost:3001/health >/dev/null &&
+    curl -fsS --max-time "$CURL_MAX_TIME" http://localhost:5173/ >/dev/null; then
     echo "services ready"
     ready=1
     break
