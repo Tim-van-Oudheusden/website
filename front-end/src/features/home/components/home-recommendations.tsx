@@ -7,7 +7,7 @@ import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import type { ContentLoader } from "@/shared/lib/content-loader";
 
 import { headingIdFor } from "../config/home-sections";
-import { HOME_RECOMMENDED_SLUGS, selectRecommendedArticles } from "../lib/recommended-articles";
+import { resolveRecommendedPool, selectRecommendedArticles } from "../lib/recommended-articles";
 import type { HomeRecommendationsSection } from "../types/home-section";
 
 import { HomeSectionHeading } from "./home-section-heading";
@@ -54,7 +54,11 @@ interface HomeRecommendationsProps {
 /** Home 'for-you' section: three articles picked at random from a curated pool on every page load. */
 export function HomeRecommendations({ section, loader }: HomeRecommendationsProps): JSX.Element {
   const load = useCallback(
-    async () => selectRecommendedArticles(await loader.listArticles(), HOME_RECOMMENDED_SLUGS, Math.random),
+    async () => {
+      const articles = await loader.listArticles();
+
+      return selectRecommendedArticles(articles, resolveRecommendedPool(articles), Math.random);
+    },
     [loader],
   );
   const { status, data: articles } = useLoadOnMount(load, "Failed to load recommendations");

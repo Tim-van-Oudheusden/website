@@ -306,6 +306,21 @@ describe("real content directory sanity check", () => {
     expect(item!.body).toContain("# Welcome");
   });
 
+  test("the home-recommended article pool matches the curated real content", async () => {
+    const articles = await listContent(REAL_CONTENT_DIR, { type: "article" });
+    const recommendedSlugs = articles
+      .filter((item): item is ArticleFrontmatter => item.type === "article" && item.homeRecommended === true)
+      .map((item) => item.slug)
+      .sort();
+
+    expect(recommendedSlugs).toEqual([
+      "introduction",
+      "making-my-work-easier-with-notes-in-obsidian",
+      "my-operating-system-is-a-container-image-yes-really",
+      "yoga-nidra-a-way-to-be-at-peace-in-chaos",
+    ]);
+  });
+
   test("resolves a project with nested links by slug", async () => {
     const item = await getContentBySlug("minimal-android-launcher", REAL_CONTENT_DIR);
 

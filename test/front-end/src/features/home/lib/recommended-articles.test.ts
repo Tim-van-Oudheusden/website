@@ -2,9 +2,9 @@ import { describe, expect, test } from "bun:test";
 
 import type { ArticleSummary } from "shared/articles";
 
-import { resolveCuratedArticles, selectRecommendedArticles } from "../../../../../../front-end/src/features/home/lib/recommended-articles";
+import { resolveCuratedArticles, resolveRecommendedPool, selectRecommendedArticles } from "../../../../../../front-end/src/features/home/lib/recommended-articles";
 
-function article(slug: string, date: string): ArticleSummary {
+function article(slug: string, date: string, homeRecommended?: boolean): ArticleSummary {
   return {
     title: slug,
     slug,
@@ -15,6 +15,7 @@ function article(slug: string, date: string): ArticleSummary {
     draft: false,
     category: "Linux",
     description: `About ${slug}.`,
+    homeRecommended,
   };
 }
 
@@ -45,6 +46,22 @@ function sequence(...values: number[]): () => number {
 function slugs(articles: ArticleSummary[]): string[] {
   return articles.map((item) => item.slug);
 }
+
+describe("resolveRecommendedPool", () => {
+  test("lists the slugs of articles opted in via frontmatter, in listing order", () => {
+    const articles = [
+      article("not-recommended", "2025-01-01"),
+      article("second", "2025-02-01", true),
+      article("first", "2025-03-01", true),
+    ];
+
+    expect(resolveRecommendedPool(articles)).toEqual(["second", "first"]);
+  });
+
+  test("is empty when no article opts in", () => {
+    expect(resolveRecommendedPool([article("solo", "2025-01-01")])).toEqual([]);
+  });
+});
 
 describe("resolveCuratedArticles", () => {
   test("keeps only curated slugs and preserves their stated order", () => {

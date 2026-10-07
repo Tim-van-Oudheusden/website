@@ -52,6 +52,31 @@ describe("normalizeContentDocument", () => {
     }
   });
 
+  test("defaults homeRecommended to false and honors an explicit true", () => {
+    const withoutFlag = normalizeContentDocument("plain.md", {
+      title: "Plain",
+      date: "2026-01-01",
+      type: "article",
+      category: "Work",
+    });
+
+    const withFlag = normalizeContentDocument("curated.md", {
+      title: "Curated",
+      date: "2026-01-01",
+      type: "article",
+      category: "Work",
+      homeRecommended: true,
+    });
+
+    expect(withoutFlag.ok).toBe(true);
+    expect(withFlag.ok).toBe(true);
+
+    if (withoutFlag.ok && withFlag.ok) {
+      expect(withoutFlag.value).toMatchObject({ homeRecommended: false });
+      expect(withFlag.value).toMatchObject({ homeRecommended: true });
+    }
+  });
+
   test("emits prioritySlot 1|2|3 and rejects out-of-range values", () => {
     const accepted = normalizeContentDocument("a.md", {
       title: "A",
