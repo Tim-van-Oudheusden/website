@@ -143,4 +143,15 @@ describe("front-end request handler", () => {
 
     expect(visitorIps).toEqual(["203.0.113.7", null]);
   });
+
+  test("sends the back-end's framing and MIME-sniffing protections on every response", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+
+    for (const path of ["/", "/articles/yoga-nidra", "/images/me.png"]) {
+      const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+
+      expect(response.headers.get("x-frame-options")).toBe("SAMEORIGIN");
+      expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+    }
+  });
 });

@@ -19,6 +19,15 @@ export interface RequestHandlerOptions {
 const ARTICLE_PATH = /^\/articles\/([^/]+)\/?$/;
 
 /**
+ * The same baseline @fastify/helmet gives the back-end (security-headers.ts):
+ * cloudflared routes every page to this server, not to Fastify.
+ */
+const SECURITY_HEADERS: Readonly<Record<string, string>> = {
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "SAMEORIGIN",
+};
+
+/**
  * Production request handler for the front-end: serves the built SPA, and for
  * article URLs injects that article's link-preview tags into index.html.
  */
@@ -34,7 +43,7 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     const fileStats = await stat(filePath).catch(() => null);
 
     if (fileStats?.isFile()) {
-      return new Response(Bun.file(filePath));
+      return new Response(Bun.file(filePath), { headers: SECURITY_HEADERS });
     }
 
     const indexHtml = await indexFile.text();
@@ -52,7 +61,7 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     const origin = `${scheme}//${url.host}`;
 
     return new Response(article === null ? indexHtml : renderSocialMeta(indexHtml, article, origin), {
-      headers: { "content-type": "text/html; charset=utf-8" },
+      headers: { ...SECURITY_HEADERS, "content-type": "text/html; charset=utf-8" },
     });
   };
 }
