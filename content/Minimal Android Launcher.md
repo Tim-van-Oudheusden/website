@@ -1,6 +1,6 @@
 ---
 title: Minimal Android Launcher
-description: A minimal Android launcher for retro handhelds, inspired by MinUI.
+description: A minimal Android launcher for Android phones, inspired by MinUI.
 date: 2026-06-10
 tags:
   - Android
@@ -24,6 +24,6 @@ info: A new launcher heavily inspired by MinUI for various retro handhelds
 
 # Minimal Android Launcher
 
-A new Android launcher heavily inspired by MinUI for various retro handhelds.
+A new Android launcher heavily inspired by MinUI for various Android phones.
 
 This project is still in progress; more details will be added as it develops.
