@@ -9,6 +9,7 @@ import { ApiError } from "../../../../../front-end/src/shared/lib/api";
 import {
   createMemoryContentLoader,
   httpContentLoader,
+  shareArticleList,
 } from "../../../../../front-end/src/shared/lib/content-loader";
 
 const originalFetch = globalThis.fetch;
@@ -192,5 +193,25 @@ describe("createMemoryContentLoader", () => {
       expect(err).toBeInstanceOf(ApiError);
       expect((err as ApiError).status).toBe(404);
     }
+  });
+});
+
+describe("shareArticleList", () => {
+  test("asks the wrapped loader for the article list once, however many sections list articles", async () => {
+    const articles = [articleSummary({ slug: "one" })];
+    let requests = 0;
+    const loader = shareArticleList({
+      ...createMemoryContentLoader([]),
+      listArticles: () => {
+        requests += 1;
+
+        return Promise.resolve(articles);
+      },
+    });
+
+    const results = await Promise.all([loader.listArticles(), loader.listArticles(), loader.listArticles()]);
+
+    expect(requests).toBe(1);
+    expect(results).toEqual([articles, articles, articles]);
   });
 });

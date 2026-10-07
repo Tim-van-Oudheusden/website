@@ -9,9 +9,6 @@ export type HomeSectionId
 
 export type HomeSectionContentDirection = "row" | "column";
 
-/** Whether the carousel sits inside the raised section well or directly on the section background. */
-export type HomeCarouselFrame = "well" | "bare";
-
 /** One pairing of a real tool with what it enables, used by the for-devs workflow section. */
 export interface HomeFeatureRow {
   title: string;
@@ -36,9 +33,12 @@ export interface HomeStartSection extends HomeSectionBase {
   ctaTargetId: HomeSectionId;
 }
 
-export interface HomeCarouselSection extends HomeSectionBase {
-  variant: "carousel";
-  carouselFrame: HomeCarouselFrame;
+export interface HomeRecommendationsSection extends HomeSectionBase {
+  variant: "recommendations";
+  /** Label of the "see all" link beside the heading. */
+  linkLabel: string;
+  /** Route the "see all" link opens. */
+  linkTo: string;
 }
 
 export interface HomeWorkflowSection extends HomeSectionBase {
@@ -67,7 +67,7 @@ export interface HomeFooterSection extends HomeSectionBase {
 
 export type HomeSectionDefinition
   = | HomeStartSection
-    | HomeCarouselSection
+    | HomeRecommendationsSection
     | HomeWorkflowSection
     | HomeTrustSection
     | HomeRecentPostsSection
