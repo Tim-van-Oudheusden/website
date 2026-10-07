@@ -18,7 +18,7 @@ gh issue list -S "is:open"      # Find available work
 gh issue view <number>          # Read issue, comments, acceptance criteria
 gh issue create --title "Summary" --body "Why and what"   # File remaining/follow-up work
 gh issue comment <number> --body "Progress / links"       # Report progress
-gh issue close <number>         # Close completed work
+gh pr create --title "type(scope): summary (#<number>)" --body-file <file>   # Land work; body says "Fixes #<number>"
 ```
 
 ### Beads — Tracking Layer
@@ -35,8 +35,8 @@ bd prime                     # Full beads workflow reference
 
 ## Sessions with GitHub issues
 
-- Before working an issue: read it with `gh issue view <number>` (or the API); claim/assign it there
-- When done: close it via the API and link the commit/PR; then run `bd github sync` to mirror the state into beads
+- Before working an issue: read it with `gh issue view <number>` (or the API); claim/assign it there, then branch off an up-to-date `main` as `<type>/<number>-<slug>` (e.g. `docs/639-pr-based-landing`)
+- When done: push the branch and open a pull request whose body says `Fixes #<number>`; the maintainer merges it once the required checks pass, and the merge closes the issue. Run `bd github sync --pull-only` to mirror issue state into beads
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
@@ -60,29 +60,30 @@ bd close <id>         # Complete work
 
 ## Session Completion
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until the issue branch is pushed and its pull request is open.
 
 **MANDATORY WORKFLOW:**
 
 1. **File issues for remaining work** - Create GitHub issues via the API (`gh issue create`) for anything that needs follow-up
 2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close completed GitHub issues via the API (`gh issue close`), comment progress, and run `bd github sync` to mirror state into beads
-4. **PUSH TO REMOTE** - This is MANDATORY:
+3. **Update issue status** - Comment progress on the GitHub issue; the PR's `Fixes #<number>` closes it when the PR merges. Run `bd github sync --pull-only` to mirror state into beads
+4. **PUSH THE BRANCH AND OPEN A PR** - This is MANDATORY. `main` is protected: it only changes through merged pull requests with passing CI, so the issue branch is what you push:
    ```bash
-   git pull --rebase
    bd dolt push
-   git push
-   git status  # MUST show "up to date with origin"
+   git push -u origin HEAD
+   gh pr create --title "type(scope): summary (#<number>)" --body-file <file>  # follow .github/pull_request_template.md; body says "Fixes #<number>"
+   git status  # MUST show "up to date with 'origin/<branch>'"
    ```
    (No separate `bd sync` / issues.jsonl commit step is needed; see `bd prime` for the current protocol.)
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
+5. **Clean up** - Clear stashes, prune merged branches (`git fetch --prune`)
+6. **Verify** - All changes committed, branch pushed, PR open with CI running
+7. **Hand off** - Provide context for next session, including the PR URL
 
 **CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
+- Work is NOT complete until the branch is pushed and its PR is open
 - NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
+- NEVER say "ready to push when you are" - YOU must push and open the PR
+- Push only the issue branch; the maintainer merges the PR into `main` after the required checks pass
 - If push fails, resolve and retry until it succeeds
 <!-- END BEADS INTEGRATION -->
 
@@ -92,7 +93,7 @@ bd close <id>         # Complete work
 - Commits must always follow the Conventional Commits specification.
 - GitHub issues are the primary source of issue information; issue changes happen via the API and are mirrored into beads by `bd github sync`.
 - Bead data lives in the Dolt database (`.beads/embeddeddolt/`, gitignored). Sync it to the remote with `bd dolt push` / `bd dolt pull` against `refs/dolt/data` on the git remote (already part of the Session Completion workflow). `.beads/issues.jsonl` is only an optional export/interchange file — not the source of truth — so do not commit it as a sync step.
-- After everything is committed, push it to the remote (oneshot, if any errors still pop up ask the user).
+- After everything is committed, push the issue branch and open its pull request (oneshot, if any errors still pop up ask the user).
 
 ## Testing
 
