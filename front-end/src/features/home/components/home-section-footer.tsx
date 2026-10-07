@@ -21,7 +21,6 @@ export function HomeSectionFooter({ section }: HomeSectionFooterProps): JSX.Elem
       section={section}
       heading={section.heading}
       body={section.body}
-      centered={false}
     >
       <div className="flex flex-col gap-4">
         <a

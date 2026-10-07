@@ -74,6 +74,13 @@ describe("HomeFloatingNav", () => {
     expect(anchor).toContain("lucide-id-card");
     expect(anchor).toContain("about me");
   });
+
+  test("lists the experience section as \"experience\" with the briefcase icon, linking to #experience", () => {
+    const anchor = /<a [^>]*href="#experience"[^>]*>[\s\S]*?<\/a>/.exec(renderFloatingNav())?.[0] ?? "";
+
+    expect(anchor).toContain("lucide-briefcase-business");
+    expect(anchor).toContain("experience");
+  });
 });
 
 describe("HomeFloatingNav active indicator", () => {

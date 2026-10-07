@@ -57,22 +57,16 @@ test.describe("Home placeholder sections implemented", () => {
     );
   });
 
-  test("renders the 'Start here' curated reading list as real article links", async ({ page }) => {
-    const section = page.locator("section#secondary-cta");
+  test("renders the experience timeline from the LinkedIn positions", async ({ page }) => {
+    const section = page.locator("section#experience");
 
-    scrollToSection(page, "secondary-cta");
-    await expect(section.getByRole("heading", { name: "Start here" })).toBeVisible();
+    scrollToSection(page, "experience");
+    await expect(section.getByRole("heading", { level: 2, name: "Experience" })).toBeVisible();
 
-    await expect(section.getByRole("link", { name: /Introduction/ }).first()).toHaveAttribute(
-      "href",
-      "/articles/introduction",
-    );
+    const current = section.getByRole("link", { name: "Senior Software Engineer at Gemeente Tilburg (opens in a new tab)" });
 
-    await expect(section.getByRole("link", { name: /Yoga Nidra/ }).first()).toHaveAttribute(
-      "href",
-      "/articles/yoga-nidra-a-way-to-be-at-peace-in-chaos",
-    );
-
-    await expect(section).not.toContainText(/newsletter|subscribe|shop/i);
+    await expect(current).toHaveAttribute("href", "https://www.tilburg.nl/");
+    await expect(section.getByRole("listitem").first()).toContainText("2024 — Present");
+    await expect(section.getByRole("link", { name: "View full profile on LinkedIn (opens in a new tab)" })).toBeVisible();
   });
 });

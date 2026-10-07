@@ -35,8 +35,8 @@ function renderHomePage(): string {
 }
 
 function mountHomePage(): FakeMount {
-  // The recent-posts and start-here sections load content on mount; an empty
-  // listing keeps them quiet without touching the network.
+  // The article and project sections load content on mount; an empty listing
+  // keeps them quiet without touching the network.
   globalThis.fetch = mock(() => Promise.resolve(jsonResponse([]))) as unknown as typeof globalThis.fetch;
 
   return mountIntoBody(createElement(MemoryRouter, null, createElement(HomePage)));
