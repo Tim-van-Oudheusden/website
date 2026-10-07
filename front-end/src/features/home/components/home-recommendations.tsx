@@ -1,8 +1,9 @@
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 
 import type { ArticleSummary } from "shared/articles";
 
+import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import type { ContentLoader } from "@/shared/lib/content-loader";
 
 import { headingIdFor } from "../config/home-sections";
@@ -52,29 +53,11 @@ interface HomeRecommendationsProps {
 
 /** Home 'for-you' section: three articles picked at random from a curated pool on every page load. */
 export function HomeRecommendations({ section, loader }: HomeRecommendationsProps): JSX.Element {
-  const [articles, setArticles] = useState<ArticleSummary[] | null>(null);
-  const [loadError, setLoadError] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    loader.listArticles().then(
-      (loaded) => {
-        if (!cancelled) {
-          setArticles(selectRecommendedArticles(loaded, HOME_RECOMMENDED_SLUGS, Math.random));
-        }
-      },
-      () => {
-        if (!cancelled) {
-          setLoadError(true);
-        }
-      },
-    );
-
-    return () => {
-      cancelled = true;
-    };
-  }, [loader]);
+  const load = useCallback(
+    async () => selectRecommendedArticles(await loader.listArticles(), HOME_RECOMMENDED_SLUGS, Math.random),
+    [loader],
+  );
+  const { status, data: articles } = useLoadOnMount(load, "Failed to load recommendations");
 
   return (
     <HomeSectionFrame section={section} as="section" className={HOME_SECTION_FRAME_CLASSES}>
@@ -86,7 +69,7 @@ export function HomeRecommendations({ section, loader }: HomeRecommendationsProp
           linkLabel={section.linkLabel}
           linkTo={section.linkTo}
         />
-        <RecommendationsContent articles={articles} loadError={loadError} />
+        <RecommendationsContent articles={articles} loadError={status === "error"} />
       </div>
     </HomeSectionFrame>
   );
