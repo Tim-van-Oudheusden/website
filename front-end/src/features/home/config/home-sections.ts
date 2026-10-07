@@ -1,6 +1,8 @@
+import { SOCIAL_LINKS } from "@/shared/config/social-links";
+
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
 
-import { EXPERIENCE, LINKEDIN_PROFILE_URL } from "./experience";
+import { EXPERIENCE } from "./experience";
 
 /**
  * Single id-derivation seam: DOM id, heading id, URL hash, nav key, and observer key
@@ -83,15 +85,16 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     contentDirection: "column",
     variant: "experience",
     entries: EXPERIENCE,
-    profileUrl: LINKEDIN_PROFILE_URL,
+    profileUrl: SOCIAL_LINKS.linkedin.href,
   },
   {
-    id: "footer",
-    label: "inner peace",
-    heading: "Reboot With Me",
-    body: "Getting your life back on track — from Big Tech independence to inner peace.",
+    id: "socials",
+    label: "socials",
+    heading: "Socials",
+    body: "Code on GitHub, work history on LinkedIn.",
     bgColor: "var(--adw-page-brown-bg)",
     contentDirection: "column",
-    variant: "footer",
+    variant: "socials",
+    links: Object.values(SOCIAL_LINKS),
   },
 ];

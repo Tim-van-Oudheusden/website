@@ -9,8 +9,8 @@ import { HomeExperience } from "./home-experience";
 import { HomeProjectShowcase } from "./home-project-showcase";
 import { HomeRecentPosts } from "./home-recent-posts";
 import { HomeRecommendations } from "./home-recommendations";
-import { HomeSectionFooter } from "./home-section-footer";
 import { HomeSectionStart } from "./home-section-start";
+import { HomeSocials } from "./home-socials";
 
 export interface HomeSectionProps {
   section: HomeSectionDefinition;
@@ -24,8 +24,8 @@ export function HomeSection({ section, onCtaActivate, loader }: HomeSectionProps
   switch (section.variant) {
     case "start":
       return <HomeSectionStart section={section} onCtaActivate={onCtaActivate} />;
-    case "footer":
-      return <HomeSectionFooter section={section} />;
+    case "socials":
+      return <HomeSocials section={section} />;
     case "recommendations":
       return <HomeRecommendations section={section} loader={loader} />;
     case "projects":

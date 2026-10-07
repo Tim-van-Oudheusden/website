@@ -7,6 +7,7 @@ import { MemoryRouter } from "react-router";
 import { HomeSection } from "../../../../../../front-end/src/features/home/components/home-section";
 import { headingIdFor, HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
 import type { HomeSectionDefinition, HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
+import { SOCIAL_LINKS } from "../../../../../../front-end/src/shared/config/social-links";
 import { createMemoryContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
 
 function findHomeSection(sectionId: HomeSectionId): HomeSectionDefinition {
@@ -80,34 +81,42 @@ describe("HomeSection", () => {
     }
   });
 
-  test("renders the footer as a semantic footer with site identification", () => {
-    const html = renderSection("footer");
+  test("renders the socials section as the page footer, labelled by its heading", () => {
+    const html = renderSection("socials");
 
-    expect(html).toContain("<footer");
-    expect(html).toContain("Reboot With Me");
+    expect(html).toMatch(/<footer[^>]*aria-labelledby="socials-heading"/);
+    expect(html).toMatch(/<h2[^>]*id="socials-heading"/);
   });
 
-  test("renders a copyright line in the footer", () => {
-    const html = renderSection("footer");
+  test("links every configured social in a new tab, named after its network", () => {
+    const anchors = renderSection("socials").match(/<a [^>]*>/g) ?? [];
+
+    for (const link of Object.values(SOCIAL_LINKS)) {
+      const anchor = anchors.find((tag) => tag.includes(`href="${link.href}"`));
+
+      expect(anchor).toContain("target=\"_blank\"");
+      expect(anchor).toContain("rel=\"noopener noreferrer\"");
+      expect(anchor).toContain(`aria-label="${link.label} (opens in a new tab)"`);
+    }
+  });
+
+  test("renders a copyright line with the current year in the socials footer", () => {
+    const html = renderSection("socials");
 
     expect(html).toMatch(/©/);
     expect(html).toContain(String(new Date().getFullYear()));
   });
 
-  test("renders a genuine social link (GitHub) without invented channels", () => {
-    const html = renderSection("footer");
+  test("links the experience section's full profile to the configured LinkedIn profile", () => {
+    const profile = (renderSection("experience").match(/<a [^>]*>/g) ?? []).find((tag) => tag.includes("View full profile on LinkedIn"));
 
-    expect(html).toContain("https://github.com/Tim-van-Oudheusden/website");
-    expect(html).not.toContain("privacy");
-    expect(html).not.toContain("terms");
-    expect(html).not.toContain("mastodon");
-    expect(html).not.toContain("linkedin");
+    expect(profile).toContain(`href="${SOCIAL_LINKS.linkedin.href}"`);
   });
 
   test("derives the heading id from the section id via one seam", () => {
     expect(headingIdFor("start")).toBe("start-heading");
     expect(headingIdFor("whats-new")).toBe("whats-new-heading");
-    expect(headingIdFor("footer")).toBe("footer-heading");
+    expect(headingIdFor("socials")).toBe("socials-heading");
   });
 
   test("renders exactly one frame and one heading per section id", () => {

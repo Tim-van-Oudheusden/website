@@ -14,8 +14,6 @@ export interface ExperienceEntry {
   skills: string[];
 }
 
-export const LINKEDIN_PROFILE_URL = "https://www.linkedin.com/in/tim-vanoudheusden";
-
 /**
  * Tim's positions as listed on LinkedIn (his PDF export, pasted on #584). One
  * entry per position, so each keeps its own dates and full description;
