@@ -138,6 +138,7 @@
   --adw-accent-purple: #9141ac;
   --adw-accent-slate: #6f8396;
   --adw-brown-1: #cdab8f;
+  --adw-brown-5: #63452c;
 
   /* Project beige variants */
   --adw-beige-light: #f3efe5;
@@ -250,10 +251,11 @@
   --adw-sidebar-backdrop-color: #28282c;
   --adw-sidebar-border-color: rgb(0 0 6 / 36%);
   --adw-sidebar-shade-color: rgb(0 0 6 / 25%);
-  --adw-toc-inactive: #8f877b;
+  --adw-toc-inactive: var(--adw-light-4);
   --adw-page-brown-bg: var(--adw-page-beige-bg);
   --adw-page-beige-bg: var(--adw-beige-dark);
-  --site-section-well-bg: #857555;
+  /* Brown 5 keeps white (8.7:1), white/80 (6.3:1) and the accent (5.1:1) at WCAG AA on the well. */
+  --site-section-well-bg: var(--adw-brown-5);
   --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   --articles-content-toc-gap: clamp(10rem, calc(17.25vw - 2rem), 13.75rem);
 
@@ -299,8 +301,9 @@
 }
 
 @layer base {
+  /* Solid ring colour: at 50% the focus outline falls below 3:1 (WCAG 1.4.11) on the dark-mode well. */
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background text-foreground;

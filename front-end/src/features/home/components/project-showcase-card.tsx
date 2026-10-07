@@ -55,7 +55,7 @@ export function ProjectShowcaseCard({ project, featured }: ProjectShowcaseCardPr
     <div className="@container/card h-full">
       <div
         className={cn(
-          "flex h-full flex-col gap-6 rounded-2xl bg-(--adw-view-bg-color) p-6 ring-1 ring-black/5 ring-inset dark:bg-(--adw-window-bg-color) dark:ring-white/5 @sm/card:p-9 @6xl/grid:p-12",
+          "flex h-full flex-col gap-6 rounded-2xl bg-(--site-section-well-bg) p-6 ring-1 ring-black/5 ring-inset dark:ring-white/5 @sm/card:p-9 @6xl/grid:p-12",
           featured ? "@2xl/grid:flex-row-reverse @2xl/grid:items-center @2xl/grid:gap-12" : "",
         )}
       >
@@ -68,7 +68,7 @@ export function ProjectShowcaseCard({ project, featured }: ProjectShowcaseCardPr
           >
             <img src={project.coverImage} alt={project.coverImageAlt} loading="lazy" className="size-full object-cover" />
           </div>
-          <span className="hidden self-start font-mono text-[11px] tracking-widest uppercase opacity-80 [writing-mode:vertical-rl] rotate-180 text-(--adw-dark-1) dark:text-(--adw-light-5) @sm/card:block @6xl/grid:text-xs">
+          <span className="hidden self-start font-mono text-[11px] tracking-widest uppercase opacity-80 [writing-mode:vertical-rl] rotate-180 text-(--adw-dark-1) dark:text-(--adw-light-1) @sm/card:block @6xl/grid:text-xs">
             {projectCaption(project)}
           </span>
         </div>
@@ -82,7 +82,7 @@ export function ProjectShowcaseCard({ project, featured }: ProjectShowcaseCardPr
             <h3 className="text-[1.375rem] leading-7 font-semibold tracking-tight text-balance text-(--adw-dark-5) dark:text-(--adw-light-1) @sm/card:text-[1.5625rem] @6xl/grid:text-3xl @6xl/grid:leading-9">
               {project.title}
             </h3>
-            <p className="mt-2 text-base leading-6 text-(--adw-dark-2) dark:text-(--adw-light-5) @6xl/grid:text-lg">
+            <p className="mt-2 text-base leading-6 text-(--adw-dark-2) dark:text-white/80 @6xl/grid:text-lg">
               {project.description}
             </p>
           </div>

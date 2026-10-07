@@ -35,7 +35,7 @@ export function RecentPostsList({ posts }: { posts: ArticleSummary[] }): JSX.Ele
             <span className="font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1)">
               {post.title}
             </span>
-            <span className="text-sm text-(--adw-dark-5)/60 dark:text-white/60">
+            <span className="text-sm text-(--adw-dark-5)/60 dark:text-white/70">
               {post.description}
             </span>
           </Link>

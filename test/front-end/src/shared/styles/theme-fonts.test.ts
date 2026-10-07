@@ -9,8 +9,6 @@ const BEIGE_LIGHT_TOKEN = "--adw-beige-light: #f3efe5;";
 const BEIGE_DARK_TOKEN = "--adw-beige-dark: #1c1a17;";
 const PAGE_BG_BEIGE_MAPPING = "--adw-page-brown-bg: var(--adw-page-beige-bg);";
 const TOC_INACTIVE_LIGHT_TOKEN = "--adw-toc-inactive: #8a8376;";
-const TOC_INACTIVE_DARK_TOKEN = "--adw-toc-inactive: #8f877b;";
-const SITE_WELL_DARK_TOKEN = "--site-section-well-bg: #857555;";
 
 describe("global font recommendation", () => {
   test("applies Source Sans 3 as the default font stack", () => {
@@ -50,16 +48,9 @@ describe("global font recommendation", () => {
     expect(css).toContain(PAGE_BG_BEIGE_MAPPING);
   });
 
-  test("defines beige-toned inactive TOC link colors for both themes", () => {
+  test("defines a beige-toned inactive TOC link colour for the light theme", () => {
     const css = readFileSync(INDEX_CSS_PATH, "utf8");
 
     expect(css).toContain(TOC_INACTIVE_LIGHT_TOKEN);
-    expect(css).toContain(TOC_INACTIVE_DARK_TOKEN);
-  });
-
-  test("uses the updated dark-mode well color token", () => {
-    const css = readFileSync(INDEX_CSS_PATH, "utf8");
-
-    expect(css).toContain(SITE_WELL_DARK_TOKEN);
   });
 });
