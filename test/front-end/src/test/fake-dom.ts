@@ -365,8 +365,9 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
     this.ownerDocument = doc;
   }
 
-  setAttribute(name: string, value: string): void {
-    this.attributes.set(name, value);
+  /** Stores the value as a string, as real elements do: React 19.3+ passes booleans and numbers through unconverted. */
+  setAttribute(name: string, value: unknown): void {
+    this.attributes.set(name, String(value));
   }
 
   removeAttribute(name: string): void {
