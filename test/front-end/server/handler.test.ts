@@ -39,6 +39,7 @@ beforeAll(() => {
   writeFileSync(join(distDir, "images", "me.png"), Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
   mkdirSync(join(distDir, "fonts"), { recursive: true });
   writeFileSync(join(distDir, "fonts", "face.woff2"), Uint8Array.from([0x77, 0x4f, 0x46, 0x32]));
+  writeFileSync(join(distDir, "favicon.svg"), '<svg xmlns="http://www.w3.org/2000/svg"/>');
   writeFileSync(join(root, "secret.txt"), "outside dist");
 });
 
@@ -133,6 +134,21 @@ describe("front-end request handler", () => {
 
       expect(await response.text()).toBe(INDEX_HTML);
     }
+  });
+
+  test("answers /favicon.ico with a 404 instead of the app shell, and still serves /favicon.svg", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+
+    const ico = await handle(new Request("https://buildwithtim.dev/favicon.ico"));
+
+    expect(ico.status).toBe(404);
+    expect(await ico.text()).not.toContain('<div id="root"></div>');
+
+    const svg = await handle(new Request("https://buildwithtim.dev/favicon.svg"));
+
+    expect(svg.status).toBe(200);
+    expect(svg.headers.get("content-type")).toContain("image/svg+xml");
+    expect(await svg.text()).toBe('<svg xmlns="http://www.w3.org/2000/svg"/>');
   });
 
   test("builds preview URLs with the visitor's scheme when TLS ends at the tunnel", async () => {
