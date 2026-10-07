@@ -61,4 +61,6 @@ a different policy file locally.
 
 The engine and the shipped rules are covered by
 `test/shared/src/tier-classifier-script.test.ts`. Update the policy, its tests,
-and the tables above together; a change to any of them is itself high risk.
+and the tables above in the same PR. The policy file (`high .github/*`) and
+`scripts/tier-classify.sh` (`high scripts/*`) are high risk; this doc and the
+test take their ordinary tiers (low and medium).
