@@ -116,4 +116,27 @@ test.describe("Home section surfaces", () => {
       expect(contrastRatio(outline, surround)).toBeGreaterThanOrEqual(AA_NON_TEXT_CONTRAST);
     });
   });
+
+  for (const theme of ["light", "dark"] as const) {
+    test(`draws the focus ring of buttons on the ${theme}-mode wells at WCAG AA non-text contrast`, async ({ page }) => {
+      await openHome(page, { theme, content: ["project"] });
+      await expect(page.locator("section#for-devs h3").first()).toBeVisible();
+
+      // The start section's call to action and every project card's call to action are shadcn Buttons on a well.
+      const buttons = page.locator(`[data-testid="start-white-box"] [data-slot="button"], section#for-devs li [data-slot="button"]`);
+
+      expect(await buttons.count()).toBeGreaterThan(1);
+
+      for (const button of await buttons.all()) {
+        await button.focus();
+        expect(await button.evaluate((element) => element.matches(":focus-visible"))).toBe(true);
+
+        const { ring, surround } = await sampleSurface(button);
+
+        expect(ring).not.toBeNull();
+        expect(contrastRatio(ring ?? surround, surround)).toBeGreaterThanOrEqual(AA_NON_TEXT_CONTRAST);
+        await button.blur();
+      }
+    });
+  }
 });

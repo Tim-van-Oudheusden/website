@@ -17,6 +17,11 @@ export interface SurfaceSample {
   texts: TextSample[];
   /** The surface's own outline colour, painted over what surrounds the surface. */
   outline: Rgb;
+  /**
+   * The surface's outermost ring (a spread-only `box-shadow`, as Tailwind `ring-*` draws it), painted over what
+   * surrounds the surface; null when it draws none.
+   */
+  ring: Rgb | null;
   /** What surrounds the surface: its parent's backdrop, where an outline is drawn. */
   surround: Rgb;
 }
@@ -118,11 +123,36 @@ export async function sampleSurface(surface: Locator): Promise<SurfaceSample> {
 
     const outline = pixel();
 
+    // Shadows split on the commas between them, not those inside a colour; inset shadows never match.
+    const shadows = getComputedStyle(root).boxShadow.split(/,(?![^(]*\))/);
+    let ring: Rgb | null = null;
+    let ringSpread = 0;
+
+    for (const shadow of shadows) {
+      const match = /^(.+?) (-?[\d.]+)px (-?[\d.]+)px ([\d.]+)px (-?[\d.]+)px$/.exec(shadow.trim());
+
+      if (match === null) {
+        continue;
+      }
+
+      const [, color = "", x, y, blur, spread] = match;
+
+      if (Number(x) !== 0 || Number(y) !== 0 || Number(blur) !== 0 || Number(spread) <= ringSpread) {
+        continue;
+      }
+
+      paintBackdrop(surroundingElement);
+      paint(color);
+      ring = pixel();
+      ringSpread = Number(spread);
+    }
+
     return {
       backdrop: backdropOf(root),
       headingBackdrops: [...root.querySelectorAll("h3")].map(backdropOf),
       texts,
       outline,
+      ring,
       surround: backdropOf(surroundingElement),
     };
   });
