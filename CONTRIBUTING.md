@@ -55,7 +55,7 @@ Run these before opening a PR:
 
 | Command               | What it runs                              |
 | --------------------- | ----------------------------------------- |
-| `bun test`            | Full unit test suite (all workspaces)     |
+| `bun run test`        | Full unit test suite (all workspaces)     |
 | `bun run typecheck`   | TypeScript across shared, root, and both apps |
 | `bun run lint`        | ESLint, zero warnings (`eslint . --max-warnings 0`) |
 | `bun run build`       | Production builds for both apps           |

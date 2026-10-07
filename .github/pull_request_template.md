@@ -18,7 +18,7 @@ Fixes #<!-- issue number -->
 
 ## Quality gates
 
-- [ ] `bun test` passes (full suite)
+- [ ] `bun run test` passes (full suite)
 - [ ] `bun run typecheck` passes
 - [ ] `bun run lint` passes
 - [ ] `bun run build` passes
