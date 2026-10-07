@@ -84,10 +84,19 @@ The dev pod publishes:
 
 The host source is bind-mounted, so edits hot-reload without a rebuild.
 
-> [!NOTE]
-> The Fastify server defaults to `HOST=127.0.0.1` for least-privilege local runs. Running on the host machine needs
-> no override. In containers (`podman kube play` / `podman run`), set `HOST=0.0.0.0` explicitly so published ports
-> and peer containers can reach the API.
+### Back-end environment variables
+
+The back-end reads four variables. None is required.
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `HOST` | `127.0.0.1` | Listen address. Running on the host needs no override; in containers (`podman kube play` / `podman run`) set `HOST=0.0.0.0` so published ports and peer containers can reach the API. The dev and prod manifests and the Dockerfile already do. |
+| `PORT` | `3001` | Listen port. A value that is not an integer from 1 to 65535 is ignored. The Vite dev proxy always targets port 3001, so the front-end dev server stops reaching a back-end moved elsewhere. |
+| `LOG_LEVEL` | `info` | Fastify log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` or `silent`. |
+| `CONTENT_DIR` | the repository's `content/` | Folder of articles and projects to serve. |
+
+`NODE_ENV=production` also hides drafts; see the `draft` field in
+[`docs/content-authoring.md`](docs/content-authoring.md).
 
 ## Scripts
 
