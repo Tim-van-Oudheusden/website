@@ -21,4 +21,15 @@ describe("index.html", () => {
     expect(icons[0]).toContain('type="image/svg+xml"');
     expect(icons[0]).toContain('href="/favicon.svg"');
   });
+
+  test("advertises the Atom feed so feed readers can discover it from any page", () => {
+    const html = readFileSync(resolve(import.meta.dir, "../../../front-end/index.html"), "utf-8");
+    const feeds = [...html.matchAll(/<link\b[^>]*>/g)]
+      .map(([tag]) => tag)
+      .filter((tag) => /\brel="alternate"/.test(tag));
+
+    expect(feeds).toHaveLength(1);
+    expect(feeds[0]).toContain('type="application/atom+xml"');
+    expect(feeds[0]).toContain('href="/feed.xml"');
+  });
 });

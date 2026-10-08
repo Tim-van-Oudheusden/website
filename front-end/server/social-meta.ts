@@ -8,7 +8,7 @@ interface MetaTag {
 }
 
 /** Site name and hero line, verbatim from BRANDING.md §1–2 (the home 'start' section shows the same copy). */
-const SITE_NAME = "Build with Tim";
+export const SITE_NAME = "Build with Tim";
 const HERO_LINE = "I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.";
 const HOME_IMAGE_PATH = "/images/me.png";
 

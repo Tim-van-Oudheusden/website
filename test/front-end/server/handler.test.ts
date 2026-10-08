@@ -227,6 +227,35 @@ describe("front-end request handler", () => {
     ]);
   });
 
+  test("serves an Atom feed of published articles, not projects, on the visitor's origin", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+
+    const response = await handle(new Request("http://buildwithtim.dev/feed.xml", {
+      headers: { "x-forwarded-proto": "https" },
+    }));
+    const xml = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("application/atom+xml");
+    expect(xml).toContain('<link rel="self" href="https://buildwithtim.dev/feed.xml"/>');
+
+    expect([...xml.matchAll(/<entry>[\s\S]*?<id>([^<]*)<\/id>/g)].map((match) => match[1])).toEqual([
+      "https://buildwithtim.dev/articles/yoga-nidra",
+    ]);
+  });
+
+  test("answers the feed with a 503 rather than an empty feed when the back-end is down", async () => {
+    const handle = createRequestHandler({
+      distDir,
+      fetchBackend: () => Promise.reject(new Error("connect ECONNREFUSED 127.0.0.1:3001")),
+    });
+
+    const response = await handle(new Request("https://buildwithtim.dev/feed.xml"));
+
+    expect(response.status).toBe(503);
+    expect(await response.text()).not.toContain("<feed");
+  });
+
   test("serves the homepage with the rebrand title, description, canonical URL and preview tags on the visitor's origin", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
@@ -278,7 +307,7 @@ describe("front-end request handler", () => {
   test("sends the back-end's framing and MIME-sniffing protections on every response", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
-    for (const path of ["/", "/articles/yoga-nidra", "/images/me.png", "/robots.txt", "/sitemap.xml"]) {
+    for (const path of ["/", "/articles/yoga-nidra", "/images/me.png", "/robots.txt", "/sitemap.xml", "/feed.xml"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
 
       expect(response.headers.get("x-frame-options")).toBe("SAMEORIGIN");
