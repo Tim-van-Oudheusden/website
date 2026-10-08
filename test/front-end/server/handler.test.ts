@@ -191,6 +191,37 @@ describe("front-end request handler", () => {
     expect(await response.text()).toBe("User-agent: *\nAllow: /\n\nSitemap: https://buildwithtim.dev/sitemap.xml\n");
   });
 
+  test("serves an llms.txt naming the site and linking its sections, articles and projects on the visitor's origin", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+
+    const response = await handle(new Request("http://buildwithtim.dev/llms.txt", {
+      headers: { "x-forwarded-proto": "https" },
+    }));
+    const text = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/plain");
+    expect(text.startsWith("# Build with Tim\n")).toBe(true);
+    expect(text).toContain("- [Articles](https://buildwithtim.dev/articles)");
+    expect(text).toContain("- [Projects](https://buildwithtim.dev/projects)");
+    expect(text).toContain("- [Yoga Nidra, a way to be at peace in chaos](https://buildwithtim.dev/articles/yoga-nidra): How I discovered Yoga Nidra.");
+    expect(text).toContain("- [Pi Sandbox Automation](https://buildwithtim.dev/projects/pi-sandbox-automation)");
+  });
+
+  test("still serves llms.txt with the fixed sections when the back-end is down", async () => {
+    const handle = createRequestHandler({
+      distDir,
+      fetchBackend: () => Promise.reject(new Error("connect ECONNREFUSED 127.0.0.1:3001")),
+    });
+
+    const response = await handle(new Request("https://buildwithtim.dev/llms.txt"));
+    const text = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(text).toContain("- [Articles](https://buildwithtim.dev/articles)");
+    expect(text).not.toContain("yoga-nidra");
+  });
+
   test("serves a sitemap of the fixed pages and every published article and project", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
@@ -307,7 +338,7 @@ describe("front-end request handler", () => {
   test("sends the back-end's framing and MIME-sniffing protections on every response", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
-    for (const path of ["/", "/articles/yoga-nidra", "/images/me.png", "/robots.txt", "/sitemap.xml", "/feed.xml"]) {
+    for (const path of ["/", "/articles/yoga-nidra", "/images/me.png", "/robots.txt", "/llms.txt", "/sitemap.xml", "/feed.xml"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
 
       expect(response.headers.get("x-frame-options")).toBe("SAMEORIGIN");

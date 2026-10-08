@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { ContentFrontmatter } from "shared";
 import { API_BASE, CF_CONNECTING_IP_HEADER, ROUTES } from "shared";
 
-import { renderFeed, renderRobotsTxt, renderSitemap } from "./seo";
+import { renderFeed, renderLlmsTxt, renderRobotsTxt, renderSitemap } from "./seo";
 import { renderHomeMeta, renderSocialMeta } from "./social-meta";
 
 export interface RequestHandlerOptions {
@@ -32,7 +32,7 @@ const SECURITY_HEADERS: Readonly<Record<string, string>> = {
  * Production request handler for the front-end: serves the built SPA, and for
  * article URLs injects that article's link-preview tags into index.html, and
  * the homepage gets its description, canonical URL and preview tags. It
- * also answers /robots.txt, /sitemap.xml and /feed.xml, which cloudflared
+ * also answers /robots.txt, /llms.txt, /sitemap.xml and /feed.xml, which cloudflared
  * routes here.
  */
 export function createRequestHandler(options: RequestHandlerOptions): (request: Request) => Promise<Response> {
@@ -47,6 +47,14 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
 
     if (url.pathname === "/robots.txt") {
       return new Response(renderRobotsTxt(requestOrigin(request, url)), {
+        headers: { ...SECURITY_HEADERS, "content-type": "text/plain; charset=utf-8" },
+      });
+    }
+
+    if (url.pathname === "/llms.txt") {
+      const items = await fetchContentList(options.fetchBackend, backendHeaders) ?? [];
+
+      return new Response(renderLlmsTxt(requestOrigin(request, url), items), {
         headers: { ...SECURITY_HEADERS, "content-type": "text/plain; charset=utf-8" },
       });
     }
