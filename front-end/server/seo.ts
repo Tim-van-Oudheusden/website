@@ -1,6 +1,6 @@
 import type { ArticleFrontmatter, ContentFrontmatter } from "shared";
 
-import { SITE_NAME, SITE_OWNER } from "./social-meta";
+import { HERO_LINE, SITE_NAME, SITE_OWNER } from "./social-meta";
 
 /** Client routes that exist regardless of content (see App.tsx). */
 const STATIC_PAGE_PATHS = ["/", "/articles", "/projects", "/now", "/uses"] as const;
@@ -13,6 +13,38 @@ const CONTENT_PAGE_PREFIX: Record<ContentFrontmatter["type"], string> = {
 /** Allow every crawler everywhere and point it at the sitemap. */
 export function renderRobotsTxt(origin: string): string {
   return `User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap.xml\n`;
+}
+
+/**
+ * llms.txt (llmstxt.org): a Markdown index of the site for AI assistants.
+ * Fixed sections first, then every published article and project from the same
+ * content listing the sitemap uses.
+ */
+export function renderLlmsTxt(origin: string, items: readonly ContentFrontmatter[]): string {
+  function link(item: ContentFrontmatter): string {
+    return `- [${item.title}](${origin}${CONTENT_PAGE_PREFIX[item.type]}${encodeURIComponent(item.slug)}): ${item.description}`;
+  }
+
+  function section(heading: string, type: ContentFrontmatter["type"]): string[] {
+    const entries = items.filter((item) => item.type === type).map(link);
+
+    return entries.length === 0 ? [] : [`## ${heading}`, "", ...entries, ""];
+  }
+
+  return [
+    `# ${SITE_NAME}`,
+    "",
+    `> ${HERO_LINE}`,
+    "",
+    "## Sections",
+    "",
+    `- [Home](${origin}/)`,
+    `- [Articles](${origin}/articles)`,
+    `- [Projects](${origin}/projects)`,
+    "",
+    ...section("Articles", "article"),
+    ...section("Projects", "project"),
+  ].join("\n");
 }
 
 /**

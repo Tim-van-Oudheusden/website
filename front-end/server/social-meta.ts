@@ -11,7 +11,7 @@ interface MetaTag {
 export const SITE_NAME = "Build with Tim";
 /** Site owner, as BRANDING.md §3 names him: author of every article. */
 export const SITE_OWNER = "Tim van Oudheusden";
-const HERO_LINE = "I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.";
+export const HERO_LINE = "I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.";
 const HOME_IMAGE_PATH = "/images/me.png";
 
 /**
