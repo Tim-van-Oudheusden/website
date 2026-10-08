@@ -1,8 +1,9 @@
 import { readFile } from "fs/promises";
-import { isAbsolute, relative, resolve } from "path";
+import { resolve } from "path";
 
 import type { PageData } from "shared";
 
+import { isWithinRoot } from "../../core/safe-fs";
 import { normalizeDate, normalizeString } from "../content/content";
 import { readFrontmatter } from "../content/frontmatter";
 import { rewriteObsidianImageEmbeds } from "../content/obsidian";
@@ -42,9 +43,7 @@ export async function getPageBySlug(slug: string, contentDir: string): Promise<P
   const pagesRootDir = resolve(contentDir, PAGES_DIR);
   const pagePath = resolve(pagesRootDir, `${slug}.md`);
 
-  const rel = relative(pagesRootDir, pagePath);
-
-  if (rel.startsWith("..") || isAbsolute(rel)) {
+  if (!isWithinRoot(pagesRootDir, pagePath)) {
     return null;
   }
 
