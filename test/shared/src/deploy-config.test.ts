@@ -194,6 +194,35 @@ describe("podman-kube@ prod pod template", () => {
   });
 });
 
+describe("back-end liveness probe", () => {
+  interface Probe {
+    httpGet?: unknown;
+    exec?: { command?: string[] };
+    failureThreshold?: number;
+  }
+
+  // Why: GET /health returns 503 when contentDir is unreadable; without a
+  // probe nothing in the pod ever acts on that (#707). kube play turns an
+  // httpGet probe into `curl -f ...`, and the oven/bun image ships no curl,
+  // so such a probe fails on a healthy server and restarts it forever. The
+  // probe has to run bun, the one HTTP client the image is known to have.
+  for (const manifest of ["deploy/kube/dev.yaml", "deploy/kube/prod.yaml"]) {
+    test(`${manifest} probes the back-end's /health on its container port with bun`, () => {
+      const pod = Bun.YAML.parse(readDeploy(manifest)) as {
+        spec: { containers: { name: string; ports: { containerPort: number }[]; livenessProbe?: Probe }[] };
+      };
+      const backEnd = pod.spec.containers.find((c) => c.name === "back-end");
+      const probe = backEnd?.livenessProbe;
+      const [binary, ...args] = probe?.exec?.command ?? [];
+
+      expect(probe?.httpGet).toBeUndefined();
+      expect(binary).toBe("bun");
+      expect(args.join(" ")).toContain(`http://localhost:${backEnd?.ports[0]?.containerPort}/health`);
+      expect(probe?.failureThreshold).toBeGreaterThan(0);
+    });
+  }
+});
+
 describe("dev pod manifest", () => {
   test("disables SELinux labelling for every container with a hostPath mount", () => {
     // Why: kube play does not relabel bind mounts, so on SELinux hosts the

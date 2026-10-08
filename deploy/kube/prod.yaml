@@ -38,6 +38,22 @@ spec:
         - containerPort: 3001
           hostPort: 8301
           hostIP: 127.0.0.1
+      # /health returns 503 when the content dir is unreadable; podman kube
+      # play turns this into a healthcheck that restarts the container (#707).
+      # exec, not httpGet: kube play runs httpGet probes as `curl -f`, and the
+      # oven/bun image has no curl, so the probe would fail on a healthy server
+      # and restart it forever. Same check as the Dockerfile HEALTHCHECK.
+      # No readinessProbe: podman has no endpoint layer to gate traffic on it.
+      livenessProbe:
+        exec:
+          command:
+            - bun
+            - -e
+            - "fetch('http://localhost:3001/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+        initialDelaySeconds: 5
+        periodSeconds: 15
+        timeoutSeconds: 5
+        failureThreshold: 3
       volumeMounts:
         - name: views-data
           mountPath: /data

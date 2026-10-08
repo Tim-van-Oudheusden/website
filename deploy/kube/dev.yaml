@@ -49,6 +49,17 @@ spec:
         - containerPort: 3001
           hostPort: 3001
           hostIP: 127.0.0.1
+      # Same probe as prod.yaml (#707).
+      livenessProbe:
+        exec:
+          command:
+            - bun
+            - -e
+            - "fetch('http://localhost:3001/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+        initialDelaySeconds: 5
+        periodSeconds: 15
+        timeoutSeconds: 5
+        failureThreshold: 3
       volumeMounts:
         - name: back-end-src
           mountPath: /app/back-end
