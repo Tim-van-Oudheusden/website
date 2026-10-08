@@ -8,6 +8,13 @@
 set -euo pipefail
 
 comments_file="${COMMENTS_FILE:?COMMENTS_FILE must point to the review comments JSON}"
+# Bun reads bunfig.toml (whose `preload` runs code) and .env from its working
+# directory, and the caller's directory is the untrusted PR checkout. Parse from
+# an empty directory instead so none of the PR's files can run here.
+COMMENTS_FILE="$(realpath -e -- "$comments_file")"
+export COMMENTS_FILE
+bun_cwd="$(mktemp -d)"
+trap 'rm -rf "$bun_cwd"' EXIT
 
 # One TSV row per suggestion: id, path, start line, end line, then either
 # "apply" plus the base64 suggestion text or "skip" plus the reason.
@@ -15,7 +22,7 @@ comments_file="${COMMENTS_FILE:?COMMENTS_FILE must point to the review comments 
 # applies to the current head (GitHub nulls `line` once a comment is outdated).
 # Rows are sorted bottom-up per file so earlier edits never shift later ones.
 # Fields are escaped like jq's @tsv so each row stays on one line.
-rows="$(bun -e '
+rows="$(cd "$bun_cwd" && bun -e '
   const trusted = ["OWNER", "MEMBER", "COLLABORATOR"];
   const escapes = { "\\": "\\\\", "\t": "\\t", "\n": "\\n", "\r": "\\r" };
   const field = (value) => String(value ?? "").replace(/[\\\t\n\r]/g, (c) => escapes[c]);

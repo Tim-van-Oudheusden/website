@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -130,6 +130,24 @@ describe("scripts/apply-review-suggestions.sh", () => {
       expect(output).not.toContain("applied:");
     } finally {
       rmSync(outsideDir, { recursive: true, force: true });
+    }
+  });
+
+  test("never runs a bunfig.toml preload from the pull request checkout", () => {
+    const markerFile = `${checkoutDir}-preload-ran`;
+
+    writeFileSync(join(checkoutDir, "bunfig.toml"), 'preload = ["./preload.ts"]\n');
+    writeFileSync(join(checkoutDir, "preload.ts"), `require("node:fs").writeFileSync(${JSON.stringify(markerFile)}, "ran");\n`);
+    writeFileSync(join(checkoutDir, "a.ts"), "one\ntwo\nthree\n");
+
+    try {
+      const { status, output } = runApply([comment({ path: "a.ts", line: 2, body: suggestion("TWO\n") })]);
+
+      expect(status).toBe(0);
+      expect(existsSync(markerFile)).toBe(false);
+      expect(output).toContain("applied: a.ts:2-2 (comment 1)");
+    } finally {
+      rmSync(markerFile, { force: true });
     }
   });
 
