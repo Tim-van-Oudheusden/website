@@ -22,7 +22,9 @@ export const TOC_MAX_DEPTH = 3;
 /**
  * Remove HTML tags until none are left, so the result is tag-free by
  * construction rather than by the tag pattern happening to leave no tag
- * spliced together from the pieces around a removed one.
+ * spliced together from the pieces around a removed one. One pass of
+ * HTML_TAG_PATTERN already is, but CodeQL's
+ * js/incomplete-multi-character-sanitization only accepts the loop.
  */
 function stripHtmlTags(text: string): string {
   let previous: string;
