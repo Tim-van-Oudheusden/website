@@ -27,17 +27,17 @@ interface HomeSocialsProps {
 }
 
 /**
- * Home 'socials' variant, the page's semantic footer: one labelled link per
- * profile (official marks, monochrome), then the copyright line and a link to
- * this site's source.
+ * Home 'socials' variant, the page's semantic footer, centered: one labelled
+ * link per profile (official marks, monochrome), then the copyright line and a
+ * link to this site's source.
  */
 export function HomeSocials({ section }: HomeSocialsProps): JSX.Element {
   const currentYear = new Date().getFullYear();
 
   return (
-    <HomeHeadedSectionShell as="footer" section={section} heading={section.heading} body={section.body}>
-      <div className="flex flex-col gap-10">
-        <ul className="flex flex-wrap gap-3">
+    <HomeHeadedSectionShell as="footer" section={section} heading={section.heading} body={section.body} headingAlign="center">
+      <div className="flex flex-col items-center gap-10">
+        <ul className="flex flex-wrap justify-center gap-3">
           {section.links.map((link) => {
             const Icon = SOCIAL_ICONS[link.network];
 
@@ -53,7 +53,7 @@ export function HomeSocials({ section }: HomeSocialsProps): JSX.Element {
             );
           })}
         </ul>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-(--adw-dark-5)/60 dark:text-white/60">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-(--adw-dark-5)/60 dark:text-white/60">
           <p>
             ©
             {" "}

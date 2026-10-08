@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import type { JSX, ReactNode } from "react";
 
 import { headingIdFor } from "../config/home-sections";
@@ -44,6 +45,8 @@ interface HomeHeadedSectionShellProps {
   as: HomeSectionFrameElement;
   heading: string;
   body: string;
+  /** Horizontal alignment of the heading/body block only; variants align their own content. */
+  headingAlign: "start" | "center";
   children: ReactNode;
 }
 
@@ -53,13 +56,14 @@ export function HomeHeadedSectionShell({
   as,
   heading,
   body,
+  headingAlign,
   children,
 }: HomeHeadedSectionShellProps): JSX.Element {
   return (
     <HomeSectionFrame section={section} as={as} className={HOME_SECTION_FRAME_CLASSES}>
       <div className="w-full">
         <div className="mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296">
-          <div className="flex flex-1 flex-col gap-5">
+          <div className={cn("flex flex-1 flex-col gap-5", headingAlign === "center" && "items-center text-center")}>
             <h2
               id={headingIdFor(section.id)}
               className="font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]"

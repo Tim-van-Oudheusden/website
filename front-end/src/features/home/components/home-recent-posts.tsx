@@ -84,6 +84,7 @@ export function HomeRecentPosts({ section, loader }: HomeRecentPostsProps): JSX.
       section={section}
       heading={section.heading}
       body={section.body}
+      headingAlign="start"
     >
       <RecentPostsContent posts={posts} loadError={status === "error"} />
     </HomeHeadedSectionShell>
