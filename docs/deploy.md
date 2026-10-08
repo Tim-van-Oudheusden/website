@@ -111,6 +111,21 @@ for i in $(seq 1 55); do
 done | sort | uniq -c   # all 200; the same IP 55 times yields 429s after 50
 ```
 
+### Article view counts
+
+The back-end counts article opens without cookies or visitor data. The site
+POSTs `/api/views/<slug>` when an article is shown; only slugs that exist in
+the content are counted. Counts are stored per slug and day in SQLite at
+`VIEWS_DB_PATH` (`/data/views.sqlite` in the pod). `/data` is a `hostPath`
+volume, which `kube play` creates next to the manifest
+(`deploy/kube/website-data/`, git-ignored), so counts survive pod replays and
+image updates. Read them on the host; `/views` answers loopback callers only
+and the tunnel does not forward it:
+
+```bash
+curl -s http://127.0.0.1:8301/views   # [{"slug":"introduction","date":"2026-10-08","count":3}, ...]
+```
+
 ---
 
 ## 2. Cloudflare Tunnel

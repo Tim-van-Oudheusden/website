@@ -45,6 +45,7 @@ export const ROUTES = {
   CONTENT: "/content",
   CONTENT_BY_SLUG: "/content/:slug",
   PAGE_BY_SLUG: "/pages/:slug",
+  VIEW_BY_SLUG: "/views/:slug",
 } as const;
 
 /**

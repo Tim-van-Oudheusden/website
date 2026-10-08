@@ -2,6 +2,8 @@ import type { JSX } from "react";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 
+import { recordView } from "@/shared/lib/record-view";
+
 import { ArticleContent } from "../components/article-content";
 import { ArticlesSidebar } from "../components/articles-sidebar";
 import { useArticleToc } from "../hooks/use-article-toc";
@@ -23,6 +25,14 @@ export function ArticlesPage(): JSX.Element {
     articleError,
   } = useArticles(slug);
   const { tocItems, visibleTocHeadingIds } = useArticleToc(selectedArticle, loadingArticle);
+
+  const viewedSlug = selectedArticle?.slug ?? null;
+
+  useEffect(() => {
+    if (viewedSlug !== null) {
+      recordView(viewedSlug);
+    }
+  }, [viewedSlug]);
 
   useEffect(() => {
     if (selectedArticle === null) {
