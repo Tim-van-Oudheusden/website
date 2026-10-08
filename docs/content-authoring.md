@@ -1,7 +1,8 @@
 # Content authoring
 
 How to write articles and projects for the site: Obsidian settings, image syntax, the frontmatter
-reference, the content check to run before pushing, and link previews.
+reference, the content check to run before pushing, link previews, and the standalone pages
+(`/now`, `/uses`).
 
 ## Obsidian Content Authoring
 
@@ -29,7 +30,8 @@ The image route is served by the back-end and maps to files stored in `content/i
 Every `content/*.md` file starts with a YAML frontmatter block. The back-end
 checks it against the rules below; the allowed values come from the shared
 contract in `shared/src/index.ts` (`ARTICLE_CATEGORIES`, `PROJECT_STATUSES`,
-`PROJECT_LINK_TYPES`).
+`PROJECT_LINK_TYPES`). Pages in `content/pages/` follow their own, shorter
+rules: see [Standalone pages](#standalone-pages-contentpages).
 
 **A document that breaks a rule is silently left out of the site.** No error is
 shown: it disappears from every listing and its URL returns "not found". Run
@@ -98,7 +100,9 @@ links:
 
 ### Checking content before pushing
 
-Check every document in `content/` against the frontmatter rules:
+Check every article and project in `content/` against the frontmatter rules.
+It does not look inside subfolders, so pages in `content/pages/` are not
+checked:
 
 ```bash
 bun run --filter back-end validate:content
@@ -141,3 +145,37 @@ The same server adds schema.org `BlogPosting` structured data (JSON-LD) to each
 article page, so search engines can show a rich result: headline from `title`,
 `description`, publish date from `date`, Tim as author, and `socialImage` as the
 image when set.
+
+### Standalone pages (`content/pages/`)
+
+`/now` and `/uses` are single Markdown pages read from `content/pages/now.md`
+and `content/pages/uses.md`. They never appear in the article or project
+listings, and they use their own frontmatter instead of the rules above:
+
+| Field | Required | Allowed values | Effect |
+| --- | --- | --- | --- |
+| `title` | Yes | Non-empty string | Page heading. |
+| `updated` | Yes | Date (`2026-10-08`) | Shown under the heading as "Last updated October 8, 2026". Use `YYYY-MM-DD`: other text passes the back-end check but breaks the page header. |
+| `description` | No | String (default empty) | Line under the heading. |
+
+Any other field, such as `type`, `category` or `draft`, is ignored. There is
+no draft state: a page is live as soon as its file is deployed.
+
+```yaml
+---
+title: Now
+description: What I am focused on at the moment.
+updated: 2026-10-08
+---
+```
+
+**A page missing `title` or `updated` shows "Page not found", with no error.**
+The [content checker](#checking-content-before-pushing) does not check this
+folder, so open the page in the dev server after editing it. Images work as in
+articles.
+
+A new file in `content/pages/` is not a new page on its own. Each page is a
+route in `front-end/src/App.tsx` (`<StandalonePage slug="now" />`), so adding
+one is a code change. The file name, which is the slug, must be lowercase
+letters, digits and single hyphens (`my-page.md`); any other name is never
+served.
