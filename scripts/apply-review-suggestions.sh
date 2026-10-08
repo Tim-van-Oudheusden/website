@@ -4,7 +4,7 @@
 # Reads COMMENTS_FILE, a JSON array of review comments as returned by
 # `GET /repos/{owner}/{repo}/pulls/{number}/comments`. Prints one
 # "applied:" or "skipped:" line per suggestion; edits files in place and
-# leaves committing to the caller.
+# leaves committing to the caller. Needs bash, coreutils and Bun only.
 set -euo pipefail
 
 comments_file="${COMMENTS_FILE:?COMMENTS_FILE must point to the review comments JSON}"
@@ -14,31 +14,33 @@ comments_file="${COMMENTS_FILE:?COMMENTS_FILE must point to the review comments 
 # Only reviewers with write access count, and only while the comment still
 # applies to the current head (GitHub nulls `line` once a comment is outdated).
 # Rows are sorted bottom-up per file so earlier edits never shift later ones.
-rows="$(jq -r '
-  ["OWNER", "MEMBER", "COLLABORATOR"] as $trusted
-  | map(
-      (.body | gsub("\r"; "")) as $body
-      | select($body | test("```suggestion\n"))
-      | {
-          id,
-          path,
-          end: (.line // 0),
-          start: (.start_line // .line // 0),
-          text: ($body | capture("```suggestion\n(?<s>[\\s\\S]*?)```").s),
-          skip: (
-            if (.author_association | IN($trusted[]) | not) then
-              "author \(.author_association) has no write access"
-            elif .line == null then "outdated"
-            else null end
-          )
-        }
-    )
-  | sort_by(.path, -.start)
-  | .[]
-  | [.id, .path, .start, .end]
-    + if .skip then ["skip", .skip] else ["apply", (.text | @base64)] end
-  | @tsv
-' "$comments_file")"
+# Fields are escaped like jq's @tsv so each row stays on one line.
+rows="$(bun -e '
+  const trusted = ["OWNER", "MEMBER", "COLLABORATOR"];
+  const escapes = { "\\": "\\\\", "\t": "\\t", "\n": "\\n", "\r": "\\r" };
+  const field = (value) => String(value ?? "").replace(/[\\\t\n\r]/g, (c) => escapes[c]);
+  const comments = await Bun.file(process.env.COMMENTS_FILE).json();
+
+  const suggestions = comments.flatMap((c) => {
+    const match = /```suggestion\n([\s\S]*?)```/.exec(c.body.replaceAll("\r", ""));
+    if (!match) return [];
+    const skip = !trusted.includes(c.author_association)
+      ? `author ${c.author_association ?? null} has no write access`
+      : c.line == null ? "outdated" : null;
+    return [{
+      id: c.id,
+      path: c.path,
+      end: c.line ?? 0,
+      start: c.start_line ?? c.line ?? 0,
+      action: skip ? ["skip", skip] : ["apply", Buffer.from(match[1]).toString("base64")],
+    }];
+  });
+
+  suggestions.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : b.start - a.start));
+  for (const s of suggestions) {
+    console.log([s.id, s.path, s.start, s.end, ...s.action].map(field).join("\t"));
+  }
+')"
 
 [ -n "$rows" ] || { echo "no suggestions to apply"; exit 0; }
 

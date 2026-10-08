@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -27,14 +27,14 @@ function suggestion(text: string): string {
   return `Nit:\n\n\`\`\`suggestion\n${text}\`\`\`\n`;
 }
 
-function runApply(comments: ReviewComment[]): { status: number | null; output: string } {
+function runApply(comments: ReviewComment[], pathPrefix?: string): { status: number | null; output: string } {
   const commentsFile = join(checkoutDir, "..", `${checkoutDir.split("/").pop() ?? ""}-comments.json`);
 
   writeFileSync(commentsFile, JSON.stringify(comments));
   const result = spawnSync("bash", [scriptPath], {
     cwd: checkoutDir,
     encoding: "utf8",
-    env: { PATH: process.env["PATH"] ?? "", COMMENTS_FILE: commentsFile },
+    env: { PATH: [pathPrefix, process.env["PATH"] ?? ""].filter(Boolean).join(":"), COMMENTS_FILE: commentsFile },
   });
 
   rmSync(commentsFile, { force: true });
@@ -59,6 +59,25 @@ describe("scripts/apply-review-suggestions.sh", () => {
     expect(status).toBe(0);
     expect(readFileSync(join(checkoutDir, "a.ts"), "utf8")).toBe("one\nTWO\nthree\n");
     expect(output).toContain("applied");
+  });
+
+  test("applies suggestions on a host without jq", () => {
+    const binDir = `${checkoutDir}-bin`;
+
+    mkdirSync(binDir);
+    writeFileSync(join(binDir, "jq"), "#!/bin/sh\necho 'jq: command not found' >&2\nexit 127\n");
+    chmodSync(join(binDir, "jq"), 0o755);
+    writeFileSync(join(checkoutDir, "a.ts"), "one\ntwo\nthree\n");
+
+    try {
+      const { status, output } = runApply([comment({ path: "a.ts", line: 2, body: suggestion("TWO\n") })], binDir);
+
+      expect(status).toBe(0);
+      expect(readFileSync(join(checkoutDir, "a.ts"), "utf8")).toBe("one\nTWO\nthree\n");
+      expect(output).toContain("applied: a.ts:2-2 (comment 1)");
+    } finally {
+      rmSync(binDir, { recursive: true, force: true });
+    }
   });
 
   test("skips suggestions from authors without write access and outdated comments", () => {
