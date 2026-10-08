@@ -70,6 +70,13 @@ const backendRestrictedSharedImports = [
   { name: "shared/social-image", message: sharedBackendBoundaryMessage },
 ];
 
+const e2eFixtureMessage = "Import `test` from \"./fixtures\": it gives each test its own visitor address, so specs never share one back-end rate-limit bucket (#716).";
+
+/* Every E2E spec runs on the fixture that sets a per-test `cf-connecting-ip`. */
+const e2eRestrictedImports = [
+  { name: "@playwright/test", importNames: ["test"], message: e2eFixtureMessage },
+];
+
 const optionalMemberMessage = "Model a complete type instead of an optional member: required field, `T | null`, or a discriminated union (see CONTRIBUTING.md \"Code shape\").";
 
 /* Optional members (`foo?: T`, `foo?(…)`, `fn(x?: T)`); banned everywhere except `optionalMemberExemptFiles`. */
@@ -312,6 +319,13 @@ export default tseslint.config(
     files: ["back-end/**", "test/back-end/**"],
     rules: {
       "no-restricted-imports": ["error", { paths: [...restrictedImports, ...backendRestrictedSharedImports] }],
+    },
+  },
+  {
+    files: ["e2e/**"],
+    ignores: ["e2e/fixtures.ts"],
+    rules: {
+      "no-restricted-imports": ["error", { paths: [...restrictedImports, ...e2eRestrictedImports] }],
     },
   },
   {

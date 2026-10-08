@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
+import { expect, test } from "./fixtures";
 import { openHome } from "./home-page";
 
 function scrollToSection(page: Page, sectionId: string): void {

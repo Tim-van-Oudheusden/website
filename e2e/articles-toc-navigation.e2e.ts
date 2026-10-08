@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-
+import { expect, test } from "./fixtures";
 import { lowContrastTexts, sampleSurface } from "./surface-colours";
 
 test.describe("Articles TOC navigation", () => {
@@ -82,7 +81,7 @@ test.describe("Articles TOC navigation", () => {
   });
 
   test("keeps active and inactive TOC entries at WCAG AA contrast on the dark-mode well", async ({ page }) => {
-    // Images never change a sampled colour; skip them to stay within the back-end's shared rate limit.
+    // Images never change a sampled colour; skip them.
     await page.route((url) => url.pathname.startsWith("/content-assets/"), async (route) => route.abort());
 
     await page.addInitScript(() => {
