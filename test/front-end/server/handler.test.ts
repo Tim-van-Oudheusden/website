@@ -204,6 +204,8 @@ describe("front-end request handler", () => {
       "https://buildwithtim.dev/",
       "https://buildwithtim.dev/articles",
       "https://buildwithtim.dev/projects",
+      "https://buildwithtim.dev/now",
+      "https://buildwithtim.dev/uses",
       "https://buildwithtim.dev/articles/yoga-nidra",
       "https://buildwithtim.dev/projects/pi-sandbox-automation",
     ]);
@@ -224,6 +226,8 @@ describe("front-end request handler", () => {
       "https://buildwithtim.dev/",
       "https://buildwithtim.dev/articles",
       "https://buildwithtim.dev/projects",
+      "https://buildwithtim.dev/now",
+      "https://buildwithtim.dev/uses",
     ]);
   });
 
