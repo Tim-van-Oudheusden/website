@@ -3,7 +3,7 @@ import type { ArticleFrontmatter, ContentFrontmatter } from "shared";
 import { SITE_NAME, SITE_OWNER } from "./social-meta";
 
 /** Client routes that exist regardless of content (see App.tsx). */
-const STATIC_PAGE_PATHS = ["/", "/articles", "/projects"] as const;
+const STATIC_PAGE_PATHS = ["/", "/articles", "/projects", "/now", "/uses"] as const;
 
 const CONTENT_PAGE_PREFIX: Record<ContentFrontmatter["type"], string> = {
   article: "/articles/",
