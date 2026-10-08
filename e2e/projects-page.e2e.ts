@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 // Expectations come from the project entries in content/: "Minimal Android
 // Launcher" is the only `featured: true` project, the other two fill the gallery.

@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
-import { expect, test } from "@playwright/test";
+
+import { expect, test } from "./fixtures";
 
 async function pickTheme(page: Page, theme: "Light" | "Dark" | "System"): Promise<void> {
   await page.getByRole("button", { name: "Toggle theme" }).click();
@@ -9,8 +10,7 @@ async function pickTheme(page: Page, theme: "Light" | "Dark" | "System"): Promis
 
 test.describe("Top bar theme toggle", () => {
   test.beforeEach(async ({ page }) => {
-    // The top bar reads no content. Keep these page loads off the back-end's
-    // 50 req/min loopback rate limit, which the content-backed specs share.
+    // The top bar reads no content; keep these page loads off the back-end.
     await page.route((url) => url.pathname.startsWith("/api/"), (route) => route.abort());
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/", { waitUntil: "domcontentloaded" });

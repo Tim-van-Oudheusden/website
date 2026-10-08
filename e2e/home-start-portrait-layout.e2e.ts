@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.describe("Home start portrait layout", () => {
   test("anchors portrait to white box bottom-right without right/bottom gaps and keeps top overflow", async ({ page }) => {

@@ -117,6 +117,36 @@ For iterating on a single spec, keep the pod up with `scripts/dev.sh` in one
 terminal and run `bun run test:e2e -- e2e/<spec>.e2e.ts` (or
 `bun run test:e2e:headed`) in another; `scripts/dev-down.sh` when done.
 
+### Back-end rate limit
+
+The back-end allows 50 requests a minute per visitor, and 10 a minute to
+unknown routes (`back-end/src/core/rate-limit.ts`). Behind the dev proxy every
+request reaches it from loopback, where the limiter keys on
+`cf-connecting-ip`. Specs import `test` from `e2e/fixtures.ts`, which sends a
+per-test address from `2001:db8::/32` (RFC 3849), so each test is its own
+visitor with its own budget, as each visitor behind Cloudflare is in
+production. ESLint rejects importing `test` from `@playwright/test` anywhere
+else in `e2e/`. A test that overspends gets the `429`s itself; no other spec
+does. Before #716 the whole suite shared the loopback budget: 42 of the 50
+requests in one run.
+
+The headroom is per test: 50 minus that test's back-end requests. To measure
+it, bring the pod up with `scripts/dev.sh` and run:
+
+```bash
+backend_requests() {
+  podman logs website-back-end 2>&1 \
+    | grep '"msg":"incoming request"' | grep -vc '"url":"/health"'
+}
+before=$(backend_requests)
+bun run test:e2e -- --retries=0 e2e/<spec>.e2e.ts:<line>   # no arguments: whole run
+echo $(( $(backend_requests) - before ))
+```
+
+Excluding `/health` drops the liveness probe and the readiness polls. On
+`main` (October 2026) a whole run sends 41 requests, and the most any one test
+sends is 5 (`articles-toc-navigation.e2e.ts:83`), leaving 45 of headroom.
+
 ## Check the prod front-end image's static assets
 
 The dev pod bind-mounts `./public`, so the E2E suite cannot tell whether the

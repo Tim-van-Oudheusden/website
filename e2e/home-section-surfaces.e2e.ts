@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
 
+import { expect, test } from "./fixtures";
 import { openHome } from "./home-page";
 import { AA_NON_TEXT_CONTRAST, contrastRatio, lowContrastTexts, sampleSurface } from "./surface-colours";
 

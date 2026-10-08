@@ -8,8 +8,8 @@ interface OpenHomeOptions {
 }
 
 /**
- * Opens the home page in a theme. The back-end allows 50 requests a minute from loopback, shared by every
- * content-backed spec, so only the content a test reads gets through; content images never do.
+ * Opens the home page in a theme. Only the content a test reads reaches the back-end, so a test never
+ * depends on content it does not check; content images never do.
  */
 export async function openHome(page: Page, { theme, content }: OpenHomeOptions): Promise<void> {
   await page.route(

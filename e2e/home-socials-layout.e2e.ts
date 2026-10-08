@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-
+import { expect, test } from "./fixtures";
 import { openHome } from "./home-page";
 
 test.describe("Home socials layout", () => {
