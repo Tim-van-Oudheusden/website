@@ -87,8 +87,9 @@ The script exits with the status of the first failing step.
 
 ### Prerequisites
 
-- **Podman** (rootless is fine) on the host. CI installs it with
-  `sudo apt-get install -y podman` on `ubuntu-latest`.
+- **Podman** (rootless is fine) on the host. CI uses the podman preinstalled
+  on `ubuntu-latest` and falls back to `apt-get install -y podman` (with apt
+  retries and 30 s request timeouts) only when the image lacks it.
 - Ports `5173` and `3001` free, and no `website` pod already running
   (`scripts/dev-down.sh` stops one left over from `scripts/dev.sh`).
 - Run from a full checkout: `deploy/kube/dev.yaml` bind-mounts `./front-end`,
@@ -128,9 +129,13 @@ covers that gap:
 1. `podman build -f front-end/Dockerfile --target prod`
 2. run the image on `127.0.0.1:${PROD_ASSETS_PORT:-18300}` and poll `/` until
    it answers (`PROD_ASSETS_WAIT_ATTEMPTS` × `PROD_ASSETS_WAIT_INTERVAL`,
-   default 30 × 1 s)
+   default 30 × 1 s); on timeout, dump `podman logs` and fail
 3. fetch every non-dotfile under `public/` and require it to be byte-identical
    to the file in the repo
+
+   Every request in steps 2 and 3 is capped by `curl --max-time`
+   (`PROD_ASSETS_CURL_MAX_TIME`, default 10 s), so a server that accepts but
+   never answers fails the run instead of hanging it.
 4. remove the container, always
 
 ## Regenerate the README screenshots
