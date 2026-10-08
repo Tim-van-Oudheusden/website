@@ -1,14 +1,22 @@
-import { isAbsolute, relative } from "path";
+import { isAbsolute, relative, resolve } from "path";
 
 /**
- * True when `fullPath` is strictly inside `root` — never `root` itself, a
- * ".." traversal out of it, or an absolute escape to somewhere else. Callers
- * resolve `fullPath` from untrusted input (a slug, a URL segment) themselves;
- * this only checks the result, so decoding and extension rules stay with
- * the caller.
+ * Resolve untrusted input (a slug, a URL segment) against `root`; null unless
+ * the result is strictly inside `root`: never `root` itself, a ".." traversal
+ * out of it, or an absolute escape to somewhere else. Decoding and extension
+ * rules stay with the caller.
+ *
+ * The guard and the path it guards stay in this one function on purpose:
+ * CodeQL's js/path-injection only trusts a `relative()` check in the function
+ * that returns the checked value, not a boolean helper's verdict.
  */
-export function isWithinRoot(root: string, fullPath: string): boolean {
+export function resolveWithinRoot(root: string, untrustedPath: string): string | null {
+  const fullPath = resolve(root, untrustedPath);
   const rel = relative(root, fullPath);
 
-  return rel !== "" && !rel.startsWith("..") && !isAbsolute(rel);
+  if (rel === "" || rel.startsWith("..") || isAbsolute(rel)) {
+    return null;
+  }
+
+  return fullPath;
 }

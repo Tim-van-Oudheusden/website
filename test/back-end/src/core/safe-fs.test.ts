@@ -1,31 +1,31 @@
 import { describe, expect, test } from "bun:test";
 
-import { isWithinRoot } from "../../../../back-end/src/core/safe-fs";
+import { resolveWithinRoot } from "../../../../back-end/src/core/safe-fs";
 
-describe("isWithinRoot", () => {
+describe("resolveWithinRoot", () => {
   const root = "/tmp/content/images";
 
-  test("accepts a path nested directly under the root", () => {
-    expect(isWithinRoot(root, "/tmp/content/images/pixel.png")).toBe(true);
+  test("resolves a path directly under the root to its absolute location", () => {
+    expect(resolveWithinRoot(root, "pixel.png")).toBe("/tmp/content/images/pixel.png");
   });
 
-  test("accepts a path nested under a subdirectory of the root", () => {
-    expect(isWithinRoot(root, "/tmp/content/images/sub/pixel.png")).toBe(true);
+  test("resolves a path nested under a subdirectory of the root", () => {
+    expect(resolveWithinRoot(root, "sub/pixel.png")).toBe("/tmp/content/images/sub/pixel.png");
   });
 
   test("rejects the root path itself", () => {
-    expect(isWithinRoot(root, root)).toBe(false);
+    expect(resolveWithinRoot(root, ".")).toBeNull();
   });
 
   test("rejects a dot-segment escape to a sibling directory", () => {
-    expect(isWithinRoot(root, "/tmp/content/escape.png")).toBe(false);
+    expect(resolveWithinRoot(root, "../escape.png")).toBeNull();
   });
 
   test("rejects an absolute path outside the root", () => {
-    expect(isWithinRoot(root, "/etc/passwd")).toBe(false);
+    expect(resolveWithinRoot(root, "/etc/passwd")).toBeNull();
   });
 
   test("rejects a sibling directory that merely shares the root's name as a prefix", () => {
-    expect(isWithinRoot(root, "/tmp/content/images-other/pixel.png")).toBe(false);
+    expect(resolveWithinRoot(root, "../images-other/pixel.png")).toBeNull();
   });
 });
