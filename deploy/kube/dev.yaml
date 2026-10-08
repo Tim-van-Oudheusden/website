@@ -49,6 +49,14 @@ spec:
         - containerPort: 3001
           hostPort: 3001
           hostIP: 127.0.0.1
+      # Same probe as prod.yaml (#707).
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 3001
+        initialDelaySeconds: 5
+        periodSeconds: 15
+        failureThreshold: 3
       volumeMounts:
         - name: back-end-src
           mountPath: /app/back-end

@@ -38,6 +38,16 @@ spec:
         - containerPort: 3001
           hostPort: 8301
           hostIP: 127.0.0.1
+      # /health returns 503 when the content dir is unreadable; podman kube
+      # play turns this into a healthcheck that restarts the container (#707).
+      # No readinessProbe: podman has no endpoint layer to gate traffic on it.
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 3001
+        initialDelaySeconds: 5
+        periodSeconds: 15
+        failureThreshold: 3
       volumeMounts:
         - name: views-data
           mountPath: /data
