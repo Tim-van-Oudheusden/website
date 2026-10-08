@@ -11,6 +11,8 @@
 #   PROD_ASSETS_PORT           loopback port to publish the image on (default 18300)
 #   PROD_ASSETS_WAIT_ATTEMPTS  readiness polls before giving up (default 30)
 #   PROD_ASSETS_WAIT_INTERVAL  seconds between polls (default 1)
+#   PROD_ASSETS_CURL_MAX_TIME  seconds each request may take (default 10); a server
+#                              that accepts but never answers must not hang the run
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -19,6 +21,7 @@ cd "$ROOT"
 PORT="${PROD_ASSETS_PORT:-18300}"
 WAIT_ATTEMPTS="${PROD_ASSETS_WAIT_ATTEMPTS:-30}"
 WAIT_INTERVAL="${PROD_ASSETS_WAIT_INTERVAL:-1}"
+CURL_MAX_TIME="${PROD_ASSETS_CURL_MAX_TIME:-10}"
 IMAGE=localhost/website/front-end:prod-assets
 CONTAINER=website-prod-assets
 BASE="http://127.0.0.1:$PORT"
@@ -32,7 +35,7 @@ trap 'podman rm -f "$CONTAINER" >/dev/null' EXIT
 
 ready=0
 for _ in $(seq 1 "$WAIT_ATTEMPTS"); do
-  if curl -fs -o /dev/null "$BASE/"; then
+  if curl -fs --max-time "$CURL_MAX_TIME" -o /dev/null "$BASE/"; then
     ready=1
     break
   fi
@@ -51,7 +54,7 @@ checked=0
 while IFS= read -r -d '' file; do
   path="${file#public}"
   checked=$((checked + 1))
-  if curl -fsS -o "$body" "$BASE$path" && cmp -s "$file" "$body"; then
+  if curl -fsS --max-time "$CURL_MAX_TIME" -o "$body" "$BASE$path" && cmp -s "$file" "$body"; then
     echo "ok   $path"
   else
     echo "FAIL $path (not served byte-identical to $file)" >&2
