@@ -43,6 +43,16 @@ function headMeta(html: string): Map<string, string> {
   return meta;
 }
 
+/** Parses the one `<script type="application/ld+json">` block in the document <head>. */
+function headJsonLd(html: string): unknown {
+  const head = /<head>([\s\S]*)<\/head>/.exec(html)?.[1] ?? "";
+  const blocks = [...head.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+
+  expect(blocks).toHaveLength(1);
+
+  return JSON.parse(blocks[0]?.[1] ?? "");
+}
+
 describe("renderSocialMeta", () => {
   test("adds the Open Graph and Twitter tags a link preview needs for an article", () => {
     const html = renderSocialMeta(INDEX_HTML, article({ socialImage: "images/cover.png" }), ORIGIN);
@@ -102,6 +112,31 @@ describe("renderSocialMeta page identity", () => {
     expect(html).toContain("<title>A &amp; B | Build with Tim</title>");
     expect(html).not.toContain("<title>Tim V.O.</title>");
     expect(headMeta(html).get("og:url")).toBe("https://buildwithtim.dev/articles/a%20b");
+  });
+});
+
+describe("renderSocialMeta structured data", () => {
+  test("describes the article as a schema.org BlogPosting by the site owner", () => {
+    const html = renderSocialMeta(INDEX_HTML, article({ socialImage: "images/cover.png" }), ORIGIN);
+
+    expect(headJsonLd(html)).toEqual({
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Apt-get out of my life, hello flatpak",
+      "description": "Why I moved my desktop apps to Flatpak.",
+      "datePublished": "2026-09-01",
+      "url": "https://buildwithtim.dev/articles/apt-get-out-of-my-life-hello-flatpak",
+      "author": { "@type": "Person", "name": "Tim van Oudheusden", "url": "https://buildwithtim.dev/" },
+      "image": "https://buildwithtim.dev/content-assets/images/cover.png",
+    });
+  });
+
+  test("keeps authored text inside the script block and leaves out image when there is none", () => {
+    const title = `Ends </script><script>alert(1)</script> & <!-- here`;
+    const data = headJsonLd(renderSocialMeta(INDEX_HTML, article({ title }), ORIGIN));
+
+    expect(data).toMatchObject({ headline: title });
+    expect(data).not.toHaveProperty("image");
   });
 });
 

@@ -1,6 +1,6 @@
 import type { ArticleFrontmatter, ContentFrontmatter } from "shared";
 
-import { SITE_NAME } from "./social-meta";
+import { SITE_NAME, SITE_OWNER } from "./social-meta";
 
 /** Client routes that exist regardless of content (see App.tsx). */
 const STATIC_PAGE_PATHS = ["/", "/articles", "/projects"] as const;
@@ -32,9 +32,6 @@ export function renderSitemap(origin: string, items: readonly ContentFrontmatter
 
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>\n`;
 }
-
-/** Site owner, as BRANDING.md §3 names him. Atom requires an author for every entry. */
-const FEED_AUTHOR = "Tim van Oudheusden";
 
 /**
  * Atom 1.0 feed of the published articles, newest first, so readers can
@@ -74,7 +71,7 @@ export function renderFeed(origin: string, items: readonly ContentFrontmatter[])
     `  <id>${escapeXml(`${origin}/`)}</id>`,
     `  <title>${escapeXml(SITE_NAME)}</title>`,
     `  <updated>${updated}</updated>`,
-    `  <author><name>${escapeXml(FEED_AUTHOR)}</name></author>`,
+    `  <author><name>${escapeXml(SITE_OWNER)}</name></author>`,
     `  <link rel="self" href="${escapeXml(`${origin}/feed.xml`)}"/>`,
     `  <link rel="alternate" href="${escapeXml(`${origin}/`)}"/>`,
     ...entries,
