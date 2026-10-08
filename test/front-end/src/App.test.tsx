@@ -70,7 +70,7 @@ describe("App", () => {
 
     const headerAt = html.indexOf("<header");
 
-    expect(html).toContain("Tim V.O.");
+    expect(html).toContain('src="/images/logo.svg"');
     expect(headerAt).toBeGreaterThanOrEqual(0);
     expect(headerAt).toBeLessThan(html.indexOf("Loading projects..."));
     expect(/<a [^>]*data-active-nav="true"[^>]*>/.exec(html)?.[0]).toContain('href="/projects"');

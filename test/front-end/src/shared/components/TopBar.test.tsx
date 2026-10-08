@@ -43,10 +43,13 @@ function headerOf(mount: FakeMount): FakeElement {
 }
 
 describe("TopBar", () => {
-  test("renders the site brand and the main page links", () => {
+  test("renders the site logo as the brand and the main page links", () => {
     const html = renderTopBar();
+    const brandLink = /<a [^>]*href="\/"[^>]*>\s*<img [^>]*>\s*<\/a>/.exec(html)?.[0];
 
-    expect(html).toContain("Tim V.O.");
+    expect(brandLink).toContain('src="/images/logo.svg"');
+    expect(brandLink).toContain('alt="Build with Tim"');
+    expect(html).not.toContain("Tim V.O.");
     expect(html).toContain("Home");
     expect(html).toContain("Articles");
     expect(html).toContain("Projects");
