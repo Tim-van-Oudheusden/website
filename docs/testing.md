@@ -144,8 +144,8 @@ echo $(( $(backend_requests) - before ))
 ```
 
 Excluding `/health` drops the liveness probe and the readiness polls. On
-`main` (October 2026) a whole run sends 41 requests, and the most any one test
-sends is 5 (`articles-toc-navigation.e2e.ts:83`), leaving 45 of headroom.
+`main` (October 2026) a whole run sends 54 requests, and the most any one test
+sends is 7 (`article-view-beacon.e2e.ts:28`), leaving 43 of headroom.
 
 ## Check the prod front-end image's static assets
 
