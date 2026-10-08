@@ -30,7 +30,20 @@ spec:
           value: production
         - name: HOST
           value: "0.0.0.0"
+        # Per-article view counts (SQLite); lives on the host so it survives
+        # pod replays and image updates.
+        - name: VIEWS_DB_PATH
+          value: /data/views.sqlite
       ports:
         - containerPort: 3001
           hostPort: 8301
           hostIP: 127.0.0.1
+      volumeMounts:
+        - name: views-data
+          mountPath: /data
+
+  volumes:
+    - name: views-data
+      hostPath:
+        path: website-data
+        type: DirectoryOrCreate

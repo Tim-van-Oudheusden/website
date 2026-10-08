@@ -1,4 +1,5 @@
 # Dependencies
+deploy/kube/website-data/
 node_modules/
 
 # Build output

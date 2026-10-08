@@ -14,6 +14,9 @@ import { registerHealthRoute } from "./features/health/register-health-route";
 import { registerHelloRoute } from "./features/hello/register-hello-route";
 import { registerPageRoutes } from "./features/pages/page-routes";
 import { registerRootRoute } from "./features/root/register-root-route";
+import { registerViewBeaconRoute, registerViewStatsRoute } from "./features/views/register-views-routes";
+import type { ViewStore } from "./features/views/view-store";
+import { createViewStore } from "./features/views/view-store";
 
 interface BuildAppOptions {
   /** Directory holding the markdown content and its `images/` folder. */
@@ -21,7 +24,14 @@ interface BuildAppOptions {
   logger: boolean | Record<string, unknown>;
 }
 
-export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
+/**
+ * @param viewStore Per-article view counts; defaults to an in-memory store
+ *   (not persisted). The app closes it on shutdown.
+ */
+export async function buildApp(
+  options: BuildAppOptions,
+  viewStore: ViewStore = createViewStore(":memory:"),
+): Promise<FastifyInstance> {
   const app = Fastify({
     logger: options.logger,
     // Honor proxied client metadata (X-Forwarded-For, X-Forwarded-Proto) only
@@ -36,6 +46,13 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
 
   const { contentDir } = options;
 
+  app.addHook("onClose", (_instance, done) => {
+    viewStore.close();
+    done();
+  });
+
+  registerViewStatsRoute(app, viewStore);
+
   // Probe endpoint stays at the root: kube probes, the CI wait loop, and the
   // README all target /health.
   registerHealthRoute(app, contentDir);
@@ -47,6 +64,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     registerRootRoute(api);
     registerContentRoutes(api, contentDir);
     registerPageRoutes(api, contentDir);
+    registerViewBeaconRoute(api, contentDir, viewStore);
   }, { prefix: API_BASE });
 
   // Static content images are an asset path, not an API call — stay at root.

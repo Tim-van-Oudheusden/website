@@ -212,7 +212,8 @@ describe("ArticlesPage layout", () => {
       await settle();
 
       expect(page.container.textContent).toContain("Welcome aboard.");
-      expect(requested).toEqual([LIST_URL, "/api/content/introduction"]);
+      // One content fetch and a single view beacon; the trail click adds neither.
+      expect(requested).toEqual([LIST_URL, "/api/content/introduction", "/api/views/introduction"]);
     } finally {
       unmountFakeDomRoot(page);
     }
