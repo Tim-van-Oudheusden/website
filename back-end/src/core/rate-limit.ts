@@ -3,24 +3,12 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 
 import { CF_CONNECTING_IP_HEADER } from "shared";
 
+import { isLoopbackAddress } from "./network";
+
 const GLOBAL_MAX_REQUESTS = 50;
 const GLOBAL_TIME_WINDOW = "1 minute";
 const NOT_FOUND_MAX_REQUESTS = 10;
 const NOT_FOUND_TIME_WINDOW = "1 minute";
-
-/**
- * Whether an address is the local loopback, where cloudflared terminates.
- *
- * Behind Cloudflare Tunnel the origin sees `127.0.0.1` for every client, and
- * the real client identity arrives in `CF-Connecting-IP` / `X-Forwarded-For`.
- * Those headers are trustworthy only when the immediate peer is loopback (the
- * local tunnel) — an arbitrary caller can set them to spoof identity.
- */
-export function isLoopbackAddress(address: string | undefined): boolean {
-  return address === "127.0.0.1"
-    || address === "::1"
-    || address === "::ffff:127.0.0.1";
-}
 
 /**
  * Rate-limit key: use Cloudflare's `CF-Connecting-IP` when the peer is the

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 
 import { recordRequest, renderPrometheusMetrics } from "./metrics";
-import { isLoopbackAddress } from "./rate-limit";
+import { isLoopbackAddress } from "./network";
 
 const METRICS_ROUTE = "/metrics";
 const MILLISECONDS_PER_SECOND = 1000;

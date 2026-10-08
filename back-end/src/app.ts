@@ -3,7 +3,8 @@ import Fastify from "fastify";
 
 import { API_BASE } from "shared";
 
-import { isLoopbackAddress, registerRateLimiting } from "./core/rate-limit";
+import { isLoopbackAddress } from "./core/network";
+import { registerRateLimiting } from "./core/rate-limit";
 import { registerMetrics } from "./core/register-metrics";
 import { registerSecurityHeaders } from "./core/security-headers";
 import {
