@@ -5,10 +5,13 @@ name: Apply review suggestions
 # reviewers with write access left on the PR's current diff.
 #
 # Security: only OWNER/MEMBER/COLLABORATOR comments trigger it, fork PRs are
-# refused, and the apply script runs from the default branch — no code from the
-# PR is executed. Event text reaches shell steps only through env. GITHUB_TOKEN
-# reaches only the steps that call GitHub; the PR checkout keeps no credentials,
-# so the token is supplied to the final push alone.
+# refused, a head committed after the command comment is refused, and the apply
+# script runs from the default branch — no code from the PR is executed. Event
+# text reaches shell steps only through env. GITHUB_TOKEN reaches only the steps
+# that call GitHub; the PR checkout keeps no credentials, so the token is
+# supplied to the final push alone. Commit dates come from the pusher, so the
+# date check stops a push racing the comment, not a pusher who backdates commits
+# (who already has write access, since fork PRs are refused).
 #
 # Pushes made with GITHUB_TOKEN do not start new workflow runs, so CI re-runs on
 # the PR's next push (or a manual re-run), not on the suggestions commit itself.
@@ -37,6 +40,7 @@ jobs:
       REPO: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.issue.number }}
       COMMENT_ID: ${{ github.event.comment.id }}
+      COMMENT_AT: ${{ github.event.comment.created_at }}
     steps:
       - name: Acknowledge command
         env:
@@ -54,8 +58,19 @@ jobs:
             echo "::error::Fork pull requests are not supported; apply the suggestions on the fork."
             exit 1
           fi
+          sha="$(jq -r '.head.sha' pr.json)"
+          # Only check out a head the commenter could have seen: a commit made
+          # after the comment was not part of what they asked to apply.
+          commit_at="$(gh api "repos/$REPO/commits/$sha" --jq '.commit.committer.date')"
+          # Parsed outside the test so an unreadable date stops the step (set -e).
+          commit_epoch="$(date -d "$commit_at" +%s)"
+          comment_epoch="$(date -d "$COMMENT_AT" +%s)"
+          if [ "$commit_epoch" -gt "$comment_epoch" ]; then
+            echo "::error::The pull request head ($sha) was committed after the /apply-suggestions comment; comment again to apply suggestions to it."
+            exit 1
+          fi
           echo "ref=$(jq -r '.head.ref' pr.json)" >> "$GITHUB_OUTPUT"
-          echo "sha=$(jq -r '.head.sha' pr.json)" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
       - name: Check out apply script (default branch)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

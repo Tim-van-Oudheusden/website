@@ -3,7 +3,7 @@ import { resolve } from "path";
 
 import type { PageData } from "shared";
 
-import { isWithinRoot } from "../../core/safe-fs";
+import { resolveWithinRoot } from "../../core/safe-fs";
 import { normalizeDate, normalizeString } from "../content/content";
 import { readFrontmatter } from "../content/frontmatter";
 import { rewriteObsidianImageEmbeds } from "../content/obsidian";
@@ -40,10 +40,9 @@ export async function getPageBySlug(slug: string, contentDir: string): Promise<P
     return null;
   }
 
-  const pagesRootDir = resolve(contentDir, PAGES_DIR);
-  const pagePath = resolve(pagesRootDir, `${slug}.md`);
+  const pagePath = resolveWithinRoot(resolve(contentDir, PAGES_DIR), `${slug}.md`);
 
-  if (!isWithinRoot(pagesRootDir, pagePath)) {
+  if (pagePath === null) {
     return null;
   }
 

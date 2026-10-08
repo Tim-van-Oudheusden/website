@@ -14,19 +14,40 @@ const ATX_HEADING_PATTERN = /^(#{1,6})[ \t]+(.+?)(?:[ \t]+#+[ \t]*)?$/;
 const SETEXT_UNDERLINE_PATTERN = /^(=+|-+)[ \t]*$/;
 const FENCED_CODE_DELIMITER_PATTERN = /^[ \t]{0,3}([`~]{3,})/;
 const ESCAPED_MARKDOWN_SYMBOL_PATTERN = /\\([\\`*_[\]{}()#+\-.!])/g;
+const HTML_TAG_PATTERN = /<\/?[^>]+>/g;
 
 /** Deepest heading level that participates in table-of-contents ids. */
 export const TOC_MAX_DEPTH = 3;
 
+/**
+ * Remove HTML tags until none are left, so the result is tag-free by
+ * construction rather than by the tag pattern happening to leave no tag
+ * spliced together from the pieces around a removed one. One pass of
+ * HTML_TAG_PATTERN already is, but CodeQL's
+ * js/incomplete-multi-character-sanitization only accepts the loop.
+ */
+function stripHtmlTags(text: string): string {
+  let previous: string;
+  let current = text;
+
+  do {
+    previous = current;
+    current = current.replace(HTML_TAG_PATTERN, "");
+  } while (current !== previous);
+
+  return current;
+}
+
 export function normalizeMarkdownHeadingText(rawText: string): string {
-  return rawText
+  const withoutMarkdownMarkup = rawText
     .replace(/!\[([^\]]*)\]\(([^)]*)\)/g, "$1")
     .replace(/!\[([^\]]*)\]\[[^\]]*\]/g, "$1")
     .replace(/\[([^\]]+)\]\(([^)]*)\)/g, "$1")
     .replace(/\[([^\]]+)\]\[[^\]]*\]/g, "$1")
     .replace(/`([^`]+)`/g, "$1")
-    .replace(/[*_~]+/g, "")
-    .replace(/<\/?[^>]+>/g, "")
+    .replace(/[*_~]+/g, "");
+
+  return stripHtmlTags(withoutMarkdownMarkup)
     .replace(ESCAPED_MARKDOWN_SYMBOL_PATTERN, "$1")
     .replace(/\s+/g, " ")
     .trim();

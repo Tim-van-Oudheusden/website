@@ -23,6 +23,11 @@ function renderAboutMe(): string {
   return renderToStaticMarkup(createElement(HomeAboutMe, { section: SECTION }));
 }
 
+/** Text of an HTML fragment: its text nodes, joined in order. */
+function textOf(html: string): string {
+  return [...html.matchAll(/(?:^|>)([^<]*)/g)].map((match) => match[1] ?? "").join("");
+}
+
 describe("HomeAboutMe", () => {
   test("labels the about-me section with its h2", () => {
     const html = renderAboutMe();
@@ -32,7 +37,7 @@ describe("HomeAboutMe", () => {
   });
 
   test("lists every configured item as a list item, in the order written", () => {
-    const items = [...renderAboutMe().matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((match) => (match[1] ?? "").replace(/<[^>]+>/g, ""));
+    const items = [...renderAboutMe().matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((match) => textOf(match[1] ?? ""));
 
     expect(items).toEqual(SECTION.aboutItems);
   });

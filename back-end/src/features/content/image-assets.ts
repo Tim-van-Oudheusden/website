@@ -1,6 +1,6 @@
-import { extname, resolve } from "path";
+import { extname } from "path";
 
-import { isWithinRoot } from "../../core/safe-fs";
+import { resolveWithinRoot } from "../../core/safe-fs";
 
 /**
  * Single source of truth for content asset extensions and their MIME types.
@@ -43,9 +43,9 @@ export function resolveContentAsset(imageRoot: string, rawPath: string): Resolve
     return null;
   }
 
-  const fullPath = resolve(imageRoot, decodedPath);
+  const fullPath = resolveWithinRoot(imageRoot, decodedPath);
 
-  if (!isWithinRoot(imageRoot, fullPath)) {
+  if (fullPath === null) {
     return null;
   }
 
