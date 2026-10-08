@@ -9,6 +9,8 @@ interface MetaTag {
 
 /** Site name and hero line, verbatim from BRANDING.md §1–2 (the home 'start' section shows the same copy). */
 export const SITE_NAME = "Build with Tim";
+/** Site owner, as BRANDING.md §3 names him: author of every article. */
+export const SITE_OWNER = "Tim van Oudheusden";
 const HERO_LINE = "I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.";
 const HOME_IMAGE_PATH = "/images/me.png";
 
@@ -34,9 +36,10 @@ export function renderHomeMeta(html: string, origin: string): string {
 }
 
 /**
- * Inject link-preview tags (Open Graph + Twitter) for one article into the
- * SPA shell, and retitle the page after it. Crawlers such as LinkedIn's never
- * run the app's JavaScript, so these tags must be in the HTML the server sends.
+ * Inject link-preview tags (Open Graph + Twitter) and schema.org structured
+ * data for one article into the SPA shell, and retitle the page after it.
+ * Crawlers such as LinkedIn's never run the app's JavaScript, so these tags
+ * must be in the HTML the server sends.
  */
 export function renderSocialMeta(html: string, item: ContentFrontmatter, origin: string): string {
   const articleUrl = `${origin}/articles/${encodeURIComponent(item.slug)}`;
@@ -50,11 +53,12 @@ export function renderSocialMeta(html: string, item: ContentFrontmatter, origin:
   ];
 
   const imagePath = resolveSocialImagePath(item.socialImage);
+  const imageUrl = imagePath === null ? null : `${origin}${imagePath}`;
 
-  if (imagePath === null) {
+  if (imageUrl === null) {
     tags.push({ attribute: "name", key: "twitter:card", content: "summary" });
   } else {
-    tags.push({ attribute: "property", key: "og:image", content: `${origin}${imagePath}` });
+    tags.push({ attribute: "property", key: "og:image", content: imageUrl });
     tags.push({ attribute: "name", key: "twitter:card", content: "summary_large_image" });
   }
 
@@ -62,7 +66,41 @@ export function renderSocialMeta(html: string, item: ContentFrontmatter, origin:
   // A replacer function: a string replacement would expand `$&`, `$'`, … in authored text.
   const retitled = html.replace(/<title>[\s\S]*?<\/title>/, () => title);
 
-  return injectIntoHead(retitled, `    <link rel="canonical" href="${escapeAttribute(articleUrl)}" />\n${renderTags(tags)}`);
+  return injectIntoHead(
+    retitled,
+    [
+      `    <link rel="canonical" href="${escapeAttribute(articleUrl)}" />`,
+      renderTags(tags),
+      renderArticleJsonLd(item, articleUrl, imageUrl, origin),
+    ].join("\n"),
+  );
+}
+
+/**
+ * schema.org BlogPosting, so search engines can show the headline, author and
+ * publish date as a rich result.
+ */
+function renderArticleJsonLd(
+  item: ContentFrontmatter,
+  articleUrl: string,
+  imageUrl: string | null,
+  origin: string,
+): string {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": item.title,
+    "description": item.description,
+    "datePublished": item.date,
+    "url": articleUrl,
+    "author": { "@type": "Person", "name": SITE_OWNER, "url": `${origin}/` },
+    ...(imageUrl === null ? {} : { image: imageUrl }),
+  };
+
+  // `\u003c`-style escapes keep authored text from closing the <script> element; JSON.parse reads them back.
+  const json = JSON.stringify(data).replace(/[<>&]/g, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
+
+  return `    <script type="application/ld+json">${json}</script>`;
 }
 
 // Authored frontmatter lands in an attribute: escape it so it cannot break out.
