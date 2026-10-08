@@ -6,7 +6,9 @@ name: Apply review suggestions
 #
 # Security: only OWNER/MEMBER/COLLABORATOR comments trigger it, fork PRs are
 # refused, and the apply script runs from the default branch — no code from the
-# PR is executed. Event text reaches shell steps only through env.
+# PR is executed. Event text reaches shell steps only through env. GITHUB_TOKEN
+# reaches only the steps that call GitHub; the PR checkout keeps no credentials,
+# so the token is supplied to the final push alone.
 #
 # Pushes made with GITHUB_TOKEN do not start new workflow runs, so CI re-runs on
 # the PR's next push (or a manual re-run), not on the suggestions commit itself.
@@ -32,16 +34,19 @@ jobs:
       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ github.token }}
       REPO: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.issue.number }}
       COMMENT_ID: ${{ github.event.comment.id }}
     steps:
       - name: Acknowledge command
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: gh api "repos/$REPO/issues/comments/$COMMENT_ID/reactions" -f content=eyes --silent
 
       - name: Resolve pull request head
         id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           gh api "repos/$REPO/pulls/$PR_NUMBER" > pr.json
@@ -63,8 +68,11 @@ jobs:
         with:
           ref: ${{ steps.pr.outputs.sha }}
           path: pr
+          persist-credentials: false
 
       - name: Fetch review comments
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/comments" --jq '.[]' \
@@ -86,6 +94,7 @@ jobs:
       - name: Commit and push
         working-directory: pr
         env:
+          GH_TOKEN: ${{ github.token }}
           HEAD_REF: ${{ steps.pr.outputs.ref }}
         run: |
           set -euo pipefail
@@ -98,10 +107,13 @@ jobs:
           git commit -am "chore(review): apply review suggestions (#$PR_NUMBER)"
           # Pushing the checked-out SHA fails if the branch moved meanwhile,
           # so suggestions are never applied to lines they were not written for.
-          git push origin "HEAD:refs/heads/$HEAD_REF"
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" \
+            push origin "HEAD:refs/heads/$HEAD_REF"
 
       - name: Report on the pull request
         if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           {
             echo "### Apply review suggestions (${{ job.status }})"
