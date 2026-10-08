@@ -96,7 +96,7 @@ CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, and build on e
 
 ### Applying review suggestions
 
-Comment `/apply-suggestions` on a pull request to have `.github/workflows/auto-review.yml` commit every GitHub ```` ```suggestion ```` block on the PR's current diff (`scripts/apply-review-suggestions.sh`). Only comments from `OWNER`/`MEMBER`/`COLLABORATOR` trigger it or have their suggestions applied; outdated, overlapping, and out-of-checkout suggestions are skipped, and fork PRs are refused. The run reports what it applied and skipped as a PR comment. Its commit is pushed with `GITHUB_TOKEN`, which does not start CI, so CI runs again on your next push.
+Comment `/apply-suggestions` on a pull request to have `.github/workflows/auto-review.yml` commit every GitHub ```` ```suggestion ```` block on the PR's current diff (`scripts/apply-review-suggestions.sh`). Only comments from `OWNER`/`MEMBER`/`COLLABORATOR` trigger it or have their suggestions applied; outdated, overlapping, and out-of-checkout suggestions are skipped, and fork PRs are refused. If the PR head was committed after your comment, the run refuses; comment again to apply suggestions to the new head. The run reports what it applied and skipped as a PR comment. Its commit is pushed with `GITHUB_TOKEN`, which does not start CI, so CI runs again on your next push.
 
 ### Handing work to Claude Code
 
