@@ -62,6 +62,14 @@ const restrictedImports = [
   { name: "tailwind-merge", message: cnPackageMessage },
 ];
 
+const sharedBackendBoundaryMessage = "Import only \"shared\" (index.ts) from back-end code. \"shared/articles\" and \"shared/social-image\" hold front-end-only logic, kept out of index.ts specifically so the back-end bundle and its coverage run never load it.";
+
+/* Enforce the split documented in shared/src/articles.ts and shared/src/social-image.ts. */
+const backendRestrictedSharedImports = [
+  { name: "shared/articles", message: sharedBackendBoundaryMessage },
+  { name: "shared/social-image", message: sharedBackendBoundaryMessage },
+];
+
 const optionalMemberMessage = "Model a complete type instead of an optional member: required field, `T | null`, or a discriminated union (see CONTRIBUTING.md \"Code shape\").";
 
 /* Optional members (`foo?: T`, `foo?(…)`, `fn(x?: T)`); banned everywhere except `optionalMemberExemptFiles`. */
@@ -292,6 +300,18 @@ export default tseslint.config(
     files: defaultExportFiles,
     rules: {
       "no-restricted-syntax": ["error", ...restrictedSyntax, ...optionalMemberSyntax],
+    },
+  },
+  {
+    /*
+     * The back-end/front-end split in the `shared` package is otherwise only a code
+     * comment: nothing stops back-end code from importing "shared/articles" or
+     * "shared/social-image" and silently pulling front-end-only logic into the
+     * back-end bundle and its coverage run.
+     */
+    files: ["back-end/**", "test/back-end/**"],
+    rules: {
+      "no-restricted-imports": ["error", { paths: [...restrictedImports, ...backendRestrictedSharedImports] }],
     },
   },
   {
