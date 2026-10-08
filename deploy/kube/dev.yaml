@@ -10,6 +10,9 @@ metadata:
   labels:
     app: website
 
+# Host ports are published on loopback only, as in prod.yaml: without hostIP,
+# podman binds them on every interface and the dev servers are reachable from
+# the LAN. The containers still listen on all interfaces inside the pod.
 spec:
   containers:
     - name: front-end
@@ -20,6 +23,7 @@ spec:
       ports:
         - containerPort: 5173
           hostPort: 5173
+          hostIP: 127.0.0.1
       volumeMounts:
         - name: front-end-src
           mountPath: /app/front-end
@@ -44,6 +48,7 @@ spec:
       ports:
         - containerPort: 3001
           hostPort: 3001
+          hostIP: 127.0.0.1
       volumeMounts:
         - name: back-end-src
           mountPath: /app/back-end
