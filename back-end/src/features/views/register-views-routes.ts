@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 
 import { ROUTES } from "shared";
 
-import { isLoopbackAddress } from "../../core/rate-limit";
+import { isLoopbackAddress } from "../../core/network";
 import { getContentBySlug } from "../content/content";
 
 import type { ViewStore } from "./view-store";
