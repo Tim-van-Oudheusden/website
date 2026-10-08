@@ -19,7 +19,7 @@ export interface ListContentOptions {
   type: ContentType | null;
 }
 
-function normalizeDate(value: unknown): string | null {
+export function normalizeDate(value: unknown): string | null {
   if (typeof value === "string" && value.trim() !== "") {
     return value;
   }
@@ -31,7 +31,7 @@ function normalizeDate(value: unknown): string | null {
   return null;
 }
 
-function normalizeString(value: unknown): string | null {
+export function normalizeString(value: unknown): string | null {
   if (typeof value === "string" && value.trim() !== "") {
     return value;
   }
