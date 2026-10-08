@@ -107,8 +107,11 @@ function parseObsidianCallout(children: ReactNode): ParsedObsidianCallout | null
   }
 
   const calloutBodyNodes: ReactNode[] = [];
+  // Judge emptiness by node, not flattened text: an image (with or without alt) still has content.
+  const hasFirstParagraphContent = adjustedFirstParagraphChildren.some((child) =>
+    isValidElement(child) || (typeof child === "string" && child.trim().length > 0));
 
-  if (flattenNodeText(adjustedFirstParagraphChildren).trim().length > 0) {
+  if (hasFirstParagraphContent) {
     calloutBodyNodes.push(
       <p key="callout-body-first-paragraph" {...firstParagraphElement.props}>
         {adjustedFirstParagraphChildren}
@@ -180,7 +183,7 @@ export const MarkdownRenderer = memo(({
   }, [content]);
 
   const components = useMemo<Components>(() => ({
-    a({ href, children, ...rest }) {
+    a({ href, children, node: _node, ...rest }) {
       const isExternal = href?.startsWith("http") === true;
       const externalLinkProps = isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {};
 
@@ -224,7 +227,7 @@ export const MarkdownRenderer = memo(({
         </h3>
       );
     },
-    blockquote({ children, className, ...rest }) {
+    blockquote({ children, className, node: _node, ...rest }) {
       const callout = parseObsidianCallout(children);
 
       if (callout === null) {
@@ -249,7 +252,7 @@ export const MarkdownRenderer = memo(({
         </div>
       );
     },
-    img({ src, alt, ...rest }) {
+    img({ src, alt, node: _node, ...rest }) {
       return (
         <img
           src={src}
@@ -260,7 +263,7 @@ export const MarkdownRenderer = memo(({
         />
       );
     },
-    code({ className, children, ...rest }) {
+    code({ className, children, node: _node, ...rest }) {
       return (
         <code className={className} {...rest}>
           {children}

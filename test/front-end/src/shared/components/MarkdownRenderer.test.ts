@@ -81,6 +81,23 @@ describe("MarkdownRenderer", () => {
     expect(html).not.toContain("[!quote]");
   });
 
+  test("keeps an image that opens an Obsidian callout body", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, { content: "> [!note]\n> ![Diagram](/d.png)" }),
+    );
+
+    expect(html).toContain('data-callout-type="note"');
+    expect(html).toContain('src="/d.png"');
+  });
+
+  test("does not forward react-markdown's node prop to DOM elements", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, { content: "[x](https://e.com) `c` ![Logo](/l.png)\n\n> quote" }),
+    );
+
+    expect(html).not.toContain("node=");
+  });
+
   test("keeps regular blockquotes as blockquotes", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, {
