@@ -1,5 +1,5 @@
 import { readFile } from "fs/promises";
-import { resolve, sep } from "path";
+import { isAbsolute, relative, resolve } from "path";
 
 import type { PageData } from "shared";
 
@@ -42,7 +42,9 @@ export async function getPageBySlug(slug: string, contentDir: string): Promise<P
   const pagesRootDir = resolve(contentDir, PAGES_DIR);
   const pagePath = resolve(pagesRootDir, `${slug}.md`);
 
-  if (!(pagePath === pagesRootDir || pagePath.startsWith(`${pagesRootDir}${sep}`))) {
+  const rel = relative(pagesRootDir, pagePath);
+
+  if (rel.startsWith("..") || isAbsolute(rel)) {
     return null;
   }
 
