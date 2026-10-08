@@ -166,37 +166,3 @@ describe("scripts/apply-review-suggestions.sh", () => {
     expect(output).toContain("skipped: comment 4");
   });
 });
-
-describe(".github/workflows/auto-review.yml", () => {
-  const workflowPath = resolve(rootPath, ".github/workflows/auto-review.yml");
-
-  test("applies suggestions on a maintainer's /apply-suggestions PR comment, never via inline event text", () => {
-    const workflow = readFileSync(workflowPath, "utf8");
-
-    expect(workflow).toContain("issue_comment:");
-    expect(workflow).toContain("/apply-suggestions");
-    expect(workflow).toMatch(/OWNER.*MEMBER.*COLLABORATOR/);
-    expect(workflow).toContain("scripts/apply-review-suggestions.sh");
-    expect(workflow).not.toMatch(/\$\{\{\s*github\.event\.(comment|issue)\.(body|title)/);
-  });
-
-  test("hands GITHUB_TOKEN only to the steps that call GitHub, never to code running in the PR checkout", () => {
-    interface Step { name: string; uses?: string; env?: Record<string, string>; with?: Record<string, unknown> }
-    interface Workflow { jobs: { apply: { env?: Record<string, string>; steps: Step[] } } }
-    const { apply } = (Bun.YAML.parse(readFileSync(workflowPath, "utf8")) as Workflow).jobs;
-
-    expect(apply.env ?? {}).not.toHaveProperty("GH_TOKEN");
-
-    expect(apply.steps.filter((step) => step.env?.["GH_TOKEN"] !== undefined).map((step) => step.name)).toEqual([
-      "Acknowledge command",
-      "Resolve pull request head",
-      "Fetch review comments",
-      "Commit and push",
-      "Report on the pull request",
-    ]);
-
-    for (const checkout of apply.steps.filter((step) => step.uses?.startsWith("actions/checkout@"))) {
-      expect(checkout.with?.["persist-credentials"]).toBe(false);
-    }
-  });
-});

@@ -62,7 +62,10 @@ jobs:
           # Only check out a head the commenter could have seen: a commit made
           # after the comment was not part of what they asked to apply.
           commit_at="$(gh api "repos/$REPO/commits/$sha" --jq '.commit.committer.date')"
-          if [ "$(date -d "$commit_at" +%s)" -gt "$(date -d "$COMMENT_AT" +%s)" ]; then
+          # Parsed outside the test so an unreadable date stops the step (set -e).
+          commit_epoch="$(date -d "$commit_at" +%s)"
+          comment_epoch="$(date -d "$COMMENT_AT" +%s)"
+          if [ "$commit_epoch" -gt "$comment_epoch" ]; then
             echo "::error::The pull request head ($sha) was committed after the /apply-suggestions comment; comment again to apply suggestions to it."
             exit 1
           fi
