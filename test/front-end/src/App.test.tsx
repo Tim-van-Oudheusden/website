@@ -55,6 +55,11 @@ describe("AppRoutes", () => {
 
     expect(html).toContain("Loading articles...");
   });
+
+  test("resolves /now and /uses to their standalone pages", () => {
+    expect(renderRoute("/now")).toContain("Loading page...");
+    expect(renderRoute("/uses")).toContain("Loading page...");
+  });
 });
 
 describe("App", () => {

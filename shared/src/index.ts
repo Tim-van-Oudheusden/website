@@ -44,6 +44,7 @@ export const ROUTES = {
   ROOT: "/",
   CONTENT: "/content",
   CONTENT_BY_SLUG: "/content/:slug",
+  PAGE_BY_SLUG: "/pages/:slug",
 } as const;
 
 /**
@@ -139,6 +140,20 @@ export interface ProjectFrontmatter extends BaseContentFrontmatter {
 }
 
 export type ContentFrontmatter = ArticleFrontmatter | ProjectFrontmatter;
+
+/**
+ * A standalone page such as /now or /uses: a markdown file under
+ * `content/pages/`, served by slug and never listed with articles/projects.
+ */
+export interface PageData {
+  slug: string;
+  title: string;
+  description: string;
+  /** ISO 8601 date the page was last updated. */
+  updated: string;
+  /** Raw markdown body, with Obsidian image embeds rewritten. */
+  body: string;
+}
 
 /* ── Shared Interfaces ── */
 

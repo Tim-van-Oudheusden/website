@@ -12,6 +12,7 @@ import {
 } from "./features/content/content-routes";
 import { registerHealthRoute } from "./features/health/register-health-route";
 import { registerHelloRoute } from "./features/hello/register-hello-route";
+import { registerPageRoutes } from "./features/pages/page-routes";
 import { registerRootRoute } from "./features/root/register-root-route";
 
 interface BuildAppOptions {
@@ -45,6 +46,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     registerHelloRoute(api);
     registerRootRoute(api);
     registerContentRoutes(api, contentDir);
+    registerPageRoutes(api, contentDir);
   }, { prefix: API_BASE });
 
   // Static content images are an asset path, not an API call — stay at root.

@@ -5,6 +5,7 @@ import { ArticlesPage } from "@/features/articles/pages/articles-page";
 import { HomePage } from "@/features/home/pages/home-page";
 import { ProjectPage } from "@/features/projects/pages/project-page";
 import { ProjectsPage } from "@/features/projects/pages/projects-page";
+import { StandalonePage } from "@/features/standalone-pages/pages/standalone-page";
 import { TopBar } from "@/shared/components/top-bar";
 
 /** Route table only, so it can be asserted independently of the browser router. */
@@ -16,6 +17,8 @@ export function AppRoutes(): JSX.Element {
       <Route path="/projects/:slug" element={<ProjectPage />} />
       <Route path="/articles" element={<ArticlesPage />} />
       <Route path="/articles/:slug" element={<ArticlesPage />} />
+      <Route path="/now" element={<StandalonePage slug="now" />} />
+      <Route path="/uses" element={<StandalonePage slug="uses" />} />
     </Routes>
   );
 }
