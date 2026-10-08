@@ -1,5 +1,5 @@
 import { readFile } from "fs/promises";
-import { join } from "path";
+import { resolve, sep } from "path";
 
 import type { PageData } from "shared";
 
@@ -39,7 +39,14 @@ export async function getPageBySlug(slug: string, contentDir: string): Promise<P
     return null;
   }
 
-  const raw = await readPageFile(join(contentDir, PAGES_DIR, `${slug}.md`));
+  const pagesRootDir = resolve(contentDir, PAGES_DIR);
+  const pagePath = resolve(pagesRootDir, `${slug}.md`);
+
+  if (!(pagePath === pagesRootDir || pagePath.startsWith(`${pagesRootDir}${sep}`))) {
+    return null;
+  }
+
+  const raw = await readPageFile(pagePath);
 
   if (raw === null) {
     return null;
