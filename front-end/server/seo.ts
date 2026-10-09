@@ -1,9 +1,14 @@
 import type { ArticleFrontmatter, ContentFrontmatter } from "shared";
+import { STANDALONE_PAGE_SLUGS } from "shared";
 
 import { HERO_LINE, SITE_NAME, SITE_OWNER } from "./social-meta";
 
-/** Client routes that exist regardless of content (see App.tsx). */
-const STATIC_PAGE_PATHS = ["/", "/articles", "/projects", "/now", "/uses"] as const;
+/**
+ * Client routes that exist regardless of content (see App.tsx). The
+ * standalone pages come from `STANDALONE_PAGE_SLUGS` so this list can never
+ * drift from the routes App.tsx actually registers for them.
+ */
+const STATIC_PAGE_PATHS = ["/", "/articles", "/projects", ...STANDALONE_PAGE_SLUGS.map((slug) => `/${slug}`)] as const;
 
 const CONTENT_PAGE_PREFIX: Record<ContentFrontmatter["type"], string> = {
   article: "/articles/",

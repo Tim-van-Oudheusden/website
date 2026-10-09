@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import type { ArticleFrontmatter, ProjectFrontmatter } from "shared";
+import { STANDALONE_PAGE_SLUGS } from "shared";
 
 import { renderFeed, renderSitemap } from "../../../front-end/server/seo";
 
@@ -36,6 +37,18 @@ describe("renderSitemap", () => {
 
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')).toBe(true);
     expect(xml.trimEnd().endsWith("</urlset>")).toBe(true);
+  });
+
+  test("lists every fixed page, including every standalone page, even with no content", () => {
+    const xml = renderSitemap("https://buildwithtim.dev", []);
+
+    expect(xml).toContain("<loc>https://buildwithtim.dev/</loc>");
+    expect(xml).toContain("<loc>https://buildwithtim.dev/articles</loc>");
+    expect(xml).toContain("<loc>https://buildwithtim.dev/projects</loc>");
+
+    for (const slug of STANDALONE_PAGE_SLUGS) {
+      expect(xml).toContain(`<loc>https://buildwithtim.dev/${slug}</loc>`);
+    }
   });
 });
 
