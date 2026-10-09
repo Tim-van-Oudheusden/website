@@ -1,11 +1,12 @@
 /**
- * In-process request metrics, exposed in Prometheus text format.
+ * In-process request and runtime metrics, exposed in Prometheus text format.
  *
  * No exporter, no external data flow: counters live in memory for the life
  * of the process and are only ever read back by the local `/metrics` route.
  * Labels use the matched route *pattern* (e.g. `/api/content/:slug`), not the
  * raw request path, so cardinality stays bounded regardless of how many
- * distinct slugs or query strings callers send.
+ * distinct slugs or query strings callers send. The process-level gauges
+ * (uptime, memory) carry no labels at all.
  */
 
 const DURATION_BUCKETS_SECONDS = [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5] as const;
@@ -67,8 +68,32 @@ function escapeLabelValue(value: string): string {
   return value.replaceAll("\\", "\\\\").replaceAll("\"", "\\\"");
 }
 
+/**
+ * Process-level gauges: no labels, so no cardinality risk, and no reliance
+ * on any request ever having been recorded (unlike the counters above,
+ * which only exist once a route is hit).
+ */
+function renderProcessMetrics(): string[] {
+  const memoryUsage = process.memoryUsage();
+
+  return [
+    "# HELP process_uptime_seconds Time the process has been running, in seconds.",
+    "# TYPE process_uptime_seconds gauge",
+    `process_uptime_seconds ${process.uptime()}`,
+    "# HELP process_resident_memory_bytes Resident set size, in bytes.",
+    "# TYPE process_resident_memory_bytes gauge",
+    `process_resident_memory_bytes ${memoryUsage.rss}`,
+    "# HELP nodejs_heap_size_used_bytes Heap memory actively in use, in bytes.",
+    "# TYPE nodejs_heap_size_used_bytes gauge",
+    `nodejs_heap_size_used_bytes ${memoryUsage.heapUsed}`,
+    "# HELP nodejs_heap_size_total_bytes Heap memory reserved by the runtime, in bytes.",
+    "# TYPE nodejs_heap_size_total_bytes gauge",
+    `nodejs_heap_size_total_bytes ${memoryUsage.heapTotal}`,
+  ];
+}
+
 export function renderPrometheusMetrics(): string {
-  const lines: string[] = [];
+  const lines: string[] = [...renderProcessMetrics()];
 
   lines.push("# HELP http_requests_total Total HTTP requests handled, by method/route/status.");
   lines.push("# TYPE http_requests_total counter");

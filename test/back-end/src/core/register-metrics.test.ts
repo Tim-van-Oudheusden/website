@@ -71,6 +71,27 @@ describe("/metrics", () => {
     expect(body).not.toContain("route=\"/metrics\"");
   });
 
+  test("exposes unlabeled process gauges even before any route is hit", async () => {
+    if (app === null) {
+      throw new Error("App not initialized");
+    }
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/metrics",
+      remoteAddress: "127.0.0.1",
+    });
+
+    expect(res.statusCode).toBe(200);
+
+    const body = res.body;
+
+    expect(body).toContain("process_uptime_seconds");
+    expect(body).toContain("process_resident_memory_bytes");
+    expect(body).toContain("nodejs_heap_size_used_bytes");
+    expect(body).toContain("nodejs_heap_size_total_bytes");
+  });
+
   test("does not leak unmatched raw paths as unbounded labels", async () => {
     if (app === null) {
       throw new Error("App not initialized");
