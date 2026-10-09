@@ -86,7 +86,7 @@ The host source is bind-mounted, so edits hot-reload without a rebuild.
 
 ### Back-end environment variables
 
-The back-end reads four variables. None is required.
+The back-end reads five variables. None is required.
 
 | Variable | Default | Effect |
 | --- | --- | --- |
@@ -94,6 +94,7 @@ The back-end reads four variables. None is required.
 | `PORT` | `3001` | Listen port. A value that is not an integer from 1 to 65535 is ignored. The Vite dev proxy always targets port 3001, so the front-end dev server stops reaching a back-end moved elsewhere. |
 | `LOG_LEVEL` | `info` | Fastify log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` or `silent`. |
 | `CONTENT_DIR` | the repository's `content/` | Folder of articles and projects to serve. |
+| `VIEWS_DB_PATH` | `:memory:` | SQLite file for article view counts. With the default, counts live in memory and are lost when the back-end restarts; the dev pod and `bun run dev` use it. The prod manifest sets `/data/views.sqlite` (see [`docs/deploy.md`](docs/deploy.md#article-view-counts)). |
 
 `NODE_ENV=production` also hides drafts; see the `draft` field in
 [`docs/content-authoring.md`](docs/content-authoring.md).
