@@ -138,7 +138,8 @@ socialImage: /images/me.png     # root-absolute → a site path (public/)
 ```
 
 Use a PNG or JPEG of 1200×630 (LinkedIn ignores SVG). `content/images/cover.png`
-is the generic placeholder. Without `socialImage` the preview has no image.
+is the generic placeholder. Without `socialImage` the preview falls back to the
+site portrait (`/images/me.png`, as on the homepage) on a small card.
 Crawlers cache previews; LinkedIn's Post Inspector re-fetches one on demand.
 
 The same server adds schema.org `BlogPosting` structured data (JSON-LD) to each
