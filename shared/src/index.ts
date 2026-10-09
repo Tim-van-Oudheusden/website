@@ -56,6 +56,14 @@ export const ROUTES = {
 export const ASSET_PATH_PREFIX = "/content-assets/images/";
 
 /**
+ * Slugs of standalone markdown pages served from `content/pages/<slug>.md`,
+ * routed at `/<slug>`. Used by the front-end router (to register each route)
+ * and the front-end server (to list each page in the sitemap and llms.txt),
+ * so a page can never be wired into one without the other.
+ */
+export const STANDALONE_PAGE_SLUGS = ["now", "uses"] as const;
+
+/**
  * Request header carrying the visitor's real IP behind Cloudflare Tunnel.
  * Used by the back-end rate limiter (to key limits per visitor) and the
  * front-end server (to forward it when proxying article-preview fetches),
