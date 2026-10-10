@@ -41,6 +41,7 @@ beforeAll(() => {
   mkdirSync(join(distDir, "fonts"), { recursive: true });
   writeFileSync(join(distDir, "fonts", "face.woff2"), Uint8Array.from([0x77, 0x4f, 0x46, 0x32]));
   writeFileSync(join(distDir, "favicon.svg"), '<svg xmlns="http://www.w3.org/2000/svg"/>');
+  writeFileSync(join(distDir, "manifest.webmanifest"), '{"name":"Build with Tim"}');
   writeFileSync(join(root, "secret.txt"), "outside dist");
 });
 
@@ -150,6 +151,16 @@ describe("front-end request handler", () => {
     expect(svg.status).toBe(200);
     expect(svg.headers.get("content-type")).toContain("image/svg+xml");
     expect(await svg.text()).toBe('<svg xmlns="http://www.w3.org/2000/svg"/>');
+  });
+
+  test("serves the web app manifest with its manifest media type", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+
+    const manifest = await handle(new Request("https://buildwithtim.dev/manifest.webmanifest"));
+
+    expect(manifest.status).toBe(200);
+    expect(manifest.headers.get("content-type")).toContain("application/manifest+json");
+    expect(await manifest.text()).toBe('{"name":"Build with Tim"}');
   });
 
   test("builds preview URLs with the visitor's scheme when TLS ends at the tunnel", async () => {
