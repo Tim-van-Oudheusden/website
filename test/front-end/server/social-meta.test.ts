@@ -90,10 +90,10 @@ describe("renderSocialMeta", () => {
     expect(html.match(/<\/head>/g)).toHaveLength(1);
   });
 
-  test("omits og:image and uses a small card when the article has no socialImage", () => {
+  test("falls back to the site portrait on a small card when the article has no socialImage", () => {
     const meta = headMeta(renderSocialMeta(INDEX_HTML, article(), ORIGIN));
 
-    expect(meta.has("og:image")).toBe(false);
+    expect(meta.get("og:image")).toBe("https://buildwithtim.dev/images/me.png");
     expect(meta.get("twitter:card")).toBe("summary");
     expect(meta.get("og:title")).toBe("Apt-get out of my life, hello flatpak");
   });
