@@ -69,6 +69,13 @@ type scale and interaction, **never for colour**.
 - **Typeface:** Source Sans 3 (weights 400, 500, 600, 700), loaded from Google Fonts in `front-end/src/index.css`.
 - **Fallback stack:** `"Source Sans Pro", "Segoe UI", "Helvetica Neue", Arial, sans-serif` (the `--font-sans` token).
 
+### Icons
+
+[`public/favicon.svg`](public/favicon.svg) is the source mark. The PNG icons in `public/` are renders of it:
+`apple-touch-icon.png` (180 px, square corners, because iOS rounds them itself) and `icon-192.png` and `icon-512.png`
+(listed in [`public/manifest.webmanifest`](public/manifest.webmanifest)). When the mark changes, re-render all three.
+The manifest and `theme-color` in `front-end/index.html` use the mark's blue, `#3584e4`.
+
 ### Design references
 
 - **Main inspiration:** [kentcdodds.com](https://kentcdodds.com/), for the overall home-page structure, the blog
