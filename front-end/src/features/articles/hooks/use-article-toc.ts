@@ -2,17 +2,34 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { ArticleData } from "shared/articles";
 
-import type { ArticleTableOfContentsItem } from "../lib/article-toc";
-import { extractArticleTableOfContents, resolveActiveTocHeadingIds } from "../lib/article-toc";
+import type { ArticleTableOfContentsItem, TocHeadingRect } from "../lib/article-toc";
+import {
+  extractArticleTableOfContents,
+  resolveActiveTocHeadingIds,
+  resolveCurrentTocHeadingId,
+} from "../lib/article-toc";
 
 export interface UseArticleTocResult {
   tocItems: ArticleTableOfContentsItem[];
   visibleTocHeadingIds: string[];
+  /** The section being read, or null when no heading is reached or in view. */
+  currentTocHeadingId: string | null;
+}
+
+function getHeadingRect(headingId: string): TocHeadingRect | null {
+  const headingElement = document.getElementById(headingId);
+
+  if (headingElement === null) {
+    return null;
+  }
+
+  return headingElement.getBoundingClientRect();
 }
 
 /**
  * Derives the article's table of contents and tracks which headings are above
- * the viewport fold so the TOC can highlight the reader's position.
+ * the viewport fold, and which section is being read, so the TOC can
+ * highlight the reader's position.
  */
 export function useArticleToc(
   article: ArticleData | null,
@@ -23,11 +40,13 @@ export function useArticleToc(
     [article],
   );
   const [visibleTocHeadingIds, setVisibleTocHeadingIds] = useState<string[]>([]);
+  const [currentTocHeadingId, setCurrentTocHeadingId] = useState<string | null>(null);
   const tracking = !loadingArticle && article !== null && tocItems.length > 0;
 
   // Reset during render (not in the effect) so an inactive TOC never commits stale headings.
-  if (!tracking && visibleTocHeadingIds.length > 0) {
+  if (!tracking && (visibleTocHeadingIds.length > 0 || currentTocHeadingId !== null)) {
     setVisibleTocHeadingIds([]);
+    setCurrentTocHeadingId(null);
   }
 
   useEffect(() => {
@@ -39,19 +58,7 @@ export function useArticleToc(
 
     function updateActiveTocHeadings(): void {
       rafId = null;
-      const nextVisibleHeadingIds = resolveActiveTocHeadingIds(
-        tocItems,
-        (headingId) => {
-          const headingElement = document.getElementById(headingId);
-
-          if (headingElement === null) {
-            return null;
-          }
-
-          return headingElement.getBoundingClientRect();
-        },
-        window.innerHeight,
-      );
+      const nextVisibleHeadingIds = resolveActiveTocHeadingIds(tocItems, getHeadingRect, window.innerHeight);
 
       setVisibleTocHeadingIds((currentVisibleHeadingIds) => {
         if (
@@ -63,6 +70,8 @@ export function useArticleToc(
 
         return nextVisibleHeadingIds;
       });
+
+      setCurrentTocHeadingId(resolveCurrentTocHeadingId(tocItems, getHeadingRect, window.innerHeight));
     }
 
     function scheduleActiveTocHeadingUpdate(): void {
@@ -89,5 +98,5 @@ export function useArticleToc(
     };
   }, [tracking, tocItems]);
 
-  return { tocItems, visibleTocHeadingIds };
+  return { tocItems, visibleTocHeadingIds, currentTocHeadingId };
 }

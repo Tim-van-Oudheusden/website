@@ -66,7 +66,7 @@ export function StandalonePage({ slug }: StandalonePageProps): JSX.Element {
           </p>
         </header>
         <ErrorBoundary fallback={renderErrorFallback}>
-          <MarkdownRenderer content={page.body} />
+          <MarkdownRenderer content={page.body} headingLevelOffset={0} />
         </ErrorBoundary>
       </article>
     </main>

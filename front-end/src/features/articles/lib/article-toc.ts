@@ -97,6 +97,39 @@ export function resolveActiveTocHeadingIds(
     .map((heading) => heading.id);
 }
 
+/** How far down the viewport (as a share of its height) a heading must scroll to become the section being read. */
+const TOC_READING_LINE = 0.35;
+
+/**
+ * The section the reader is in: the last heading that has scrolled above the
+ * reading line, or, before any has, the first heading in view. A heading that
+ * only just appeared at the bottom of the viewport does not count yet.
+ */
+export function resolveCurrentTocHeadingId(
+  tocItems: ArticleTableOfContentsItem[],
+  getHeadingRect: (headingId: string) => TocHeadingRect | null,
+  viewportHeight: number,
+): string | null {
+  let passedHeadingId: string | null = null;
+  let firstVisibleHeadingId: string | null = null;
+
+  for (const heading of tocItems) {
+    const rect = getHeadingRect(heading.id);
+
+    if (rect === null) {
+      continue;
+    }
+
+    if (rect.top <= viewportHeight * TOC_READING_LINE) {
+      passedHeadingId = heading.id;
+    } else if (firstVisibleHeadingId === null && rect.top < viewportHeight) {
+      firstVisibleHeadingId = heading.id;
+    }
+  }
+
+  return passedHeadingId ?? firstVisibleHeadingId;
+}
+
 export function resolveTocLinkIndentClass(depth: 1 | 2 | 3): string {
   if (depth === 3) {
     return "pl-3";

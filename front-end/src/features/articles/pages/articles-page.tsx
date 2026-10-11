@@ -24,7 +24,7 @@ export function ArticlesPage(): JSX.Element {
     listError,
     articleError,
   } = useArticles(slug);
-  const { tocItems, visibleTocHeadingIds } = useArticleToc(selectedArticle, loadingArticle);
+  const toc = useArticleToc(selectedArticle, loadingArticle);
 
   const viewedSlug = selectedArticle?.slug ?? null;
 
@@ -58,6 +58,7 @@ export function ArticlesPage(): JSX.Element {
   if (loadingArticles) {
     return (
       <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
+        <h1 className="sr-only">Articles</h1>
         <p className="text-muted-foreground">Loading articles...</p>
       </main>
     );
@@ -66,6 +67,7 @@ export function ArticlesPage(): JSX.Element {
   if (listError !== null) {
     return (
       <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
+        <h1 className="sr-only">Articles</h1>
         <p className="text-destructive">{listError}</p>
       </main>
     );
@@ -89,8 +91,7 @@ export function ArticlesPage(): JSX.Element {
         article={selectedArticle}
         loading={loadingArticle}
         error={articleError}
-        tocItems={tocItems}
-        visibleTocHeadingIds={visibleTocHeadingIds}
+        toc={toc}
         onArticlesActivate={() => {
           // Navigate rather than set hook state: the URL is the source of
           // selection, so a slugged URL would otherwise keep naming the old article.

@@ -17,9 +17,13 @@ const TOC_ITEMS: ArticleTableOfContentsItem[] = [
   { id: "config", text: "Config", depth: 3 },
 ];
 
-function renderNav(tocItems: ArticleTableOfContentsItem[], visibleTocHeadingIds: string[]): string {
+function renderNav(
+  tocItems: ArticleTableOfContentsItem[],
+  visibleTocHeadingIds: string[],
+  currentTocHeadingId: string | null = null,
+): string {
   return renderToStaticMarkup(
-    createElement(ArticleTocNav, { tocItems, visibleTocHeadingIds }),
+    createElement(ArticleTocNav, { tocItems, visibleTocHeadingIds, currentTocHeadingId }),
   );
 }
 
@@ -32,7 +36,7 @@ describe("ArticleTocNav", () => {
     expect(html).toContain(ARTICLES_PAGE_LAYOUT_CLASSES.panelBox);
     expect(html).toContain(ARTICLES_PAGE_TEXT.tocHeading);
     expect(html).toContain(`<h3 class="${ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocTitle}">`);
-    expect(html).toContain('<ol class="mt-3 space-y-2">');
+    expect(html).toContain(`<ol class="${ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocList}">`);
 
     for (const item of TOC_ITEMS) {
       expect(html).toContain(`href="#${item.id}"`);
@@ -43,8 +47,8 @@ describe("ArticleTocNav", () => {
   test("marks the active heading link distinctly from inactive ones", () => {
     const html = renderNav(TOC_ITEMS, ["setup"]);
 
-    const setupAnchor = /<a href="#setup" class="[^"]*">/.exec(html);
-    const introAnchor = /<a href="#intro" class="[^"]*">/.exec(html);
+    const setupAnchor = /<a href="#setup" class="[^"]*"/.exec(html);
+    const introAnchor = /<a href="#intro" class="[^"]*"/.exec(html);
 
     expect(setupAnchor).not.toBeNull();
     expect(introAnchor).not.toBeNull();
@@ -66,6 +70,17 @@ describe("ArticleTocNav", () => {
 
     expect(configAnchor?.[1]).toContain("pl-3");
     expect(introAnchor?.[1]).not.toContain("pl-3");
+  });
+
+  test("marks only the section being read as the reader's current location", () => {
+    const html = renderNav(TOC_ITEMS, ["intro", "setup", "config"], "setup");
+
+    expect(html.match(/aria-current="location"/g)).toHaveLength(1);
+    expect(html).toMatch(/<a href="#setup"[^>]*aria-current="location"/);
+  });
+
+  test("marks no current location when no section is being read", () => {
+    expect(renderNav(TOC_ITEMS, [], null)).not.toContain("aria-current");
   });
 
   test("renders an empty list when there are no toc items", () => {

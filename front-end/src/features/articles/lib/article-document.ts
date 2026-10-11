@@ -19,7 +19,7 @@ export interface RenderedArticle {
  */
 export function renderArticle(markdown: string): RenderedArticle {
   return {
-    html: renderToStaticMarkup(createElement(MarkdownRenderer, { content: markdown })),
+    html: renderToStaticMarkup(createElement(MarkdownRenderer, { content: markdown, headingLevelOffset: 1 })),
     toc: extractArticleTableOfContents(markdown),
   };
 }

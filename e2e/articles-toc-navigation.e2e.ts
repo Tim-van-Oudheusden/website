@@ -20,7 +20,7 @@ test.describe("Articles TOC navigation", () => {
             .filter((id) => id.length > 0);
 
       const headingIds = Array
-        .from(document.querySelectorAll("article h1[id], article h2[id], article h3[id]"))
+        .from(document.querySelectorAll("article .prose :is(h2, h3, h4)[id]"))
         .map((heading) => heading.id);
 
       const missingTocIds = tocIds.filter((tocId) => !headingIds.includes(tocId));
@@ -66,7 +66,7 @@ test.describe("Articles TOC navigation", () => {
     const clickDiagnostics = await page.evaluate((clickedId) => {
       const targetByHash = document.getElementById(clickedId);
       const headingIds = Array
-        .from(document.querySelectorAll("article h1[id], article h2[id], article h3[id]"))
+        .from(document.querySelectorAll("article .prose :is(h2, h3, h4)[id]"))
         .map((heading) => heading.id);
 
       return {
@@ -98,5 +98,15 @@ test.describe("Articles TOC navigation", () => {
     expect(await tableOfContents.getByRole("link").count()).toBeGreaterThan(3);
 
     expect(lowContrastTexts(await sampleSurface(tableOfContents))).toEqual([]);
+  });
+
+  test("makes the article title the page's only h1, with the article's sections below it", async ({ page }) => {
+    await page.goto("/articles/my-operating-system-is-a-container-image-yes-really", { waitUntil: "domcontentloaded" });
+
+    const title = page.getByRole("heading", { level: 1 });
+
+    await expect(title).toHaveText("My operating system is a container image, yes, really");
+    await expect(title).toHaveCount(1);
+    await expect(page.locator("article .prose").getByRole("heading", { level: 2, name: "The discovery" })).toBeVisible();
   });
 });

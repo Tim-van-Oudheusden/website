@@ -7,6 +7,7 @@ import { MemoryRouter } from "react-router";
 import type { ArticleData } from "shared/articles";
 
 import { ArticleContent } from "../../../../../../front-end/src/features/articles/components/article-content";
+import type { UseArticleTocResult } from "../../../../../../front-end/src/features/articles/hooks/use-article-toc";
 
 const FIXTURE_ARTICLE: ArticleData = {
   title: "Introduction",
@@ -22,17 +23,18 @@ const FIXTURE_ARTICLE: ArticleData = {
   body: "# Intro\n\nThe first post.",
 };
 
-function renderContent(): string {
+const NO_TOC: UseArticleTocResult = { tocItems: [], visibleTocHeadingIds: [], currentTocHeadingId: null };
+
+function renderContent(article: ArticleData = FIXTURE_ARTICLE): string {
   return renderToStaticMarkup(
     createElement(
       MemoryRouter,
       null,
       createElement(ArticleContent, {
-        article: FIXTURE_ARTICLE,
+        article,
         loading: false,
         error: null,
-        tocItems: [],
-        visibleTocHeadingIds: [],
+        toc: NO_TOC,
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         onArticlesActivate: () => {},
       }),
@@ -50,11 +52,37 @@ describe("ArticleContent", () => {
     expect(html).toContain("The first post.");
   });
 
+  test("makes the article title the only h1 and nests markdown sections under it", () => {
+    const html = renderContent({ ...FIXTURE_ARTICLE, body: "# Intro\n\nText.\n\n## Detail\n\nMore." });
+
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(html).toMatch(/<h1[^>]*>Introduction<\/h1>/);
+    expect(html).toMatch(/<h2 id="intro"/);
+    expect(html).toMatch(/<h3 id="detail"/);
+  });
+
   test("renders the location trail back to the articles list", () => {
     const html = renderContent();
 
     expect(html).toContain('aria-label="Current location"');
     expect(html).toContain('href="/"');
+  });
+
+  test("shows the publish date in words, machine-readable, with the reading time", () => {
+    const html = renderContent();
+
+    expect(html).toMatch(/<time[^>]*dateTime="2026-02-08"[^>]*>February 8th, 2026<\/time>/);
+    expect(html).toContain("1 min read");
+  });
+
+  test("shows the article's social image as its cover", () => {
+    const html = renderContent({ ...FIXTURE_ARTICLE, socialImage: "images/cover.png" });
+
+    expect(html).toMatch(/<img[^>]*src="\/content-assets\/images\/cover.png"/);
+  });
+
+  test("renders no cover when the article has no social image", () => {
+    expect(renderContent()).not.toContain("<img");
   });
 
   test("renders the loading state when the article is still fetching", () => {
@@ -66,8 +94,7 @@ describe("ArticleContent", () => {
           article: null,
           loading: true,
           error: null,
-          tocItems: [],
-          visibleTocHeadingIds: [],
+          toc: NO_TOC,
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           onArticlesActivate: () => {},
         }),
@@ -75,6 +102,9 @@ describe("ArticleContent", () => {
     );
 
     expect(html).toContain("Loading article...");
+    // With no article title yet, the page still has one h1 naming it.
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(html).toMatch(/<h1[^>]*>Articles<\/h1>/);
   });
 
   test("renders the article error when the fetch fails", () => {
@@ -86,8 +116,7 @@ describe("ArticleContent", () => {
           article: null,
           loading: false,
           error: "Failed to load article",
-          tocItems: [],
-          visibleTocHeadingIds: [],
+          toc: NO_TOC,
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           onArticlesActivate: () => {},
         }),
@@ -96,5 +125,6 @@ describe("ArticleContent", () => {
 
     expect(html).toContain("Failed to load article");
     expect(html).toContain("text-destructive");
+    expect(html).toMatch(/<h1[^>]*>Articles<\/h1>/);
   });
 });

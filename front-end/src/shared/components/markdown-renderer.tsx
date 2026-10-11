@@ -17,7 +17,16 @@ import {
 export interface MarkdownRendererProps {
   /** Raw markdown string (frontmatter already stripped). */
   content: string;
+  /**
+   * How many levels to demote markdown headings: 1 renders `#` as `<h2>`, for
+   * pages whose own title is the `<h1>`. Heading ids and the TOC are unaffected.
+   */
+  headingLevelOffset: 0 | 1;
 }
+
+type HeadingProps = JSX.IntrinsicElements["h1"] & ExtraProps;
+
+const HEADING_TAGS = ["h1", "h2", "h3", "h4"] as const;
 
 interface ParsedObsidianCallout {
   type: string;
@@ -166,6 +175,26 @@ function resolveHeadingIdFromPosition(
   return slugifyHeadingText(headingText) || "section";
 }
 
+/** A markdown heading of `depth` (1-3), rendered `headingLevelOffset` levels lower, with its TOC id. */
+function createHeadingComponent(
+  depth: 1 | 2 | 3,
+  headingIds: HeadingIdLookup,
+  headingLevelOffset: 0 | 1,
+): (props: HeadingProps) => JSX.Element {
+  const Tag = HEADING_TAGS[depth - 1 + headingLevelOffset] ?? "h4";
+
+  return function MarkdownHeading({ children, className, node, ...rest }: HeadingProps): JSX.Element {
+    const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
+    const id = resolveHeadingIdFromPosition(headingIds, headingText, node?.position?.start);
+
+    return (
+      <Tag id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
+        {children}
+      </Tag>
+    );
+  };
+}
+
 /**
  * Renders a markdown string to styled HTML using react-markdown.
  *
@@ -174,6 +203,7 @@ function resolveHeadingIdFromPosition(
  */
 export const MarkdownRenderer = memo(({
   content,
+  headingLevelOffset,
 }: MarkdownRendererProps): JSX.Element => {
   const headingIdByOffset = useMemo((): HeadingIdLookup => {
     const entries = extractMarkdownHeadingsWithOffsets(content, TOC_MAX_DEPTH);
@@ -199,36 +229,9 @@ export const MarkdownRenderer = memo(({
         </a>
       );
     },
-    h1({ children, className, node, ...rest }) {
-      const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
-      const id = resolveHeadingIdFromPosition(headingIdByOffset, headingText, node?.position?.start);
-
-      return (
-        <h1 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
-          {children}
-        </h1>
-      );
-    },
-    h2({ children, className, node, ...rest }) {
-      const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
-      const id = resolveHeadingIdFromPosition(headingIdByOffset, headingText, node?.position?.start);
-
-      return (
-        <h2 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
-          {children}
-        </h2>
-      );
-    },
-    h3({ children, className, node, ...rest }) {
-      const headingText = normalizeMarkdownHeadingText(flattenNodeText(children));
-      const id = resolveHeadingIdFromPosition(headingIdByOffset, headingText, node?.position?.start);
-
-      return (
-        <h3 id={id} className={cn(className, "scroll-mt-[5.25rem]")} {...rest}>
-          {children}
-        </h3>
-      );
-    },
+    h1: createHeadingComponent(1, headingIdByOffset, headingLevelOffset),
+    h2: createHeadingComponent(2, headingIdByOffset, headingLevelOffset),
+    h3: createHeadingComponent(3, headingIdByOffset, headingLevelOffset),
     blockquote({ children, className, node: _node, ...rest }) {
       const callout = parseObsidianCallout(children);
 
@@ -272,7 +275,7 @@ export const MarkdownRenderer = memo(({
         </code>
       );
     },
-  }), [headingIdByOffset]);
+  }), [headingIdByOffset, headingLevelOffset]);
 
   return (
     <article className="prose dark:prose-invert max-w-none text-base sm:text-lg leading-relaxed">

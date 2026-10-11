@@ -18,14 +18,14 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("flex w-full");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("flex-1");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("overflow-hidden");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("md:flex-row");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("lg:flex-row");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("mx-auto");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).not.toContain("max-w-screen-2xl");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:basis-[var(--articles-sidebar-width)]");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:min-w-[var(--articles-sidebar-width)]");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:shrink-0");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:sticky");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("md:top-[4.2rem]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:basis-[var(--articles-sidebar-width)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:min-w-[var(--articles-sidebar-width)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:shrink-0");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:sticky");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:top-[4.2rem]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("overflow-y-auto");
     expect(Object.hasOwn(ARTICLES_PAGE_LAYOUT_CLASSES, "divider")).toBe(false);
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("flex-1");
@@ -39,13 +39,13 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).not.toContain("dark:bg-card");
   });
 
-  test("uses a slimmer right-anchored TOC on tablet and desktop", () => {
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc).toContain("md:pr-[var(--articles-content-toc-gap)]");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("hidden md:block");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:fixed");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:right-6");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:w-[clamp(12rem,17vw,15.5rem)]");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("md:top-[5.25rem]");
+  test("uses a slimmer right-anchored TOC on wide desktops", () => {
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.contentWithToc).toContain("xl:pr-[var(--articles-content-toc-gap)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("hidden xl:block");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("xl:fixed");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("xl:right-8");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("xl:w-[clamp(12rem,17vw,15.5rem)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("xl:top-[5.25rem]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("bg-[var(--site-section-well-bg)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.toc).toContain("rounded-lg");
   });
@@ -58,14 +58,14 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(Object.hasOwn(ARTICLES_PAGE_LAYOUT_CLASSES, "locationTrailAlign")).toBe(true);
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.locationTrailAlign).toContain("mx-auto");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.locationTrailAlign).toContain("w-full");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.locationTrailAlign).toContain("max-w-[75ch]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.locationTrailAlign).toContain("max-w-[40rem]");
   });
 });
 
 describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {
   test("uses hierarchy and readability defaults from typography research", () => {
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.pageTitle).toContain("text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTitle).toContain("text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTitle).toContain("text-[2.125rem] leading-[1.12] sm:text-[2.75rem] xl:text-[3.25rem] font-semibold tracking-tight");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarTriggerLabel).toContain("text-sm font-medium");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton).toContain("text-sm font-medium");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("bg-[var(--adw-dark-5)]");
@@ -73,15 +73,15 @@ describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("dark:bg-[var(--adw-light-1)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("dark:text-[var(--adw-dark-5)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.5)]");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleDescription).toContain("max-w-[65ch] text-base sm:text-lg leading-relaxed");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleBodyMeasure).toContain("mx-auto w-full max-w-[75ch]");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleDescription).toContain("text-lg sm:text-xl leading-relaxed");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleBodyMeasure).toContain("mx-auto w-full max-w-[40rem]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("bg-[var(--adw-dark-5)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("text-[var(--adw-light-1)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("font-bold");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("dark:bg-[var(--adw-light-1)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("dark:text-[var(--adw-dark-5)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton).toContain("[&>svg]:shrink-0");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocTitle).toContain("text-[calc(0.875rem+4pt)] font-bold tracking-tight");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocTitle).toContain("text-sm font-semibold tracking-tight");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLink).toContain("font-medium");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkActive).toContain("text-[var(--adw-dark-4)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkInactive).toContain("text-[var(--adw-toc-inactive)]");

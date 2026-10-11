@@ -185,7 +185,7 @@ function makeArticle(body: string): ArticleData {
   };
 }
 
-let currentResult: UseArticleTocResult = { tocItems: [], visibleTocHeadingIds: [] };
+let currentResult: UseArticleTocResult = { tocItems: [], visibleTocHeadingIds: [], currentTocHeadingId: null };
 
 function recordResult(result: UseArticleTocResult): void {
   currentResult = result;
@@ -286,6 +286,34 @@ describe("useArticleToc", () => {
       });
 
       expect(currentResult.visibleTocHeadingIds).toEqual(["intro", "setup"]);
+    });
+  });
+
+  test("moves the current heading once the next one scrolls past the reading line", () => {
+    withFakeDom((env, root) => {
+      const article = makeArticle("# Intro\n\n## Setup");
+      const setupRect = { top: 700 };
+
+      env.headingElements.set("intro", { getBoundingClientRect: () => ({ top: 10 }) });
+      env.headingElements.set("setup", { getBoundingClientRect: () => setupRect });
+
+      renderAndFlush(env, root, article, false);
+      // "setup" is in view (top 700 of 800) but has not reached the reading line yet.
+      expect(currentResult.currentTocHeadingId).toBe("intro");
+
+      setupRect.top = 150;
+
+      act(() => {
+        env.windowListeners.get("scroll")?.forEach((handler) => {
+          (handler as () => void)();
+        });
+      });
+
+      act(() => {
+        flushRaf(env);
+      });
+
+      expect(currentResult.currentTocHeadingId).toBe("setup");
     });
   });
 
