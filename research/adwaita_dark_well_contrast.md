@@ -2,6 +2,8 @@
 
 Date: 2026-10-07
 
+Superseded for dark mode by [`dark_theme_warm_palette.md`](dark_theme_warm_palette.md) (#748): dark mode now uses Flexoki and no longer follows Adwaita. The sources and WCAG notes below still apply.
+
 Legend: **[SRC]** = stated by a primary source (linked); **[COMPUTED]** = calculated with the WCAG formula by a script run for this note; **[INFERENCE]** = my reasoning, not stated by a source.
 
 ## 1. Problem

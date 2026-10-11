@@ -19,7 +19,7 @@ const SOCIAL_ICONS: Record<SocialNetwork, ComponentType<SVGProps<SVGSVGElement>>
 const SITE_SOURCE_HREF = "https://github.com/Tim-van-Oudheusden/website";
 const SITE_AUTHOR = "Tim van Oudheusden";
 
-/** Outline pill in Adwaita colours, matching the project showcase's call to action. */
+/** Outline pill in the site's neutral tokens, matching the project showcase's call to action. */
 const SOCIAL_LINK_CLASSES = "h-12 gap-3 rounded-full border-(--adw-light-3) bg-(--adw-light-2) px-5 text-base text-(--adw-dark-5) shadow-none transition-colors duration-150 has-[>svg]:px-5 hover:border-(--adw-dark-1) hover:bg-(--adw-light-1) hover:text-(--adw-dark-5) dark:border-(--adw-dark-2) dark:bg-(--adw-headerbar-bg-color) dark:text-(--adw-light-1) dark:hover:border-(--adw-light-3) dark:hover:bg-white/10 dark:hover:text-(--adw-light-1) motion-reduce:transition-none";
 
 interface HomeSocialsProps {

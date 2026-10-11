@@ -61,11 +61,11 @@ describe("HomeFloatingNav", () => {
     expect(anchor?.[1]?.replaceAll("&#x27;", "'")).toContain("what's new");
   });
 
-  test("keeps active nav text white in dark mode while indicator remains black", () => {
+  test("inverts the active indicator in dark mode: light fill with dark text", () => {
     const html = renderFloatingNav();
 
-    expect(html).toContain("dark:text-(--adw-light-1)");
-    expect(html).toContain("bg-(--adw-dark-5)");
+    expect(html).toContain("dark:bg-(--adw-light-1)");
+    expect(html).toContain("dark:text-(--adw-dark-5)");
   });
 
   test("lists the about-me section as \"about me\" with the id-card icon, linking to #about-me", () => {
