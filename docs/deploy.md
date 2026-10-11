@@ -77,7 +77,8 @@ Then enable and start the pod:
 ```bash
 systemctl --user daemon-reload
 systemctl --user enable --now podman-kube@website.service
-curl -fsS http://127.0.0.1:8301/health   # {"status":"ok",...}
+curl -fsS http://127.0.0.1:8301/health   # back-end: {"status":"ok",...}
+curl -fsS http://127.0.0.1:8300/health   # front-end: {"status":"ok",...}
 ```
 
 The instance name `website` is the pod's name in `deploy/kube/prod.yaml`; the

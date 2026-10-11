@@ -223,6 +223,42 @@ describe("back-end liveness probe", () => {
   }
 });
 
+describe("front-end liveness probe", () => {
+  interface Probe {
+    httpGet?: unknown;
+    exec?: { command?: string[] };
+    failureThreshold?: number;
+  }
+
+  // Why: GET /health returns 503 when dist/index.html is unreadable (#front-
+  // end handler.ts, mirroring the back-end's #707/#714 contentDir probe).
+  // Only prod.yaml's front-end container runs the bundled server that
+  // registers that route; dev.yaml's runs the Vite dev server directly and
+  // has no equivalent endpoint to probe (see the comment there).
+  test("prod.yaml probes the front-end's /health on its container port with bun", () => {
+    const pod = Bun.YAML.parse(readDeploy("deploy/kube/prod.yaml")) as {
+      spec: { containers: { name: string; ports: { containerPort: number }[]; livenessProbe?: Probe }[] };
+    };
+    const frontEnd = pod.spec.containers.find((c) => c.name === "front-end");
+    const probe = frontEnd?.livenessProbe;
+    const [binary, ...args] = probe?.exec?.command ?? [];
+
+    expect(probe?.httpGet).toBeUndefined();
+    expect(binary).toBe("bun");
+    expect(args.join(" ")).toContain(`http://localhost:${frontEnd?.ports[0]?.containerPort}/health`);
+    expect(probe?.failureThreshold).toBeGreaterThan(0);
+  });
+
+  test("dev.yaml's front-end container has no liveness probe", () => {
+    const pod = Bun.YAML.parse(readDeploy("deploy/kube/dev.yaml")) as {
+      spec: { containers: { name: string; livenessProbe?: Probe }[] };
+    };
+    const frontEnd = pod.spec.containers.find((c) => c.name === "front-end");
+
+    expect(frontEnd?.livenessProbe).toBeUndefined();
+  });
+});
+
 describe("dev pod manifest", () => {
   test("disables SELinux labelling for every container with a hostPath mount", () => {
     // Why: kube play does not relabel bind mounts, so on SELinux hosts the
