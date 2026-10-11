@@ -78,4 +78,39 @@ test.describe("Articles sidebar layout", () => {
     expect(Math.abs(snapshotTyped.contentPaddingRight - snapshotTyped.expectedContentPaddingRight))
       .toBeLessThanOrEqual(4);
   });
+
+  for (const width of [1280, 1440, 1920]) {
+    test(`centres the article column between the sidebar and the TOC at ${String(width)}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/articles", { waitUntil: "domcontentloaded" });
+
+      await expect(page.locator("main > aside").first()).toBeVisible();
+      await expect(page.locator("main article aside").first()).toBeVisible();
+      await expect(page.locator("main article header").first()).toBeVisible();
+
+      const gaps = await page.evaluate((): { left: number; right: number } | null => {
+        const sidebar = document.querySelector("main > aside");
+        const toc = document.querySelector("main article aside");
+        const column = document.querySelector("main article header")?.parentElement;
+
+        if (sidebar === null || toc === null || column === null || column === undefined) {
+          return null;
+        }
+
+        const columnRect = column.getBoundingClientRect();
+
+        return {
+          left: columnRect.left - sidebar.getBoundingClientRect().right,
+          right: toc.getBoundingClientRect().left - columnRect.right,
+        };
+      });
+
+      if (gaps === null) {
+        throw new Error("Expected the sidebar, article column and TOC to be present");
+      }
+
+      expect(gaps.right).toBeGreaterThan(0);
+      expect(Math.abs(gaps.left - gaps.right)).toBeLessThanOrEqual(2);
+    });
+  }
 });
