@@ -22,6 +22,21 @@ spec:
         - containerPort: 3000
           hostPort: 8300
           hostIP: 127.0.0.1
+      # /health returns 503 when dist/index.html is unreadable (every real
+      # page response needs that file too). Same exec-probe shape as the
+      # back-end (#707/#714): kube play turns an httpGet probe into `curl -f`,
+      # and the oven/bun image has no curl, so it would restart a healthy
+      # container forever.
+      livenessProbe:
+        exec:
+          command:
+            - bun
+            - -e
+            - "fetch('http://localhost:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+        initialDelaySeconds: 5
+        periodSeconds: 15
+        timeoutSeconds: 5
+        failureThreshold: 3
 
     - name: back-end
       image: ghcr.io/tim-van-oudheusden/website/back-end:latest

@@ -342,11 +342,45 @@ describe("front-end request handler", () => {
   test("sends the back-end's framing and MIME-sniffing protections on every response", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
-    for (const path of ["/", "/articles/yoga-nidra", "/images/me.png", "/robots.txt", "/llms.txt", "/sitemap.xml", "/feed.xml"]) {
+    for (const path of ["/", "/articles/yoga-nidra", "/images/me.png", "/robots.txt", "/llms.txt", "/sitemap.xml", "/feed.xml", "/health"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
 
       expect(response.headers.get("x-frame-options")).toBe("SAMEORIGIN");
       expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     }
+  });
+
+  describe("GET /health", () => {
+    // Why: every real page response is served from dist/index.html too, so a
+    // probe that never checks it could report "ok" while every visitor
+    // request already 500s (mirrors the back-end's contentDir check, #707).
+    test("reports ok when the built site is present", async () => {
+      const handle = createRequestHandler({ distDir, fetchBackend: backend });
+
+      const response = await handle(new Request("https://buildwithtim.dev/health"));
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("application/json");
+      expect(body).toMatchObject({ status: "ok", name: "website", error: null });
+      expect(body.uptime).toBeGreaterThanOrEqual(0);
+    });
+
+    test("reports 503 when dist/index.html is missing", async () => {
+      const emptyDir = mkdtempSync(join(tmpdir(), "front-end-no-dist-"));
+
+      try {
+        const handle = createRequestHandler({ distDir: emptyDir, fetchBackend: backend });
+
+        const response = await handle(new Request("https://buildwithtim.dev/health"));
+        const body = await response.json();
+
+        expect(response.status).toBe(503);
+        expect(body).toMatchObject({ status: "error", name: "website" });
+        expect(body.error).toContain("dist/index.html");
+      } finally {
+        rmSync(emptyDir, { recursive: true, force: true });
+      }
+    });
   });
 });

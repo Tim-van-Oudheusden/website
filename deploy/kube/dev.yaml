@@ -24,6 +24,10 @@ spec:
         - containerPort: 5173
           hostPort: 5173
           hostIP: 127.0.0.1
+      # No livenessProbe: this container runs the Vite dev server directly
+      # (front-end/Dockerfile's `dev` stage), not the bundled prod server that
+      # registers GET /health (front-end/server/handler.ts). Unlike prod.yaml,
+      # there is no equivalent endpoint here to probe.
       volumeMounts:
         - name: front-end-src
           mountPath: /app/front-end
