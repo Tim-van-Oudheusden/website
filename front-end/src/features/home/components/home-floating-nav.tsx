@@ -95,12 +95,12 @@ export function HomeFloatingNav({
     >
       <ul
         ref={navListRef}
-        className="relative flex gap-2 rounded-2xl border border-(--adw-light-4) dark:border-(--adw-dark-2) bg-background dark:bg-(--site-section-well-bg) p-3 shadow-lg backdrop-blur-md"
+        className="relative flex gap-2 rounded-2xl border border-(--paper-4) dark:border-(--ink-2) bg-background dark:bg-(--site-section-well-bg) p-3 shadow-lg backdrop-blur-md"
       >
         <span
           aria-hidden="true"
           data-slot="active-indicator"
-          className="pointer-events-none absolute top-0 left-0 rounded-full bg-(--adw-dark-5) dark:bg-(--adw-light-1) transition-[transform,width] duration-300 ease-out motion-reduce:transition-none"
+          className="pointer-events-none absolute top-0 left-0 rounded-full bg-(--ink-5) dark:bg-(--paper-1) transition-[transform,width] duration-300 ease-out motion-reduce:transition-none"
           style={indicatorStyle}
         />
         {sections.map((section) => {
@@ -115,8 +115,8 @@ export function HomeFloatingNav({
                 className={cn(
                   "px-4 py-2 text-base uppercase tracking-[0.08em] transition-colors [a&]:hover:bg-transparent",
                   isActive
-                    ? "text-white dark:text-(--adw-dark-5) [a&]:hover:text-white dark:[a&]:hover:text-(--adw-dark-5)"
-                    : "bg-transparent text-(--adw-headerbar-fg-color) [a&]:hover:text-(--adw-headerbar-fg-color)",
+                    ? "text-white dark:text-(--ink-5) [a&]:hover:text-white dark:[a&]:hover:text-(--ink-5)"
+                    : "bg-transparent text-(--popover-foreground) [a&]:hover:text-(--popover-foreground)",
                 )}
               >
                 <a

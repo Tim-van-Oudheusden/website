@@ -24,20 +24,20 @@ export function HomeAboutMe({ section }: HomeAboutMeProps): JSX.Element {
         <div className="flex min-w-0 flex-col gap-6">
           <h2
             id={headingIdFor(section.id)}
-            className="text-[1.875rem] leading-tight sm:text-[2.5rem] text-(--adw-dark-5) dark:text-(--adw-light-1)"
+            className="text-[1.875rem] leading-tight sm:text-[2.5rem] text-(--ink-5) dark:text-(--paper-1)"
           >
             {section.heading}
           </h2>
-          <p className="max-w-[65ch] text-lg leading-relaxed text-(--adw-dark-2) dark:text-(--adw-light-5)">
+          <p className="max-w-[65ch] text-lg leading-relaxed text-(--ink-2) dark:text-(--paper-5)">
             {section.body}
           </p>
           <ul className="flex flex-wrap gap-2 rounded-[2rem] bg-(--site-section-well-bg) p-4 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:gap-3 sm:p-6">
             {section.aboutItems.map((item) => (
               <li
                 key={item}
-                className="flex max-w-full min-w-0 grow items-baseline gap-2 rounded-md border border-(--adw-light-3) bg-(--adw-light-2) px-3 py-2 text-[0.9375rem] text-(--adw-dark-5) dark:border-white/20 dark:bg-white/10 dark:text-(--adw-light-1) sm:gap-2.5 sm:px-4 sm:py-2.5 sm:text-base"
+                className="flex max-w-full min-w-0 grow items-baseline gap-2 rounded-md border border-(--paper-3) bg-(--paper-2) px-3 py-2 text-[0.9375rem] text-(--ink-5) dark:border-white/20 dark:bg-white/10 dark:text-(--paper-1) sm:gap-2.5 sm:px-4 sm:py-2.5 sm:text-base"
               >
-                <span aria-hidden="true" className="size-1.5 flex-none translate-y-[-0.15em] rounded-full bg-(--adw-accent-color)" />
+                <span aria-hidden="true" className="size-1.5 flex-none translate-y-[-0.15em] rounded-full bg-(--site-accent)" />
                 <span className="min-w-0">{item}</span>
               </li>
             ))}

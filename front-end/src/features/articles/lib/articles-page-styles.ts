@@ -1,9 +1,9 @@
 // Below `lg` the page is one column: the article first, the article list after it.
 // From `lg` the list is a sticky left sidebar; from `xl` the TOC is a fixed right rail.
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
-  container: "flex w-full min-h-0 flex-1 flex-col bg-[var(--adw-page-brown-bg)] lg:flex-row",
-  sidebar: "order-last w-full min-h-0 overflow-y-auto bg-[var(--adw-page-brown-bg)] lg:order-none lg:sticky lg:top-[4.2rem] lg:h-[calc(100dvh-4.2rem)] lg:basis-[var(--articles-sidebar-width)] lg:min-w-[var(--articles-sidebar-width)] lg:shrink-0",
-  content: "bg-[var(--adw-page-brown-bg)] min-h-[20rem] min-w-0 flex-1 px-5 pt-6 pb-16 sm:px-8 sm:pt-8 lg:px-10 lg:pb-24",
+  container: "flex w-full min-h-0 flex-1 flex-col bg-[var(--site-page-bg)] lg:flex-row",
+  sidebar: "order-last w-full min-h-0 overflow-y-auto bg-[var(--site-page-bg)] lg:order-none lg:sticky lg:top-[4.2rem] lg:h-[calc(100dvh-4.2rem)] lg:basis-[var(--articles-sidebar-width)] lg:min-w-[var(--articles-sidebar-width)] lg:shrink-0",
+  content: "bg-[var(--site-page-bg)] min-h-[20rem] min-w-0 flex-1 px-5 pt-6 pb-16 sm:px-8 sm:pt-8 lg:px-10 lg:pb-24",
   contentWithToc: "mx-auto w-full max-w-[120rem] xl:pr-[var(--articles-content-toc-gap)]",
   locationTrailAlign: "mx-auto w-full max-w-[40rem]",
   toc: "hidden xl:block rounded-lg xl:fixed xl:right-8 xl:top-[5.25rem] xl:w-[clamp(12rem,17vw,15.5rem)] xl:max-h-[calc(100dvh-6rem)] xl:overflow-y-auto bg-[var(--site-section-well-bg)]",
@@ -16,13 +16,13 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   pageTitle: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
   sidebarTriggerLabel: "truncate text-sm font-medium",
   sidebarArticleButton: "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium transition-colors [&>svg]:size-4 [&>svg]:shrink-0",
-  sidebarSelectedArticleState: "bg-[var(--adw-dark-5)] text-[var(--adw-light-1)] dark:bg-[var(--adw-light-1)] dark:text-[var(--adw-dark-5)] shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.5)]",
+  sidebarSelectedArticleState: "bg-[var(--ink-5)] text-[var(--paper-1)] dark:bg-[var(--paper-1)] dark:text-[var(--ink-5)] shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.5)]",
   articleEyebrow: "text-muted-foreground text-sm font-semibold uppercase tracking-[0.12em]",
   articleTitle: "mt-3 text-[2.125rem] leading-[1.12] sm:text-[2.75rem] xl:text-[3.25rem] font-semibold tracking-tight text-balance",
   articleDescription: "text-muted-foreground mt-4 text-lg sm:text-xl leading-relaxed text-pretty",
   articleMeta: "text-muted-foreground mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium",
   articleBodyMeasure: "mx-auto w-full max-w-[40rem]",
-  articleTagBadge: "bg-[var(--adw-dark-5)] text-[var(--adw-light-1)] font-bold [a&]:hover:bg-[var(--adw-dark-5)]/90 dark:bg-[var(--adw-light-1)] dark:text-[var(--adw-dark-5)] dark:[a&]:hover:bg-[var(--adw-light-1)]/90",
+  articleTagBadge: "bg-[var(--ink-5)] text-[var(--paper-1)] font-bold [a&]:hover:bg-[var(--ink-5)]/90 dark:bg-[var(--paper-1)] dark:text-[var(--ink-5)] dark:[a&]:hover:bg-[var(--paper-1)]/90",
   // On the wrapper around the shared MarkdownRenderer: article-only rhythm on
   // top of its prose styles (`[&>.prose]` outranks the renderer's own size
   // classes). Markdown `#` is a section heading here; the page title is the
@@ -44,11 +44,11 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   tocTitle: "text-sm font-semibold tracking-tight",
   tocList: "mt-3 border-l border-border",
   tocItem: "-ml-px border-l-2 py-1 pl-3 transition-[border-color] duration-300 ease-out motion-reduce:transition-none",
-  tocItemCurrent: "border-[var(--adw-dark-4)] dark:border-[var(--adw-light-2)]",
+  tocItemCurrent: "border-[var(--ink-4)] dark:border-[var(--paper-2)]",
   tocItemIdle: "border-transparent",
   tocLink: "block text-sm font-medium leading-snug transition-colors duration-300 ease-out motion-reduce:transition-none hover:text-foreground",
-  tocLinkActive: "text-[var(--adw-dark-4)] dark:text-[var(--adw-light-2)]",
-  tocLinkInactive: "text-[var(--adw-toc-inactive)]",
+  tocLinkActive: "text-[var(--ink-4)] dark:text-[var(--paper-2)]",
+  tocLinkInactive: "text-[var(--site-toc-inactive)]",
   inlineTocSummary: "flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold tracking-tight [&::-webkit-details-marker]:hidden",
 } as const;
 

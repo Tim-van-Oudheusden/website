@@ -14,7 +14,7 @@ import { httpContentLoader } from "@/shared/lib/content-loader";
 export type ProjectData = ProjectFrontmatter & { body: string };
 
 export const PROJECT_PAGE_LAYOUT_CLASSES = {
-  main: "w-full flex-1 bg-[var(--adw-page-brown-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8",
+  main: "w-full flex-1 bg-[var(--site-page-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8",
   articleMeasure: "mx-auto w-full max-w-[75ch]",
   coverFrame: "mb-8 aspect-[16/10] overflow-hidden rounded-[2rem] bg-[var(--site-section-well-bg)] shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)]",
   metadataPanel: "mb-8 mt-8 rounded-[2rem] bg-[var(--site-section-well-bg)] p-5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:p-6",
@@ -35,7 +35,7 @@ interface ProjectMetaHeaderProps {
 export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): JSX.Element {
   return (
     <header className="mb-8">
-      <Link to="/projects" className="text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)] mb-6 inline-flex text-sm font-semibold underline-offset-4 hover:underline">
+      <Link to="/projects" className="text-[var(--ink-5)] dark:text-[var(--paper-1)] mb-6 inline-flex text-sm font-semibold underline-offset-4 hover:underline">
         Back to projects
       </Link>
       <div className={PROJECT_PAGE_LAYOUT_CLASSES.coverFrame}>
@@ -140,7 +140,7 @@ export function ProjectPage(): JSX.Element {
 
   if (loading) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
         <p className="text-muted-foreground">Loading project...</p>
       </main>
     );
@@ -148,9 +148,9 @@ export function ProjectPage(): JSX.Element {
 
   if (notFound) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--adw-page-brown-bg) p-4">
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--site-page-bg) p-4">
         <h1 className="text-3xl font-semibold">Project not found</h1>
-        <Link to="/projects" className="text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)] underline">
+        <Link to="/projects" className="text-[var(--ink-5)] dark:text-[var(--paper-1)] underline">
           Back to projects
         </Link>
       </main>
@@ -159,7 +159,7 @@ export function ProjectPage(): JSX.Element {
 
   if (error !== null || project === null) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
         <p className="text-destructive">{error ?? "Something went wrong"}</p>
       </main>
     );

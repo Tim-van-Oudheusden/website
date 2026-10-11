@@ -31,7 +31,7 @@ function RecommendationsContent({
   }
 
   if (articles === null) {
-    return <p className="text-sm text-(--adw-dark-5)/60 dark:text-white/60">Loading recommendations...</p>;
+    return <p className="text-sm text-(--ink-5)/60 dark:text-white/60">Loading recommendations...</p>;
   }
 
   return (

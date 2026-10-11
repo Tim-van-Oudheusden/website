@@ -70,7 +70,7 @@ function CopyArticleLinkButton({ path }: { path: string }): JSX.Element {
         variant="secondary"
         size="icon"
         onClick={copyLink}
-        className="absolute top-6 left-6 z-10 size-12 rounded-lg bg-(--adw-light-1) text-(--adw-dark-5) shadow transition hover:bg-(--adw-light-1) hover:shadow-md dark:bg-(--adw-headerbar-bg-color) dark:text-(--adw-light-1) dark:hover:bg-(--adw-headerbar-bg-color) lg:size-auto lg:px-8 lg:py-4 lg:text-lg lg:opacity-0 lg:group-hover/card:opacity-100 lg:group-focus-within/card:opacity-100 motion-reduce:transition-none"
+        className="absolute top-6 left-6 z-10 size-12 rounded-lg bg-(--paper-1) text-(--ink-5) shadow transition hover:bg-(--paper-1) hover:shadow-md dark:bg-(--popover) dark:text-(--paper-1) dark:hover:bg-(--popover) lg:size-auto lg:px-8 lg:py-4 lg:text-lg lg:opacity-0 lg:group-hover/card:opacity-100 lg:group-focus-within/card:opacity-100 motion-reduce:transition-none"
       >
         {status === "copied" ? <Check aria-hidden="true" className="size-6 lg:hidden" /> : <Copy aria-hidden="true" className="size-6 lg:hidden" />}
         <span className="sr-only lg:not-sr-only">{COPY_LABELS[status]}</span>
@@ -102,14 +102,14 @@ export function RecommendedArticleCard({ article }: RecommendedArticleCardProps)
         aria-describedby={metaId}
         className="group block focus-visible:outline-none"
       >
-        <div className="aspect-[1200/630] w-full rounded-lg ring-(--adw-accent-color) ring-offset-4 ring-offset-(--adw-page-brown-bg) transition-shadow duration-300 group-hover:ring-2 group-focus-visible:ring-2 motion-reduce:transition-none">
+        <div className="aspect-[1200/630] w-full rounded-lg ring-(--site-accent) ring-offset-4 ring-offset-(--site-page-bg) transition-shadow duration-300 group-hover:ring-2 group-focus-visible:ring-2 motion-reduce:transition-none">
           {imagePath === null
             ? (
                 <div
                   aria-hidden="true"
-                  className="flex size-full items-center justify-center rounded-lg border border-(--adw-light-3) bg-(--adw-light-2) bg-[linear-gradient(to_right,var(--adw-light-3)_1px,transparent_1px),linear-gradient(to_bottom,var(--adw-light-3)_1px,transparent_1px)] bg-size-[40px_40px] dark:border-(--adw-headerbar-bg-color) dark:bg-(--adw-window-bg-color) dark:bg-[linear-gradient(to_right,var(--adw-headerbar-bg-color)_1px,transparent_1px),linear-gradient(to_bottom,var(--adw-headerbar-bg-color)_1px,transparent_1px)]"
+                  className="flex size-full items-center justify-center rounded-lg border border-(--paper-3) bg-(--paper-2) bg-[linear-gradient(to_right,var(--paper-3)_1px,transparent_1px),linear-gradient(to_bottom,var(--paper-3)_1px,transparent_1px)] bg-size-[40px_40px] dark:border-(--popover) dark:bg-(--background) dark:bg-[linear-gradient(to_right,var(--popover)_1px,transparent_1px),linear-gradient(to_bottom,var(--popover)_1px,transparent_1px)]"
                 >
-                  <span className="font-mono text-sm uppercase tracking-widest text-(--adw-dark-2) dark:text-(--adw-light-5)">
+                  <span className="font-mono text-sm uppercase tracking-widest text-(--ink-2) dark:text-(--paper-5)">
                     {article.category}
                   </span>
                 </div>
@@ -118,14 +118,14 @@ export function RecommendedArticleCard({ article }: RecommendedArticleCardProps)
                 <img src={imagePath} alt="" loading="lazy" className="size-full rounded-lg object-cover" />
               )}
         </div>
-        <p id={metaId} className="mt-8 text-[1.375rem] font-medium text-(--adw-dark-2) dark:text-(--adw-light-5)">
+        <p id={metaId} className="mt-8 text-[1.375rem] font-medium text-(--ink-2) dark:text-(--paper-5)">
           {formatArticleDate(article.date)}
           {" — "}
           {article.category}
         </p>
         <h3
           id={titleId}
-          className="mt-4 text-[1.5625rem] leading-[1.33] font-medium sm:text-[1.875rem] sm:leading-[1.2] text-(--adw-dark-5) dark:text-(--adw-light-1)"
+          className="mt-4 text-[1.5625rem] leading-[1.33] font-medium sm:text-[1.875rem] sm:leading-[1.2] text-(--ink-5) dark:text-(--paper-1)"
         >
           {article.title}
         </h3>

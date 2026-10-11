@@ -69,7 +69,7 @@ describe("ArticlesSidebar", () => {
   test("marks the selected article with the selected-state styling", () => {
     const html = renderSidebar("introduction");
 
-    expect(html).toContain("bg-[var(--adw-dark-5)]");
+    expect(html).toContain("bg-[var(--ink-5)]");
   });
 
   test("labels the list with a heading below the article title's h1", () => {

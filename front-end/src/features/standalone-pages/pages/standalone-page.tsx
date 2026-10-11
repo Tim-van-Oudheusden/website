@@ -26,7 +26,7 @@ export function StandalonePage({ slug }: StandalonePageProps): JSX.Element {
 
   if (status === "loading") {
     return (
-      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
         <p className="text-muted-foreground">Loading page...</p>
       </main>
     );
@@ -34,7 +34,7 @@ export function StandalonePage({ slug }: StandalonePageProps): JSX.Element {
 
   if (status === "error") {
     return (
-      <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
+      <main className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
         <p className="text-destructive">{error}</p>
       </main>
     );
@@ -42,9 +42,9 @@ export function StandalonePage({ slug }: StandalonePageProps): JSX.Element {
 
   if (page === null) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--adw-page-brown-bg) p-4">
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--site-page-bg) p-4">
         <h1 className="text-3xl font-semibold">Page not found</h1>
-        <Link to="/" className="text-[var(--adw-dark-5)] dark:text-[var(--adw-light-1)] underline">
+        <Link to="/" className="text-[var(--ink-5)] dark:text-[var(--paper-1)] underline">
           Back to home
         </Link>
       </main>
@@ -52,7 +52,7 @@ export function StandalonePage({ slug }: StandalonePageProps): JSX.Element {
   }
 
   return (
-    <main className="w-full flex-1 bg-[var(--adw-page-brown-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+    <main className="w-full flex-1 bg-[var(--site-page-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <article className="mx-auto w-full max-w-[75ch]">
         <header className="mb-8">
           <h1 className="text-[1.75rem] font-semibold tracking-tight sm:text-[2rem]">{page.title}</h1>

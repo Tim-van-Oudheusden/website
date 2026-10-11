@@ -246,7 +246,7 @@ export const MarkdownRenderer = memo(({
       return (
         <div
           data-callout-type={callout.type}
-          className="my-6 rounded-md border border-[var(--adw-light-4)] bg-[var(--adw-light-2)] px-4 py-3 text-[var(--adw-dark-4)] dark:border-[var(--adw-dark-1)] dark:bg-[var(--adw-dark-3)] dark:text-[var(--adw-light-2)]"
+          className="my-6 rounded-md border border-[var(--paper-4)] bg-[var(--paper-2)] px-4 py-3 text-[var(--ink-4)] dark:border-[var(--ink-1)] dark:bg-[var(--ink-3)] dark:text-[var(--paper-2)]"
         >
           <p className="m-0 text-sm font-semibold tracking-wide">{callout.title}</p>
           {callout.bodyNodes.length > 0 && (

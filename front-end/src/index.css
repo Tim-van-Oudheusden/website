@@ -106,6 +106,21 @@
  * and .dark (dark). Every text/UI pair must meet WCAG 2.2 AA: 4.5:1
  * for body text, 3:1 for large text, UI boundaries and focus rings.
  *
+ * Token names (#761):
+ *   --paper-1 … --paper-5, --ink-1 … --ink-5
+ *       Neutral ramp, lightest (--paper-1) to darkest (--ink-5). .dark
+ *       swaps in the Flexoki base ramp at matching lightness, so a class
+ *       such as dark:text-(--paper-1) stays the lightest step.
+ *   --site-*  Site roles with one job each: --site-page-bg (the page
+ *       behind the wells), --site-section-well-bg, --site-accent (accent
+ *       text, rings and indicators on page and well surfaces; not
+ *       shadcn's --accent, which is a neutral hover fill) and
+ *       --site-toc-inactive.
+ *   Everything else is a shadcn semantic token (list above).
+ * The tokens .dark leaves out alias another token (var(--foreground),
+ * var(--muted), …); they resolve to the dark value because use-theme
+ * puts .dark on <html>, the element :root matches.
+ *
  * Light mode: warm beige page, white wells, near-black text, blue
  * accent. Dark mode: Flexoki by Steph Ango (MIT), ink on paper with a
  * warm near-black page, a warm grey ramp and a light blue accent
@@ -113,10 +128,8 @@
  * chosen because the light theme is already ink on paper (its page,
  * #f3efe5, is close to Flexoki base-50 #f2f0e5). Rationale, the
  * alternatives and the contrast ratios:
- * research/dark_theme_warm_palette.md.
- *
- * The --adw-* names are historical; the colours do not follow GNOME
- * Adwaita.
+ * research/dark_theme_warm_palette.md (written before #761, so it uses
+ * the old token names; BRANDING.md maps them).
  *
  * Source references:
  * - https://stephango.com/flexoki
@@ -126,204 +139,114 @@
   --radius: 0.625rem;
 
   /* Neutral ramp (light values; .dark swaps in the Flexoki ramp) */
-  --adw-light-1: #ffffff;
-  --adw-light-2: #f6f5f4;
-  --adw-light-3: #deddda;
-  --adw-light-4: #c0bfbc;
-  --adw-light-5: #9a9996;
-  --adw-dark-1: #77767b;
-  --adw-dark-2: #5e5c64;
-  --adw-dark-3: #3d3846;
-  --adw-dark-4: #241f31;
-  --adw-dark-5: #000000;
+  --paper-1: #ffffff;
+  --paper-2: #f6f5f4;
+  --paper-3: #deddda;
+  --paper-4: #c0bfbc;
+  --paper-5: #9a9996;
+  --ink-1: #77767b;
+  --ink-2: #5e5c64;
+  --ink-3: #3d3846;
+  --ink-4: #241f31;
+  --ink-5: #000000;
 
-  /* Named accent families */
-  --adw-accent-blue: #3584e4;
-  --adw-accent-teal: #2190a4;
-  --adw-accent-green: #3a944a;
-  --adw-accent-yellow: #c88800;
-  --adw-accent-orange: #ed5b00;
-  --adw-accent-red: #e62d42;
-  --adw-accent-pink: #d56199;
-  --adw-accent-purple: #9141ac;
-  --adw-accent-slate: #6f8396;
-  --adw-brown-1: #cdab8f;
-
-  /* Project beige variants */
-  --adw-beige-light: #f3efe5;
-  --adw-beige-dark: #1c1b1a; /* Flexoki base-950: the dark-mode page */
-  --adw-toc-inactive: #8a8376;
-  --adw-page-beige-bg: var(--adw-beige-light);
+  /* Site roles */
+  --site-page-bg: #f3efe5;
   --site-section-well-bg: #ffffff;
+  --site-accent: #0461be;
+  --site-toc-inactive: #8a8376;
   --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   /* The fixed TOC's footprint (its xl:w-[…] plus xl:right-8), so the article centres between sidebar and TOC. */
   --articles-content-toc-gap: calc(clamp(12rem, 17vw, 15.5rem) + 2rem);
 
-  /* Semantic colours (light) */
-  --adw-accent-bg-color: var(--adw-accent-blue);
-  --adw-accent-fg-color: #ffffff;
-  --adw-accent-color: #0461be;
-  --adw-destructive-bg-color: #e01b24;
-  --adw-destructive-fg-color: #ffffff;
-  --adw-destructive-color: #c30000;
-  --adw-success-bg-color: #2ec27e;
-  --adw-success-fg-color: #ffffff;
-  --adw-success-color: #007c3d;
-  --adw-warning-bg-color: #e5a50a;
-  --adw-warning-fg-color: rgb(0 0 0 / 80%);
-  --adw-warning-color: #905400;
-  --adw-error-bg-color: #e01b24;
-  --adw-error-fg-color: #ffffff;
-  --adw-error-color: #c30000;
-  --adw-window-bg-color: #fafafb;
-  --adw-window-fg-color: rgb(0 0 6 / 80%);
-  --adw-view-bg-color: #ffffff;
-  --adw-view-fg-color: rgb(0 0 6 / 80%);
-  --adw-headerbar-bg-color: #ffffff;
-  --adw-headerbar-fg-color: rgb(0 0 6 / 80%);
-  --adw-headerbar-backdrop-color: #fafafb;
-  --adw-headerbar-shade-color: rgb(0 0 6 / 12%);
-  --adw-sidebar-bg-color: #ebebed;
-  --adw-sidebar-fg-color: rgb(0 0 6 / 80%);
-  --adw-sidebar-backdrop-color: #f2f2f4;
-  --adw-sidebar-border-color: rgb(0 0 6 / 7%);
-  --adw-sidebar-shade-color: rgb(0 0 6 / 7%);
-  --adw-page-brown-bg: var(--adw-page-beige-bg);
-
-  /* Project semantic mapping (shadcn tokens) */
-  --background: var(--adw-window-bg-color);
-  --foreground: var(--adw-window-fg-color);
-  --card: var(--adw-view-bg-color);
-  --card-foreground: var(--adw-view-fg-color);
-  --popover: var(--adw-headerbar-bg-color);
-  --popover-foreground: var(--adw-headerbar-fg-color);
-  --primary: var(--adw-accent-bg-color);
-  --primary-foreground: var(--adw-accent-fg-color);
-  --secondary: var(--adw-sidebar-bg-color);
-  --secondary-foreground: var(--adw-sidebar-fg-color);
-  --muted: var(--adw-sidebar-backdrop-color);
-  --muted-foreground: var(--adw-dark-2);
-  --accent: var(--adw-sidebar-backdrop-color);
-  --accent-foreground: var(--adw-window-fg-color);
-  --destructive: var(--adw-destructive-bg-color);
-  --destructive-foreground: var(--adw-destructive-fg-color);
-  --success: var(--adw-success-bg-color);
-  --success-foreground: var(--adw-success-fg-color);
-  --warning: var(--adw-warning-bg-color);
-  --warning-foreground: var(--adw-warning-fg-color);
-  --error: var(--adw-error-bg-color);
-  --error-foreground: var(--adw-error-fg-color);
-  --border: var(--adw-sidebar-border-color);
-  --input: var(--adw-sidebar-border-color);
-  --ring: var(--adw-accent-color);
-  --chart-1: var(--adw-accent-blue);
+  /* Semantic tokens (shadcn) */
+  --background: #fafafb;
+  --foreground: rgb(0 0 6 / 80%);
+  --card: #ffffff;
+  --card-foreground: var(--foreground);
+  --popover: #ffffff;
+  --popover-foreground: var(--foreground);
+  --primary: #3584e4;
+  --primary-foreground: #ffffff;
+  --secondary: #ebebed;
+  --secondary-foreground: var(--foreground);
+  --muted: #f2f2f4;
+  --muted-foreground: var(--ink-2);
+  --accent: var(--muted);
+  --accent-foreground: var(--foreground);
+  --destructive: #e01b24;
+  --destructive-foreground: #ffffff;
+  --success: #2ec27e;
+  --success-foreground: #ffffff;
+  --warning: #e5a50a;
+  --warning-foreground: rgb(0 0 0 / 80%);
+  --error: #e01b24;
+  --error-foreground: #ffffff;
+  --border: rgb(0 0 6 / 7%);
+  --input: var(--border);
+  --ring: var(--site-accent);
+  --chart-1: #3584e4;
   --chart-2: #33d17a;
   --chart-3: #f5c211;
   --chart-4: #ff7800;
   --chart-5: #e01b24;
-  --sidebar: var(--adw-sidebar-bg-color);
-  --sidebar-foreground: var(--adw-sidebar-fg-color);
-  --sidebar-primary: var(--adw-accent-bg-color);
-  --sidebar-primary-foreground: var(--adw-accent-fg-color);
-  --sidebar-accent: var(--adw-sidebar-backdrop-color);
-  --sidebar-accent-foreground: var(--adw-sidebar-fg-color);
-  --sidebar-border: var(--adw-sidebar-border-color);
-  --sidebar-ring: var(--adw-accent-color);
+  --sidebar: var(--secondary);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--muted);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--site-accent);
 }
 
 .dark {
-  /*
-   * Flexoki base ramp in place of the light neutrals, matched by lightness: a class such as
-   * dark:text-(--adw-light-1) or dark:bg-(--adw-dark-3) gets the warm value in dark mode.
-   */
-  --adw-light-1: #fffcf0; /* paper */
-  --adw-light-2: #f2f0e5; /* base-50 */
-  --adw-light-3: #dad8ce; /* base-150 */
-  --adw-light-4: #b7b5ac; /* base-300 */
-  --adw-light-5: #9f9d96; /* base-400 */
-  --adw-dark-1: #6f6e69; /* base-600 */
-  --adw-dark-2: #575653; /* base-700 */
-  --adw-dark-3: #403e3c; /* base-800 */
-  --adw-dark-4: #282726; /* base-900 */
-  --adw-dark-5: #100f0f; /* black */
+  /* Flexoki base ramp in place of the light neutrals, matched by lightness. */
+  --paper-1: #fffcf0; /* paper */
+  --paper-2: #f2f0e5; /* base-50 */
+  --paper-3: #dad8ce; /* base-150 */
+  --paper-4: #b7b5ac; /* base-300 */
+  --paper-5: #9f9d96; /* base-400 */
+  --ink-1: #6f6e69; /* base-600 */
+  --ink-2: #575653; /* base-700 */
+  --ink-3: #403e3c; /* base-800 */
+  --ink-4: #282726; /* base-900 */
+  --ink-5: #100f0f; /* black */
 
-  /* Semantic colours (dark), from the Flexoki ramps */
-  /* blue-200 for fill and text: blue-300 fails as text on raised surfaces, and blue keeps the light-mode hue. */
-  --adw-accent-bg-color: #92bfdb; /* blue-200 */
-  --adw-accent-fg-color: #100f0f;
-  --adw-accent-color: #92bfdb; /* blue-200 */
-  --adw-destructive-bg-color: #e8705f; /* red-300 */
-  --adw-destructive-fg-color: #100f0f;
-  --adw-destructive-color: #f89a8a; /* red-200 */
-  --adw-success-bg-color: #a0af54; /* green-300 */
-  --adw-success-fg-color: #100f0f;
-  --adw-success-color: #bec97e; /* green-200 */
-  --adw-warning-bg-color: #dfb431; /* yellow-300 */
-  --adw-warning-fg-color: #100f0f;
-  --adw-warning-color: #eccb60; /* yellow-200 */
-  --adw-error-bg-color: #e8705f; /* red-300 */
-  --adw-error-fg-color: #100f0f;
-  --adw-error-color: #f89a8a; /* red-200 */
-  --adw-window-bg-color: var(--adw-beige-dark);
-  --adw-window-fg-color: #cecdc3; /* base-200, Flexoki tx */
-  --adw-view-bg-color: #282726; /* base-900 */
-  --adw-view-fg-color: #cecdc3;
-  --adw-headerbar-bg-color: #343331; /* base-850 */
-  --adw-headerbar-fg-color: #cecdc3;
-  --adw-headerbar-backdrop-color: var(--adw-beige-dark);
-  --adw-headerbar-shade-color: rgb(16 15 15 / 36%);
-  --adw-sidebar-bg-color: #282726; /* base-900 */
-  --adw-sidebar-fg-color: #cecdc3;
-  --adw-sidebar-backdrop-color: #343331; /* base-850 */
-  --adw-sidebar-border-color: #403e3c; /* base-800 */
-  --adw-sidebar-shade-color: rgb(16 15 15 / 25%);
-  --adw-toc-inactive: var(--adw-light-4);
-  --adw-page-brown-bg: var(--adw-page-beige-bg);
-  --adw-page-beige-bg: var(--adw-beige-dark);
+  /* Site roles */
+  --site-page-bg: #1c1b1a; /* Flexoki base-950 */
   /* One step above the page, as the white wells sit above the beige page in light mode. */
   --site-section-well-bg: #282726; /* base-900 */
+  /* blue-200 for fill and text: blue-300 fails as text on raised surfaces, and blue keeps the light-mode hue. */
+  --site-accent: #92bfdb; /* blue-200 */
+  --site-toc-inactive: var(--paper-4);
   --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   --articles-content-toc-gap: calc(clamp(12rem, 17vw, 15.5rem) + 2rem);
 
-  /* Project semantic mapping (shadcn tokens) */
-  --background: var(--adw-window-bg-color);
-  --foreground: var(--adw-window-fg-color);
-  --card: var(--adw-view-bg-color);
-  --card-foreground: var(--adw-view-fg-color);
-  --popover: var(--adw-headerbar-bg-color);
-  --popover-foreground: var(--adw-headerbar-fg-color);
-  --primary: var(--adw-accent-bg-color);
-  --primary-foreground: var(--adw-accent-fg-color);
-  --secondary: var(--adw-sidebar-bg-color);
-  --secondary-foreground: var(--adw-sidebar-fg-color);
-  --muted: var(--adw-sidebar-backdrop-color);
-  --muted-foreground: var(--adw-light-4);
-  --accent: var(--adw-sidebar-backdrop-color);
-  --accent-foreground: var(--adw-window-fg-color);
-  --destructive: var(--adw-destructive-bg-color);
-  --destructive-foreground: var(--adw-destructive-fg-color);
-  --success: var(--adw-success-bg-color);
-  --success-foreground: var(--adw-success-fg-color);
-  --warning: var(--adw-warning-bg-color);
-  --warning-foreground: var(--adw-warning-fg-color);
-  --error: var(--adw-error-bg-color);
-  --error-foreground: var(--adw-error-fg-color);
-  --border: var(--adw-sidebar-border-color);
-  --input: var(--adw-sidebar-border-color);
-  --ring: var(--adw-accent-color);
+  /* Semantic tokens (shadcn), from the Flexoki ramps */
+  --background: var(--site-page-bg);
+  --foreground: #cecdc3; /* base-200, Flexoki tx */
+  --card: #282726; /* base-900 */
+  --popover: #343331; /* base-850 */
+  --primary: #92bfdb; /* blue-200 */
+  --primary-foreground: #100f0f;
+  --secondary: #282726; /* base-900 */
+  --muted: #343331; /* base-850 */
+  --muted-foreground: var(--paper-4);
+  --destructive: #e8705f; /* red-300 */
+  --destructive-foreground: #100f0f;
+  --success: #a0af54; /* green-300 */
+  --success-foreground: #100f0f;
+  --warning: #dfb431; /* yellow-300 */
+  --warning-foreground: #100f0f;
+  --error: #e8705f; /* red-300 */
+  --error-foreground: #100f0f;
+  --border: #403e3c; /* base-800 */
   --chart-1: #4385be; /* blue-400 */
   --chart-2: #879a39; /* green-400 */
   --chart-3: #d0a215; /* yellow-400 */
   --chart-4: #da702c; /* orange-400 */
   --chart-5: #d14d41; /* red-400 */
-  --sidebar: var(--adw-sidebar-bg-color);
-  --sidebar-foreground: var(--adw-sidebar-fg-color);
-  --sidebar-primary: var(--adw-accent-bg-color);
-  --sidebar-primary-foreground: var(--adw-accent-fg-color);
-  --sidebar-accent: var(--adw-sidebar-backdrop-color);
-  --sidebar-accent-foreground: var(--adw-sidebar-fg-color);
-  --sidebar-border: var(--adw-sidebar-border-color);
-  --sidebar-ring: var(--adw-accent-color);
 }
 
 @layer base {
@@ -394,9 +317,9 @@
   .dark .hljs-operator,
   .dark .hljs-comment,
   .dark .hljs-code,
-  .dark .hljs-formula { color: var(--adw-light-5); }
+  .dark .hljs-formula { color: var(--paper-5); }
   .dark .hljs-subst { color: var(--foreground); }
-  .dark .hljs-section { color: var(--adw-light-1); font-weight: bold; }
+  .dark .hljs-section { color: var(--paper-1); font-weight: bold; }
   .dark .hljs-emphasis { color: var(--foreground); font-style: italic; }
   .dark .hljs-strong { color: var(--foreground); font-weight: bold; }
   .dark .hljs-addition { color: #cdd597; background-color: #252d09; }
@@ -410,18 +333,18 @@
 @layer utilities {
   .dark .prose {
     --tw-prose-invert-body: var(--foreground);
-    --tw-prose-invert-headings: var(--adw-light-1);
+    --tw-prose-invert-headings: var(--paper-1);
     --tw-prose-invert-lead: var(--muted-foreground);
-    --tw-prose-invert-links: var(--adw-light-1);
-    --tw-prose-invert-bold: var(--adw-light-1);
+    --tw-prose-invert-links: var(--paper-1);
+    --tw-prose-invert-bold: var(--paper-1);
     --tw-prose-invert-counters: var(--muted-foreground);
-    --tw-prose-invert-bullets: var(--adw-light-5);
+    --tw-prose-invert-bullets: var(--paper-5);
     --tw-prose-invert-hr: var(--border);
-    --tw-prose-invert-quotes: var(--adw-light-2);
+    --tw-prose-invert-quotes: var(--paper-2);
     --tw-prose-invert-quote-borders: var(--border);
     --tw-prose-invert-captions: var(--muted-foreground);
-    --tw-prose-invert-kbd: var(--adw-light-1);
-    --tw-prose-invert-code: var(--adw-light-1);
+    --tw-prose-invert-kbd: var(--paper-1);
+    --tw-prose-invert-code: var(--paper-1);
     --tw-prose-invert-pre-code: var(--foreground);
     --tw-prose-invert-pre-bg: var(--muted);
     --tw-prose-invert-th-borders: var(--border);
