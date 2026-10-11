@@ -59,13 +59,13 @@ describe("resolveProjectCta", () => {
       ],
     }));
 
-    expect(cta).toEqual({ kind: "repo", href: "https://github.com/Tim-van-Oudheusden/launcher", label: "View on GitHub" });
+    expect(cta).toEqual({ kind: "repo", href: "https://github.com/Tim-van-Oudheusden/launcher", label: "Learn more" });
   });
 
-  test("falls back to the case study when the project has no repository", () => {
+  test("falls back to the project's page on this site when it has no repository", () => {
     const cta = resolveProjectCta(project("pipeline", { links: [{ type: "article", label: "Notes", href: "/articles/notes" }] }));
 
-    expect(cta).toEqual({ kind: "case-study", href: "/projects/pipeline", label: "Read case study" });
+    expect(cta).toEqual({ kind: "project-page", href: "/projects/pipeline", label: "Learn more" });
   });
 });
 
