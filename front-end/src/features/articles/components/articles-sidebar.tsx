@@ -40,7 +40,7 @@ export function ArticlesSidebar({ articles, selectedSlug }: ArticlesSidebarProps
 
   return (
     <aside className={ARTICLES_PAGE_LAYOUT_CLASSES.sidebar}>
-      <div className="p-3">
+      <div className="px-5 pb-10 sm:px-8 lg:p-3">
         <div className={ARTICLES_PAGE_LAYOUT_CLASSES.panelBox}>
           <h1 className={cn("px-2 pb-2", ARTICLES_PAGE_TYPOGRAPHY_CLASSES.pageTitle)}>Articles</h1>
           <div className="space-y-1">

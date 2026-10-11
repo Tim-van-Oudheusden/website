@@ -360,7 +360,7 @@ Order, top to bottom: location trail → category eyebrow (14px, semibold, upper
 ### TOC
 
 - Same well and position as today from 1280px. Label 14px semibold.
-- A 1px rail runs down the list. Headings the reader has reached keep the existing active colour. The **current** heading (the last one reached) gets a 2px bar on the rail in the active colour and `aria-current="location"`.
+- A 1px rail runs down the list. Headings that have entered the viewport keep the existing active colour. The **current** heading, the section being read, gets a 2px bar on the rail in the active colour and `aria-current="location"`. The current heading is the last one that has scrolled above a reading line at 35% of the viewport height, or the first heading in view before any has. A heading that has only just appeared at the bottom does not take over.
 - Colour and bar changes ease over 300ms, so the highlight glides between items. No weight change, so no reflow.
 
 ### Motion
