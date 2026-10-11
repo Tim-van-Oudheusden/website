@@ -14,6 +14,12 @@ export const SITE_OWNER = "Tim van Oudheusden";
 export const HERO_LINE = "I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.";
 const HOME_IMAGE_PATH = "/images/me.png";
 
+/** Where each content type's page lives in the client router (see App.tsx). */
+export const CONTENT_PAGE_PREFIX: Record<ContentFrontmatter["type"], string> = {
+  article: "/articles/",
+  project: "/projects/",
+};
+
 /**
  * Add the homepage's description, canonical URL and link-preview tags to the
  * SPA shell. The shell itself carries only the <title>, so non-home routes
@@ -37,22 +43,22 @@ export function renderHomeMeta(html: string, origin: string): string {
 
 /**
  * Inject link-preview tags (Open Graph + Twitter) and schema.org structured
- * data for one article into the SPA shell, and retitle the page after it.
- * Crawlers such as LinkedIn's never run the app's JavaScript, so these tags
- * must be in the HTML the server sends.
+ * data for one article or project into the SPA shell, and retitle the page
+ * after it. Crawlers such as LinkedIn's never run the app's JavaScript, so
+ * these tags must be in the HTML the server sends.
  */
 export function renderSocialMeta(html: string, item: ContentFrontmatter, origin: string): string {
-  const articleUrl = `${origin}/articles/${encodeURIComponent(item.slug)}`;
+  const pageUrl = `${origin}${CONTENT_PAGE_PREFIX[item.type]}${encodeURIComponent(item.slug)}`;
   const tags: MetaTag[] = [
     { attribute: "name", key: "description", content: item.description },
-    { attribute: "property", key: "og:type", content: "article" },
+    { attribute: "property", key: "og:type", content: item.type === "article" ? "article" : "website" },
     { attribute: "property", key: "og:site_name", content: SITE_NAME },
     { attribute: "property", key: "og:title", content: item.title },
     { attribute: "property", key: "og:description", content: item.description },
-    { attribute: "property", key: "og:url", content: articleUrl },
+    { attribute: "property", key: "og:url", content: pageUrl },
   ];
 
-  const imagePath = resolveSocialImagePath(item.socialImage);
+  const imagePath = resolveSocialImagePath(previewImageSource(item));
   const imageUrl = imagePath === null ? null : `${origin}${imagePath}`;
 
   // Without an authored image, fall back to the homepage portrait. It is portrait-shaped,
@@ -72,30 +78,43 @@ export function renderSocialMeta(html: string, item: ContentFrontmatter, origin:
   return injectIntoHead(
     retitled,
     [
-      `    <link rel="canonical" href="${escapeAttribute(articleUrl)}" />`,
+      `    <link rel="canonical" href="${escapeAttribute(pageUrl)}" />`,
       renderTags(tags),
-      renderArticleJsonLd(item, articleUrl, imageUrl, origin),
+      renderJsonLd(item, pageUrl, imageUrl, origin),
     ].join("\n"),
   );
 }
 
 /**
- * schema.org BlogPosting, so search engines can show the headline, author and
- * publish date as a rich result.
+ * The authored `socialImage`, else a project's cover. LinkedIn and X ignore SVG
+ * preview images, so an SVG cover counts as no image and the portrait stands in.
  */
-function renderArticleJsonLd(
+function previewImageSource(item: ContentFrontmatter): string | null {
+  if (item.socialImage !== null || item.type === "article") {
+    return item.socialImage;
+  }
+
+  return /\.svg$/i.test(item.coverImage) ? null : item.coverImage;
+}
+
+/**
+ * schema.org structured data, so search engines can show the title, author and
+ * date as a rich result: a BlogPosting for an article, a CreativeWork for a project.
+ */
+function renderJsonLd(
   item: ContentFrontmatter,
-  articleUrl: string,
+  pageUrl: string,
   imageUrl: string | null,
   origin: string,
 ): string {
   const data = {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": item.title,
+    ...(item.type === "article"
+      ? { "@type": "BlogPosting", "headline": item.title }
+      : { "@type": "CreativeWork", "name": item.title }),
     "description": item.description,
     "datePublished": item.date,
-    "url": articleUrl,
+    "url": pageUrl,
     "author": { "@type": "Person", "name": SITE_OWNER, "url": `${origin}/` },
     ...(imageUrl === null ? {} : { image: imageUrl }),
   };

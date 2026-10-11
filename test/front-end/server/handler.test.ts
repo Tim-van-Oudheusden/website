@@ -110,6 +110,31 @@ describe("front-end request handler", () => {
     }
   });
 
+  test("serves a project URL as the app shell carrying that project's canonical URL and link-preview tags", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+
+    const response = await handle(new Request("https://buildwithtim.dev/projects/pi-sandbox-automation"));
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain("<title>Pi Sandbox Automation | Build with Tim</title>");
+    expect(html).toContain('<link rel="canonical" href="https://buildwithtim.dev/projects/pi-sandbox-automation" />');
+    expect(html).toContain('<meta property="og:url" content="https://buildwithtim.dev/projects/pi-sandbox-automation" />');
+    expect(html).toContain('<meta property="og:type" content="website" />');
+    expect(html).toContain('<div id="root"></div>');
+  });
+
+  test("serves the plain app shell for a project URL naming an article or an unknown slug", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+
+    for (const path of ["/projects/yoga-nidra", "/projects/no-such-project"]) {
+      const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe(INDEX_HTML);
+    }
+  });
+
   test("serves built files as-is and every other route as the app shell", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
@@ -119,7 +144,7 @@ describe("front-end request handler", () => {
     expect(image.headers.get("content-type")).toBe("image/png");
     expect(new Uint8Array(await image.arrayBuffer())).toEqual(new Uint8Array(readFileSync(join(distDir, "images", "me.png"))));
 
-    for (const path of ["/projects", "/projects/pi-sandbox-automation", "/images"]) {
+    for (const path of ["/projects", "/articles", "/images"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
 
       expect(response.status).toBe(200);
