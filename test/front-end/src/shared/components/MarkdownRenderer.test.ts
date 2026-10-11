@@ -4,6 +4,11 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { MarkdownRenderer } from "../../../../../front-end/src/shared/components/markdown-renderer";
+import { extractMarkdownHeadings, TOC_MAX_DEPTH } from "../../../../../front-end/src/shared/lib/markdown-headings";
+
+function renderedHeadingIds(html: string): string[] {
+  return [...html.matchAll(/<h[1-3] id="([^"]*)"/g)].map((match) => match[1] ?? "");
+}
 
 describe("MarkdownRenderer", () => {
   test("is exported as a memoized React component", () => {
@@ -131,19 +136,56 @@ describe("MarkdownRenderer", () => {
     expect(html).not.toContain("data-callout-type");
   });
 
+  test.each([
+    ["an atx heading indented by one to three spaces", " # One\n  ## Two\n   ### Three"],
+    ["a duplicate after an indented heading", "   ## Setup\n## Setup"],
+    ["a setext heading with indented text", "  Title\n-----\n\nBody\n\n   Other\n   ==="],
+    ["an image-only heading", "## ![Logo](/content-assets/images/logo.svg)\n## Logo"],
+  ])("renders the same heading ids the TOC links to for %s", (_label, content) => {
+    const errorSpy = spyOn(console, "error");
+
+    try {
+      const html = renderToStaticMarkup(createElement(MarkdownRenderer, { content }));
+      const tocIds = extractMarkdownHeadings(content, TOC_MAX_DEPTH).map((heading) => heading.id);
+
+      expect(tocIds.length).toBeGreaterThan(0);
+      expect(renderedHeadingIds(html)).toEqual(tocIds);
+      expect(errorSpy).not.toHaveBeenCalled();
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
   test("falls back to a slugified id and logs when a heading position is not in the toc set", () => {
     const errorSpy = spyOn(console, "error");
 
     try {
       const html = renderToStaticMarkup(
         createElement(MarkdownRenderer, {
-          content: "# Top\n\n  ## Indented Heading\n\nbody",
+          content: "# Top\n\n> ## Quoted Heading\n\nbody",
         }),
       );
 
       expect(html).toContain('h1 id="top"');
-      expect(html).toContain('h2 id="indented-heading"');
+      expect(html).toContain('h2 id="quoted-heading"');
       expect(errorSpy).toHaveBeenCalled();
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  test("uses the image alt text as the fallback id for an image-only heading outside the toc set", () => {
+    const errorSpy = spyOn(console, "error");
+
+    try {
+      const html = renderToStaticMarkup(
+        createElement(MarkdownRenderer, {
+          content: "> ## ![Logo](/content-assets/images/logo.svg)",
+        }),
+      );
+
+      expect(html).toContain('h2 id="logo"');
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('"Logo"'));
     } finally {
       errorSpy.mockRestore();
     }

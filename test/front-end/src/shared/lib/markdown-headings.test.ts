@@ -83,6 +83,23 @@ describe("extractMarkdownHeadings", () => {
     expect(headings.map(({ text }) => text)).toEqual(["Real"]);
   });
 
+  test("extracts atx and setext headings indented by up to three spaces", () => {
+    const headings = extractMarkdownHeadings(" # One\n  ## Two\n   ### Three\n\n  Four\n   ---", 3);
+
+    expect(headings.map(({ text, depth }) => [text, depth])).toEqual([
+      ["One", 1],
+      ["Two", 2],
+      ["Three", 3],
+      ["Four", 2],
+    ]);
+  });
+
+  test("treats lines indented by four or more spaces or a tab as code, not headings", () => {
+    const headings = extractMarkdownHeadings("    # Code\n\n\t## Tab code\n\n    Code\n    ---\n\n# Real", 3);
+
+    expect(headings.map(({ text }) => text)).toEqual(["Real"]);
+  });
+
   test("respects maxDepth and skips empty headings", () => {
     const headings = extractMarkdownHeadings("# One\n### Three\n#### Four\n# \n", 3);
 
@@ -119,6 +136,18 @@ describe("extractMarkdownHeadingsWithOffsets", () => {
       ["title", 36, 5, 1],
       ["sub", 47, 8, 1],
       ["intro-1", 104, 19, 1],
+    ]);
+  });
+
+  test("reports the offset and column of the first non-space character for indented headings", () => {
+    const headings = extractMarkdownHeadingsWithOffsets("   ## Setup\n## Setup\n\n  Title\n-----", 3);
+
+    expect(
+      headings.map(({ id, startOffset, startLine, startColumn }) => [id, startOffset, startLine, startColumn]),
+    ).toEqual([
+      ["setup", 3, 1, 4],
+      ["setup-1", 12, 2, 1],
+      ["title", 24, 4, 3],
     ]);
   });
 
