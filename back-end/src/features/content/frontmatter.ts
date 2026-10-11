@@ -21,6 +21,9 @@
  * `readFrontmatter` returns the parsed data object plus the body after the
  * closing `---`, or the reason no valid leading frontmatter block exists;
  * `parseFrontmatter` is the same parse with the reason collapsed to null.
+ *
+ * A leading UTF-8 byte-order mark is ignored and frontmatter lines may end in
+ * CRLF; the body keeps its original line endings.
  */
 
 type Scalar = string | number | boolean;
@@ -157,12 +160,16 @@ export type FrontmatterRead
   = | { ok: true; result: ParseResult }
     | { ok: false; reason: string };
 
+const BYTE_ORDER_MARK = "\uFEFF";
+
 export function readFrontmatter(raw: string): FrontmatterRead {
-  if (!raw.startsWith("---")) {
+  const text = raw.startsWith(BYTE_ORDER_MARK) ? raw.slice(BYTE_ORDER_MARK.length) : raw;
+
+  if (!text.startsWith("---")) {
     return { ok: false, reason: "Frontmatter is missing its opening --- fence" };
   }
 
-  const lines = raw.split("\n");
+  const lines = text.split("\n");
 
   // Skip the opening `---`.
   let index = 1;
@@ -183,7 +190,7 @@ export function readFrontmatter(raw: string): FrontmatterRead {
       break;
     }
 
-    block.push(line);
+    block.push(line.endsWith("\r") ? line.slice(0, -1) : line);
     index += 1;
   }
 

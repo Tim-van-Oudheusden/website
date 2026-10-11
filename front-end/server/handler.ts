@@ -1,8 +1,8 @@
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { ContentFrontmatter } from "shared";
-import { API_BASE, CF_CONNECTING_IP_HEADER, ROUTES } from "shared";
+import type { ContentFrontmatter, HealthCheckResponse } from "shared";
+import { API_BASE, APP_NAME, CF_CONNECTING_IP_HEADER, ROUTES } from "shared";
 
 import { renderFeed, renderLlmsTxt, renderRobotsTxt, renderSitemap } from "./seo";
 import { renderHomeMeta, renderSocialMeta } from "./social-meta";
@@ -44,6 +44,12 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     // we are). Without it every article view would share one bucket (#479).
     const visitorIp = request.headers.get(CF_CONNECTING_IP_HEADER);
     const backendHeaders: Record<string, string> = visitorIp === null ? {} : { [CF_CONNECTING_IP_HEADER]: visitorIp };
+
+    if (url.pathname === ROUTES.HEALTH) {
+      const body = await checkHealth(indexFile);
+
+      return Response.json(body, { status: body.status === "ok" ? 200 : 503, headers: SECURITY_HEADERS });
+    }
 
     if (url.pathname === "/robots.txt") {
       return new Response(renderRobotsTxt(requestOrigin(request, url)), {
@@ -119,6 +125,23 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
       headers: { ...SECURITY_HEADERS, "content-type": "text/html; charset=utf-8" },
     });
   };
+}
+
+/**
+ * Every response this server sends for a real page comes from `indexFile`
+ * (the SPA shell); a missing or unreadable `dist/index.html` means every
+ * visitor request already fails, not just this check. Mirrors the back-end's
+ * `contentDir` probe (features/health/register-health-route.ts) so neither
+ * container can report "ok" while unable to serve its one real dependency.
+ */
+async function checkHealth(indexFile: ReturnType<typeof Bun.file>): Promise<HealthCheckResponse> {
+  const uptime = Math.round(process.uptime());
+
+  if (await indexFile.exists()) {
+    return { status: "ok", name: APP_NAME, uptime, error: null };
+  }
+
+  return { status: "error", name: APP_NAME, uptime, error: "built site (dist/index.html) is not accessible" };
 }
 
 /**

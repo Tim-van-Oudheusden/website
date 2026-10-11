@@ -4,6 +4,7 @@ slug: introduction
 description: A quick overview of this website and what you can expect here.
 type: article
 category: Introduction
+socialImage: images/introduction-social-image.png
 publishDate: 2026-02-08
 homeRecommended: true
 tags:

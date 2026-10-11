@@ -17,7 +17,10 @@ interface RunningBackEnd {
  * closed pipe would make the back-end's next log write fail with EPIPE.
  */
 async function startBackEnd(): Promise<RunningBackEnd> {
-  const port = 40000 + Math.floor(Math.random() * 20000);
+  // Stay below 32768: Linux hands out ephemeral ports from 32768-60999 (macOS
+  // and Windows from 49152), so a random pick there can land on a port another
+  // socket already holds, and the server exits early with EADDRINUSE.
+  const port = 20000 + Math.floor(Math.random() * 12000);
   const child = Bun.spawn(["bun", "run", "src/index.ts"], {
     cwd: backEndDir,
     env: { ...process.env, HOST: "127.0.0.1", PORT: String(port), LOG_LEVEL: "info" },

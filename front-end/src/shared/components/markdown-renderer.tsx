@@ -42,8 +42,10 @@ function flattenNodeText(node: ReactNode): string {
   if (isValidElement(node)) {
     const elementProps = node.props as { children: ReactNode; alt: string | undefined };
 
+    // The custom `img` component makes node.type a function and leaves
+    // children undefined, so match on the missing children too.
     if (
-      (node.type === "img" || elementProps.children === null)
+      (node.type === "img" || elementProps.children === null || elementProps.children === undefined)
       && typeof elementProps.alt === "string"
       && elementProps.alt.length > 0
     ) {

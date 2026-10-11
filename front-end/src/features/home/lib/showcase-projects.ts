@@ -7,8 +7,8 @@ const SHOWCASE_OTHERS_LIMIT = 4;
 
 /** Where a showcase card's call to action goes. */
 export type ProjectCta
-  = | { kind: "repo"; href: string; label: "View on GitHub" }
-    | { kind: "case-study"; href: string; label: "Read case study" };
+  = | { kind: "repo"; href: string; label: "Learn more" }
+    | { kind: "project-page"; href: string; label: "Learn more" };
 
 /**
  * Projects for the for-devs showcase: the featured project first, then up to
@@ -26,13 +26,13 @@ export function selectShowcaseProjects(projects: readonly ProjectFrontmatter[]):
   return [featured, ...others.slice(0, SHOWCASE_OTHERS_LIMIT)];
 }
 
-/** The project's GitHub repository when it lists one, otherwise its case study on this site. */
+/** The project's GitHub repository when it lists one, otherwise its project page on this site. */
 export function resolveProjectCta(project: ProjectFrontmatter): ProjectCta {
   const repo = project.links.find((link) => link.type === "repo");
 
   return repo === undefined
-    ? { kind: "case-study", href: `/projects/${project.slug}`, label: "Read case study" }
-    : { kind: "repo", href: repo.href, label: "View on GitHub" };
+    ? { kind: "project-page", href: `/projects/${project.slug}`, label: "Learn more" }
+    : { kind: "repo", href: repo.href, label: "Learn more" };
 }
 
 /** The vertical caption beside a card's media: "Shipped · Developer". */

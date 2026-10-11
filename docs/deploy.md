@@ -77,7 +77,8 @@ Then enable and start the pod:
 ```bash
 systemctl --user daemon-reload
 systemctl --user enable --now podman-kube@website.service
-curl -fsS http://127.0.0.1:8301/health   # {"status":"ok",...}
+curl -fsS http://127.0.0.1:8301/health   # back-end: {"status":"ok",...}
+curl -fsS http://127.0.0.1:8300/health   # front-end: {"status":"ok",...}
 ```
 
 The instance name `website` is the pod's name in `deploy/kube/prod.yaml`; the
@@ -124,6 +125,27 @@ and the tunnel does not forward it:
 
 ```bash
 curl -s http://127.0.0.1:8301/views   # [{"slug":"introduction","date":"2026-10-08","count":3}, ...]
+```
+
+### Request and process metrics
+
+The back-end serves Prometheus text at `/metrics`. Like `/views`, it answers
+loopback callers only (anyone else gets `404`) and the tunnel does not forward
+it. It exposes:
+
+- `http_requests_total` (counter, by `method`, `route`, `status`) and
+  `http_request_duration_seconds` (histogram, by `method`, `route`). `route` is
+  the matched route pattern, such as `/api/content/:slug`, not the raw path.
+  A series appears only after its route has been hit.
+- `process_uptime_seconds`, `process_resident_memory_bytes`,
+  `nodejs_heap_size_used_bytes` and `nodejs_heap_size_total_bytes` (unlabeled
+  gauges).
+
+Everything is held in memory, so the counters reset when the back-end restarts.
+Scrape it on the host:
+
+```bash
+curl -s http://127.0.0.1:8301/metrics
 ```
 
 ---

@@ -4,7 +4,7 @@ slug: making-my-work-easier-with-notes-in-obsidian
 description: How a note taking tool can help make office work easier
 type: article
 category: Work
-socialImage: images/cover.png
+socialImage: images/work-and-obsidian-notes.png
 publishDate: 2025-01-17
 homeRecommended: true
 tags:

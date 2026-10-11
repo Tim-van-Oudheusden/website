@@ -44,3 +44,22 @@ describe("docker dependency installs are deterministic", () => {
     expect(sandboxDockerfile).toContain("ln -sf /home/bun/.bun/bin/superlocalmemory /usr/local/bin/superlocalmemory");
   });
 });
+
+describe("prod image health checks", () => {
+  // Why: both prod stages now register GET /health (back-end: contentDir,
+  // front-end: dist/index.html); without a HEALTHCHECK a container can run
+  // and keep accepting traffic while that dependency is unreadable, with
+  // nothing in the image itself able to notice (#707).
+  test("back-end and front-end prod stages probe /health with bun, not curl", () => {
+    for (const [dockerfile, port] of [
+      ["back-end/Dockerfile", 3001],
+      ["front-end/Dockerfile", 3000],
+    ] as const) {
+      const text = readDockerfile(dockerfile);
+
+      expect(text).toContain("HEALTHCHECK");
+      expect(text).toContain(`http://localhost:${port}/health`);
+      expect(text).not.toContain("CMD curl");
+    }
+  });
+});

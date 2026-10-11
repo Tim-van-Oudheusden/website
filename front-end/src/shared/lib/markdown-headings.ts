@@ -10,8 +10,11 @@ export interface MarkdownHeadingWithOffset extends MarkdownHeading {
   startColumn: number;
 }
 
-const ATX_HEADING_PATTERN = /^(#{1,6})[ \t]+(.+?)(?:[ \t]+#+[ \t]*)?$/;
-const SETEXT_UNDERLINE_PATTERN = /^(=+|-+)[ \t]*$/;
+// CommonMark allows up to three spaces before a heading; four or more make an
+// indented code block. The renderer's heading node starts after that indent.
+const ATX_HEADING_PATTERN = /^( {0,3})(#{1,6})[ \t]+(.+?)(?:[ \t]+#+[ \t]*)?$/;
+const SETEXT_TEXT_INDENT_PATTERN = /^ {0,3}(?=\S)/;
+const SETEXT_UNDERLINE_PATTERN = /^ {0,3}(=+|-+)[ \t]*$/;
 const FENCED_CODE_DELIMITER_PATTERN = /^[ \t]{0,3}([`~]{3,})/;
 const ESCAPED_MARKDOWN_SYMBOL_PATTERN = /\\([\\`*_[\]{}()#+\-.!])/g;
 const HTML_TAG_PATTERN = /<\/?[^>]+>/g;
@@ -142,10 +145,11 @@ function collectMarkdownHeadings(
     const atxHeading = ATX_HEADING_PATTERN.exec(line);
 
     if (atxHeading !== null) {
-      const headingHashes = atxHeading[1];
-      const rawHeadingText = atxHeading[2];
+      const indent = atxHeading[1];
+      const headingHashes = atxHeading[2];
+      const rawHeadingText = atxHeading[3];
 
-      if (headingHashes === undefined || rawHeadingText === undefined) {
+      if (indent === undefined || headingHashes === undefined || rawHeadingText === undefined) {
         continue;
       }
 
@@ -161,7 +165,7 @@ function collectMarkdownHeadings(
         continue;
       }
 
-      const startOffset = lineStartOffsets[index] ?? 0;
+      const startOffset = (lineStartOffsets[index] ?? 0) + indent.length;
 
       headings.push({
         id: resolveHeadingId(text),
@@ -169,15 +173,16 @@ function collectMarkdownHeadings(
         depth,
         startOffset,
         startLine: index + 1,
-        startColumn: 1,
+        startColumn: indent.length + 1,
       });
 
       continue;
     }
 
     const nextLine = lines[index + 1];
+    const setextTextIndent = SETEXT_TEXT_INDENT_PATTERN.exec(line)?.[0];
 
-    if (nextLine === undefined || line.trim().length === 0) {
+    if (nextLine === undefined || setextTextIndent === undefined) {
       continue;
     }
 
@@ -208,7 +213,7 @@ function collectMarkdownHeadings(
       continue;
     }
 
-    const startOffset = lineStartOffsets[headingLineIndex] ?? 0;
+    const startOffset = (lineStartOffsets[headingLineIndex] ?? 0) + setextTextIndent.length;
 
     headings.push({
       id: resolveHeadingId(text),
@@ -216,7 +221,7 @@ function collectMarkdownHeadings(
       depth,
       startOffset,
       startLine: headingLineIndex + 1,
-      startColumn: 1,
+      startColumn: setextTextIndent.length + 1,
     });
   }
 
