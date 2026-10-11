@@ -49,7 +49,7 @@ export function TopBar(): JSX.Element {
 
   return (
     <header
-      className="bg-[var(--adw-page-brown-bg)] sticky top-0 z-40 w-full"
+      className="bg-[var(--site-page-bg)] sticky top-0 z-40 w-full"
       data-scrolled={String(scrolled)}
     >
       <div className="mx-auto flex h-[4.2rem] max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -77,7 +77,7 @@ export function TopBar(): JSX.Element {
                     data-active-nav-text={isActive ? "true" : "false"}
                     className={cn(
                       "inline-flex border-b-2 border-transparent leading-none pb-[1px]",
-                      isActive ? "border-[var(--adw-dark-4)] dark:border-[var(--adw-light-4)]" : "",
+                      isActive ? "border-[var(--ink-4)] dark:border-[var(--paper-4)]" : "",
                     )}
                   >
                     {link.label}

@@ -42,7 +42,7 @@ describe("HomeFloatingNav", () => {
   test("uses the discover-button black for its active indicator highlight", () => {
     const html = renderFloatingNav();
 
-    expect(html).toContain("bg-(--adw-dark-5)");
+    expect(html).toContain("bg-(--ink-5)");
     expect(html).not.toContain("bg-primary");
   });
 
@@ -50,7 +50,7 @@ describe("HomeFloatingNav", () => {
     const html = renderFloatingNav();
 
     expect(html).toContain("dark:bg-(--site-section-well-bg)");
-    expect(html).not.toContain("dark:bg-(--adw-page-brown-bg)");
+    expect(html).not.toContain("dark:bg-(--site-page-bg)");
   });
 
   test("shows the recent-posts entry as what's new with the newspaper icon, linking to #whats-new", () => {
@@ -64,8 +64,8 @@ describe("HomeFloatingNav", () => {
   test("inverts the active indicator in dark mode: light fill with dark text", () => {
     const html = renderFloatingNav();
 
-    expect(html).toContain("dark:bg-(--adw-light-1)");
-    expect(html).toContain("dark:text-(--adw-dark-5)");
+    expect(html).toContain("dark:bg-(--paper-1)");
+    expect(html).toContain("dark:text-(--ink-5)");
   });
 
   test("lists the about-me section as \"about me\" with the id-card icon, linking to #about-me", () => {

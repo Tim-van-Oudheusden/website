@@ -32,10 +32,10 @@ export function RecentPostsList({ posts }: { posts: ArticleSummary[] }): JSX.Ele
             to={`/articles/${post.slug}`}
             className="group flex flex-col gap-2 rounded-xl border border-white/15 bg-(--site-section-well-bg) px-5 py-4"
           >
-            <span className="font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1)">
+            <span className="font-semibold tracking-tight text-(--ink-5) dark:text-(--paper-1)">
               {post.title}
             </span>
-            <span className="text-sm text-(--adw-dark-5)/60 dark:text-white/70">
+            <span className="text-sm text-(--ink-5)/60 dark:text-white/70">
               {post.description}
             </span>
           </Link>
@@ -62,7 +62,7 @@ export function RecentPostsContent({
   }
 
   if (posts === null) {
-    return <p className="text-sm text-(--adw-dark-5)/60 dark:text-white/60">Loading recent posts...</p>;
+    return <p className="text-sm text-(--ink-5)/60 dark:text-white/60">Loading recent posts...</p>;
   }
 
   return <RecentPostsList posts={posts} />;

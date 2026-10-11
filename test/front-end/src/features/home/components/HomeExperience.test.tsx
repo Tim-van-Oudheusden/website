@@ -37,7 +37,7 @@ function section(entries: ExperienceEntry[]): HomeExperienceSection {
     label: "experience",
     heading: "Experience",
     body: "Where I have worked.",
-    bgColor: "var(--adw-page-brown-bg)",
+    bgColor: "var(--site-page-bg)",
     contentDirection: "row",
     variant: "experience",
     entries,

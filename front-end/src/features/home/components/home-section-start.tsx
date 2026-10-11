@@ -29,18 +29,18 @@ export function HomeSectionStart({ section, onCtaActivate }: HomeSectionStartPro
             <div className="flex flex-1 flex-col gap-5">
               <h2
                 id={headingIdFor(section.id)}
-                className="font-bold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem] leading-[1.05]"
+                className="font-bold tracking-tight text-(--ink-5) dark:text-(--paper-1) text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem] leading-[1.05]"
               >
                 {section.heading}
               </h2>
-              <p className="max-w-[60ch] text-lg sm:text-xl leading-[1.55] text-(--adw-dark-5) dark:text-white/80">
+              <p className="max-w-[60ch] text-lg sm:text-xl leading-[1.55] text-(--ink-5) dark:text-white/80">
                 {section.body}
               </p>
               <Button
                 asChild
                 variant="secondary"
                 size="lg"
-                className="w-fit h-14 px-10 text-lg font-semibold tracking-wide bg-(--adw-dark-5) text-white hover:bg-black/90 dark:bg-(--adw-light-1) dark:text-(--adw-dark-5) dark:hover:bg-(--adw-light-1)/90"
+                className="w-fit h-14 px-10 text-lg font-semibold tracking-wide bg-(--ink-5) text-white hover:bg-black/90 dark:bg-(--paper-1) dark:text-(--ink-5) dark:hover:bg-(--paper-1)/90"
               >
                 <a
                   href={`#${ctaTargetId}`}

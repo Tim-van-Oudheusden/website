@@ -19,7 +19,7 @@ export function renderErrorFallback(retry: () => void): ReactNode {
       <button
         type="button"
         onClick={retry}
-        className="mt-2 text-sm font-medium text-(--adw-dark-5) underline-offset-4 hover:underline dark:text-white/80"
+        className="mt-2 text-sm font-medium text-(--ink-5) underline-offset-4 hover:underline dark:text-white/80"
       >
         Try again
       </button>

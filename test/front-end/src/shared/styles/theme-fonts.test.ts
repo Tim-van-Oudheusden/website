@@ -5,10 +5,9 @@ import { join, resolve } from "node:path";
 const INDEX_CSS_PATH = resolve(import.meta.dir, "../../../../../front-end/src/index.css");
 const PUBLIC_DIR = resolve(import.meta.dir, "../../../../../public");
 const SOURCE_SANS_STACK = 'font-family: "Source Sans 3", "Source Sans Pro", "Segoe UI", "Helvetica Neue", Arial, sans-serif;';
-const BEIGE_LIGHT_TOKEN = "--adw-beige-light: #f3efe5;";
-const BEIGE_DARK_TOKEN = "--adw-beige-dark: #1c1b1a;";
-const PAGE_BG_BEIGE_MAPPING = "--adw-page-brown-bg: var(--adw-page-beige-bg);";
-const TOC_INACTIVE_LIGHT_TOKEN = "--adw-toc-inactive: #8a8376;";
+const PAGE_BG_LIGHT_TOKEN = "--site-page-bg: #f3efe5;";
+const PAGE_BG_DARK_TOKEN = "--site-page-bg: #1c1b1a;";
+const TOC_INACTIVE_LIGHT_TOKEN = "--site-toc-inactive: #8a8376;";
 
 describe("global font recommendation", () => {
   test("applies Source Sans 3 as the default font stack", () => {
@@ -35,17 +34,11 @@ describe("global font recommendation", () => {
     expect(readFileSync(join(PUBLIC_DIR, "fonts/OFL.txt"), "utf8")).toContain("SIL Open Font License");
   });
 
-  test("defines light and dark beige palette tokens", () => {
+  test("defines the light and dark beige page backgrounds", () => {
     const css = readFileSync(INDEX_CSS_PATH, "utf8");
 
-    expect(css).toContain(BEIGE_LIGHT_TOKEN);
-    expect(css).toContain(BEIGE_DARK_TOKEN);
-  });
-
-  test("maps page backgrounds to beige variants in both themes", () => {
-    const css = readFileSync(INDEX_CSS_PATH, "utf8");
-
-    expect(css).toContain(PAGE_BG_BEIGE_MAPPING);
+    expect(css).toContain(PAGE_BG_LIGHT_TOKEN);
+    expect(css).toContain(PAGE_BG_DARK_TOKEN);
   });
 
   test("defines a beige-toned inactive TOC link colour for the light theme", () => {

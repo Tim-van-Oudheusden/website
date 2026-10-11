@@ -22,8 +22,8 @@ const LINK_ARROW_CLASSES = "ml-1 inline-block size-4 translate-y-px transition-t
 const CARD_AREA_CLASSES = "lg:-inset-y-4 lg:-right-6 lg:-left-3.5";
 
 /** Secondary copy (dates, descriptions): grey on the page; on the dark-mode well, the start section's white/80. */
-const SECONDARY_TEXT_CLASSES = "text-(--adw-dark-2) dark:text-(--adw-light-5)";
-const WELL_SECONDARY_TEXT_CLASSES = "text-(--adw-dark-2) dark:text-white/80";
+const SECONDARY_TEXT_CLASSES = "text-(--ink-2) dark:text-(--paper-5)";
+const WELL_SECONDARY_TEXT_CLASSES = "text-(--ink-2) dark:text-white/80";
 
 interface RoleDatesProps {
   start: string;
@@ -61,7 +61,7 @@ function RoleTitle({ role }: { role: ExperienceEntry }): JSX.Element {
   );
 
   return (
-    <h3 className="text-base leading-snug font-medium text-(--adw-dark-5) dark:text-(--adw-light-1)">
+    <h3 className="text-base leading-snug font-medium text-(--ink-5) dark:text-(--paper-1)">
       {role.companyUrl === null
         ? text
         : (
@@ -70,12 +70,12 @@ function RoleTitle({ role }: { role: ExperienceEntry }): JSX.Element {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${role.title} at ${role.company} (opens in a new tab)`}
-              className="group/link inline-flex items-baseline leading-tight transition-colors duration-150 hover:text-(--adw-accent-color) focus-visible:text-(--adw-accent-color) lg:focus-visible:outline-none motion-reduce:transition-none"
+              className="group/link inline-flex items-baseline leading-tight transition-colors duration-150 hover:text-(--site-accent) focus-visible:text-(--site-accent) lg:focus-visible:outline-none motion-reduce:transition-none"
             >
               {/* Stretched link: from 1024px the whole card is clickable and shows the focus ring. */}
               <span
                 aria-hidden="true"
-                className={cn("absolute hidden rounded-md group-focus-visible/link:ring-2 group-focus-visible/link:ring-(--adw-accent-color) lg:block", CARD_AREA_CLASSES)}
+                className={cn("absolute hidden rounded-md group-focus-visible/link:ring-2 group-focus-visible/link:ring-(--site-accent) lg:block", CARD_AREA_CLASSES)}
               />
               <span>{text}</span>
             </a>
@@ -107,8 +107,8 @@ function RoleRow({ role, lastInGroup, onWell }: RoleRowProps): JSX.Element {
           "pointer-events-none absolute top-1.5 left-0 -translate-x-1/2 rounded-full transition-colors duration-150 motion-reduce:transition-none sm:left-[calc(25%-0.5rem)] md:left-[calc(25%-0.25rem)] lg:left-[calc(25%-0.75rem)]",
           lastInGroup ? "bottom-0" : "-bottom-10",
           current
-            ? "w-[3px] bg-(--adw-accent-color)"
-            : "w-px bg-(--adw-light-4) group-focus-within:bg-(--adw-accent-color) lg:group-hover:bg-(--adw-accent-color) dark:bg-white/20",
+            ? "w-[3px] bg-(--site-accent)"
+            : "w-px bg-(--paper-4) group-focus-within:bg-(--site-accent) lg:group-hover:bg-(--site-accent) dark:bg-white/20",
         )}
       />
       <div className="grid pb-1 transition-opacity duration-150 motion-reduce:transition-none sm:grid-cols-8 sm:gap-8 md:gap-4 lg:gap-x-12">
@@ -118,7 +118,7 @@ function RoleRow({ role, lastInGroup, onWell }: RoleRowProps): JSX.Element {
           <div
             aria-hidden="true"
             className={cn(
-              "absolute -z-10 hidden rounded-md transition motion-reduce:transition-none lg:block lg:group-focus-within:bg-(--adw-view-bg-color)/60 lg:group-focus-within:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] lg:group-focus-within:drop-shadow-lg lg:group-hover:bg-(--adw-view-bg-color)/60 lg:group-hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] lg:group-hover:drop-shadow-lg dark:lg:group-focus-within:bg-white/5 dark:lg:group-hover:bg-white/5",
+              "absolute -z-10 hidden rounded-md transition motion-reduce:transition-none lg:block lg:group-focus-within:bg-(--card)/60 lg:group-focus-within:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] lg:group-focus-within:drop-shadow-lg lg:group-hover:bg-(--card)/60 lg:group-hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] lg:group-hover:drop-shadow-lg dark:lg:group-focus-within:bg-white/5 dark:lg:group-hover:bg-white/5",
               CARD_AREA_CLASSES,
             )}
           />
@@ -134,9 +134,9 @@ function RoleRow({ role, lastInGroup, onWell }: RoleRowProps): JSX.Element {
                     <li key={skill} className="mt-2 mr-1.5">
                       <Badge
                         className={cn(
-                          "rounded-full border-transparent bg-[color-mix(in_oklab,var(--adw-accent-color)_10%,transparent)] px-3 py-1 text-xs leading-5 font-medium text-(--adw-accent-color)",
+                          "rounded-full border-transparent bg-[color-mix(in_oklab,var(--site-accent)_10%,transparent)] px-3 py-1 text-xs leading-5 font-medium text-(--site-accent)",
                           // On the dark-mode well, pills match the about-me bricks.
-                          onWell ? "dark:border-white/20 dark:bg-white/10 dark:text-(--adw-light-1)" : "",
+                          onWell ? "dark:border-white/20 dark:bg-white/10 dark:text-(--paper-1)" : "",
                         )}
                       >
                         {skill}
@@ -189,11 +189,11 @@ export function HomeExperience({ section }: HomeExperienceProps): JSX.Element {
         <div className="flex flex-col gap-3">
           <h2
             id={headingIdFor(section.id)}
-            className="text-[1.875rem] leading-tight sm:text-[2.5rem] text-(--adw-dark-5) dark:text-(--adw-light-1)"
+            className="text-[1.875rem] leading-tight sm:text-[2.5rem] text-(--ink-5) dark:text-(--paper-1)"
           >
             {section.heading}
           </h2>
-          <p className="text-lg leading-relaxed text-(--adw-dark-2) dark:text-(--adw-light-5)">{section.body}</p>
+          <p className="text-lg leading-relaxed text-(--ink-2) dark:text-(--paper-5)">{section.body}</p>
         </div>
         <div>
           <ol className="lg:[&:has([data-role]:focus-within)_[data-role]:not(:focus-within)>div]:opacity-50 lg:[&:has([data-role]:hover)_[data-role]:not(:hover)>div]:opacity-50">
@@ -209,7 +209,7 @@ export function HomeExperience({ section }: HomeExperienceProps): JSX.Element {
                     "-mx-4 px-4 sm:-mx-6 sm:px-6",
                     index === groups.length - 1 ? "" : "mb-12",
                     onWell
-                      ? "rounded-2xl bg-(--adw-light-1)/50 py-6 ring-1 ring-black/5 ring-inset dark:bg-(--site-section-well-bg) dark:ring-white/10"
+                      ? "rounded-2xl bg-(--paper-1)/50 py-6 ring-1 ring-black/5 ring-inset dark:bg-(--site-section-well-bg) dark:ring-white/10"
                       : "",
                   )}
                 >
@@ -232,7 +232,7 @@ export function HomeExperience({ section }: HomeExperienceProps): JSX.Element {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="View full profile on LinkedIn (opens in a new tab)"
-            className="group/link mt-12 inline-block leading-tight font-semibold text-(--adw-dark-5) transition-colors duration-150 hover:text-(--adw-accent-color) focus-visible:text-(--adw-accent-color) dark:text-(--adw-light-1) motion-reduce:transition-none"
+            className="group/link mt-12 inline-block leading-tight font-semibold text-(--ink-5) transition-colors duration-150 hover:text-(--site-accent) focus-visible:text-(--site-accent) dark:text-(--paper-1) motion-reduce:transition-none"
           >
             View full profile on
             {" "}

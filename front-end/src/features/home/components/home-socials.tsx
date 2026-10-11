@@ -20,7 +20,7 @@ const SITE_SOURCE_HREF = "https://github.com/Tim-van-Oudheusden/website";
 const SITE_AUTHOR = "Tim van Oudheusden";
 
 /** Outline pill in the site's neutral tokens, matching the project showcase's call to action. */
-const SOCIAL_LINK_CLASSES = "h-12 gap-3 rounded-full border-(--adw-light-3) bg-(--adw-light-2) px-5 text-base text-(--adw-dark-5) shadow-none transition-colors duration-150 has-[>svg]:px-5 hover:border-(--adw-dark-1) hover:bg-(--adw-light-1) hover:text-(--adw-dark-5) dark:border-(--adw-dark-2) dark:bg-(--adw-headerbar-bg-color) dark:text-(--adw-light-1) dark:hover:border-(--adw-light-3) dark:hover:bg-white/10 dark:hover:text-(--adw-light-1) motion-reduce:transition-none";
+const SOCIAL_LINK_CLASSES = "h-12 gap-3 rounded-full border-(--paper-3) bg-(--paper-2) px-5 text-base text-(--ink-5) shadow-none transition-colors duration-150 has-[>svg]:px-5 hover:border-(--ink-1) hover:bg-(--paper-1) hover:text-(--ink-5) dark:border-(--ink-2) dark:bg-(--popover) dark:text-(--paper-1) dark:hover:border-(--paper-3) dark:hover:bg-white/10 dark:hover:text-(--paper-1) motion-reduce:transition-none";
 
 interface HomeSocialsProps {
   section: HomeSocialsSection;
@@ -53,7 +53,7 @@ export function HomeSocials({ section }: HomeSocialsProps): JSX.Element {
             );
           })}
         </ul>
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-(--adw-dark-5)/60 dark:text-white/60">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-(--ink-5)/60 dark:text-white/60">
           <p>
             ©
             {" "}
@@ -66,7 +66,7 @@ export function HomeSocials({ section }: HomeSocialsProps): JSX.Element {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Source of this site (opens in a new tab)"
-            className="inline-flex items-center gap-1 underline-offset-4 transition-colors duration-150 hover:text-(--adw-dark-5) hover:underline focus-visible:text-(--adw-dark-5) dark:hover:text-(--adw-light-1) dark:focus-visible:text-(--adw-light-1) motion-reduce:transition-none"
+            className="inline-flex items-center gap-1 underline-offset-4 transition-colors duration-150 hover:text-(--ink-5) hover:underline focus-visible:text-(--ink-5) dark:hover:text-(--paper-1) dark:focus-visible:text-(--paper-1) motion-reduce:transition-none"
           >
             Source of this site
             <ArrowUpRight aria-hidden="true" className="size-3.5" />

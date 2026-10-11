@@ -55,9 +55,16 @@ To add a category, change `ARTICLE_CATEGORIES` first, then update this table.
 
 ### Colours
 
-Colour tokens live in [`front-end/src/index.css`](front-end/src/index.css). The shadcn theme variables
-(`--background`, `--primary`, …) map onto them. Every design change is checked in both light and dark mode, and every
-text and UI pair must meet WCAG 2.2 AA: 4.5:1 for body text, 3:1 for large text, UI boundaries and focus rings.
+Colour tokens live in [`front-end/src/index.css`](front-end/src/index.css). Components use three kinds of token:
+
+- the shadcn semantic tokens (`--background`, `--primary`, `--muted-foreground`, …);
+- the neutral ramp, lightest to darkest: `--paper-1` … `--paper-5`, then `--ink-1` … `--ink-5`. Dark mode swaps in the
+  Flexoki ramp at matching lightness, so `dark:text-(--paper-1)` stays the lightest step;
+- site roles with one job each: `--site-page-bg`, `--site-section-well-bg`, `--site-accent` (accent text, rings and
+  indicators) and `--site-toc-inactive`.
+
+Every design change is checked in both light and dark mode, and every text and UI pair must meet WCAG 2.2 AA: 4.5:1 for
+body text, 3:1 for large text, UI boundaries and focus rings.
 
 - **Light mode:** a warm beige page (`#f3efe5`), white wells, near-black text and a blue accent.
 - **Dark mode:** [Flexoki](https://stephango.com/flexoki) by Steph Ango (MIT licence). A warm near-black page
@@ -72,8 +79,23 @@ the contrast numbers are in [`research/dark_theme_warm_palette.md`](research/dar
 
 Reference sites are copied for layout, spacing, type scale and interaction, **never for colour**.
 
-The `--adw-*` prefix on the custom properties is historical. The colours do not follow GNOME Adwaita, whose palette
-is meant for app icons and illustrations, not web UI.
+Notes in `research/` and `docs/` written before #761 use the old `--adw-*` names, which were left over from the GNOME
+Adwaita palette the site no longer follows. They map as follows:
+
+| Old | New |
+| --- | --- |
+| `--adw-light-1` … `--adw-light-5` | `--paper-1` … `--paper-5` |
+| `--adw-dark-1` … `--adw-dark-5` | `--ink-1` … `--ink-5` |
+| `--adw-page-brown-bg`, `--adw-page-beige-bg`, `--adw-beige-light`, `--adw-beige-dark` | `--site-page-bg` |
+| `--adw-accent-color` | `--site-accent` |
+| `--adw-toc-inactive` | `--site-toc-inactive` |
+| `--adw-window-*-color`, `--adw-view-*-color`, `--adw-headerbar-*-color` | `--background`/`--foreground`, `--card`/`--card-foreground`, `--popover`/`--popover-foreground` |
+| `--adw-accent-bg-color`, `--adw-accent-fg-color` | `--primary`, `--primary-foreground` |
+| `--adw-sidebar-bg-color`, `--adw-sidebar-backdrop-color`, `--adw-sidebar-border-color` | `--secondary`, `--muted`, `--border` |
+| `--adw-{destructive,success,warning,error}-{bg,fg}-color` | `--destructive`, `--success`, … and their `-foreground` |
+
+The named accents (`--adw-accent-blue` … `--adw-accent-slate`), `--adw-brown-1`, the standalone status colours and the
+shade and backdrop colours were unused and are gone.
 
 ### Typography
 

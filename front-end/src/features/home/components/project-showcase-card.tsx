@@ -10,7 +10,7 @@ import { Button } from "@/shared/components/ui/button";
 import { projectCaption, resolveProjectCta } from "../lib/showcase-projects";
 
 /** Outline pill; an icon-only 44px circle while the card is narrower than 32rem. */
-const CTA_CLASSES = "size-11 flex-none rounded-full border-(--adw-light-3) bg-(--adw-light-2) text-(--adw-dark-5) shadow-none transition-all duration-300 hover:border-(--adw-dark-1) hover:bg-(--adw-light-1) dark:border-(--adw-dark-2) dark:bg-(--adw-headerbar-bg-color) dark:text-(--adw-light-1) dark:hover:border-(--adw-light-3) dark:hover:bg-white/10 @lg/card:h-12 @lg/card:w-auto @lg/card:gap-2 @lg/card:pr-4 @lg/card:pl-6 @lg/card:text-base motion-reduce:transition-none";
+const CTA_CLASSES = "size-11 flex-none rounded-full border-(--paper-3) bg-(--paper-2) text-(--ink-5) shadow-none transition-all duration-300 hover:border-(--ink-1) hover:bg-(--paper-1) dark:border-(--ink-2) dark:bg-(--popover) dark:text-(--paper-1) dark:hover:border-(--paper-3) dark:hover:bg-white/10 @lg/card:h-12 @lg/card:w-auto @lg/card:gap-2 @lg/card:pr-4 @lg/card:pl-6 @lg/card:text-base motion-reduce:transition-none";
 
 function ProjectCtaLink({ project }: { project: ProjectFrontmatter }): JSX.Element {
   const cta = resolveProjectCta(project);
@@ -62,13 +62,13 @@ export function ProjectShowcaseCard({ project, featured }: ProjectShowcaseCardPr
         <div className={cn("flex gap-3", featured ? "@2xl/grid:w-[62%] @2xl/grid:flex-none" : "")}>
           <div
             className={cn(
-              "flex-1 overflow-hidden rounded-xl border border-(--adw-light-3) aspect-4/3 dark:border-(--adw-headerbar-bg-color)",
+              "flex-1 overflow-hidden rounded-xl border border-(--paper-3) aspect-4/3 dark:border-(--popover)",
               featured ? "@2xl/grid:aspect-11/6" : "",
             )}
           >
             <img src={project.coverImage} alt={project.coverImageAlt} loading="lazy" className="size-full object-cover" />
           </div>
-          <span className="hidden self-start font-mono text-[11px] tracking-widest uppercase opacity-80 [writing-mode:vertical-rl] rotate-180 text-(--adw-dark-1) dark:text-(--adw-light-1) @sm/card:block @6xl/grid:text-xs">
+          <span className="hidden self-start font-mono text-[11px] tracking-widest uppercase opacity-80 [writing-mode:vertical-rl] rotate-180 text-(--ink-1) dark:text-(--paper-1) @sm/card:block @6xl/grid:text-xs">
             {projectCaption(project)}
           </span>
         </div>
@@ -79,10 +79,10 @@ export function ProjectShowcaseCard({ project, featured }: ProjectShowcaseCardPr
           )}
         >
           <div>
-            <h3 className="text-[1.375rem] leading-7 font-semibold tracking-tight text-balance text-(--adw-dark-5) dark:text-(--adw-light-1) @sm/card:text-[1.5625rem] @6xl/grid:text-3xl @6xl/grid:leading-9">
+            <h3 className="text-[1.375rem] leading-7 font-semibold tracking-tight text-balance text-(--ink-5) dark:text-(--paper-1) @sm/card:text-[1.5625rem] @6xl/grid:text-3xl @6xl/grid:leading-9">
               {project.title}
             </h3>
-            <p className="mt-2 text-base leading-6 text-(--adw-dark-2) dark:text-white/80 @6xl/grid:text-lg">
+            <p className="mt-2 text-base leading-6 text-(--ink-2) dark:text-white/80 @6xl/grid:text-lg">
               {project.description}
             </p>
           </div>

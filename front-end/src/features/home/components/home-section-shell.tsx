@@ -66,11 +66,11 @@ export function HomeHeadedSectionShell({
           <div className={cn("flex flex-1 flex-col gap-5", headingAlign === "center" && "items-center text-center")}>
             <h2
               id={headingIdFor(section.id)}
-              className="font-semibold tracking-tight text-(--adw-dark-5) dark:text-(--adw-light-1) text-[1.75rem] sm:text-[2rem]"
+              className="font-semibold tracking-tight text-(--ink-5) dark:text-(--paper-1) text-[1.75rem] sm:text-[2rem]"
             >
               {heading}
             </h2>
-            <p className="max-w-[65ch] text-base sm:text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80">
+            <p className="max-w-[65ch] text-base sm:text-lg leading-relaxed text-(--ink-5) dark:text-white/80">
               {body}
             </p>
           </div>

@@ -31,7 +31,7 @@ function ShowcaseContent({
   }
 
   if (projects === null) {
-    return <p className="text-sm text-(--adw-dark-5)/60 dark:text-white/60">Loading projects...</p>;
+    return <p className="text-sm text-(--ink-5)/60 dark:text-white/60">Loading projects...</p>;
   }
 
   return (

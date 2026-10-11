@@ -32,9 +32,9 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
   });
 
   test("uses shared brown page surfaces for sidebar and content", () => {
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("bg-[var(--adw-page-brown-bg)]");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("bg-[var(--adw-page-brown-bg)]");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("bg-[var(--adw-page-brown-bg)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.container).toContain("bg-[var(--site-page-bg)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("bg-[var(--site-page-bg)]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("bg-[var(--site-page-bg)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).not.toContain("dark:bg-card");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).not.toContain("dark:bg-card");
   });
@@ -68,23 +68,23 @@ describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTitle).toContain("text-[2.125rem] leading-[1.12] sm:text-[2.75rem] xl:text-[3.25rem] font-semibold tracking-tight");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarTriggerLabel).toContain("text-sm font-medium");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton).toContain("text-sm font-medium");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("bg-[var(--adw-dark-5)]");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("text-[var(--adw-light-1)]");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("dark:bg-[var(--adw-light-1)]");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("dark:text-[var(--adw-dark-5)]");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("bg-[var(--ink-5)]");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("text-[var(--paper-1)]");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("dark:bg-[var(--paper-1)]");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("dark:text-[var(--ink-5)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarSelectedArticleState).toContain("shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.5)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleDescription).toContain("text-lg sm:text-xl leading-relaxed");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleBodyMeasure).toContain("mx-auto w-full max-w-[40rem]");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("bg-[var(--adw-dark-5)]");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("text-[var(--adw-light-1)]");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("bg-[var(--ink-5)]");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("text-[var(--paper-1)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("font-bold");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("dark:bg-[var(--adw-light-1)]");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("dark:text-[var(--adw-dark-5)]");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("dark:bg-[var(--paper-1)]");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge).toContain("dark:text-[var(--ink-5)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.sidebarArticleButton).toContain("[&>svg]:shrink-0");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocTitle).toContain("text-sm font-semibold tracking-tight");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLink).toContain("font-medium");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkActive).toContain("text-[var(--adw-dark-4)]");
-    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkInactive).toContain("text-[var(--adw-toc-inactive)]");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkActive).toContain("text-[var(--ink-4)]");
+    expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkInactive).toContain("text-[var(--site-toc-inactive)]");
   });
 });
 

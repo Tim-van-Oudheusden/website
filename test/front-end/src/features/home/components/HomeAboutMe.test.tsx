@@ -12,7 +12,7 @@ const SECTION: HomeAboutSection = {
   label: "about me",
   heading: "About me",
   body: "A short introduction.",
-  bgColor: "var(--adw-page-brown-bg)",
+  bgColor: "var(--site-page-bg)",
   contentDirection: "row",
   variant: "about",
   aboutItems: ["Second item first", "A", "Third, much longer item than the others"],
