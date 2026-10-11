@@ -32,4 +32,19 @@ describe("index.html", () => {
     expect(feeds[0]).toContain('type="application/atom+xml"');
     expect(feeds[0]).toContain('href="/feed.xml"');
   });
+
+  test("links the home-screen icon, manifest and theme colour for mobile bookmarking", () => {
+    const html = readFileSync(resolve(import.meta.dir, "../../../front-end/index.html"), "utf-8");
+    const links = [...html.matchAll(/<link\b[^>]*>/g)].map(([tag]) => tag);
+
+    expect(links.filter((tag) => /\brel="apple-touch-icon"/.test(tag))).toEqual([
+      '<link rel="apple-touch-icon" href="/apple-touch-icon.png" />',
+    ]);
+
+    expect(links.filter((tag) => /\brel="manifest"/.test(tag))).toEqual([
+      '<link rel="manifest" href="/manifest.webmanifest" />',
+    ]);
+
+    expect(html).toContain('<meta name="theme-color" content="#3584e4" />');
+  });
 });
