@@ -108,7 +108,8 @@
  *
  * Light mode: warm beige page, white wells, near-black text, blue
  * accent. Dark mode: Flexoki by Steph Ango (MIT), ink on paper with a
- * warm near-black page, a warm grey ramp and an orange accent. It was
+ * warm near-black page, a warm grey ramp and a light blue accent
+ * (blue-200, the same hue as the light accent). It was
  * chosen because the light theme is already ink on paper (its page,
  * #f3efe5, is close to Flexoki base-50 #f2f0e5). Rationale, the
  * alternatives and the contrast ratios:
@@ -246,9 +247,10 @@
   --adw-dark-5: #100f0f; /* black */
 
   /* Semantic colours (dark), from the Flexoki ramps */
-  --adw-accent-bg-color: #ec8b49; /* orange-300 */
+  /* blue-200 for fill and text: blue-300 fails as text on raised surfaces, and blue keeps the light-mode hue. */
+  --adw-accent-bg-color: #92bfdb; /* blue-200 */
   --adw-accent-fg-color: #100f0f;
-  --adw-accent-color: #f9ae77; /* orange-200 */
+  --adw-accent-color: #92bfdb; /* blue-200 */
   --adw-destructive-bg-color: #e8705f; /* red-300 */
   --adw-destructive-fg-color: #100f0f;
   --adw-destructive-color: #f89a8a; /* red-200 */

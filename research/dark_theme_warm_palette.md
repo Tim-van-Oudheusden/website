@@ -79,7 +79,8 @@ Other numbers used below:
 - Page `bg-2` `#1c1b1a` (not `bg` `#100f0f`): Material advises dark grey over black, and it keeps the page close to the old `#1c1a17`. Wells `ui` `#282726` sit one step up (1.15:1, like white wells on the beige page in light mode at 1.15:1). Raised surfaces inside wells and hover fills use `ui-2` `#343331`.
 - Body text `tx` `#cecdc3`; headings, the inverted fills and the logo plate use paper `#fffcf0`.
 - Muted text is base-300 `#b7b5ac` (7.26 on the well) instead of `tx-2` `#878580`, which fails on the well (4.04). Secondary text that used Adwaita Light 5 maps to base-400 `#9f9d96` (5.49 on the well, 4.65 on raised cards).
-- Accent: Flexoki's 400 tones fail on the wells (orange 4.498, red 3.44, blue 3.79), so text and focus rings use orange-200 `#f9ae77` (8.06 on the well) and fills use orange-300 `#ec8b49` with black text (7.62). This follows Material's advice to use lighter, less saturated tones on dark surfaces. Orange instead of blue: it is Flexoki's warm accent and removes the last cold colour from dark mode. [INFERENCE: a design call; light mode keeps its blue]
+- Accent: Flexoki's 400 tones fail on the wells (orange 4.498, red 3.44, blue 3.79), and blue-300 `#66a0c8` still fails as text on raised surfaces (4.464 on `#343331`). `--primary` is rendered as text (button and badge `link` variants), so the accent uses blue-200 `#92bfdb` for both text/focus rings and fills: 8.76 on the page, 7.60 on the well, 6.43 on raised surfaces and code blocks, and `#100f0f` text on the fill at 9.75. This follows Material's advice to use lighter, less saturated tones on dark surfaces. [COMPUTED]
+- Blue, not orange: light mode's accent is blue, so links, focus rings and primary fills keep the same hue in both themes; and an orange accent sat next to the red-300 error colour `#e8705f` in hue, so links and errors looked alike. Orange stays in the syntax-highlighting roles only. An orange accent (orange-200 `#f9ae77` text, orange-300 `#ec8b49` fill) was implemented first and passes AA too (8.06 on the well); it lost on these two points. [INFERENCE: a design call]
 - Status colours: red-300 `#e8705f` (destructive/error), green-300 `#a0af54`, yellow-300 `#dfb431` as fills with black text; 200 tones for standalone text.
 - Syntax highlighting: Flexoki's syntax roles at the 200 tones, which all clear 4.5:1 on the code block `#343331` (lowest 6.43); comments use base-400 `#9f9d96` (4.65).
 - The old neutral ramp (`--adw-light-1..5`, `--adw-dark-1..5`) is overridden in `.dark` with the Flexoki base values of the same lightness, so every component class that used a GNOME grey (for example the purple-grey blockquote `#3d3846`) becomes warm without touching the component.
@@ -104,9 +105,10 @@ Surfaces: page `#1c1b1a`, well `#282726`, raised `#343331`, blockquote `#403e3c`
 | Secondary text | `--adw-light-5` | `#9a9996` → `#9f9d96` | 6.34 | 5.49 | 4.65 |
 | `white/80` copy (unchanged class) | — | — | 11.29 | 10.06 | 8.68 |
 | `white/60` meta (unchanged class) | — | — | 6.89 | 6.34 | 5.64 |
-| Accent text, focus ring | `--adw-accent-color`, `--ring` | `#81d0ff` → `#f9ae77` | 9.29 | 8.06 | 6.82 |
-| Primary as text (`text-primary`) | `--primary` | `#3584e4` → `#ec8b49` | 6.84 | 5.93 | 5.02 |
-| Primary fill + text | `--primary` / `--primary-foreground` | white on `#3584e4` 3.77 → `#100f0f` on `#ec8b49` | 7.62 | | |
+| Accent text, focus ring | `--adw-accent-color`, `--ring` | `#81d0ff` → `#92bfdb` | 8.76 | 7.60 | 6.43 |
+| Primary as text (`text-primary`) | `--primary` | `#3584e4` → `#92bfdb` | 8.76 | 7.60 | 6.43 |
+| Primary fill + text | `--primary` / `--primary-foreground` | white on `#3584e4` 3.77 → `#100f0f` on `#92bfdb` | 9.75 (8.18 on the 90% hover over the page) | | |
+| Accent pill text on its 10% tint (experience tech pills off the well) | `--adw-accent-color` | → | 7.26 (tint over page) | 6.20 (tint over well) | |
 | Error text (`text-destructive`) | `--destructive` | `#c01c28` → `#e8705f` | 5.66 | 4.91 | 4.16 (not used there) |
 | Destructive button (`dark:bg-destructive/60` + white) | `--destructive` | 10.17 → | 6.06 | 5.64 | 5.25 |
 | Standalone error/success/warning text | `--adw-*-color` | → `#f89a8a` / `#bec97e` / `#eccb60` | 8.17 / 9.70 / 10.87 | 7.09 / 8.41 / 9.43 | 6.00 / 7.12 / 7.98 |
@@ -119,7 +121,7 @@ Non-text (1.4.11, ≥ 3:1):
 
 | Pair | Old | New |
 |---|---|---|
-| Focus ring vs page / well / raised | 10.25 / 5.13 / 7.98 | 9.29 / 8.06 / 6.82 |
+| Focus ring vs page / well / raised | 10.25 / 5.13 / 7.98 | 8.76 / 7.60 / 6.43 |
 | Hero CTA and featured-project button fill vs well | 2.42 (black on `#63452c`) | 14.51 (paper on `#282726`) |
 | Floating-nav active indicator vs well | 2.42 | 14.51 |
 | Logo plate vs page | 1.21 | 16.73 |

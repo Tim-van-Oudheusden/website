@@ -62,8 +62,8 @@ text and UI pair must meet WCAG 2.2 AA: 4.5:1 for body text, 3:1 for large text,
 - **Light mode:** a warm beige page (`#f3efe5`), white wells, near-black text and a blue accent.
 - **Dark mode:** [Flexoki](https://stephango.com/flexoki) by Steph Ango (MIT licence). A warm near-black page
   (`#1c1b1a`), wells one step lighter (`#282726`), warm off-white text (`#cecdc3`), paper-white headings (`#fffcf0`)
-  and an orange accent (`#f9ae77` for text and focus rings, `#ec8b49` for fills). The black buttons, the floating-nav
-  indicator and the logo invert to paper with dark text.
+  and a light blue accent (`#92bfdb`, Flexoki blue-200, for text, focus rings and fills; the same hue as the light
+  accent). The black buttons, the floating-nav indicator and the logo invert to paper with dark text.
 
 **Why Flexoki:** it is designed as ink on paper, and the light theme already is that: the light page `#f3efe5` is
 almost Flexoki's `base-50` (`#f2f0e5`). Its warm grey ramp gives dark mode the same character without painting
