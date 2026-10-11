@@ -259,24 +259,6 @@
     font-family: "Source Sans 3", "Source Sans Pro", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   }
 
-  .prose {
-    --tw-prose-body: var(--foreground);
-    --tw-prose-headings: var(--foreground);
-    --tw-prose-links: var(--primary);
-    --tw-prose-bold: var(--foreground);
-    --tw-prose-counters: var(--muted-foreground);
-    --tw-prose-bullets: var(--muted-foreground);
-    --tw-prose-hr: var(--border);
-    --tw-prose-quotes: var(--foreground);
-    --tw-prose-quote-borders: var(--border);
-    --tw-prose-captions: var(--muted-foreground);
-    --tw-prose-code: var(--foreground);
-    --tw-prose-pre-code: var(--foreground);
-    --tw-prose-pre-bg: var(--muted);
-    --tw-prose-th-borders: var(--border);
-    --tw-prose-td-borders: var(--border);
-  }
-
   /* Let prose control code block backgrounds instead of highlight.js */
   .hljs {
     background: transparent;
@@ -327,10 +309,30 @@
 }
 
 /*
- * Dark prose colours. Typography's prose-invert reads these --tw-prose-invert-* values, which the plugin
- * sets on .prose as cool Tailwind greys; .dark .prose outranks it and points them at the theme tokens.
+ * Prose colours. Typography sets its --tw-prose-* and --tw-prose-invert-* values on .prose as cool Tailwind greys,
+ * in a layer after base, so these overrides live in utilities. Light: .prose comes after the plugin's .prose in the
+ * same layer and wins on order. Dark: prose-invert reads the --tw-prose-invert-* values, and .dark .prose outranks
+ * the plugin. Links use --site-accent, not --primary: --primary is 3.28:1 on the light page, below AA.
  */
 @layer utilities {
+  .prose {
+    --tw-prose-body: var(--foreground);
+    --tw-prose-headings: var(--foreground);
+    --tw-prose-links: var(--site-accent);
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-counters: var(--muted-foreground);
+    --tw-prose-bullets: var(--muted-foreground);
+    --tw-prose-hr: var(--border);
+    --tw-prose-quotes: var(--foreground);
+    --tw-prose-quote-borders: var(--border);
+    --tw-prose-captions: var(--muted-foreground);
+    --tw-prose-code: var(--foreground);
+    --tw-prose-pre-code: var(--foreground);
+    --tw-prose-pre-bg: var(--muted);
+    --tw-prose-th-borders: var(--border);
+    --tw-prose-td-borders: var(--border);
+  }
+
   .dark .prose {
     --tw-prose-invert-body: var(--foreground);
     --tw-prose-invert-headings: var(--paper-1);
