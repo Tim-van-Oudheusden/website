@@ -16,7 +16,16 @@ on:
     types: [submitted]
 
 concurrency:
-  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  # A newer event in a busy group replaces the pending one, and the group is
+  # resolved before the job's `if`. Only events that pass that `if` share the
+  # per-issue queue. Any other label, comment or review gets a group of its
+  # own, so it cannot cancel a pending run that was really asked for.
+  group: >-
+    claude-${{ github.event.issue.number || github.event.pull_request.number }}-${{
+    (github.event.label.name == 'ai-fix-requested'
+    || (contains(format('{0}{1}', github.event.comment.body, github.event.review.body), '@claude')
+    && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association || github.event.review.author_association)))
+    && 'queue' || github.run_id }}
   cancel-in-progress: false
 
 jobs:
@@ -45,6 +54,22 @@ jobs:
       id-token: write
       actions: read
     steps:
+      - name: Refuse fork pull requests
+        # claude-code-action checks out the PR head (fork PRs via refs/pull/N/head)
+        # and Claude may run bun install/test/build on it while this job holds a
+        # write token. Fork code must never run here.
+        if: github.event.issue.pull_request || github.event.pull_request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          head_repo="$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.head.repo.full_name // ""')"
+          if [ "$head_repo" != "$REPO" ]; then
+            echo "::error::Fork pull requests are not supported by the Claude workflow; review them locally."
+            exit 1
+          fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
