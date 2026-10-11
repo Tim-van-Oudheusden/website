@@ -6,7 +6,7 @@ const INDEX_CSS_PATH = resolve(import.meta.dir, "../../../../../front-end/src/in
 const PUBLIC_DIR = resolve(import.meta.dir, "../../../../../public");
 const SOURCE_SANS_STACK = 'font-family: "Source Sans 3", "Source Sans Pro", "Segoe UI", "Helvetica Neue", Arial, sans-serif;';
 const BEIGE_LIGHT_TOKEN = "--adw-beige-light: #f3efe5;";
-const BEIGE_DARK_TOKEN = "--adw-beige-dark: #1c1a17;";
+const BEIGE_DARK_TOKEN = "--adw-beige-dark: #100f0f;";
 const PAGE_BG_BEIGE_MAPPING = "--adw-page-brown-bg: var(--adw-page-beige-bg);";
 const TOC_INACTIVE_LIGHT_TOKEN = "--adw-toc-inactive: #8a8376;";
 

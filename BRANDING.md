@@ -53,16 +53,24 @@ To add a category, change `ARTICLE_CATEGORIES` first, then update this table.
 
 ## 6. Visual identity
 
-### Colours: GNOME Adwaita
+### Colours: warm paper and ink
 
-The site uses the GNOME Adwaita palette, defined as `--adw-*` tokens in
-[`front-end/src/index.css`](front-end/src/index.css) and sourced from the
-[GNOME HIG palette](https://developer.gnome.org/hig/reference/palette.html). The shadcn theme variables
-(`--background`, `--primary`, …) map onto them. Every design change is checked in both light and dark mode.
+Both themes are warm. Light mode is a beige page (`#f3efe5`) with white wells, near-black text and blue accents. Dark
+mode uses [Flexoki](https://stephango.com/flexoki) (MIT, by Steph Ango), a palette "inspired by analog inks and warm
+shades of paper": a warm black page (`#100f0f`), one step lighter wells and cards (`#1c1b1a`), off-white text
+(`#cecdc3`, headings `#e6e4d9`) and Flexoki's blues, reds, greens and yellows for accents. Its brown-grey undertone
+gives dark mode the same character as the beige light theme. Black call-to-action buttons and the logo invert to a
+paper fill with black text in dark mode.
 
-**Why it stays:** Adwaita is a proven, research-backed colour scheme, and it is rarely used on the web. Chasing current
-web colour trends would remove what makes the site look distinctive. Reference sites are copied for layout, spacing,
-type scale and interaction, **never for colour**.
+The tokens live in [`front-end/src/index.css`](front-end/src/index.css). Their `--adw-*` names are historical (the
+site started from GNOME's libadwaita colours), and the shadcn theme variables (`--background`, `--primary`, …) map onto
+them. The research behind the dark palette, with contrast ratios and the schemes it was chosen over, is in
+[`research/dark_theme_warm_palette.md`](research/dark_theme_warm_palette.md).
+
+**Rules:** every text and UI colour pair meets WCAG 2.2 AA in both themes (4.5:1 for body text, 3:1 for large text,
+UI boundaries and focus rings); `test/front-end/src/shared/styles/dark-theme-palette.test.ts` checks the dark tokens.
+Every design change is checked in both light and dark mode. Reference sites are copied for layout, spacing, type scale
+and interaction, **never for colour**.
 
 ### Typography
 

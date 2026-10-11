@@ -2,6 +2,7 @@ import type { Locator, Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures";
 import { openHome } from "./home-page";
+import type { Rgb } from "./surface-colours";
 import { AA_NON_TEXT_CONTRAST, contrastRatio, lowContrastTexts, sampleSurface } from "./surface-colours";
 
 /** Experience companies with several positions: the ones shown on a panel. */
@@ -23,6 +24,46 @@ async function expectOnWell(page: Page, surfaces: Locator): Promise<void> {
     }
 
     expect(lowContrastTexts(sample)).toEqual([]);
+  }
+}
+
+/** A rough lightness for comparing two opaque colours. */
+function brightness([r, g, b]: Rgb): number {
+  return r + g + b;
+}
+
+/**
+ * Asserts the start section's call to action and the floating-nav indicator are filled with a colour that is
+ * lighter (dark mode) or darker (light mode) than the well they sit on, and stand out from it at WCAG AA.
+ */
+async function expectFilledControls(page: Page, fill: "light" | "dark"): Promise<void> {
+  const controls = [
+    page.getByTestId("start-white-box").locator('[data-slot="button"]').first(),
+    page.locator('[data-slot="active-indicator"]'),
+  ];
+
+  for (const control of controls) {
+    const sample = await sampleSurface(control);
+
+    expect(contrastRatio(sample.backdrop, sample.surround)).toBeGreaterThanOrEqual(AA_NON_TEXT_CONTRAST);
+    expect(brightness(sample.backdrop) > brightness(sample.surround)).toBe(fill === "light");
+    expect(lowContrastTexts(sample)).toEqual([]);
+  }
+}
+
+/**
+ * The active floating-nav label is painted over the sliding indicator, a sibling the sampler does not composite,
+ * so its colour is checked against the indicator's fill instead of the well behind both.
+ */
+async function expectActiveNavLabelReadable(page: Page): Promise<void> {
+  const nav = page.getByRole("navigation", { name: "Page sections" });
+  const label = await sampleSurface(nav.locator("a[aria-current]"));
+  const indicator = await sampleSurface(nav.locator('[data-slot="active-indicator"]'));
+
+  expect(label.texts.length).toBeGreaterThan(0);
+
+  for (const { color } of label.texts) {
+    expect(contrastRatio(color, indicator.backdrop)).toBeGreaterThanOrEqual(4.5);
   }
 }
 
@@ -59,7 +100,21 @@ test.describe("Home section surfaces", () => {
     expect(headingBox.x).toBeCloseTo(timelineBox.x, 0);
   });
 
+  test("keeps the call to action, nav indicator and logo black in light mode", async ({ page }) => {
+    await openHome(page, { theme: "light", content: [] });
+
+    await expectFilledControls(page, "dark");
+    await expect(page.locator('header a[href="/"] img:visible')).toHaveAttribute("src", "/images/logo.svg");
+  });
+
   test.describe("in dark mode", () => {
+    test("inverts the call to action, nav indicator and logo to light fills", async ({ page }) => {
+      await openHome(page, { theme: "dark", content: [] });
+
+      await expectFilledControls(page, "light");
+      await expect(page.locator('header a[href="/"] img:visible')).toHaveAttribute("src", "/images/logo-dark.svg");
+    });
+
     test("puts the project cards on the start section's well, with readable text", async ({ page }) => {
       await openHome(page, { theme: "dark", content: ["project"] });
       await expect(page.locator("section#for-devs h3").first()).toBeVisible();
@@ -80,7 +135,8 @@ test.describe("Home section surfaces", () => {
       await expectReadable(page.getByTestId("start-white-box"));
       await expectReadable(page.locator("section#about-me ul"));
       await expectReadable(page.locator("section#whats-new li a"));
-      await expectReadable(page.getByRole("navigation", { name: "Page sections" }).locator("ul"));
+      await expectReadable(page.getByRole("navigation", { name: "Page sections" }).locator("li:not(:has([aria-current]))"));
+      await expectActiveNavLabelReadable(page);
     });
 
     test("keeps role titles on the experience panels readable while hovered or focused", async ({ page }) => {

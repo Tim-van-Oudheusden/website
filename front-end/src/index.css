@@ -102,15 +102,33 @@
  *   --destructive                   Error & danger actions
  *   --border / --input / --ring     Borders, form inputs, focus rings
  *
- * To change the palette: edit the oklch() values below in both
- * :root (light) and .dark (dark). Keep foreground/background pairs
- * with sufficient contrast (WCAG AA ≥ 4.5:1 for text).
+ * To change the palette: edit the values below in both :root (light)
+ * and .dark (dark). Keep every text/surface pair at WCAG 2.2 AA
+ * (4.5:1 for body text, 3:1 for large text, UI boundaries and focus
+ * rings); test/front-end/src/shared/styles/dark-theme-palette.test.ts
+ * checks the dark pairs.
  *
- * Base palette: Adwaita (GNOME/libadwaita)
+ * Light theme: warm beige page (--adw-beige-light) with white wells,
+ * black text and blue accents. The --adw-* names are historical: they
+ * started from GNOME's libadwaita colours, which are not a constraint.
+ *
+ * Dark theme: Flexoki by Steph Ango (MIT), "inspired by analog inks and
+ * warm shades of paper". Its warm-black base scale gives dark mode the
+ * same brown/beige undertone as the light theme. .dark remaps the
+ * --adw-light-* and --adw-dark-* neutrals onto that scale, so components
+ * that already switch to them in dark mode pick up the warm tones:
+ *   page/window  black     #100f0f    wells/cards  base-950  #1c1b1a
+ *   raised       base-900  #282726    hover/code   base-850  #343331
+ *   borders      base-800  #403e3c    inputs       base-600  #6f6e69
+ *   text         base-200  #cecdc3    headings     base-100  #e6e4d9
+ *   muted text   base-400  #9f9d96    links/ring   blue-300  #66a0c8
+ * Accents are Flexoki's: 600 shades for filled controls with paper
+ * text, lighter 300 shades for coloured text on dark surfaces.
+ * Research and contrast ratios: research/dark_theme_warm_palette.md.
  *
  * Source references:
- * - https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1-latest/css-variables.html
- * - https://developer.gnome.org/hig/reference/palette.html
+ * - https://stephango.com/flexoki
+ * - https://github.com/kepano/flexoki
  */
 :root {
   --radius: 0.625rem;
@@ -142,7 +160,7 @@
 
   /* Project beige variants */
   --adw-beige-light: #f3efe5;
-  --adw-beige-dark: #1c1a17;
+  --adw-beige-dark: #100f0f;
   --adw-toc-inactive: #8a8376;
   --adw-page-beige-bg: var(--adw-beige-light);
   --site-section-well-bg: #ffffff;
@@ -222,40 +240,52 @@
 }
 
 .dark {
-  /* Adwaita semantic colors (dark) */
-  --adw-accent-bg-color: var(--adw-accent-blue);
-  --adw-accent-fg-color: #ffffff;
-  --adw-accent-color: #81d0ff;
-  --adw-destructive-bg-color: #c01c28;
-  --adw-destructive-fg-color: #ffffff;
-  --adw-destructive-color: #ff938c;
-  --adw-success-bg-color: #26a269;
-  --adw-success-fg-color: #ffffff;
-  --adw-success-color: #78e9ab;
-  --adw-warning-bg-color: #cd9309;
-  --adw-warning-fg-color: rgb(0 0 0 / 80%);
-  --adw-warning-color: #ffc252;
-  --adw-error-bg-color: #c01c28;
-  --adw-error-fg-color: #ffffff;
-  --adw-error-color: #ff938c;
-  --adw-window-bg-color: #222226;
-  --adw-window-fg-color: #ffffff;
-  --adw-view-bg-color: #1d1d20;
-  --adw-view-fg-color: #ffffff;
-  --adw-headerbar-bg-color: #2e2e32;
-  --adw-headerbar-fg-color: #ffffff;
-  --adw-headerbar-backdrop-color: #222226;
-  --adw-headerbar-shade-color: rgb(0 0 6 / 36%);
-  --adw-sidebar-bg-color: #2e2e32;
-  --adw-sidebar-fg-color: #ffffff;
-  --adw-sidebar-backdrop-color: #28282c;
-  --adw-sidebar-border-color: rgb(0 0 6 / 36%);
-  --adw-sidebar-shade-color: rgb(0 0 6 / 25%);
+  /* Flexoki neutrals, lightest to darkest (the --adw-* names keep their light-theme roles). */
+  --adw-light-1: #e6e4d9; /* base-100 */
+  --adw-light-2: #dad8ce; /* base-150 */
+  --adw-light-3: #cecdc3; /* base-200 */
+  --adw-light-4: #b7b5ac; /* base-300 */
+  --adw-light-5: #9f9d96; /* base-400 */
+  --adw-dark-1: #6f6e69; /* base-600 */
+  --adw-dark-2: #575653; /* base-700 */
+  --adw-dark-3: #403e3c; /* base-800 */
+  --adw-dark-4: #282726; /* base-900 */
+  --adw-dark-5: #100f0f; /* black */
+
+  /* Semantic colors (dark): Flexoki 600 fills with paper text, 300 shades as text on dark surfaces. */
+  --adw-accent-bg-color: #205ea6; /* blue-600 */
+  --adw-accent-fg-color: #fffcf0; /* paper */
+  --adw-accent-color: #66a0c8; /* blue-300 */
+  --adw-destructive-bg-color: #af3029; /* red-600 */
+  --adw-destructive-fg-color: #fffcf0;
+  --adw-destructive-color: #e8705f; /* red-300 */
+  --adw-success-bg-color: #536907; /* green-700 */
+  --adw-success-fg-color: #fffcf0;
+  --adw-success-color: #a0af54; /* green-300 */
+  --adw-warning-bg-color: #d0a215; /* yellow-400 */
+  --adw-warning-fg-color: var(--adw-dark-5);
+  --adw-warning-color: #dfb431; /* yellow-300 */
+  --adw-error-bg-color: var(--adw-destructive-bg-color);
+  --adw-error-fg-color: var(--adw-destructive-fg-color);
+  --adw-error-color: var(--adw-destructive-color);
+  --adw-window-bg-color: var(--adw-dark-5);
+  --adw-window-fg-color: var(--adw-light-3);
+  --adw-view-bg-color: #1c1b1a; /* base-950 */
+  --adw-view-fg-color: var(--adw-light-3);
+  --adw-headerbar-bg-color: var(--adw-dark-4);
+  --adw-headerbar-fg-color: var(--adw-light-3);
+  --adw-headerbar-backdrop-color: var(--adw-view-bg-color);
+  --adw-headerbar-shade-color: rgb(0 0 0 / 36%);
+  --adw-sidebar-bg-color: var(--adw-dark-4);
+  --adw-sidebar-fg-color: var(--adw-light-3);
+  --adw-sidebar-backdrop-color: #343331; /* base-850 */
+  --adw-sidebar-border-color: var(--adw-dark-3);
+  --adw-sidebar-shade-color: rgb(0 0 0 / 25%);
   --adw-toc-inactive: var(--adw-light-4);
   --adw-page-brown-bg: var(--adw-page-beige-bg);
   --adw-page-beige-bg: var(--adw-beige-dark);
-  /* Brown 5 keeps white (8.7:1), white/80 (6.3:1) and the accent (5.1:1) at WCAG AA on the well. */
-  --site-section-well-bg: var(--adw-brown-5);
+  /* One step above the page, like Flexoki's bg-2; every text colour above stays at AA on it. */
+  --site-section-well-bg: var(--adw-view-bg-color);
   --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   --articles-content-toc-gap: clamp(10rem, calc(17.25vw - 2rem), 13.75rem);
 
@@ -271,7 +301,7 @@
   --secondary: var(--adw-sidebar-bg-color);
   --secondary-foreground: var(--adw-sidebar-fg-color);
   --muted: var(--adw-sidebar-backdrop-color);
-  --muted-foreground: var(--adw-light-4);
+  --muted-foreground: var(--adw-light-5);
   --accent: var(--adw-sidebar-backdrop-color);
   --accent-foreground: var(--adw-window-fg-color);
   --destructive: var(--adw-destructive-bg-color);
@@ -283,13 +313,13 @@
   --error: var(--adw-error-bg-color);
   --error-foreground: var(--adw-error-fg-color);
   --border: var(--adw-sidebar-border-color);
-  --input: var(--adw-sidebar-border-color);
+  --input: var(--adw-dark-1);
   --ring: var(--adw-accent-color);
-  --chart-1: var(--adw-accent-blue);
-  --chart-2: #33d17a;
-  --chart-3: #f5c211;
-  --chart-4: #ff7800;
-  --chart-5: #c01c28;
+  --chart-1: #4385be; /* blue-400 */
+  --chart-2: #879a39; /* green-400 */
+  --chart-3: #d0a215; /* yellow-400 */
+  --chart-4: #da702c; /* orange-400 */
+  --chart-5: #d14d41; /* red-400 */
   --sidebar: var(--adw-sidebar-bg-color);
   --sidebar-foreground: var(--adw-sidebar-fg-color);
   --sidebar-primary: var(--adw-accent-bg-color);

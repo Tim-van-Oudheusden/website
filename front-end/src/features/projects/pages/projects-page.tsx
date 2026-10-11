@@ -27,7 +27,7 @@ export const PROJECTS_PAGE_TYPOGRAPHY_CLASSES = {
   cardTitle: "text-xl font-semibold tracking-tight",
   cardDescription: "text-muted-foreground text-sm leading-relaxed",
   projectTagBadge: "bg-[var(--adw-dark-5)] text-[var(--adw-light-1)] font-bold [a&]:hover:bg-[var(--adw-dark-5)]/90 dark:bg-[var(--adw-light-1)] dark:text-[var(--adw-dark-5)] dark:[a&]:hover:bg-[var(--adw-light-1)]/90",
-  caseStudyButton: "w-fit h-14 px-10 text-lg font-semibold tracking-wide bg-[var(--adw-dark-5)] text-white hover:bg-black/90",
+  caseStudyButton: "w-fit h-14 px-10 text-lg font-semibold tracking-wide bg-[var(--adw-dark-5)] text-white hover:bg-black/90 dark:bg-[var(--adw-light-1)] dark:text-[var(--adw-dark-5)] dark:hover:bg-[var(--adw-light-1)]/90",
 } as const;
 
 export const PROJECTS_PAGE_TEXT = {

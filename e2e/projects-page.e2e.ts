@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures";
+import { AA_NON_TEXT_CONTRAST, contrastRatio, lowContrastTexts, sampleSurface } from "./surface-colours";
 
 // Expectations come from the project entries in content/: "Minimal Android
 // Launcher" is the only `featured: true` project, the other two fill the gallery.
@@ -37,5 +38,24 @@ test.describe("Projects page", () => {
     await expect(article.locator("header").getByRole("heading", { level: 1, name: "Obsidian Content Pipeline" })).toBeVisible();
     await expect(article.getByRole("heading", { level: 2, name: "Approach" })).toBeVisible();
     await expect(article.getByText("The pipeline normalizes frontmatter, filters drafts in production")).toBeVisible();
+  });
+});
+
+test.describe("Projects page in dark mode", () => {
+  test("fills the featured project's button with a light colour that stands out from its well", async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("theme", "dark");
+    });
+
+    await page.goto("/projects", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("html")).toHaveClass(/\bdark\b/);
+
+    const button = page.getByRole("region", { name: "Featured project" }).locator('[data-slot="button"]');
+    const sample = await sampleSurface(button);
+    const [fill, well] = [sample.backdrop, sample.surround].map(([r, g, b]) => r + g + b) as [number, number];
+
+    expect(fill).toBeGreaterThan(well);
+    expect(contrastRatio(sample.backdrop, sample.surround)).toBeGreaterThanOrEqual(AA_NON_TEXT_CONTRAST);
+    expect(lowContrastTexts(sample)).toEqual([]);
   });
 });

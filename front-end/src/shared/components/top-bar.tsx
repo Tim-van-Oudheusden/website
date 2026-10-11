@@ -53,7 +53,8 @@ export function TopBar(): JSX.Element {
     >
       <div className="mx-auto flex h-[4.2rem] max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="shrink-0">
-          <img src="/images/logo.svg" alt="Build with Tim" width={156} height={40} className="h-10 w-auto" />
+          <img src="/images/logo.svg" alt="Build with Tim" width={156} height={40} className="h-10 w-auto dark:hidden" />
+          <img src="/images/logo-dark.svg" alt="Build with Tim" width={156} height={40} className="hidden h-10 w-auto dark:block" />
         </Link>
 
         {/* Desktop nav */}

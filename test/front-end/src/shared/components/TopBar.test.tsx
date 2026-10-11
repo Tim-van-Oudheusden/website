@@ -45,7 +45,7 @@ function headerOf(mount: FakeMount): FakeElement {
 describe("TopBar", () => {
   test("renders the site logo as the brand and the main page links", () => {
     const html = renderTopBar();
-    const brandLink = /<a [^>]*href="\/"[^>]*>\s*<img [^>]*>\s*<\/a>/.exec(html)?.[0];
+    const brandLink = /<a [^>]*href="\/"[^>]*>(?:\s*<img [^>]*>)+\s*<\/a>/.exec(html)?.[0];
 
     expect(brandLink).toContain('src="/images/logo.svg"');
     expect(brandLink).toContain('alt="Build with Tim"');
@@ -53,6 +53,17 @@ describe("TopBar", () => {
     expect(html).toContain("Home");
     expect(html).toContain("Articles");
     expect(html).toContain("Projects");
+  });
+
+  test("swaps the logo for its light-on-dark variant in dark mode", () => {
+    const html = renderTopBar();
+    const logos = [...html.matchAll(/<img [^>]*>/g)].map((match) => match[0]);
+    const light = logos.find((img) => img.includes('src="/images/logo.svg"'));
+    const dark = logos.find((img) => img.includes('src="/images/logo-dark.svg"'));
+
+    expect(light).toMatch(/class="[^"]*\bdark:hidden\b/);
+    expect(dark).toMatch(/class="[^"]*\bhidden\b[^"]*\bdark:block\b/);
+    expect(dark).toContain('alt="Build with Tim"');
   });
 
   test("links the site pages to their routes", () => {
