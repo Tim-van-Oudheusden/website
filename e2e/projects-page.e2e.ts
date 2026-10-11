@@ -24,7 +24,7 @@ test.describe("Projects page", () => {
     }
   });
 
-  test("opens a project's case study from its card", async ({ page }) => {
+  test("opens a project's page from its card", async ({ page }) => {
     await page
       .getByRole("region", { name: "More projects" })
       .getByRole("link", { name: /Obsidian Content Pipeline/ })

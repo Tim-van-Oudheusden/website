@@ -200,4 +200,48 @@ Body
   ])("%s", (_label, lines, expected) => {
     expect(parseFrontmatter(lines.join("\n"))).toEqual(expected);
   });
+
+  describe("line endings and byte-order mark", () => {
+    const lines = [
+      "---",
+      "title: Hello",
+      "date: 2026-01-01",
+      "draft: false",
+      "tags:",
+      "  - A",
+      "  - B",
+      "links:",
+      "  - type: repo",
+      "    href: https://example.com",
+      "---",
+      "Body line one",
+      "Body line two",
+      "",
+    ];
+    const data = {
+      title: "Hello",
+      date: "2026-01-01",
+      draft: false,
+      tags: ["A", "B"],
+      links: [{ type: "repo", href: "https://example.com" }],
+    };
+
+    test("parses every field from a file with CRLF line endings", () => {
+      const result = parseFrontmatter(lines.join("\r\n"));
+
+      expect(result?.data).toEqual(data);
+      expect(result?.content).toBe("Body line one\r\nBody line two\r\n");
+    });
+
+    test("parses a file that starts with a UTF-8 byte-order mark", () => {
+      const result = parseFrontmatter(`\uFEFF${lines.join("\n")}`);
+
+      expect(result?.data).toEqual(data);
+      expect(result?.content).toBe("Body line one\nBody line two\n");
+    });
+
+    test("parses a CRLF file that starts with a byte-order mark", () => {
+      expect(parseFrontmatter(`\uFEFF${lines.join("\r\n")}`)?.data).toEqual(data);
+    });
+  });
 });

@@ -1,6 +1,6 @@
 ---
 title: Minimal Android Launcher
-description: A minimal Android launcher for Android phones, inspired by MinUI.
+description: A minimal Android launcher for keyboard-centric phones from Zinwa, Clicks and Unihertz, inspired by MinUI and Cannoli.
 date: 2026-06-10
 tags:
   - Android
@@ -18,12 +18,12 @@ created: 2026
 links:
   - type: repo
     label: Source repository
-    href: https://github.com/Tim-van-Oudheusden/website
-info: A new launcher heavily inspired by MinUI for various retro handhelds
+    href: https://github.com/Tim-van-Oudheusden/MinimalUI
+info: A minimal launcher for Zinwa, Clicks and Unihertz keyboard-centric phones, inspired by MinUI and Cannoli
 ---
 
 # Minimal Android Launcher
 
-A new Android launcher heavily inspired by MinUI for various Android phones.
+A minimal Android launcher for keyboard-centric phones from Zinwa, Clicks and Unihertz, inspired by MinUI and Cannoli.
 
 This project is still in progress; more details will be added as it develops.

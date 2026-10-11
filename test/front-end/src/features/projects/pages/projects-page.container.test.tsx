@@ -126,14 +126,14 @@ describe("ProjectsPage", () => {
     const page = await mountLoadedProjectsPage(jsonResponse([]));
 
     try {
-      expect(page.container.textContent).toContain("Project case studies are being prepared.");
+      expect(page.container.textContent).toContain("Projects are being prepared.");
       expect(section(page, "featured-project-heading")).toBeUndefined();
     } finally {
       unmountFakeDomRoot(page);
     }
   });
 
-  test("features the flagged project with a case-study panel and lists the rest below", async () => {
+  test("features the flagged project with a learn-more panel and lists the rest below", async () => {
     const page = await mountLoadedProjectsPage(jsonResponse([
       project({ slug: "older", title: "Older", date: "2025-01-01T00:00:00Z" }),
       project({ slug: "flagship", title: "Flagship", featured: true, info: "Why the flagship exists." }),
@@ -146,12 +146,12 @@ describe("ProjectsPage", () => {
       expect(cardTitles(featured)).toEqual(["Flagship"]);
       expect(featured?.textContent).toContain("Why this matters");
       expect(featured?.textContent).toContain("Why the flagship exists.");
-      const [caseStudyLink] = queryFakeElements(
+      const [learnMoreLink] = queryFakeElements(
         page.container,
-        (el) => el.nodeName === "A" && el.textContent === "Read the case study",
+        (el) => el.nodeName === "A" && el.textContent === "Learn more",
       );
 
-      expect(caseStudyLink?.getAttribute("href")).toBe("/projects/flagship");
+      expect(learnMoreLink?.getAttribute("href")).toBe("/projects/flagship");
 
       // Gallery: every non-featured project, newest first.
       expect(cardTitles(section(page, "more-projects-heading"))).toEqual(["Newer", "Older"]);
@@ -160,7 +160,7 @@ describe("ProjectsPage", () => {
     }
   });
 
-  test("the case-study panel falls back to the description and the gallery is omitted for a lone project", async () => {
+  test("the featured panel falls back to the description and the gallery is omitted for a lone project", async () => {
     const page = await mountLoadedProjectsPage(jsonResponse([
       project({ slug: "solo", title: "Solo", description: "The only project so far." }),
     ]));
@@ -177,7 +177,7 @@ describe("ProjectsPage", () => {
     }
   });
 
-  test("explicit priority slots fill the featured area in slot order instead of the case-study panel", async () => {
+  test("explicit priority slots fill the featured area in slot order instead of the single-project panel", async () => {
     const page = await mountLoadedProjectsPage(jsonResponse([
       project({ slug: "second", title: "Second", prioritySlot: 2 }),
       project({ slug: "gallery", title: "Gallery" }),

@@ -27,7 +27,7 @@ export const PROJECTS_PAGE_TYPOGRAPHY_CLASSES = {
   cardTitle: "text-xl font-semibold tracking-tight",
   cardDescription: "text-muted-foreground text-sm leading-relaxed",
   projectTagBadge: "bg-[var(--adw-dark-5)] text-[var(--adw-light-1)] font-bold [a&]:hover:bg-[var(--adw-dark-5)]/90 dark:bg-[var(--adw-light-1)] dark:text-[var(--adw-dark-5)] dark:[a&]:hover:bg-[var(--adw-light-1)]/90",
-  caseStudyButton: "w-fit h-14 px-10 text-lg font-semibold tracking-wide bg-[var(--adw-dark-5)] text-white hover:bg-black/90 dark:bg-[var(--adw-light-1)] dark:text-[var(--adw-dark-5)] dark:hover:bg-[var(--adw-light-1)]/90",
+  learnMoreButton: "w-fit h-14 px-10 text-lg font-semibold tracking-wide bg-[var(--adw-dark-5)] text-white hover:bg-black/90 dark:bg-[var(--adw-light-1)] dark:text-[var(--adw-dark-5)] dark:hover:bg-[var(--adw-light-1)]/90",
 } as const;
 
 export const PROJECTS_PAGE_TEXT = {
@@ -108,7 +108,7 @@ export function ProjectsPage(): JSX.Element {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--adw-page-brown-bg) p-4">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Projects</h1>
-        <p className="text-muted-foreground">Project case studies are being prepared.</p>
+        <p className="text-muted-foreground">Projects are being prepared.</p>
       </main>
     );
   }
@@ -142,8 +142,8 @@ export function ProjectsPage(): JSX.Element {
                     <p className="mt-4 text-lg leading-relaxed text-(--adw-dark-5) dark:text-white/80">
                       {primaryProject.info ?? primaryProject.description}
                     </p>
-                    <Button asChild variant="secondary" size="lg" className={`mt-6 ${PROJECTS_PAGE_TYPOGRAPHY_CLASSES.caseStudyButton}`}>
-                      <Link to={`/projects/${primaryProject.slug}`}>Read the case study</Link>
+                    <Button asChild variant="secondary" size="lg" className={`mt-6 ${PROJECTS_PAGE_TYPOGRAPHY_CLASSES.learnMoreButton}`}>
+                      <Link to={`/projects/${primaryProject.slug}`}>Learn more</Link>
                     </Button>
                   </div>
                 )}

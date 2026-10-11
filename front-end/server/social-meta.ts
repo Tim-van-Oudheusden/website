@@ -55,7 +55,10 @@ export function renderSocialMeta(html: string, item: ContentFrontmatter, origin:
   const imagePath = resolveSocialImagePath(item.socialImage);
   const imageUrl = imagePath === null ? null : `${origin}${imagePath}`;
 
+  // Without an authored image, fall back to the homepage portrait. It is portrait-shaped,
+  // so it keeps the small card, which crops it to a square thumbnail instead of a strip.
   if (imageUrl === null) {
+    tags.push({ attribute: "property", key: "og:image", content: `${origin}${HOME_IMAGE_PATH}` });
     tags.push({ attribute: "name", key: "twitter:card", content: "summary" });
   } else {
     tags.push({ attribute: "property", key: "og:image", content: imageUrl });

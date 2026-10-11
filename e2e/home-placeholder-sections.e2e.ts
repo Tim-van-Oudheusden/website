@@ -16,7 +16,7 @@ test.describe("Home placeholder sections implemented", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
   });
 
-  test("showcases real projects, featured first, linking to GitHub or the case study", async ({ page }) => {
+  test("showcases real projects, featured first, linking to GitHub or the project page", async ({ page }) => {
     await openHome(page, { theme: "light", content: ["project"] });
 
     const section = page.locator("section#for-devs");
@@ -25,12 +25,12 @@ test.describe("Home placeholder sections implemented", () => {
     await expect(section.getByRole("heading", { level: 2, name: "Open-source projects" })).toBeVisible();
     await expect(section.getByRole("heading", { level: 3 }).first()).toHaveText("Minimal Android Launcher");
 
-    const github = section.getByRole("link", { name: "View on GitHub: Pi Sandbox Automation (opens in a new tab)" });
+    const github = section.getByRole("link", { name: "Learn more: Pi Sandbox Automation (opens in a new tab)" });
 
     await expect(github).toHaveAttribute("href", "https://github.com/Tim-van-Oudheusden/website");
     await expect(github).toHaveAttribute("target", "_blank");
 
-    await expect(section.getByRole("link", { name: "Read case study: Obsidian Content Pipeline" })).toHaveAttribute(
+    await expect(section.getByRole("link", { name: "Learn more: Obsidian Content Pipeline" })).toHaveAttribute(
       "href",
       "/projects/obsidian-content-pipeline",
     );
