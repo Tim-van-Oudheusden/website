@@ -71,7 +71,10 @@ interface RunningFrontEnd {
 
 /** Start the bundled prod server and wait until it answers. */
 async function startFrontEnd(env: Record<string, string> = {}): Promise<RunningFrontEnd> {
-  const port = 40000 + Math.floor(Math.random() * 20000);
+  // Stay below 32768: Linux hands out ephemeral ports from 32768-60999 (macOS
+  // and Windows from 49152), so a random pick there can land on a port another
+  // socket already holds, and the server exits early with EADDRINUSE.
+  const port = 20000 + Math.floor(Math.random() * 12000);
   const child = Bun.spawn(["bun", serverScript], {
     env: { ...process.env, PORT: String(port), ...env },
     stdout: "ignore",
