@@ -52,6 +52,15 @@ describe("ArticleContent", () => {
     expect(html).toContain("The first post.");
   });
 
+  test("makes the article title the only h1 and nests markdown sections under it", () => {
+    const html = renderContent({ ...FIXTURE_ARTICLE, body: "# Intro\n\nText.\n\n## Detail\n\nMore." });
+
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(html).toMatch(/<h1[^>]*>Introduction<\/h1>/);
+    expect(html).toMatch(/<h2 id="intro"/);
+    expect(html).toMatch(/<h3 id="detail"/);
+  });
+
   test("renders the location trail back to the articles list", () => {
     const html = renderContent();
 
@@ -93,6 +102,9 @@ describe("ArticleContent", () => {
     );
 
     expect(html).toContain("Loading article...");
+    // With no article title yet, the page still has one h1 naming it.
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(html).toMatch(/<h1[^>]*>Articles<\/h1>/);
   });
 
   test("renders the article error when the fetch fails", () => {
@@ -113,5 +125,6 @@ describe("ArticleContent", () => {
 
     expect(html).toContain("Failed to load article");
     expect(html).toContain("text-destructive");
+    expect(html).toMatch(/<h1[^>]*>Articles<\/h1>/);
   });
 });

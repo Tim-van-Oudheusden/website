@@ -22,6 +22,7 @@ describe("MarkdownRenderer", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, {
         content: "![Tracking pixel](/content-assets/images/pixel.gif)",
+        headingLevelOffset: 0,
       }),
     );
 
@@ -33,6 +34,7 @@ describe("MarkdownRenderer", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, {
         content: "Hello world",
+        headingLevelOffset: 0,
       }),
     );
 
@@ -43,6 +45,7 @@ describe("MarkdownRenderer", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, {
         content: "## Start Here\n### Deep Dive\n## Start Here",
+        headingLevelOffset: 0,
       }),
     );
 
@@ -56,6 +59,7 @@ describe("MarkdownRenderer", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, {
         content: "# Overview\n## Details",
+        headingLevelOffset: 0,
       }),
     );
 
@@ -63,10 +67,25 @@ describe("MarkdownRenderer", () => {
     expect(html).toContain('h2 id="details"');
   });
 
+  test("demotes every heading one level when the page title owns the h1, keeping the ids", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "# Overview\n## Details\n### Fine print",
+        headingLevelOffset: 1,
+      }),
+    );
+
+    expect(html).not.toContain("<h1");
+    expect(html).toContain('h2 id="overview"');
+    expect(html).toContain('h3 id="details"');
+    expect(html).toContain('h4 id="fine-print"');
+  });
+
   test("uses unicode-safe ids and supports setext headings", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, {
         content: "Section with *emphasis* and `code`\n---\n## Déjà vu & résumé\n## 你好 世界",
+        headingLevelOffset: 0,
       }),
     );
 
@@ -79,6 +98,7 @@ describe("MarkdownRenderer", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, {
         content: "> [!quote]\n> The future is image-based operating systems.",
+        headingLevelOffset: 0,
       }),
     );
 
@@ -88,7 +108,7 @@ describe("MarkdownRenderer", () => {
 
   test("keeps an image that opens an Obsidian callout body", () => {
     const html = renderToStaticMarkup(
-      createElement(MarkdownRenderer, { content: "> [!note]\n> ![Diagram](/d.png)" }),
+      createElement(MarkdownRenderer, { content: "> [!note]\n> ![Diagram](/d.png)", headingLevelOffset: 0 }),
     );
 
     expect(html).toContain('data-callout-type="note"');
@@ -97,7 +117,7 @@ describe("MarkdownRenderer", () => {
 
   test("does not forward react-markdown's node prop to DOM elements", () => {
     const html = renderToStaticMarkup(
-      createElement(MarkdownRenderer, { content: "[x](https://e.com) `c` ![Logo](/l.png)\n\n> quote" }),
+      createElement(MarkdownRenderer, { content: "[x](https://e.com) `c` ![Logo](/l.png)\n\n> quote", headingLevelOffset: 0 }),
     );
 
     expect(html).not.toContain("node=");
@@ -107,6 +127,7 @@ describe("MarkdownRenderer", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, {
         content: "> This is a regular quote block.",
+        headingLevelOffset: 0,
       }),
     );
 
@@ -118,6 +139,7 @@ describe("MarkdownRenderer", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, {
         content: "> - item one\n> - item two",
+        headingLevelOffset: 0,
       }),
     );
 
@@ -129,6 +151,7 @@ describe("MarkdownRenderer", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, {
         content: "> *emphasis first*\n> rest of quote",
+        headingLevelOffset: 0,
       }),
     );
 
@@ -145,7 +168,7 @@ describe("MarkdownRenderer", () => {
     const errorSpy = spyOn(console, "error");
 
     try {
-      const html = renderToStaticMarkup(createElement(MarkdownRenderer, { content }));
+      const html = renderToStaticMarkup(createElement(MarkdownRenderer, { content, headingLevelOffset: 0 }));
       const tocIds = extractMarkdownHeadings(content, TOC_MAX_DEPTH).map((heading) => heading.id);
 
       expect(tocIds.length).toBeGreaterThan(0);
@@ -163,6 +186,7 @@ describe("MarkdownRenderer", () => {
       const html = renderToStaticMarkup(
         createElement(MarkdownRenderer, {
           content: "# Top\n\n> ## Quoted Heading\n\nbody",
+          headingLevelOffset: 0,
         }),
       );
 
@@ -181,6 +205,7 @@ describe("MarkdownRenderer", () => {
       const html = renderToStaticMarkup(
         createElement(MarkdownRenderer, {
           content: "> ## ![Logo](/content-assets/images/logo.svg)",
+          headingLevelOffset: 0,
         }),
       );
 

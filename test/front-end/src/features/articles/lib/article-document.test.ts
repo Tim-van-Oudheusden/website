@@ -31,7 +31,7 @@ describe("renderArticle", () => {
   test("renders heading ids in the same order and set as the toc", () => {
     const { html, toc } = renderArticle(COMPLEX_MARKDOWN);
     const renderedIds = Array
-      .from(html.matchAll(/<h[1-3][^>]*id="([^"]+)"/g))
+      .from(html.matchAll(/<h[2-4][^>]*id="([^"]+)"/g))
       .map((match) => match[1]);
 
     expect(renderedIds).toEqual(toc.map((item) => item.id));
@@ -47,7 +47,7 @@ describe("renderArticle", () => {
   test("never invents a position-suffixed heading id", () => {
     const { html } = renderArticle(COMPLEX_MARKDOWN);
     const renderedIds = Array
-      .from(html.matchAll(/<h[1-3][^>]*id="([^"]+)"/g))
+      .from(html.matchAll(/<h[2-4][^>]*id="([^"]+)"/g))
       .map((match) => match[1]);
 
     for (const id of renderedIds) {

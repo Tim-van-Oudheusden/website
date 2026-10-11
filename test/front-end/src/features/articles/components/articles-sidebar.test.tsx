@@ -71,6 +71,13 @@ describe("ArticlesSidebar", () => {
 
     expect(html).toContain("bg-[var(--adw-dark-5)]");
   });
+
+  test("labels the list with a heading below the article title's h1", () => {
+    const html = renderSidebar();
+
+    expect(html).not.toContain("<h1");
+    expect(html).toMatch(/<h2[^>]*>Articles<\/h2>/);
+  });
 });
 
 /** Category trigger buttons keyed by their category label. */

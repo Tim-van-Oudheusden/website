@@ -56,7 +56,7 @@ test.describe("Article motion", () => {
 
     test("shows every body block at once, with no hidden state and no animation", async ({ page }) => {
       await page.goto(ARTICLE_PATH, { waitUntil: "networkidle" });
-      await expect(page.locator("main article .prose h1").first()).toBeVisible();
+      await expect(page.locator("main article .prose h2").first()).toBeVisible();
 
       const pageAnimations = await page.evaluate(() => (
         document.querySelector("main article")?.getAnimations({ subtree: true }).length ?? -1
@@ -120,7 +120,7 @@ test.describe("Article motion", () => {
 
   test("never leaves content hidden: in view on load, and revealed once scrolled to", async ({ page }) => {
     await page.goto(ARTICLE_PATH, { waitUntil: "networkidle" });
-    await expect(page.locator("main article .prose h1").first()).toBeVisible();
+    await expect(page.locator("main article .prose h2").first()).toBeVisible();
 
     // Blocks in the first viewport are never held back.
     for (const block of await bodyBlockStates(page, true)) {

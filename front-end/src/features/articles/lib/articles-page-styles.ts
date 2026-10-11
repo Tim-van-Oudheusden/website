@@ -30,9 +30,9 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   articleProse: [
     "[&>.prose]:text-[1.0625rem] [&>.prose]:leading-[1.75] sm:[&>.prose]:text-[1.125rem]",
     "prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-balance",
-    "prose-h1:mt-16 prose-h1:mb-4 prose-h1:text-[1.75rem] prose-h1:leading-tight sm:prose-h1:text-[1.875rem]",
-    "prose-h2:mt-12 prose-h2:mb-3 prose-h2:text-[1.4375rem] prose-h2:leading-snug",
-    "prose-h3:mt-10 prose-h3:mb-2 prose-h3:text-[1.1875rem] prose-h3:leading-snug",
+    "prose-h2:mt-16 prose-h2:mb-4 prose-h2:text-[1.75rem] prose-h2:leading-tight sm:prose-h2:text-[1.875rem]",
+    "prose-h3:mt-12 prose-h3:mb-3 prose-h3:text-[1.4375rem] prose-h3:leading-snug",
+    "prose-h4:mt-10 prose-h4:mb-2 prose-h4:text-[1.1875rem] prose-h4:leading-snug",
     "[&>.prose>:first-child]:mt-0 prose-li:my-1.5 prose-hr:my-14",
     "prose-a:underline-offset-[3px] prose-a:decoration-[1.5px]",
     "prose-blockquote:border-l-[3px] prose-blockquote:pl-5 prose-blockquote:font-normal prose-blockquote:not-italic prose-blockquote:[&_p]:before:content-none prose-blockquote:[&_p]:after:content-none",

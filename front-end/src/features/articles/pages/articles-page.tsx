@@ -58,6 +58,7 @@ export function ArticlesPage(): JSX.Element {
   if (loadingArticles) {
     return (
       <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
+        <h1 className="sr-only">Articles</h1>
         <p className="text-muted-foreground">Loading articles...</p>
       </main>
     );
@@ -66,6 +67,7 @@ export function ArticlesPage(): JSX.Element {
   if (listError !== null) {
     return (
       <main className="flex flex-1 items-center justify-center bg-(--adw-page-brown-bg) p-4">
+        <h1 className="sr-only">Articles</h1>
         <p className="text-destructive">{listError}</p>
       </main>
     );
