@@ -5,7 +5,7 @@ import type { ContentFrontmatter, HealthCheckResponse } from "shared";
 import { API_BASE, APP_NAME, CF_CONNECTING_IP_HEADER, ROUTES } from "shared";
 
 import { renderFeed, renderLlmsTxt, renderRobotsTxt, renderSitemap } from "./seo";
-import { renderHomeMeta, renderSocialMeta } from "./social-meta";
+import { CONTENT_PAGE_PREFIX, renderHomeMeta, renderSocialMeta } from "./social-meta";
 
 export interface RequestHandlerOptions {
   /** Directory holding the Vite build output (index.html + assets). */
@@ -17,7 +17,7 @@ export interface RequestHandlerOptions {
   fetchBackend: (path: string, headers: Record<string, string>) => Promise<Response>;
 }
 
-const ARTICLE_PATH = /^\/articles\/([^/]+)\/?$/;
+const CONTENT_PATH = /^(\/(?:articles|projects)\/)([^/]+)\/?$/;
 
 /**
  * The same baseline @fastify/helmet gives the back-end (security-headers.ts):
@@ -109,14 +109,15 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     }
 
     const indexHtml = await indexFile.text();
-    const slug = ARTICLE_PATH.exec(url.pathname)?.[1];
-    const article = slug === undefined ? null : await fetchArticle(options.fetchBackend, slug, backendHeaders);
+    const [, pagePrefix, slug] = CONTENT_PATH.exec(url.pathname) ?? [];
+    const item = slug === undefined ? null : await fetchContentItem(options.fetchBackend, slug, backendHeaders);
 
     const origin = requestOrigin(request, url);
     let html = indexHtml;
 
-    if (article !== null) {
-      html = renderSocialMeta(indexHtml, article, origin);
+    // A slug under the other section (/articles/<project slug>) is not a real page there.
+    if (item !== null && CONTENT_PAGE_PREFIX[item.type] === pagePrefix) {
+      html = renderSocialMeta(indexHtml, item, origin);
     } else if (url.pathname === "/") {
       html = renderHomeMeta(indexHtml, origin);
     }
@@ -180,11 +181,11 @@ async function fetchContentList(
 }
 
 /**
- * Look up an article for its preview tags. Any miss (unknown slug, a project
- * slug, back-end down) yields null: the page must load regardless, so the
- * caller falls back to the plain app shell.
+ * Look up an article or project for its preview tags. Any miss (unknown slug,
+ * back-end down) yields null: the page must load regardless, so the caller
+ * falls back to the plain app shell.
  */
-async function fetchArticle(
+async function fetchContentItem(
   fetchBackend: RequestHandlerOptions["fetchBackend"],
   slug: string,
   headers: Record<string, string>,
@@ -196,9 +197,7 @@ async function fetchArticle(
       return null;
     }
 
-    const item = await response.json() as ContentFrontmatter;
-
-    return item.type === "article" ? item : null;
+    return await response.json() as ContentFrontmatter;
   } catch {
     return null;
   }

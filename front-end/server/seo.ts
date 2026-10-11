@@ -1,7 +1,7 @@
 import type { ArticleFrontmatter, ContentFrontmatter } from "shared";
 import { STANDALONE_PAGE_SLUGS } from "shared";
 
-import { HERO_LINE, SITE_NAME, SITE_OWNER } from "./social-meta";
+import { CONTENT_PAGE_PREFIX, HERO_LINE, SITE_NAME, SITE_OWNER } from "./social-meta";
 
 /**
  * Client routes that exist regardless of content (see App.tsx). The
@@ -9,11 +9,6 @@ import { HERO_LINE, SITE_NAME, SITE_OWNER } from "./social-meta";
  * drift from the routes App.tsx actually registers for them.
  */
 const STATIC_PAGE_PATHS = ["/", "/articles", "/projects", ...STANDALONE_PAGE_SLUGS.map((slug) => `/${slug}`)] as const;
-
-const CONTENT_PAGE_PREFIX: Record<ContentFrontmatter["type"], string> = {
-  article: "/articles/",
-  project: "/projects/",
-};
 
 /** Allow every crawler everywhere and point it at the sitemap. */
 export function renderRobotsTxt(origin: string): string {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import type { ArticleFrontmatter } from "shared";
+import type { ArticleFrontmatter, ProjectFrontmatter } from "shared";
 
 import { renderHomeMeta, renderSocialMeta } from "../../../front-end/server/social-meta";
 
@@ -27,6 +27,30 @@ function article(overrides: Partial<ArticleFrontmatter> = {}): ArticleFrontmatte
     homeRecommended: false,
     category: "Linux",
     slug: "apt-get-out-of-my-life-hello-flatpak",
+    ...overrides,
+  };
+}
+
+function project(overrides: Partial<ProjectFrontmatter> = {}): ProjectFrontmatter {
+  return {
+    type: "project",
+    socialImage: null,
+    title: "Minimal Android Launcher",
+    description: "A distraction-free launcher for a keyboard phone.",
+    date: "2026-06-10",
+    tags: [],
+    draft: false,
+    slug: "minimal-android-launcher",
+    coverImage: "/images/projects/placeholder_phone_project.png",
+    coverImageAlt: "A smartphone with a physical keyboard.",
+    featured: true,
+    projectOrder: 10,
+    prioritySlot: null,
+    status: null,
+    role: null,
+    created: null,
+    links: [],
+    info: null,
     ...overrides,
   };
 }
@@ -137,6 +161,51 @@ describe("renderSocialMeta structured data", () => {
 
     expect(data).toMatchObject({ headline: title });
     expect(data).not.toHaveProperty("image");
+  });
+});
+
+describe("renderSocialMeta for a project", () => {
+  test("points the canonical URL at the project page and previews it as a website with its cover image", () => {
+    const html = renderSocialMeta(INDEX_HTML, project(), ORIGIN);
+    const meta = headMeta(html);
+
+    expect(html).toContain('<link rel="canonical" href="https://buildwithtim.dev/projects/minimal-android-launcher" />');
+    expect(html).toContain("<title>Minimal Android Launcher | Build with Tim</title>");
+    expect(meta.get("og:type")).toBe("website");
+    expect(meta.get("og:title")).toBe("Minimal Android Launcher");
+    expect(meta.get("description")).toBe("A distraction-free launcher for a keyboard phone.");
+    expect(meta.get("og:url")).toBe("https://buildwithtim.dev/projects/minimal-android-launcher");
+    expect(meta.get("og:image")).toBe("https://buildwithtim.dev/images/projects/placeholder_phone_project.png");
+    expect(meta.get("twitter:card")).toBe("summary_large_image");
+  });
+
+  test("prefers an authored socialImage over the cover image", () => {
+    const meta = headMeta(renderSocialMeta(INDEX_HTML, project({ socialImage: "images/launcher.png" }), ORIGIN));
+
+    expect(meta.get("og:image")).toBe("https://buildwithtim.dev/content-assets/images/launcher.png");
+  });
+
+  // LinkedIn and X drop SVG preview images, which would leave the card imageless.
+  test("falls back to the site portrait on a small card when the cover is an SVG", () => {
+    const meta = headMeta(
+      renderSocialMeta(INDEX_HTML, project({ coverImage: "/images/projects/pi-sandbox-automation.svg" }), ORIGIN),
+    );
+
+    expect(meta.get("og:image")).toBe("https://buildwithtim.dev/images/me.png");
+    expect(meta.get("twitter:card")).toBe("summary");
+  });
+
+  test("describes the project as a schema.org CreativeWork by the site owner, not a blog post", () => {
+    expect(headJsonLd(renderSocialMeta(INDEX_HTML, project(), ORIGIN))).toEqual({
+      "@context": "https://schema.org",
+      "@type": "CreativeWork",
+      "name": "Minimal Android Launcher",
+      "description": "A distraction-free launcher for a keyboard phone.",
+      "datePublished": "2026-06-10",
+      "url": "https://buildwithtim.dev/projects/minimal-android-launcher",
+      "author": { "@type": "Person", "name": "Tim van Oudheusden", "url": "https://buildwithtim.dev/" },
+      "image": "https://buildwithtim.dev/images/projects/placeholder_phone_project.png",
+    });
   });
 });
 

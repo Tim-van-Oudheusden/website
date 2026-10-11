@@ -127,10 +127,10 @@ error. CI runs the same check on committed content via the back-end test suite.
 
 ### Link previews (`socialImage`)
 
-Sharing an article URL (LinkedIn, Mastodon, Slack, …) shows a preview card built
-from Open Graph tags that the production front-end server injects for
-`/articles/<slug>`: `title` and `description` from frontmatter, plus the image
-from `socialImage`:
+Sharing an article or project URL (LinkedIn, Mastodon, Slack, …) shows a
+preview card built from Open Graph tags that the production front-end server
+injects for `/articles/<slug>` and `/projects/<slug>`: `title` and `description`
+from frontmatter, a canonical URL, plus the image from `socialImage`:
 
 ```yaml
 socialImage: images/cover.png   # relative → content/images/cover.png
@@ -138,14 +138,16 @@ socialImage: /images/me.png     # root-absolute → a site path (public/)
 ```
 
 Use a PNG or JPEG of 1200×630 (LinkedIn ignores SVG). `content/images/cover.png`
-is the generic placeholder. Without `socialImage` the preview falls back to the
-site portrait (`/images/me.png`, as on the homepage) on a small card.
-Crawlers cache previews; LinkedIn's Post Inspector re-fetches one on demand.
+is the generic placeholder. A project without `socialImage` uses its
+`coverImage`, unless that is an SVG. Otherwise the preview falls back to the
+site portrait (`/images/me.png`, as on the homepage) on a small card. Crawlers
+cache previews; LinkedIn's Post Inspector re-fetches one on demand.
 
-The same server adds schema.org `BlogPosting` structured data (JSON-LD) to each
-article page, so search engines can show a rich result: headline from `title`,
-`description`, publish date from `date`, Tim as author, and `socialImage` as the
-image when set.
+The same server adds schema.org structured data (JSON-LD) to each page, so
+search engines can show a rich result: a `BlogPosting` for an article (headline
+from `title`) and a `CreativeWork` for a project (name from `title`). Both carry
+`description`, the date from `date`, Tim as author, and the preview image when
+there is one.
 
 ### Standalone pages (`content/pages/`)
 
