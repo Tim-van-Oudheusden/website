@@ -80,7 +80,29 @@ test.describe("Home section surfaces", () => {
       await expectReadable(page.getByTestId("start-white-box"));
       await expectReadable(page.locator("section#about-me ul"));
       await expectReadable(page.locator("section#whats-new li a"));
-      await expectReadable(page.getByRole("navigation", { name: "Page sections" }).locator("ul"));
+      // The current item sits on the sliding active indicator, a sibling the ancestor-based sampler cannot see;
+      // the next test checks it against the indicator.
+      await expectReadable(page.getByRole("navigation", { name: "Page sections" }).locator("li:not(:has([aria-current]))"));
+    });
+
+    test("fills the start call to action and the floating-nav active indicator so they stand out on the well", async ({ page }) => {
+      await openHome(page, { theme: "dark", content: [] });
+
+      const cta = await sampleSurface(page.getByTestId("start-white-box").locator('[data-slot="button"]'));
+
+      expect(contrastRatio(cta.backdrop, cta.surround)).toBeGreaterThanOrEqual(AA_NON_TEXT_CONTRAST);
+      expect(lowContrastTexts(cta)).toEqual([]);
+
+      const nav = page.getByRole("navigation", { name: "Page sections" });
+      const indicator = await sampleSurface(nav.locator('[data-slot="active-indicator"]'));
+      const current = await sampleSurface(nav.locator("a[aria-current]"));
+
+      expect(contrastRatio(indicator.backdrop, indicator.surround)).toBeGreaterThanOrEqual(AA_NON_TEXT_CONTRAST);
+      expect(current.texts.length).toBeGreaterThan(0);
+      // The current label is painted on the indicator, so measure it against the indicator's fill.
+      const onIndicator = current.texts.map((text) => ({ ...text, backdrop: indicator.backdrop }));
+
+      expect(lowContrastTexts({ ...current, texts: onIndicator })).toEqual([]);
     });
 
     test("keeps role titles on the experience panels readable while hovered or focused", async ({ page }) => {

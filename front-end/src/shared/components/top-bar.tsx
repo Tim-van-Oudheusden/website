@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
 
+import { SiteLogo } from "@/shared/components/site-logo";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -53,7 +54,7 @@ export function TopBar(): JSX.Element {
     >
       <div className="mx-auto flex h-[4.2rem] max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="shrink-0">
-          <img src="/images/logo.svg" alt="Build with Tim" width={156} height={40} className="h-10 w-auto" />
+          <SiteLogo />
         </Link>
 
         {/* Desktop nav */}

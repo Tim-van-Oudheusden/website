@@ -102,20 +102,30 @@
  *   --destructive                   Error & danger actions
  *   --border / --input / --ring     Borders, form inputs, focus rings
  *
- * To change the palette: edit the oklch() values below in both
- * :root (light) and .dark (dark). Keep foreground/background pairs
- * with sufficient contrast (WCAG AA ≥ 4.5:1 for text).
+ * To change the palette: edit the values below in both :root (light)
+ * and .dark (dark). Every text/UI pair must meet WCAG 2.2 AA: 4.5:1
+ * for body text, 3:1 for large text, UI boundaries and focus rings.
  *
- * Base palette: Adwaita (GNOME/libadwaita)
+ * Light mode: warm beige page, white wells, near-black text, blue
+ * accent. Dark mode: Flexoki by Steph Ango (MIT), ink on paper with a
+ * warm near-black page, a warm grey ramp and a light blue accent
+ * (blue-200, the same hue as the light accent). It was
+ * chosen because the light theme is already ink on paper (its page,
+ * #f3efe5, is close to Flexoki base-50 #f2f0e5). Rationale, the
+ * alternatives and the contrast ratios:
+ * research/dark_theme_warm_palette.md.
+ *
+ * The --adw-* names are historical; the colours do not follow GNOME
+ * Adwaita.
  *
  * Source references:
- * - https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1-latest/css-variables.html
- * - https://developer.gnome.org/hig/reference/palette.html
+ * - https://stephango.com/flexoki
+ * - https://github.com/kepano/flexoki/blob/main/css/flexoki.css
  */
 :root {
   --radius: 0.625rem;
 
-  /* GNOME HIG neutral palette */
+  /* Neutral ramp (light values; .dark swaps in the Flexoki ramp) */
   --adw-light-1: #ffffff;
   --adw-light-2: #f6f5f4;
   --adw-light-3: #deddda;
@@ -127,7 +137,7 @@
   --adw-dark-4: #241f31;
   --adw-dark-5: #000000;
 
-  /* Adwaita named accent families */
+  /* Named accent families */
   --adw-accent-blue: #3584e4;
   --adw-accent-teal: #2190a4;
   --adw-accent-green: #3a944a;
@@ -138,18 +148,17 @@
   --adw-accent-purple: #9141ac;
   --adw-accent-slate: #6f8396;
   --adw-brown-1: #cdab8f;
-  --adw-brown-5: #63452c;
 
   /* Project beige variants */
   --adw-beige-light: #f3efe5;
-  --adw-beige-dark: #1c1a17;
+  --adw-beige-dark: #1c1b1a; /* Flexoki base-950: the dark-mode page */
   --adw-toc-inactive: #8a8376;
   --adw-page-beige-bg: var(--adw-beige-light);
   --site-section-well-bg: #ffffff;
   --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   --articles-content-toc-gap: clamp(10rem, calc(17.25vw - 2rem), 13.75rem);
 
-  /* Adwaita semantic colors (light) */
+  /* Semantic colours (light) */
   --adw-accent-bg-color: var(--adw-accent-blue);
   --adw-accent-fg-color: #ffffff;
   --adw-accent-color: #0461be;
@@ -222,40 +231,56 @@
 }
 
 .dark {
-  /* Adwaita semantic colors (dark) */
-  --adw-accent-bg-color: var(--adw-accent-blue);
-  --adw-accent-fg-color: #ffffff;
-  --adw-accent-color: #81d0ff;
-  --adw-destructive-bg-color: #c01c28;
-  --adw-destructive-fg-color: #ffffff;
-  --adw-destructive-color: #ff938c;
-  --adw-success-bg-color: #26a269;
-  --adw-success-fg-color: #ffffff;
-  --adw-success-color: #78e9ab;
-  --adw-warning-bg-color: #cd9309;
-  --adw-warning-fg-color: rgb(0 0 0 / 80%);
-  --adw-warning-color: #ffc252;
-  --adw-error-bg-color: #c01c28;
-  --adw-error-fg-color: #ffffff;
-  --adw-error-color: #ff938c;
-  --adw-window-bg-color: #222226;
-  --adw-window-fg-color: #ffffff;
-  --adw-view-bg-color: #1d1d20;
-  --adw-view-fg-color: #ffffff;
-  --adw-headerbar-bg-color: #2e2e32;
-  --adw-headerbar-fg-color: #ffffff;
-  --adw-headerbar-backdrop-color: #222226;
-  --adw-headerbar-shade-color: rgb(0 0 6 / 36%);
-  --adw-sidebar-bg-color: #2e2e32;
-  --adw-sidebar-fg-color: #ffffff;
-  --adw-sidebar-backdrop-color: #28282c;
-  --adw-sidebar-border-color: rgb(0 0 6 / 36%);
-  --adw-sidebar-shade-color: rgb(0 0 6 / 25%);
+  /*
+   * Flexoki base ramp in place of the light neutrals, matched by lightness: a class such as
+   * dark:text-(--adw-light-1) or dark:bg-(--adw-dark-3) gets the warm value in dark mode.
+   */
+  --adw-light-1: #fffcf0; /* paper */
+  --adw-light-2: #f2f0e5; /* base-50 */
+  --adw-light-3: #dad8ce; /* base-150 */
+  --adw-light-4: #b7b5ac; /* base-300 */
+  --adw-light-5: #9f9d96; /* base-400 */
+  --adw-dark-1: #6f6e69; /* base-600 */
+  --adw-dark-2: #575653; /* base-700 */
+  --adw-dark-3: #403e3c; /* base-800 */
+  --adw-dark-4: #282726; /* base-900 */
+  --adw-dark-5: #100f0f; /* black */
+
+  /* Semantic colours (dark), from the Flexoki ramps */
+  /* blue-200 for fill and text: blue-300 fails as text on raised surfaces, and blue keeps the light-mode hue. */
+  --adw-accent-bg-color: #92bfdb; /* blue-200 */
+  --adw-accent-fg-color: #100f0f;
+  --adw-accent-color: #92bfdb; /* blue-200 */
+  --adw-destructive-bg-color: #e8705f; /* red-300 */
+  --adw-destructive-fg-color: #100f0f;
+  --adw-destructive-color: #f89a8a; /* red-200 */
+  --adw-success-bg-color: #a0af54; /* green-300 */
+  --adw-success-fg-color: #100f0f;
+  --adw-success-color: #bec97e; /* green-200 */
+  --adw-warning-bg-color: #dfb431; /* yellow-300 */
+  --adw-warning-fg-color: #100f0f;
+  --adw-warning-color: #eccb60; /* yellow-200 */
+  --adw-error-bg-color: #e8705f; /* red-300 */
+  --adw-error-fg-color: #100f0f;
+  --adw-error-color: #f89a8a; /* red-200 */
+  --adw-window-bg-color: var(--adw-beige-dark);
+  --adw-window-fg-color: #cecdc3; /* base-200, Flexoki tx */
+  --adw-view-bg-color: #282726; /* base-900 */
+  --adw-view-fg-color: #cecdc3;
+  --adw-headerbar-bg-color: #343331; /* base-850 */
+  --adw-headerbar-fg-color: #cecdc3;
+  --adw-headerbar-backdrop-color: var(--adw-beige-dark);
+  --adw-headerbar-shade-color: rgb(16 15 15 / 36%);
+  --adw-sidebar-bg-color: #282726; /* base-900 */
+  --adw-sidebar-fg-color: #cecdc3;
+  --adw-sidebar-backdrop-color: #343331; /* base-850 */
+  --adw-sidebar-border-color: #403e3c; /* base-800 */
+  --adw-sidebar-shade-color: rgb(16 15 15 / 25%);
   --adw-toc-inactive: var(--adw-light-4);
   --adw-page-brown-bg: var(--adw-page-beige-bg);
   --adw-page-beige-bg: var(--adw-beige-dark);
-  /* Brown 5 keeps white (8.7:1), white/80 (6.3:1) and the accent (5.1:1) at WCAG AA on the well. */
-  --site-section-well-bg: var(--adw-brown-5);
+  /* One step above the page, as the white wells sit above the beige page in light mode. */
+  --site-section-well-bg: #282726; /* base-900 */
   --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   --articles-content-toc-gap: clamp(10rem, calc(17.25vw - 2rem), 13.75rem);
 
@@ -285,11 +310,11 @@
   --border: var(--adw-sidebar-border-color);
   --input: var(--adw-sidebar-border-color);
   --ring: var(--adw-accent-color);
-  --chart-1: var(--adw-accent-blue);
-  --chart-2: #33d17a;
-  --chart-3: #f5c211;
-  --chart-4: #ff7800;
-  --chart-5: #c01c28;
+  --chart-1: #4385be; /* blue-400 */
+  --chart-2: #879a39; /* green-400 */
+  --chart-3: #d0a215; /* yellow-400 */
+  --chart-4: #da702c; /* orange-400 */
+  --chart-5: #d14d41; /* red-400 */
   --sidebar: var(--adw-sidebar-bg-color);
   --sidebar-foreground: var(--adw-sidebar-fg-color);
   --sidebar-primary: var(--adw-accent-bg-color);
@@ -333,46 +358,72 @@
     background: transparent;
   }
 
-  /* highlight.js dark mode overrides (github-dark token colors) */
-  .dark .hljs { color: #c9d1d9; }
+  /* highlight.js dark mode: Flexoki syntax roles at the 200 tones, which keep AA on the code block (--muted) */
+  .dark .hljs { color: var(--foreground); }
   .dark .hljs-doctag,
   .dark .hljs-keyword,
   .dark .hljs-meta .hljs-keyword,
   .dark .hljs-template-tag,
   .dark .hljs-template-variable,
   .dark .hljs-type,
-  .dark .hljs-variable.language_ { color: #ff7b72; }
+  .dark .hljs-variable.language_ { color: #bec97e; }
   .dark .hljs-title,
   .dark .hljs-title.class_,
   .dark .hljs-title.class_.inherited__,
-  .dark .hljs-title.function_ { color: #d2a8ff; }
+  .dark .hljs-title.function_ { color: #f9ae77; }
   .dark .hljs-attr,
   .dark .hljs-attribute,
-  .dark .hljs-literal,
-  .dark .hljs-meta,
-  .dark .hljs-number,
-  .dark .hljs-operator,
   .dark .hljs-variable,
   .dark .hljs-selector-attr,
   .dark .hljs-selector-class,
-  .dark .hljs-selector-id { color: #79c0ff; }
+  .dark .hljs-selector-id { color: #92bfdb; }
+  .dark .hljs-literal,
+  .dark .hljs-meta { color: #f4a4c2; }
+  .dark .hljs-number { color: #c4b9e0; }
   .dark .hljs-regexp,
   .dark .hljs-string,
-  .dark .hljs-meta .hljs-string { color: #a5d6ff; }
-  .dark .hljs-built_in,
-  .dark .hljs-symbol { color: #ffa657; }
-  .dark .hljs-comment,
-  .dark .hljs-code,
-  .dark .hljs-formula { color: #8b949e; }
+  .dark .hljs-meta .hljs-string,
   .dark .hljs-name,
   .dark .hljs-quote,
   .dark .hljs-selector-tag,
-  .dark .hljs-selector-pseudo { color: #7ee787; }
-  .dark .hljs-subst { color: #c9d1d9; }
-  .dark .hljs-section { color: #1f6feb; font-weight: bold; }
-  .dark .hljs-bullet { color: #f2cc60; }
-  .dark .hljs-emphasis { color: #c9d1d9; font-style: italic; }
-  .dark .hljs-strong { color: #c9d1d9; font-weight: bold; }
-  .dark .hljs-addition { color: #aff5b4; background-color: #033a16; }
-  .dark .hljs-deletion { color: #ffdcd7; background-color: #67060c; }
+  .dark .hljs-selector-pseudo { color: #87d3c3; }
+  .dark .hljs-built_in,
+  .dark .hljs-symbol,
+  .dark .hljs-bullet { color: #eccb60; }
+  .dark .hljs-operator,
+  .dark .hljs-comment,
+  .dark .hljs-code,
+  .dark .hljs-formula { color: var(--adw-light-5); }
+  .dark .hljs-subst { color: var(--foreground); }
+  .dark .hljs-section { color: var(--adw-light-1); font-weight: bold; }
+  .dark .hljs-emphasis { color: var(--foreground); font-style: italic; }
+  .dark .hljs-strong { color: var(--foreground); font-weight: bold; }
+  .dark .hljs-addition { color: #cdd597; background-color: #252d09; }
+  .dark .hljs-deletion { color: #fdb2a2; background-color: #3e1715; }
+}
+
+/*
+ * Dark prose colours. Typography's prose-invert reads these --tw-prose-invert-* values, which the plugin
+ * sets on .prose as cool Tailwind greys; .dark .prose outranks it and points them at the theme tokens.
+ */
+@layer utilities {
+  .dark .prose {
+    --tw-prose-invert-body: var(--foreground);
+    --tw-prose-invert-headings: var(--adw-light-1);
+    --tw-prose-invert-lead: var(--muted-foreground);
+    --tw-prose-invert-links: var(--adw-light-1);
+    --tw-prose-invert-bold: var(--adw-light-1);
+    --tw-prose-invert-counters: var(--muted-foreground);
+    --tw-prose-invert-bullets: var(--adw-light-5);
+    --tw-prose-invert-hr: var(--border);
+    --tw-prose-invert-quotes: var(--adw-light-2);
+    --tw-prose-invert-quote-borders: var(--border);
+    --tw-prose-invert-captions: var(--muted-foreground);
+    --tw-prose-invert-kbd: var(--adw-light-1);
+    --tw-prose-invert-code: var(--adw-light-1);
+    --tw-prose-invert-pre-code: var(--foreground);
+    --tw-prose-invert-pre-bg: var(--muted);
+    --tw-prose-invert-th-borders: var(--border);
+    --tw-prose-invert-td-borders: var(--border);
+  }
 }

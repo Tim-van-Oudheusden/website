@@ -40,7 +40,7 @@ export function HomeSectionStart({ section, onCtaActivate }: HomeSectionStartPro
                 asChild
                 variant="secondary"
                 size="lg"
-                className="w-fit h-14 px-10 text-lg font-semibold tracking-wide bg-(--adw-dark-5) text-white hover:bg-black/90"
+                className="w-fit h-14 px-10 text-lg font-semibold tracking-wide bg-(--adw-dark-5) text-white hover:bg-black/90 dark:bg-(--adw-light-1) dark:text-(--adw-dark-5) dark:hover:bg-(--adw-light-1)/90"
               >
                 <a
                   href={`#${ctaTargetId}`}

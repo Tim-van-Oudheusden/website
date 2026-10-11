@@ -24,7 +24,7 @@ function RecommendationsContent({
 }): JSX.Element {
   if (loadError) {
     return (
-      <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+      <p role="alert" className="text-sm text-red-600 dark:text-destructive">
         Recommendations could not be loaded right now. Please try again later.
       </p>
     );

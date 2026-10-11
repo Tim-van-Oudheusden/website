@@ -45,14 +45,20 @@ function headerOf(mount: FakeMount): FakeElement {
 describe("TopBar", () => {
   test("renders the site logo as the brand and the main page links", () => {
     const html = renderTopBar();
-    const brandLink = /<a [^>]*href="\/"[^>]*>\s*<img [^>]*>\s*<\/a>/.exec(html)?.[0];
+    const brandLink = /<a [^>]*href="\/"[^>]*>[\s\S]*?<\/a>/.exec(html)?.[0];
 
-    expect(brandLink).toContain('src="/images/logo.svg"');
-    expect(brandLink).toContain('alt="Build with Tim"');
+    expect(brandLink).toMatch(/<svg [^>]*role="img"[^>]*aria-label="Build with Tim"/);
     expect(html).not.toContain("Tim V.O.");
     expect(html).toContain("Home");
     expect(html).toContain("Articles");
     expect(html).toContain("Projects");
+  });
+
+  test("draws the logo inline with its plate in the current text colour, so it follows the theme", () => {
+    const brandLink = /<a [^>]*href="\/"[^>]*>[\s\S]*?<\/a>/.exec(renderTopBar())?.[0] ?? "";
+
+    expect(brandLink).not.toContain("<img");
+    expect(brandLink).toMatch(/<svg [^>]*>[\s\S]*<rect [^>]*fill="currentColor"/);
   });
 
   test("links the site pages to their routes", () => {
