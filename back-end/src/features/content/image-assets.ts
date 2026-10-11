@@ -25,6 +25,13 @@ export const IMAGE_EXTENSIONS: readonly string[] = Object.keys(IMAGE_MIME_TYPES)
  */
 export const ASSET_CACHE_CONTROL = "public, max-age=31536000, immutable";
 
+/**
+ * Assets are served from the site's own origin, and an SVG opened directly is a
+ * live document. No script may run in one, and `sandbox` gives it an opaque
+ * origin; inline styles stay allowed so styled SVGs still render.
+ */
+export const ASSET_CONTENT_SECURITY_POLICY = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
+
 export interface ResolvedAsset {
   fullPath: string;
   contentType: string;

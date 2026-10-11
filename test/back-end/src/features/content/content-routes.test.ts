@@ -172,6 +172,16 @@ describe("content routes mount JSON under /api and images at the root", () => {
     expect(res.headers["content-type"]).toContain("image/svg+xml");
   });
 
+  test("serves assets with a CSP that blocks script and sandboxes a directly opened svg", async () => {
+    const res = await app!.inject({ method: "GET", url: "/content-assets/images/pixel.svg" });
+    const csp = res.headers["content-security-policy"];
+
+    expect(res.statusCode).toBe(200);
+    expect(csp).toContain("default-src 'none'");
+    expect(csp).toContain("sandbox");
+    expect(csp).not.toContain("script-src");
+  });
+
   test("serves every supported image extension with its MIME type", async () => {
     const contentTypeByExtension: Record<string, string> = {
       ".png": "image/png",
