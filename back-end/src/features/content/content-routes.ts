@@ -7,7 +7,7 @@ import type { ContentType } from "shared";
 import { ASSET_PATH_PREFIX, CONTENT_TYPES, ROUTES } from "shared";
 
 import { getContentBySlug, listContent } from "./content";
-import { ASSET_CACHE_CONTROL, resolveContentAsset } from "./image-assets";
+import { ASSET_CACHE_CONTROL, ASSET_CONTENT_SECURITY_POLICY, resolveContentAsset } from "./image-assets";
 
 /**
  * Register content JSON API routes on a Fastify instance scoped under API_BASE.
@@ -57,6 +57,7 @@ export function registerContentImageRoutes(app: FastifyInstance, contentDir: str
       const imageBuffer = await readFile(resolved.fullPath);
 
       reply.header("Cache-Control", ASSET_CACHE_CONTROL);
+      reply.header("Content-Security-Policy", ASSET_CONTENT_SECURITY_POLICY);
       reply.type(resolved.contentType);
 
       return await reply.send(imageBuffer);
