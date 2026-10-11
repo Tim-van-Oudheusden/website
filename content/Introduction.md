@@ -10,7 +10,6 @@ homeRecommended: true
 tags:
   - Introduction
 ---
-introduction-social-image
 # Welcome
 This is my corner of the internet for sharing articles about Linux, software engineering, and personal reflections.
 
