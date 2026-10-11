@@ -333,7 +333,7 @@ describe("real content directory sanity check", () => {
       {
         type: "repo",
         label: "Source repository",
-        href: "https://github.com/Tim-van-Oudheusden/website",
+        href: "https://github.com/Tim-van-Oudheusden/MinimalUI",
       },
     ]);
 
