@@ -36,6 +36,7 @@ jobs:
       startsWith(github.event.comment.body, '/apply-suggestions') &&
       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       REPO: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.issue.number }}
