@@ -13,4 +13,6 @@ tags:
 # Welcome
 This is my corner of the internet for sharing articles about Linux, software engineering, and personal reflections.
 
+[Build With Tim - introduction video](https://www.youtube.com/watch?v=_muNlsJ9VM8)
+
 Use the article sidebar to browse by category and open any post that interests you.

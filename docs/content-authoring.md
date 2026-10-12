@@ -25,6 +25,19 @@ Canonical image syntax for guaranteed rendering in this app:
 
 The image route is served by the back-end and maps to files stored in `content/images`.
 
+### YouTube embeds
+
+A YouTube video link alone in its paragraph (a bare URL or `[text](url)` on its own line)
+renders as an embedded player from the privacy-enhanced `youtube-nocookie.com` host,
+captioned with the link; the link text becomes the player's accessible title:
+
+```md
+[Build With Tim - introduction video](https://www.youtube.com/watch?v=_muNlsJ9VM8)
+```
+
+`watch?v=`, `youtu.be/`, `/shorts/`, `/embed/` and `/live/` links work, and a `t=`/`start=`
+start time carries over. A YouTube link inside a sentence stays a plain link.
+
 ### Frontmatter reference
 
 Every `content/*.md` file starts with a YAML frontmatter block. The back-end

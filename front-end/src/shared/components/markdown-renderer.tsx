@@ -13,6 +13,7 @@ import {
   slugifyHeadingText,
   TOC_MAX_DEPTH,
 } from "@/shared/lib/markdown-headings";
+import { rehypeYouTubeEmbeds } from "@/shared/lib/youtube-embed";
 
 export interface MarkdownRendererProps {
   /** Raw markdown string (frontmatter already stripped). */
@@ -268,6 +269,23 @@ export const MarkdownRenderer = memo(({
         />
       );
     },
+    // Only rehypeYouTubeEmbeds emits iframes (raw HTML is not rendered); it sets src and title.
+    iframe({ node: _node, ...rest }) {
+      return (
+        <iframe
+          {...rest}
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          // The player stays blank without allow-same-origin; the unsafe pairing only lets a
+          // same-origin frame lift its own sandbox, and this frame is always youtube-nocookie.com.
+          // eslint-disable-next-line @eslint-react/dom-no-unsafe-iframe-sandbox -- see comment above
+          sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
+          allowFullScreen
+          className="aspect-video w-full rounded-md border-0"
+        />
+      );
+    },
     code({ className, children, node: _node, ...rest }) {
       return (
         <code className={className} {...rest}>
@@ -281,7 +299,7 @@ export const MarkdownRenderer = memo(({
     <article className="prose dark:prose-invert max-w-none text-base sm:text-lg leading-relaxed">
       <Markdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
+        rehypePlugins={[rehypeYouTubeEmbeds, rehypeHighlight]}
         components={components}
       >
         {content}
