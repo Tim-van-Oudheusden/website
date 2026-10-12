@@ -14,6 +14,7 @@ import { useArticleMotion } from "../hooks/use-article-motion";
 import type { UseArticleTocResult } from "../hooks/use-article-toc";
 import { formatArticleDate } from "../lib/article-date";
 import { estimateReadingMinutes } from "../lib/article-reading-time";
+import { tagPath } from "../lib/article-tags";
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
   ARTICLES_PAGE_MOTION_CLASSES,
@@ -92,8 +93,8 @@ function ArticleBody({ article, articles, toc }: ArticleBodyProps): JSX.Element 
             <ul aria-label="Tags" className="flex flex-wrap gap-2 sm:ml-auto">
               {article.tags.map((tag) => (
                 <li key={tag}>
-                  <Badge variant="secondary" className={cn("text-xs", ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge)}>
-                    {tag}
+                  <Badge asChild variant="secondary" className={cn("text-xs", ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleTagBadge)}>
+                    <Link to={tagPath(tag)}>{tag}</Link>
                   </Badge>
                 </li>
               ))}

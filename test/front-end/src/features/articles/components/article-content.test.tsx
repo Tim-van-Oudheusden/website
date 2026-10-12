@@ -86,6 +86,14 @@ describe("ArticleContent", () => {
     expect(renderContent()).not.toContain("<img");
   });
 
+  test("links each tag to the page listing every article with that tag", () => {
+    const html = renderContent({ ...FIXTURE_ARTICLE, tags: ["Docker", "Content API"] });
+    const tags = /<ul aria-label="Tags".*?<\/ul>/s.exec(html)?.[0] ?? "";
+
+    expect(tags).toMatch(/<a[^>]*href="\/tags\/docker"[^>]*>Docker<\/a>/);
+    expect(tags).toMatch(/<a[^>]*href="\/tags\/content-api"[^>]*>Content API<\/a>/);
+  });
+
   test("links to other articles from the same category after the body", () => {
     const linuxArticle: ArticleData = { ...FIXTURE_ARTICLE, title: "Flatpak", slug: "flatpak", category: "Linux" };
     const html = renderContent(linuxArticle, [
