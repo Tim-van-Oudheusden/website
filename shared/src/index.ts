@@ -64,6 +64,15 @@ export const ASSET_PATH_PREFIX = "/content-assets/images/";
 export const STANDALONE_PAGE_SLUGS = ["now", "uses"] as const;
 
 /**
+ * The mark's blue (see `BRANDING.md`). Hand-copied into `front-end/index.html`'s
+ * `theme-color` meta tag, `public/manifest.webmanifest`, `public/favicon.svg`'s
+ * fill, and `front-end/src/index.css`'s `--primary`/`--chart-1` tokens — those
+ * static files can't import this constant, but their tests assert against it
+ * so the five copies can't silently drift apart.
+ */
+export const BRAND_COLOR = "#3584e4" as const;
+
+/**
  * Request header carrying the visitor's real IP behind Cloudflare Tunnel.
  * Used by the back-end rate limiter (to key limits per visitor) and the
  * front-end server (to forward it when proxying article-preview fetches),

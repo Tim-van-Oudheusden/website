@@ -2,6 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { BRAND_COLOR } from "shared";
+
 describe("index.html", () => {
   test("defines a non-empty browser tab title", () => {
     const html = readFileSync(resolve(import.meta.dir, "../../../front-end/index.html"), "utf-8");
@@ -45,6 +47,6 @@ describe("index.html", () => {
       '<link rel="manifest" href="/manifest.webmanifest" />',
     ]);
 
-    expect(html).toContain('<meta name="theme-color" content="#3584e4" />');
+    expect(html).toContain(`<meta name="theme-color" content="${BRAND_COLOR}" />`);
   });
 });

@@ -2,7 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { BRAND_COLOR } from "shared";
+
 const publicDir = resolve(import.meta.dir, "../../../public");
+const cssPath = resolve(import.meta.dir, "../../../front-end/src/index.css");
 
 interface ManifestIcon {
   src: string;
@@ -44,9 +47,16 @@ describe("public/manifest.webmanifest", () => {
   });
 
   test("uses the brand blue of the favicon for the browser chrome", () => {
-    expect(manifest.theme_color).toBe("#3584e4");
-    expect(manifest.background_color).toBe("#3584e4");
-    expect(readFileSync(resolve(publicDir, "favicon.svg"), "utf-8")).toContain('fill="#3584e4"');
+    expect(manifest.theme_color).toBe(BRAND_COLOR);
+    expect(manifest.background_color).toBe(BRAND_COLOR);
+    expect(readFileSync(resolve(publicDir, "favicon.svg"), "utf-8")).toContain(`fill="${BRAND_COLOR}"`);
+  });
+
+  test("matches the --primary/--chart-1 CSS tokens so the theme can't drift from the manifest", () => {
+    const css = readFileSync(cssPath, "utf-8");
+
+    expect(css).toContain(`--primary: ${BRAND_COLOR};`);
+    expect(css).toContain(`--chart-1: ${BRAND_COLOR};`);
   });
 
   test("lists 192px and 512px PNG icons that exist at their declared size", () => {
