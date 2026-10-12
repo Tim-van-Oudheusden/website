@@ -33,6 +33,19 @@ contract in `shared/src/index.ts` (`ARTICLE_CATEGORIES`, `PROJECT_STATUSES`,
 `PROJECT_LINK_TYPES`). Pages in `content/pages/` follow their own, shorter
 rules: see [Standalone pages](#standalone-pages-contentpages).
 
+The parser reads a subset of YAML: `key: value` lines, block lists
+(`- item` on its own line), and the `links` list of objects. Within that subset:
+
+- Quote a value that contains `: ` or starts with `#`, e.g.
+  `title: "Flatpak: a field guide"`. Double or single quotes both work; the
+  quotes are removed, and a quoted value is always a string. Inside double
+  quotes write `\"` for a quote and `\\` for a backslash; inside single quotes
+  write `''` for a quote.
+- A ` # comment` after an unquoted value is ignored: `draft: true # not ready`
+  is the boolean `true`.
+- Flow lists (`tags: [a, b]`) and multi-line values are not supported; write
+  lists one `- item` per line.
+
 **A document that breaks a rule is silently left out of the site.** No error is
 shown: it disappears from every listing and its URL returns "not found". Run
 the [content checker](#checking-content-before-pushing) before pushing.

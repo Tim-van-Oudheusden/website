@@ -18,6 +18,12 @@
  *       label: Label
  *       href: https://example.com
  *
+ * A scalar may be wrapped in "double" or 'single' quotes; the quotes are
+ * removed and the value stays a string (`"true"` is not a boolean). Inside
+ * double quotes `\"` and `\\` are decoded; inside single quotes `''` is. An
+ * unquoted value loses a trailing ` # comment`. Flow lists (`[a, b]`),
+ * multi-line scalars, and other YAML forms are not part of the subset.
+ *
  * `readFrontmatter` returns the parsed data object plus the body after the
  * closing `---`, or the reason no valid leading frontmatter block exists;
  * `parseFrontmatter` is the same parse with the reason collapsed to null.
@@ -35,9 +41,33 @@ interface FrontmatterMap {
 type FrontmatterValue = Scalar | FrontmatterValue[] | FrontmatterMap;
 
 const NUMERIC_RE = /^-?\d+$/;
+// YAML starts a comment at a `#` that opens the value or follows whitespace.
+const COMMENT_RE = /(?:^|\s)#.*$/;
+// A double- or single-quoted scalar, optionally followed by a comment. Inside
+// double quotes `\"` and `\\` are escapes; inside single quotes `''` is.
+const DOUBLE_QUOTED_RE = /^"((?:[^"\\]|\\.)*)"\s*(?:#.*)?$/;
+const DOUBLE_QUOTED_ESCAPE_RE = /\\(["\\])/g;
+const SINGLE_QUOTED_RE = /^'((?:[^']|'')*)'\s*(?:#.*)?$/;
 
+/**
+ * One scalar: a quoted value stays a string with its quotes removed; an
+ * unquoted value loses any trailing comment and may read as a boolean or
+ * integer.
+ */
 function parseScalarValue(value: string): Scalar {
-  const trimmed = value.trim();
+  const doubleQuoted = DOUBLE_QUOTED_RE.exec(value.trim());
+
+  if (doubleQuoted !== null) {
+    return (doubleQuoted[1] ?? "").replace(DOUBLE_QUOTED_ESCAPE_RE, "$1");
+  }
+
+  const singleQuoted = SINGLE_QUOTED_RE.exec(value.trim());
+
+  if (singleQuoted !== null) {
+    return (singleQuoted[1] ?? "").replaceAll("''", "'");
+  }
+
+  const trimmed = value.replace(COMMENT_RE, "").trim();
 
   if (trimmed === "true") {
     return true;
@@ -237,8 +267,9 @@ export function readFrontmatter(raw: string): FrontmatterRead {
 
     const value = field[2] ?? "";
 
-    // A key with a value: `title: X`.
-    if (value.trim() !== "") {
+    // A key with a value: `title: X`. A key followed only by a comment is a
+    // parent key; a quoted value always keeps its opening quote here.
+    if (value.replace(COMMENT_RE, "").trim() !== "") {
       data[key] = parseScalarValue(value);
       i += 1;
 
