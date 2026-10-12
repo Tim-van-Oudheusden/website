@@ -56,8 +56,9 @@ The parser reads a subset of YAML: `key: value` lines, block lists
   write `''` for a quote.
 - A ` # comment` after an unquoted value is ignored: `draft: true # not ready`
   is the boolean `true`.
-- Flow lists (`tags: [a, b]`) and multi-line values are not supported; write
-  lists one `- item` per line.
+- Flow lists and multi-line values are not supported; write lists one
+  `- item` per line. A flow list such as `tags: [a, b]` is read as one string,
+  which breaks the `tags` rule below.
 
 **A document that breaks a rule is silently left out of the site.** No error is
 shown: it disappears from every listing and its URL returns "not found". Run
@@ -70,7 +71,7 @@ the [content checker](#checking-content-before-pushing) before pushing.
 | `title` | Yes | Non-empty string | Heading, card title, link-preview title. |
 | `date` / `publishDate` | One of them | Date (`2026-02-08`) or non-empty string | Publication date for sorting and display. `date` wins when both are set. |
 | `description` | No | String (default empty) | Summary on cards and in link previews. |
-| `tags` | No | List of strings | Tag badges; non-string entries are dropped. |
+| `tags` | No | List of strings, one `- item` per line | Tag badges; non-string entries are dropped. Any other value, including a flow list (`tags: [a, b]`) or a single `tags: a`, makes the document invalid. |
 | `type` | No | `article` or `project` | Content kind. Missing or any other value counts as `article`, so a typo such as `type: projet` makes a project fail the article rules. |
 | `draft` | No | `true` or `false` (default `false`) | `true` hides the document when `NODE_ENV=production`; it still shows in local dev. Only a YAML boolean counts: `"true"` in quotes is ignored. |
 | `slug` | No | Non-empty string without `/`, `?`, `#`, `%` or `\` | URL segment (`/articles/<slug>`, `/projects/<slug>`). Defaults to the file name without `.md`, spaces included, so a file name with one of those characters needs an explicit `slug`. Must be unique among published (non-draft) articles and projects. A draft may share a published document's slug while a rewrite is in progress: production serves the published one, while local dev lists both and opens whichever file is read first. The [content checker](#checking-content-before-pushing) fails on a forbidden character (drafts included) or on a published document whose slug another published file already uses: the site would still list that file, but its page would not open. |

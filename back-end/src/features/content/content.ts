@@ -163,9 +163,18 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
   }
 
   const description = normalizeString(raw["description"]) ?? "";
-  const tags = Array.isArray(raw["tags"])
-    ? raw["tags"].filter((tag): tag is string => typeof tag === "string")
-    : [];
+  const rawTags = raw["tags"];
+
+  // The frontmatter subset has no flow lists, so `tags: [a, b]` arrives as one
+  // string; reject it rather than silently publishing the document untagged.
+  if (rawTags !== undefined && !Array.isArray(rawTags)) {
+    return {
+      ok: false,
+      error: { file, field: "tags", message: "tags must be a list written one `- item` per line", value: rawTags },
+    };
+  }
+
+  const tags = (rawTags ?? []).filter((tag): tag is string => typeof tag === "string");
   const type: ContentType = CONTENT_TYPES.find((candidate) => candidate === raw["type"]) ?? "article";
   const draft = normalizeBoolean(raw["draft"], false);
   const socialImage = normalizeString(raw["socialImage"]);

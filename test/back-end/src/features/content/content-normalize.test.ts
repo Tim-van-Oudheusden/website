@@ -301,6 +301,32 @@ describe("validateContentDir", () => {
   });
 
   test.each([
+    ["a flow list", "tags: [Linux, Containers]", "[Linux, Containers]"],
+    ["a single scalar", "tags: Linux", "Linux"],
+  ])("reports tags written as %s instead of dropping them", async (_label, tagsLine, value) => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, "flow-tags.md"), [
+        "---",
+        "title: Flow Tags",
+        "date: 2026-01-01",
+        "type: article",
+        "category: Linux",
+        tagsLine,
+        "---",
+        "# Flow Tags",
+      ].join("\n"));
+
+      expect(await validateContentDir(dir)).toMatchObject([
+        { file: "flow-tags.md", field: "tags", message: expect.stringMatching(/one `- item` per line/), value },
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test.each([
     ["no opening fence", "no-fence.md", ["title: No Fence", "date: 2026-01-01", "# Body"], /opening ---/],
     ["an unclosed fence", "unclosed.md", ["---", "title: Unclosed", "date: 2026-01-01", "# Body"], /never closed/],
     ["an empty frontmatter block", "empty.md", ["---", "---", "# Body"], /no fields/],
