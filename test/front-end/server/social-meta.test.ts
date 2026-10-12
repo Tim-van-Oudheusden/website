@@ -230,4 +230,26 @@ describe("renderHomeMeta", () => {
     expect(meta.get("og:url")).toBe("https://buildwithtim.dev/");
     expect(meta.get("description")).toContain("self-hosted tools");
   });
+
+  test("identifies the site and its owner, linked to the owner's profiles, as schema.org structured data", () => {
+    expect(headJsonLd(renderHomeMeta(INDEX_HTML, ORIGIN))).toEqual({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://buildwithtim.dev/#person",
+          "name": "Tim van Oudheusden",
+          "url": "https://buildwithtim.dev/",
+          "sameAs": ["https://github.com/Tim-van-Oudheusden", "https://www.linkedin.com/in/tim-van-oudheusden"],
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://buildwithtim.dev/#website",
+          "name": "Build with Tim",
+          "url": "https://buildwithtim.dev/",
+          "author": { "@id": "https://buildwithtim.dev/#person" },
+        },
+      ],
+    });
+  });
 });
