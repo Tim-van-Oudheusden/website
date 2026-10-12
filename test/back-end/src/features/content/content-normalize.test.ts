@@ -359,6 +359,31 @@ describe("validateContentDir", () => {
     }
   });
 
+  // A rewrite drafted next to the published article, under the same slug:
+  // getContentBySlug serves the published one in production.
+  test("accepts a draft sharing a published document's slug, in either directory order", async () => {
+    function article(draft: boolean): string {
+      return ["---", "title: Article", "date: 2026-01-01", "category: Work", "slug: shared-slug", `draft: ${String(draft)}`, "---", "Body"].join("\n");
+    }
+
+    // Same names, contents swapped: whatever order readdir returns, one of the
+    // two directories lists the draft first.
+    const dirs = await Promise.all([0, 1].map(() => mkdtemp(join(tmpdir(), "website-content-validate-"))));
+
+    try {
+      for (const [index, dir] of dirs.entries()) {
+        await writeFile(join(dir, "first.md"), article(index === 0));
+        await writeFile(join(dir, "second.md"), article(index !== 0));
+      }
+
+      for (const dir of dirs) {
+        expect(await validateContentDir(dir)).toEqual([]);
+      }
+    } finally {
+      await Promise.all(dirs.map((dir) => rm(dir, { recursive: true, force: true })));
+    }
+  });
+
   test.each([
     ["a question mark from the file name", "Is this real?.md", []],
     ["a hash", "hash.md", ["slug: c#-notes"]],
