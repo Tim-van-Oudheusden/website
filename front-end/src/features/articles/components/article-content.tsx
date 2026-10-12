@@ -5,13 +5,13 @@ import { useRef } from "react";
 import type { ArticleData } from "shared/articles";
 import { resolveSocialImagePath } from "shared/social-image";
 
-import { formatArticleDate } from "@/features/home/lib/article-date";
 import { ErrorBoundary, renderErrorFallback } from "@/shared/components/error-boundary";
 import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
 import { Badge } from "@/shared/components/ui/badge";
 
 import { useArticleMotion } from "../hooks/use-article-motion";
 import type { UseArticleTocResult } from "../hooks/use-article-toc";
+import { formatArticleDate } from "../lib/article-date";
 import { estimateReadingMinutes } from "../lib/article-reading-time";
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
