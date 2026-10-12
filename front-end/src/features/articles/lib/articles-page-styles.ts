@@ -10,6 +10,7 @@ export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   inlineToc: "mb-10 xl:hidden",
   panelBox: "border-border bg-[var(--site-section-well-bg)] rounded-lg border px-4 py-3",
   cover: "mb-10 aspect-[1200/630] w-full overflow-hidden rounded-xl border border-border",
+  related: "mt-16 border-t border-border pt-8",
 } as const;
 
 export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
@@ -23,6 +24,10 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   articleMeta: "text-muted-foreground mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium",
   articleBodyMeasure: "mx-auto w-full max-w-[40rem]",
   articleTagBadge: "bg-[var(--ink-5)] text-[var(--paper-1)] font-bold [a&]:hover:bg-[var(--ink-5)]/90 dark:bg-[var(--paper-1)] dark:text-[var(--ink-5)] dark:[a&]:hover:bg-[var(--paper-1)]/90",
+  relatedTitle: "text-xl font-semibold tracking-tight",
+  relatedLink: "hover:bg-accent hover:text-accent-foreground -mx-3 flex flex-col gap-1 rounded-md px-3 py-2 transition-colors",
+  relatedLinkTitle: "font-medium",
+  relatedLinkDescription: "text-muted-foreground text-sm text-pretty",
   // On the wrapper around the shared MarkdownRenderer: article-only rhythm on
   // top of its prose styles (`[&>.prose]` outranks the renderer's own size
   // classes). Markdown `#` is a section heading here; the page title is the

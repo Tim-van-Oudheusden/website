@@ -54,7 +54,7 @@ the [content checker](#checking-content-before-pushing) before pushing.
 
 | Field | Required | Allowed values | Effect |
 | --- | --- | --- | --- |
-| `category` | Yes | `Introduction`, `Linux`, `Work`, `Personal Life` (exact case) | Groups the article in the Articles sidebar. |
+| `category` | Yes | `Introduction`, `Linux`, `Work`, `Personal Life` (exact case) | Groups the article in the Articles sidebar. The end of each article links to the three newest other articles in its category ("More from `<category>`"). |
 | `homeRecommended` | No | `true` or `false` (default `false`) | `true` adds the article to the pool for the home page's "For you" section, which shows three articles from the pool at random on each page load and fills any empty places with the newest other articles. Only a YAML boolean counts: `"true"` in quotes is ignored. |
 
 #### Project fields (`type: project`)

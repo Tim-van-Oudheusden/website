@@ -89,6 +89,7 @@ export function ArticlesPage(): JSX.Element {
       <ArticlesSidebar articles={articles} selectedSlug={selectedSlug} />
       <ArticleContent
         article={selectedArticle}
+        articles={articles}
         loading={loadingArticle}
         error={articleError}
         toc={toc}
