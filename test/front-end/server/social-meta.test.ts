@@ -140,7 +140,7 @@ describe("renderSocialMeta page identity", () => {
 });
 
 describe("renderSocialMeta structured data", () => {
-  test("describes the article as a schema.org BlogPosting by the site owner", () => {
+  test("describes the article as a schema.org BlogPosting by the site owner, linked to the owner's profiles", () => {
     const html = renderSocialMeta(INDEX_HTML, article({ socialImage: "images/cover.png" }), ORIGIN);
 
     expect(headJsonLd(html)).toEqual({
@@ -150,7 +150,12 @@ describe("renderSocialMeta structured data", () => {
       "description": "Why I moved my desktop apps to Flatpak.",
       "datePublished": "2026-09-01",
       "url": "https://buildwithtim.dev/articles/apt-get-out-of-my-life-hello-flatpak",
-      "author": { "@type": "Person", "name": "Tim van Oudheusden", "url": "https://buildwithtim.dev/" },
+      "author": {
+        "@type": "Person",
+        "name": "Tim van Oudheusden",
+        "url": "https://buildwithtim.dev/",
+        "sameAs": ["https://github.com/Tim-van-Oudheusden", "https://www.linkedin.com/in/tim-van-oudheusden"],
+      },
       "image": "https://buildwithtim.dev/content-assets/images/cover.png",
     });
   });
@@ -203,7 +208,12 @@ describe("renderSocialMeta for a project", () => {
       "description": "A distraction-free launcher for a keyboard phone.",
       "datePublished": "2026-06-10",
       "url": "https://buildwithtim.dev/projects/minimal-android-launcher",
-      "author": { "@type": "Person", "name": "Tim van Oudheusden", "url": "https://buildwithtim.dev/" },
+      "author": {
+        "@type": "Person",
+        "name": "Tim van Oudheusden",
+        "url": "https://buildwithtim.dev/",
+        "sameAs": ["https://github.com/Tim-van-Oudheusden", "https://www.linkedin.com/in/tim-van-oudheusden"],
+      },
       "image": "https://buildwithtim.dev/images/projects/placeholder_phone_project.png",
     });
   });

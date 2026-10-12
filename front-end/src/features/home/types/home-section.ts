@@ -1,4 +1,4 @@
-import type { SocialLink } from "@/shared/config/social-links";
+import type { SocialLink } from "shared/social-links";
 
 import type { ExperienceEntry } from "../config/experience";
 

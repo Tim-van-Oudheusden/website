@@ -1,10 +1,11 @@
 import { ArrowUpRight } from "lucide-react";
 import type { ComponentType, JSX, SVGProps } from "react";
 
+import type { SocialNetwork } from "shared/social-links";
+
 import { GitHubIcon } from "@/shared/components/icons/github-icon";
 import { LinkedInIcon } from "@/shared/components/icons/linkedin-icon";
 import { Button } from "@/shared/components/ui/button";
-import type { SocialNetwork } from "@/shared/config/social-links";
 
 import type { HomeSocialsSection } from "../types/home-section";
 

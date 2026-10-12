@@ -1,5 +1,6 @@
 import type { ContentFrontmatter } from "shared";
 import { resolveSocialImagePath } from "shared/social-image";
+import { SOCIAL_LINKS } from "shared/social-links";
 
 interface MetaTag {
   attribute: "name" | "property";
@@ -115,7 +116,13 @@ function renderJsonLd(
     "description": item.description,
     "datePublished": item.date,
     "url": pageUrl,
-    "author": { "@type": "Person", "name": SITE_OWNER, "url": `${origin}/` },
+    "author": {
+      "@type": "Person",
+      "name": SITE_OWNER,
+      "url": `${origin}/`,
+      // The owner's profiles, so search engines can tell this author apart from namesakes.
+      "sameAs": Object.values(SOCIAL_LINKS).map((link) => link.href),
+    },
     ...(imageUrl === null ? {} : { image: imageUrl }),
   };
 

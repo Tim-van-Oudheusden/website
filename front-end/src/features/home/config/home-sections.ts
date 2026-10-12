@@ -1,4 +1,4 @@
-import { SOCIAL_LINKS } from "@/shared/config/social-links";
+import { SOCIAL_LINKS } from "shared/social-links";
 
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
 
