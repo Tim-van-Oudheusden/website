@@ -197,6 +197,46 @@ Body
       ["---", "title: T", "links:", "  - type: repo", "    url: https://x", "  ", "", "---", "Body"],
       { data: { title: "T", links: [{ type: "repo", url: "https://x" }] }, content: "Body" },
     ],
+    [
+      "drops a trailing # comment from an unquoted value",
+      ["---", "title: T", "draft: true # not ready yet", "---", "Body"],
+      { data: { title: "T", draft: true }, content: "Body" },
+    ],
+    [
+      "unwraps a double-quoted value",
+      ["---", 'title: "Flatpak: a field guide"', 'date: "2026-10-02"', "---", "Body"],
+      { data: { title: "Flatpak: a field guide", date: "2026-10-02" }, content: "Body" },
+    ],
+    [
+      "unwraps a single-quoted value and keeps it a string",
+      ["---", "title: 'It''s a #1 pick' # editor's note", "draft: 'true'", "---", "Body"],
+      { data: { title: "It's a #1 pick", draft: "true" }, content: "Body" },
+    ],
+    [
+      "decodes escaped quotes and backslashes inside double quotes",
+      ["---", String.raw`title: "Say \"hi\" to C:\\ # loudly" # note`, "---", "Body"],
+      { data: { title: String.raw`Say "hi" to C:\ # loudly` }, content: "Body" },
+    ],
+    [
+      "reads a block key's children when the key carries only a comment",
+      ["---", "title: T", "tags: # one per line", "  - Linux", "---", "Body"],
+      { data: { title: "T", tags: ["Linux"] }, content: "Body" },
+    ],
+    [
+      "unwraps quotes and drops comments in list items and object fields",
+      [
+        "---",
+        "tags:",
+        '  - "Linux: tips"',
+        "  - Containers # main topic",
+        "links:",
+        "  - type: repo # source",
+        "    label: 'Repo: main'",
+        "---",
+        "Body",
+      ],
+      { data: { tags: ["Linux: tips", "Containers"], links: [{ type: "repo", label: "Repo: main" }] }, content: "Body" },
+    ],
   ])("%s", (_label, lines, expected) => {
     expect(parseFrontmatter(lines.join("\n"))).toEqual(expected);
   });

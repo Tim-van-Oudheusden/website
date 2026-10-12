@@ -246,6 +246,34 @@ describe("content normalization against controlled fixtures", () => {
     }
   });
 
+  test("reads quoted values and trailing comments as YAML does in production", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-yaml-forms-"));
+
+    try {
+      await writeFile(
+        join(dir, "wip.md"),
+        ["---", "title: Work in progress", "date: 2026-10-01", "category: Linux", "draft: true # not ready yet", "---", "Body"].join("\n"),
+      );
+
+      await writeFile(
+        join(dir, "quoted.md"),
+        ["---", 'title: "Flatpak: a field guide"', 'date: "2026-10-02"', 'category: "Linux"', "---", "Body"].join("\n"),
+      );
+
+      setProduction();
+
+      const items = await listContent(dir, { type: null });
+
+      expect(items.map((item) => [item.slug, item.title, item.date])).toEqual([
+        ["quoted", "Flatpak: a field guide", "2026-10-02"],
+      ]);
+
+      expect(await validateContentDir(dir)).toEqual([]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   test("skips documents without a frontmatter block or title", async () => {
     const items = await listContent(contentDir, { type: null });
 
