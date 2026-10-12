@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import { STANDALONE_PAGE_SLUGS } from "shared";
 
 import { ArticlesPage } from "@/features/articles/pages/articles-page";
+import { TagPage } from "@/features/articles/pages/tag-page";
 import { HomePage } from "@/features/home/pages/home-page";
 import { ProjectPage } from "@/features/projects/pages/project-page";
 import { ProjectsPage } from "@/features/projects/pages/projects-page";
@@ -19,6 +20,7 @@ export function AppRoutes(): JSX.Element {
       <Route path="/projects/:slug" element={<ProjectPage />} />
       <Route path="/articles" element={<ArticlesPage />} />
       <Route path="/articles/:slug" element={<ArticlesPage />} />
+      <Route path="/tags/:tag" element={<TagPage />} />
       {STANDALONE_PAGE_SLUGS.map((slug) => (
         <Route key={slug} path={`/${slug}`} element={<StandalonePage slug={slug} />} />
       ))}

@@ -56,6 +56,13 @@ describe("AppRoutes", () => {
     expect(html).toContain("Loading articles...");
   });
 
+  test("resolves /tags/:tag to the tag page for that tag", () => {
+    const html = renderRoute("/tags/docker");
+
+    expect(html).toMatch(/<h1[^>]*>Articles tagged docker<\/h1>/);
+    expect(html).toContain("Loading articles...");
+  });
+
   test("resolves /now and /uses to their standalone pages", () => {
     expect(renderRoute("/now")).toContain("Loading page...");
     expect(renderRoute("/uses")).toContain("Loading page...");
