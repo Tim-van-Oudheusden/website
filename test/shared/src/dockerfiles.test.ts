@@ -32,6 +32,7 @@ describe("docker dependency installs are deterministic", () => {
       expect(sandboxDockerfile).toContain(packageName);
     }
 
+    expect(sandboxDockerfile).toContain("@earendil-works/pi-coding-agent@1.1.0");
     expect(sandboxDockerfile).toContain("@beads/bd@1.0.5");
     expect(sandboxDockerfile).toContain("ln -sf /home/bun/.bun/bin/bd /usr/local/bin/bd");
   });
