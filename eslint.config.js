@@ -62,12 +62,13 @@ const restrictedImports = [
   { name: "tailwind-merge", message: cnPackageMessage },
 ];
 
-const sharedBackendBoundaryMessage = "Import only \"shared\" (index.ts) from back-end code. \"shared/articles\" and \"shared/social-image\" hold front-end-only logic, kept out of index.ts specifically so the back-end bundle and its coverage run never load it.";
+const sharedBackendBoundaryMessage = "Import only \"shared\" (index.ts) from back-end code. \"shared/articles\", \"shared/social-image\" and \"shared/social-links\" hold front-end-only code, kept out of index.ts specifically so the back-end bundle and its coverage run never load it.";
 
-/* Enforce the split documented in shared/src/articles.ts and shared/src/social-image.ts. */
+/* Enforce the split documented in shared/src/articles.ts, shared/src/social-image.ts and shared/src/social-links.ts. */
 const backendRestrictedSharedImports = [
   { name: "shared/articles", message: sharedBackendBoundaryMessage },
   { name: "shared/social-image", message: sharedBackendBoundaryMessage },
+  { name: "shared/social-links", message: sharedBackendBoundaryMessage },
 ];
 
 const e2eFixtureMessage = "Import `test` from \"./fixtures\": it gives each test its own visitor address, so specs never share one back-end rate-limit bucket (#716).";

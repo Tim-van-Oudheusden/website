@@ -4,10 +4,11 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 
+import { SOCIAL_LINKS } from "shared/social-links";
+
 import { HomeSection } from "../../../../../../front-end/src/features/home/components/home-section";
 import { headingIdFor, HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
 import type { HomeSectionDefinition, HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
-import { SOCIAL_LINKS } from "../../../../../../front-end/src/shared/config/social-links";
 import { createMemoryContentLoader } from "../../../../../../front-end/src/shared/lib/content-loader";
 
 function findHomeSection(sectionId: HomeSectionId): HomeSectionDefinition {
