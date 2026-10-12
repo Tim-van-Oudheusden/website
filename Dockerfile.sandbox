@@ -26,7 +26,7 @@ ENV PATH=/home/bun/.bun/bin:$PATH
 
 USER bun
 RUN mkdir -p /home/bun/.bun/bin /home/bun/.pi/agent /home/bun/.cache/bun && \
-    bun install -g @earendil-works/pi-coding-agent && \
+    bun install -g @earendil-works/pi-coding-agent@1.1.0 && \
     bun install -g --trust @beads/bd@1.0.5 && \
     bun install -g superlocalmemory@3.5.5
 
