@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
 
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -54,6 +54,21 @@ describe("ErrorBoundary", () => {
 
   test("computes the captured-error state via getDerivedStateFromError", () => {
     expect(ErrorBoundary.getDerivedStateFromError()).toEqual({ hasError: true });
+  });
+
+  test("logs the caught error and component stack via componentDidCatch", () => {
+    const errorSpy = spyOn(console, "error");
+
+    try {
+      const instance = new ErrorBoundary({ children: HEALTHY_CHILD, fallback: renderErrorFallback });
+      const thrown = new Error("boom");
+
+      instance.componentDidCatch(thrown, { componentStack: "at Widget" });
+
+      expect(errorSpy).toHaveBeenCalledWith("[error-boundary] caught a render error:", thrown, "at Widget");
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 
   test("renders the default fallback with a retry control after a child error", () => {

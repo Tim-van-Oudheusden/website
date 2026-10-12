@@ -41,6 +41,16 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true };
   }
 
+  /**
+   * Without this, a caught render error leaves no trace anywhere: the user
+   * sees the fallback UI, but the error and which component threw it are
+   * discarded. Log only the error and component stack — both app-internal,
+   * never request/user data.
+   */
+  override componentDidCatch(error: Error, info: { componentStack: string | null }): void {
+    console.error("[error-boundary] caught a render error:", error, info.componentStack);
+  }
+
   /** Re-render children after a captured failure (passed to `fallback`). */
   retry = (): void => {
     this.setState({ hasError: false });
