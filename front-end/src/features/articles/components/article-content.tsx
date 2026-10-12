@@ -1,8 +1,9 @@
 import { cn } from "cn";
 import type { JSX } from "react";
 import { useRef } from "react";
+import { Link } from "react-router";
 
-import type { ArticleData } from "shared/articles";
+import type { ArticleData, ArticleSummary } from "shared/articles";
 import { resolveSocialImagePath } from "shared/social-image";
 
 import { ErrorBoundary, renderErrorFallback } from "@/shared/components/error-boundary";
@@ -18,12 +19,15 @@ import {
   ARTICLES_PAGE_MOTION_CLASSES,
   ARTICLES_PAGE_TYPOGRAPHY_CLASSES,
 } from "../lib/articles-page-styles";
+import { selectRelatedArticles } from "../lib/related-articles";
 
 import { ArticleLocationTrail } from "./article-location-trail";
 import { ArticleInlineToc, ArticleTocNav } from "./article-toc-nav";
 
 interface ArticleContentProps {
   article: ArticleData | null;
+  /** Every listed article; the related block picks from these. */
+  articles: ArticleSummary[];
   loading: boolean;
   error: string | null;
   toc: UseArticleTocResult;
@@ -32,11 +36,44 @@ interface ArticleContentProps {
 
 interface ArticleBodyProps {
   article: ArticleData;
+  articles: ArticleSummary[];
   toc: UseArticleTocResult;
 }
 
+interface RelatedArticlesProps {
+  article: ArticleData;
+  articles: ArticleSummary[];
+}
+
+/** End-of-article links to the newest other articles in the same category. */
+function RelatedArticles({ article, articles }: RelatedArticlesProps): JSX.Element | null {
+  const related = selectRelatedArticles(articles, article);
+
+  if (related.length === 0) {
+    return null;
+  }
+
+  const heading = `More from ${article.category}`;
+
+  return (
+    <nav aria-label={heading} className={ARTICLES_PAGE_LAYOUT_CLASSES.related}>
+      <h2 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.relatedTitle}>{heading}</h2>
+      <ul className="mt-4 space-y-3">
+        {related.map((relatedArticle) => (
+          <li key={relatedArticle.slug}>
+            <Link to={`/articles/${relatedArticle.slug}`} className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.relatedLink}>
+              <span className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.relatedLinkTitle}>{relatedArticle.title}</span>
+              <span className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.relatedLinkDescription}>{relatedArticle.description}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 /** Title block, cover, and body of one article; mounted per article so its motion starts fresh. */
-function ArticleBody({ article, toc }: ArticleBodyProps): JSX.Element {
+function ArticleBody({ article, articles, toc }: ArticleBodyProps): JSX.Element {
   const proseContainerRef = useRef<HTMLDivElement>(null);
   const motion = useArticleMotion(proseContainerRef);
   const coverPath = resolveSocialImagePath(article.socialImage);
@@ -78,13 +115,15 @@ function ArticleBody({ article, toc }: ArticleBodyProps): JSX.Element {
           <MarkdownRenderer content={article.body} headingLevelOffset={1} />
         </ErrorBoundary>
       </div>
+      <RelatedArticles article={article} articles={articles} />
     </div>
   );
 }
 
-/** Selected-article column: location trail, header, body, and right TOC. */
+/** Selected-article column: location trail, header, body, related links, and right TOC. */
 export function ArticleContent({
   article,
+  articles,
   loading,
   error,
   toc,
@@ -110,7 +149,7 @@ export function ArticleContent({
               onArticlesActivate={onArticlesActivate}
             />
           </div>
-          <ArticleBody key={article.slug} article={article} toc={toc} />
+          <ArticleBody key={article.slug} article={article} articles={articles} toc={toc} />
 
           {toc.tocItems.length > 0 && <ArticleTocNav {...toc} />}
         </div>

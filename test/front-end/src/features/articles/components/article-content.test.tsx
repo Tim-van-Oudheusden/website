@@ -4,7 +4,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 
-import type { ArticleData } from "shared/articles";
+import type { ArticleData, ArticleSummary } from "shared/articles";
 
 import { ArticleContent } from "../../../../../../front-end/src/features/articles/components/article-content";
 import type { UseArticleTocResult } from "../../../../../../front-end/src/features/articles/hooks/use-article-toc";
@@ -25,13 +25,14 @@ const FIXTURE_ARTICLE: ArticleData = {
 
 const NO_TOC: UseArticleTocResult = { tocItems: [], visibleTocHeadingIds: [], currentTocHeadingId: null };
 
-function renderContent(article: ArticleData = FIXTURE_ARTICLE): string {
+function renderContent(article: ArticleData = FIXTURE_ARTICLE, articles: ArticleSummary[] = [FIXTURE_ARTICLE]): string {
   return renderToStaticMarkup(
     createElement(
       MemoryRouter,
       null,
       createElement(ArticleContent, {
         article,
+        articles,
         loading: false,
         error: null,
         toc: NO_TOC,
@@ -85,6 +86,25 @@ describe("ArticleContent", () => {
     expect(renderContent()).not.toContain("<img");
   });
 
+  test("links to other articles from the same category after the body", () => {
+    const linuxArticle: ArticleData = { ...FIXTURE_ARTICLE, title: "Flatpak", slug: "flatpak", category: "Linux" };
+    const html = renderContent(linuxArticle, [
+      linuxArticle,
+      { ...FIXTURE_ARTICLE, title: "Fedora Silverblue", slug: "silverblue", category: "Linux" },
+      { ...FIXTURE_ARTICLE, title: "Office notes", slug: "office-notes", category: "Work" },
+    ]);
+
+    const related = /<nav aria-label="More from Linux".*?<\/nav>/s.exec(html)?.[0] ?? "";
+
+    expect(related).toMatch(/<a[^>]*href="\/articles\/silverblue"[^>]*>.*Fedora Silverblue/s);
+    expect(related).not.toContain("/articles/flatpak");
+    expect(related).not.toContain("/articles/office-notes");
+  });
+
+  test("renders no related block when the category has no other articles", () => {
+    expect(renderContent()).not.toContain("More from");
+  });
+
   test("renders the loading state when the article is still fetching", () => {
     const html = renderToStaticMarkup(
       createElement(
@@ -92,6 +112,7 @@ describe("ArticleContent", () => {
         null,
         createElement(ArticleContent, {
           article: null,
+          articles: [],
           loading: true,
           error: null,
           toc: NO_TOC,
@@ -114,6 +135,7 @@ describe("ArticleContent", () => {
         null,
         createElement(ArticleContent, {
           article: null,
+          articles: [],
           loading: false,
           error: "Failed to load article",
           toc: NO_TOC,
