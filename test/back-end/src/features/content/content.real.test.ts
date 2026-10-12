@@ -216,6 +216,36 @@ describe("content normalization against controlled fixtures", () => {
     expect(intro?.title).toBe("Introduction");
   });
 
+  // A rewrite drafted next to the published article, under the same slug.
+  test("resolves the published document past a same-slug draft in production, in either directory order", async () => {
+    function article(title: string, draft: boolean): string {
+      return ["---", `title: ${title}`, "date: 2026-01-01", "category: Linux", "slug: foo", `draft: ${draft}`, "---", "Body"].join("\n");
+    }
+
+    const draft = article("Draft", true);
+    const published = article("Published", false);
+    // Same names, same write order, contents swapped: whatever order readdir
+    // returns, one of the two directories lists the draft first.
+    const dirs = await Promise.all([0, 1].map(() => mkdtemp(join(tmpdir(), "website-content-shadow-"))));
+
+    try {
+      for (const [index, dir] of dirs.entries()) {
+        const [first, second] = index === 0 ? [draft, published] : [published, draft];
+
+        await writeFile(join(dir, "first.md"), first);
+        await writeFile(join(dir, "second.md"), second);
+      }
+
+      setProduction();
+
+      for (const dir of dirs) {
+        expect((await getContentBySlug("foo", dir))?.title).toBe("Published");
+      }
+    } finally {
+      await Promise.all(dirs.map((dir) => rm(dir, { recursive: true, force: true })));
+    }
+  });
+
   test("skips documents without a frontmatter block or title", async () => {
     const items = await listContent(contentDir, { type: null });
 

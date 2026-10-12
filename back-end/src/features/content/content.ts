@@ -293,8 +293,8 @@ const UNROUTABLE_SLUG_CHARACTERS = /[/?#%\\]/;
 /**
  * Slug errors for documents that are otherwise valid: a slug that cannot be a
  * URL path segment, or one an earlier document already uses. `getContentBySlug`
- * returns the first match, so every later document with that slug (whatever its
- * type or draft state) is unreachable.
+ * serves the first match (past drafts hidden in production), so a later
+ * document with that slug is unreachable or appears only by file order.
  */
 function findSlugErrors(documents: readonly ContentDocument[]): ContentError[] {
   const firstFileBySlug = new Map<string, string>();
@@ -382,7 +382,8 @@ export async function listContent(contentDir: string, options: ListContentOption
 /**
  * Get a single content item by slug, including the raw markdown body.
  * Returns null if no matching file is found or the document is invalid.
- * Filters out drafts when NODE_ENV is "production".
+ * Skips drafts when NODE_ENV is "production", so a published document sharing
+ * a draft's slug still resolves whatever order the files are read in.
  */
 export async function getContentBySlug(
   slug: string,
@@ -402,7 +403,7 @@ export async function getContentBySlug(
     }
 
     if (process.env.NODE_ENV === "production" && frontmatter.draft) {
-      return null;
+      continue;
     }
 
     return { ...frontmatter, body: rewriteObsidianImageEmbeds(document.rawBody) };
