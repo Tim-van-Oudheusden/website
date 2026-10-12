@@ -57,7 +57,7 @@ describe("ErrorBoundary", () => {
   });
 
   test("logs the caught error and component stack via componentDidCatch", () => {
-    const errorSpy = spyOn(console, "error");
+    const errorSpy = spyOn(console, "error").mockImplementation(() => undefined);
 
     try {
       const instance = new ErrorBoundary({ children: HEALTHY_CHILD, fallback: renderErrorFallback });

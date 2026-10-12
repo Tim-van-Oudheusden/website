@@ -42,9 +42,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   /**
-   * Without this, a caught render error leaves no trace anywhere: the user
-   * sees the fallback UI, but the error and which component threw it are
-   * discarded. Log only the error and component stack — both app-internal,
+   * React 19's default `onCaughtError` already logs the caught error via
+   * `console.error`, so the error itself appears twice. This is kept so the
+   * component stack, which production builds omit from React's own log, is
+   * recorded too. Log only the error and component stack — both app-internal,
    * never request/user data.
    */
   override componentDidCatch(error: Error, info: { componentStack: string | null }): void {
