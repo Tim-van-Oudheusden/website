@@ -115,6 +115,62 @@ describe("MarkdownRenderer", () => {
     expect(html).toContain('src="/d.png"');
   });
 
+  test("embeds a YouTube link that stands alone in its paragraph as a video player", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "Intro text.\n\n[Why I built this site](https://www.youtube.com/watch?v=_muNlsJ9VM8)\n\nOutro text.",
+        headingLevelOffset: 0,
+      }),
+    );
+
+    expect(html).toContain('<iframe src="https://www.youtube-nocookie.com/embed/_muNlsJ9VM8"');
+    expect(html).toContain('title="Why I built this site"');
+    expect(html).toContain('href="https://www.youtube.com/watch?v=_muNlsJ9VM8"');
+    expect(html).toContain("<p>Intro text.</p>");
+    expect(html).toContain("<p>Outro text.</p>");
+  });
+
+  test("gives a YouTube player linked from a thumbnail image a non-empty accessible title", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "[![](/content-assets/images/thumb.png)](https://youtu.be/_muNlsJ9VM8)",
+        headingLevelOffset: 0,
+      }),
+    );
+
+    expect(html).toContain('title="YouTube video"');
+  });
+
+  test("embeds a bare YouTube URL on its own line as a lazily loaded player", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, { content: "https://youtu.be/_muNlsJ9VM8", headingLevelOffset: 0 }),
+    );
+
+    expect(html).toContain('<iframe src="https://www.youtube-nocookie.com/embed/_muNlsJ9VM8"');
+    expect(html).toContain('loading="lazy"');
+  });
+
+  test.each([
+    ["mid-sentence", "He has a [very good video](https://www.youtube.com/watch?v=W7KHqVrh25Q) about it."],
+    ["opening a sentence", "[This video](https://www.youtube.com/watch?v=W7KHqVrh25Q) explains it well."],
+  ])("keeps a YouTube link %s as a plain link", (_label, content) => {
+    const html = renderToStaticMarkup(createElement(MarkdownRenderer, { content, headingLevelOffset: 0 }));
+
+    expect(html).not.toContain("<iframe");
+    expect(html).toContain('<a href="https://www.youtube.com/watch?v=W7KHqVrh25Q"');
+  });
+
+  test("embeds a standalone YouTube link nested in a quote", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, {
+        content: "> Worth a watch:\n>\n> https://youtu.be/_muNlsJ9VM8",
+        headingLevelOffset: 0,
+      }),
+    );
+
+    expect(html).toContain('<iframe src="https://www.youtube-nocookie.com/embed/_muNlsJ9VM8"');
+  });
+
   test("does not forward react-markdown's node prop to DOM elements", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, { content: "[x](https://e.com) `c` ![Logo](/l.png)\n\n> quote", headingLevelOffset: 0 }),
