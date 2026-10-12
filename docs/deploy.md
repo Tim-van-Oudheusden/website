@@ -245,7 +245,19 @@ a digest changed — the common "no new image" cycle causes zero downtime.
 
 ## 4. Rollback
 
-Pull a known-good immutable tag and point the pod manifest at it, then replay:
+**Automatic:** `website-update.sh` already guards against this for the common
+case. Before pulling, it tags whatever image is currently running as a local
+`:rollback` reference; after replaying the pod on a digest change, it polls
+both containers' `/health` endpoints for ~20s. If either never comes up
+healthy, it re-tags `:rollback` onto `:latest`, replays the pod again, and
+exits non-zero — check `systemctl --user status website-update.service` /
+`journalctl --user -u website-update.service` after an incident to see
+whether this already happened.
+
+**Manual:** needed when the bad image has survived past the next update cycle
+(so the local `:rollback` tag has been overwritten by a newer pull) or when
+rolling back further than one release. Pull a known-good immutable tag and
+point the pod manifest at it, then replay:
 
 ```bash
 podman pull ghcr.io/tim-van-oudheusden/website/front-end:<git-sha>
