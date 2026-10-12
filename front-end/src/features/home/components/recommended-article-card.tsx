@@ -6,9 +6,8 @@ import { Link } from "react-router";
 import type { ArticleSummary } from "shared/articles";
 import { resolveSocialImagePath } from "shared/social-image";
 
+import { formatArticleDate } from "@/features/articles/lib/article-date";
 import { Button } from "@/shared/components/ui/button";
-
-import { formatArticleDate } from "../lib/article-date";
 
 type CopyStatus = "idle" | "copied" | "failed";
 

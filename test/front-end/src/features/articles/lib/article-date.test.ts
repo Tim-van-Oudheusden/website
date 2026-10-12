@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { formatArticleDate } from "../../../../../../front-end/src/features/home/lib/article-date";
+import { formatArticleDate } from "../../../../../../front-end/src/features/articles/lib/article-date";
 
 describe("formatArticleDate", () => {
   test("writes the month name, ordinal day and year", () => {
