@@ -35,10 +35,26 @@ test.describe("Top bar theme toggle", () => {
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe("light");
   });
 
+  test("with nothing stored the theme follows prefers-color-scheme until one is picked", async ({ page }) => {
+    const html = page.locator("html");
+
+    await page.emulateMedia({ colorScheme: "dark" });
+    await expect(html).toHaveClass(/\bdark\b/);
+    expect(await page.evaluate(() => localStorage.getItem("theme"))).toBeNull();
+
+    await page.emulateMedia({ colorScheme: "light" });
+    await expect(html).not.toHaveClass(/\bdark\b/);
+
+    await pickTheme(page, "Dark");
+    await page.emulateMedia({ colorScheme: "light" });
+    await expect(html).toHaveClass(/\bdark\b/);
+  });
+
   test("system theme follows prefers-color-scheme, including live changes", async ({ page }) => {
     const html = page.locator("html");
 
     await page.emulateMedia({ colorScheme: "dark" });
+    await pickTheme(page, "Light");
     await expect(html).not.toHaveClass(/\bdark\b/);
 
     await pickTheme(page, "System");

@@ -4,12 +4,14 @@ import { createContext, use, useCallback, useEffect, useMemo, useState } from "r
 type Theme = "light" | "dark" | "system";
 
 const STORAGE_KEY = "theme";
+// Used when nothing valid is stored: follow the visitor's OS preference.
+const DEFAULT_THEME: Theme = "system";
 
 const ThemeContext = createContext<{
   theme: Theme;
   setTheme: (theme: Theme) => void;
 }>({
-  theme: "light",
+  theme: DEFAULT_THEME,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   setTheme: () => {},
 });
@@ -32,7 +34,7 @@ export function ThemeProvider({ children }: { children: ReactNode }): JSX.Elemen
       return stored;
     }
 
-    return "light";
+    return DEFAULT_THEME;
   });
 
   const persistTheme = useCallback((next: Theme): void => {
