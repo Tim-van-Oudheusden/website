@@ -25,8 +25,7 @@
  * multi-line scalars, and other YAML forms are not part of the subset.
  *
  * `readFrontmatter` returns the parsed data object plus the body after the
- * closing `---`, or the reason no valid leading frontmatter block exists;
- * `parseFrontmatter` is the same parse with the reason collapsed to null.
+ * closing `---`, or the reason no valid leading frontmatter block exists.
  *
  * A leading UTF-8 byte-order mark is ignored and frontmatter lines may end in
  * CRLF; the body keeps its original line endings.
@@ -309,10 +308,4 @@ export function readFrontmatter(raw: string): FrontmatterRead {
   }
 
   return { ok: true, result: { data, content } };
-}
-
-export function parseFrontmatter(raw: string): ParseResult | null {
-  const read = readFrontmatter(raw);
-
-  return read.ok ? read.result : null;
 }
