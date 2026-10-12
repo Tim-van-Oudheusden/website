@@ -8,6 +8,14 @@ interface MetaTag {
   content: string;
 }
 
+/** A schema.org Person, as JSON-LD. */
+interface JsonLdPerson {
+  "@type": "Person";
+  "name": string;
+  "url": string;
+  "sameAs": string[];
+}
+
 /** Site name and hero line, verbatim from BRANDING.md §1–2 (the home 'start' section shows the same copy). */
 export const SITE_NAME = "Build with Tim";
 /** Site owner, as BRANDING.md §3 names him: author of every article. */
@@ -39,7 +47,14 @@ export function renderHomeMeta(html: string, origin: string): string {
     { attribute: "name", key: "twitter:card", content: "summary" },
   ];
 
-  return injectIntoHead(html, `    <link rel="canonical" href="${escapeAttribute(`${origin}/`)}" />\n${renderTags(tags)}`);
+  return injectIntoHead(
+    html,
+    [
+      `    <link rel="canonical" href="${escapeAttribute(`${origin}/`)}" />`,
+      renderTags(tags),
+      renderHomeJsonLd(origin),
+    ].join("\n"),
+  );
 }
 
 /**
@@ -99,6 +114,29 @@ function previewImageSource(item: ContentFrontmatter): string | null {
 }
 
 /**
+ * schema.org structured data naming the site and the person who runs it, so
+ * search engines can tie the site to the owner's profiles.
+ */
+function renderHomeJsonLd(origin: string): string {
+  const homeUrl = `${origin}/`;
+  const person = { "@id": `${homeUrl}#person`, ...owner(origin) };
+
+  return renderJsonLdScript({
+    "@context": "https://schema.org",
+    "@graph": [
+      person,
+      {
+        "@type": "WebSite",
+        "@id": `${homeUrl}#website`,
+        "name": SITE_NAME,
+        "url": homeUrl,
+        "author": { "@id": person["@id"] },
+      },
+    ],
+  });
+}
+
+/**
  * schema.org structured data, so search engines can show the title, author and
  * date as a rich result: a BlogPosting for an article, a CreativeWork for a project.
  */
@@ -108,7 +146,7 @@ function renderJsonLd(
   imageUrl: string | null,
   origin: string,
 ): string {
-  const data = {
+  return renderJsonLdScript({
     "@context": "https://schema.org",
     ...(item.type === "article"
       ? { "@type": "BlogPosting", "headline": item.title }
@@ -116,16 +154,23 @@ function renderJsonLd(
     "description": item.description,
     "datePublished": item.date,
     "url": pageUrl,
-    "author": {
-      "@type": "Person",
-      "name": SITE_OWNER,
-      "url": `${origin}/`,
-      // The owner's profiles, so search engines can tell this author apart from namesakes.
-      "sameAs": Object.values(SOCIAL_LINKS).map((link) => link.href),
-    },
+    "author": owner(origin),
     ...(imageUrl === null ? {} : { image: imageUrl }),
-  };
+  });
+}
 
+/** The site owner as a schema.org Person: author of every page. */
+function owner(origin: string): JsonLdPerson {
+  return {
+    "@type": "Person",
+    "name": SITE_OWNER,
+    "url": `${origin}/`,
+    // The owner's profiles, so search engines can tell this author apart from namesakes.
+    "sameAs": Object.values(SOCIAL_LINKS).map((link) => link.href),
+  };
+}
+
+function renderJsonLdScript(data: Record<string, unknown>): string {
   // `\u003c`-style escapes keep authored text from closing the <script> element; JSON.parse reads them back.
   const json = JSON.stringify(data).replace(/[<>&]/g, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
 

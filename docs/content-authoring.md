@@ -147,7 +147,8 @@ The same server adds schema.org structured data (JSON-LD) to each page, so
 search engines can show a rich result: a `BlogPosting` for an article (headline
 from `title`) and a `CreativeWork` for a project (name from `title`). Both carry
 `description`, the date from `date`, Tim as author, and the preview image when
-there is one.
+there is one. The homepage carries a `WebSite` and a `Person` for Tim, whose
+`sameAs` lists his profiles from `shared/src/social-links.ts`.
 
 ### Standalone pages (`content/pages/`)
 
