@@ -257,14 +257,14 @@ Body
   ])("%s", (_label, lines, expected) => {
     const read = readFrontmatter(lines.join("\n"));
 
-    if (!read.ok) {
-      expect(expected).toBeNull();
+    if (expected === null) {
+      expect(read.ok).toBe(false);
 
       return;
     }
 
-    expect(expected).not.toBeNull();
-    expect(read.result).toEqual(expected);
+    expect(read.ok).toBe(true);
+    expect(read.ok ? read.result : null).toEqual(expected);
   });
 
   describe("line endings and byte-order mark", () => {
