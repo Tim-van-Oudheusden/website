@@ -118,12 +118,17 @@ describe("applyTheme", () => {
 });
 
 describe("ThemeProvider", () => {
-  test("defaults to the light theme when nothing is stored", () => {
+  test("defaults to the system theme when nothing is stored, following the OS preference", () => {
     const doc = document as unknown as FakeDocument;
+
+    triggerFakeMediaPreferenceChange(true);
     const mounted = mountThemeProvider(null);
 
     try {
-      expect(mounted.probe.theme()).toBe("light");
+      expect(mounted.probe.theme()).toBe("system");
+      expect(doc.documentElement.classList.contains("dark")).toBe(true);
+
+      triggerFakeMediaPreferenceChange(false);
       expect(doc.documentElement.classList.contains("dark")).toBe(false);
     } finally {
       unmountProvider(mounted);
@@ -142,13 +147,15 @@ describe("ThemeProvider", () => {
     }
   });
 
-  test("falls back to light for an unrecognized stored value", () => {
+  test("falls back to the system theme for an unrecognized stored value", () => {
     const doc = document as unknown as FakeDocument;
+
+    triggerFakeMediaPreferenceChange(true);
     const mounted = mountThemeProvider("sepia");
 
     try {
-      expect(mounted.probe.theme()).toBe("light");
-      expect(doc.documentElement.classList.contains("dark")).toBe(false);
+      expect(mounted.probe.theme()).toBe("system");
+      expect(doc.documentElement.classList.contains("dark")).toBe(true);
     } finally {
       unmountProvider(mounted);
     }

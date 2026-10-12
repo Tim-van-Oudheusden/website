@@ -103,7 +103,7 @@ describe("ThemeToggle interaction (with ThemeProvider)", () => {
     );
 
     try {
-      // Fresh provider defaults to the light theme: no dark class applied.
+      // Fresh provider defaults to the system theme; beforeEach gives a light OS preference.
       expect(doc.documentElement.classList.contains("dark")).toBe(false);
 
       const trigger = findBySlot(button.container, "dropdown-menu-trigger");
@@ -116,12 +116,14 @@ describe("ThemeToggle interaction (with ThemeProvider)", () => {
         (el) => el.getAttribute("data-slot") === "dropdown-menu-item",
       );
       const lightItem = items.find((item) => item.textContent.startsWith("Light"));
+      const systemItem = items.find((item) => item.textContent.startsWith("System"));
 
-      if (!isFakeElement(lightItem)) {
-        throw new Error("Expected a Light menu item");
+      if (!isFakeElement(lightItem) || !isFakeElement(systemItem)) {
+        throw new Error("Expected Light and System menu items");
       }
 
-      expect(lightItem.textContent).toContain("Active");
+      expect(systemItem.textContent).toContain("Active");
+      expect(lightItem.textContent).not.toContain("Active");
 
       const darkItem = items.find((item) => item.textContent.startsWith("Dark"));
 
