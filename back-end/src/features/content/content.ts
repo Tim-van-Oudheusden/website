@@ -292,9 +292,10 @@ const UNROUTABLE_SLUG_CHARACTERS = /[/?#%\\]/;
 
 /**
  * Slug errors for documents that are otherwise valid: a slug that cannot be a
- * URL path segment, or one an earlier document already uses. `getContentBySlug`
- * serves the first match (past drafts hidden in production), so a later
- * document with that slug is unreachable or appears only by file order.
+ * URL path segment, or a published document reusing an earlier published
+ * document's slug. `getContentBySlug` serves the first match, so the later one
+ * is unreachable. Drafts never claim a slug: in production `getContentBySlug`
+ * skips them, so a draft rewrite may share its published article's slug.
  */
 function findSlugErrors(documents: readonly ContentDocument[]): ContentError[] {
   const firstFileBySlug = new Map<string, string>();
@@ -315,6 +316,10 @@ function findSlugErrors(documents: readonly ContentDocument[]): ContentError[] {
         value: slug,
       });
 
+      continue;
+    }
+
+    if (result.value.draft) {
       continue;
     }
 
