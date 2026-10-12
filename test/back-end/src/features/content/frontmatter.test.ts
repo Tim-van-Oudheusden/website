@@ -1,8 +1,20 @@
 import { describe, expect, test } from "bun:test";
 
-import { parseFrontmatter } from "../../../../../back-end/src/features/content/frontmatter";
+import type { ParseResult } from "../../../../../back-end/src/features/content/frontmatter";
+import { readFrontmatter } from "../../../../../back-end/src/features/content/frontmatter";
 
-describe("parseFrontmatter", () => {
+/** Parses `raw`, failing the test (rather than returning null) if it is rejected. */
+function parsed(raw: string): ParseResult {
+  const read = readFrontmatter(raw);
+
+  if (!read.ok) {
+    throw new Error(`expected frontmatter to parse, got: ${read.reason}`);
+  }
+
+  return read.result;
+}
+
+describe("readFrontmatter", () => {
   test("parses article frontmatter scalars and tags list", () => {
     const raw = `---
 title: Introduction
@@ -17,17 +29,16 @@ tags:
 Body text here
 `;
 
-    const result = parseFrontmatter(raw);
+    const result = parsed(raw);
 
-    expect(result).not.toBeNull();
-    expect(result!.data["title"]).toBe("Introduction");
-    expect(result!.data["slug"]).toBe("introduction");
-    expect(result!.data["description"]).toBe("A quick overview.");
-    expect(result!.data["type"]).toBe("article");
-    expect(result!.data["category"]).toBe("Introduction");
-    expect(result!.data["publishDate"]).toBe("2026-02-08");
-    expect(result!.data["tags"]).toEqual(["Introduction"]);
-    expect(result!.content).toBe("Body text here\n");
+    expect(result.data["title"]).toBe("Introduction");
+    expect(result.data["slug"]).toBe("introduction");
+    expect(result.data["description"]).toBe("A quick overview.");
+    expect(result.data["type"]).toBe("article");
+    expect(result.data["category"]).toBe("Introduction");
+    expect(result.data["publishDate"]).toBe("2026-02-08");
+    expect(result.data["tags"]).toEqual(["Introduction"]);
+    expect(result.content).toBe("Body text here\n");
   });
 
   test("parses multiple tag entries", () => {
@@ -43,9 +54,9 @@ tags:
 ---
 `;
 
-    const result = parseFrontmatter(raw);
+    const result = parsed(raw);
 
-    expect(result!.data["tags"]).toEqual(["Bazzite", "Bluefin", "Docker"]);
+    expect(result.data["tags"]).toEqual(["Bazzite", "Bluefin", "Docker"]);
   });
 
   test("parses project nested links list", () => {
@@ -65,15 +76,15 @@ links:
 Body
 `;
 
-    const result = parseFrontmatter(raw);
+    const result = parsed(raw);
 
-    expect(result!.data["title"]).toBe("Minimal Android Launcher");
-    expect(result!.data["type"]).toBe("project");
-    expect(result!.data["draft"]).toBe(false);
-    expect(result!.data["featured"]).toBe(true);
-    expect(result!.data["projectOrder"]).toBe(10);
+    expect(result.data["title"]).toBe("Minimal Android Launcher");
+    expect(result.data["type"]).toBe("project");
+    expect(result.data["draft"]).toBe(false);
+    expect(result.data["featured"]).toBe(true);
+    expect(result.data["projectOrder"]).toBe(10);
 
-    expect(result!.data["links"]).toEqual([
+    expect(result.data["links"]).toEqual([
       {
         type: "repo",
         label: "Source repository",
@@ -96,9 +107,9 @@ tags:
 Body
 `;
 
-    const result = parseFrontmatter(raw);
+    const result = parsed(raw);
 
-    expect(result!.data["description"]).toBe(
+    expect(result.data["description"]).toBe(
       "See https://example.com/path and note the colon",
     );
   });
@@ -113,9 +124,9 @@ created: 2026
 
 Body`;
 
-    const result = parseFrontmatter(raw);
+    const result = parsed(raw);
 
-    expect(result!.data["created"]).toBe(2026);
+    expect(result.data["created"]).toBe(2026);
   });
 
   test("extracts body when frontmatter directly precedes body with no blank line", () => {
@@ -127,33 +138,39 @@ tags:
 ---
 this is the body`;
 
-    const result = parseFrontmatter(raw);
+    const result = parsed(raw);
 
-    expect(result!.data["title"]).toBe("T");
-    expect(result!.content).toBe("this is the body");
+    expect(result.data["title"]).toBe("T");
+    expect(result.content).toBe("this is the body");
   });
 
-  test("returns null when no leading frontmatter block exists", () => {
+  test("rejects input with no leading frontmatter block", () => {
     const raw = `# Just a heading
 No frontmatter here.
 `;
 
-    expect(parseFrontmatter(raw)).toBeNull();
+    const read = readFrontmatter(raw);
+
+    expect(read.ok).toBe(false);
+    expect(!read.ok && read.reason).toBe("Frontmatter is missing its opening --- fence");
   });
 
-  test("returns null for an empty frontmatter block", () => {
+  test("rejects an empty frontmatter block", () => {
     const raw = `---
 ---
 
 Body
 `;
 
-    expect(parseFrontmatter(raw)).toBeNull();
+    const read = readFrontmatter(raw);
+
+    expect(read.ok).toBe(false);
+    expect(!read.ok && read.reason).toBe("Frontmatter block has no fields");
   });
 
   test.each([
     [
-      "returns null for a block that is never closed",
+      "rejects a block that is never closed",
       ["---", "title: Unclosed", "date: 2026-01-01", "", "Body that was meant to follow the block"],
       null,
     ],
@@ -238,7 +255,16 @@ Body
       { data: { tags: ["Linux: tips", "Containers"], links: [{ type: "repo", label: "Repo: main" }] }, content: "Body" },
     ],
   ])("%s", (_label, lines, expected) => {
-    expect(parseFrontmatter(lines.join("\n"))).toEqual(expected);
+    const read = readFrontmatter(lines.join("\n"));
+
+    if (!read.ok) {
+      expect(expected).toBeNull();
+
+      return;
+    }
+
+    expect(expected).not.toBeNull();
+    expect(read.result).toEqual(expected);
   });
 
   describe("line endings and byte-order mark", () => {
@@ -267,21 +293,21 @@ Body
     };
 
     test("parses every field from a file with CRLF line endings", () => {
-      const result = parseFrontmatter(lines.join("\r\n"));
+      const result = parsed(lines.join("\r\n"));
 
-      expect(result?.data).toEqual(data);
-      expect(result?.content).toBe("Body line one\r\nBody line two\r\n");
+      expect(result.data).toEqual(data);
+      expect(result.content).toBe("Body line one\r\nBody line two\r\n");
     });
 
     test("parses a file that starts with a UTF-8 byte-order mark", () => {
-      const result = parseFrontmatter(`\uFEFF${lines.join("\n")}`);
+      const result = parsed(`\uFEFF${lines.join("\n")}`);
 
-      expect(result?.data).toEqual(data);
-      expect(result?.content).toBe("Body line one\nBody line two\n");
+      expect(result.data).toEqual(data);
+      expect(result.content).toBe("Body line one\nBody line two\n");
     });
 
     test("parses a CRLF file that starts with a byte-order mark", () => {
-      expect(parseFrontmatter(`\uFEFF${lines.join("\r\n")}`)?.data).toEqual(data);
+      expect(parsed(`\uFEFF${lines.join("\r\n")}`).data).toEqual(data);
     });
   });
 });
