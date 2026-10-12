@@ -284,16 +284,68 @@ async function loadContentDocuments(contentDir: string): Promise<ContentDocument
 }
 
 /**
+ * Characters that change what a URL path segment means. The SPA links to
+ * `/articles/<slug>` without encoding it, so a slug holding one of these routes
+ * to the wrong page (or none) even though the API would serve it.
+ */
+const UNROUTABLE_SLUG_CHARACTERS = /[/?#%\\]/;
+
+/**
+ * Slug errors for documents that are otherwise valid: a slug that cannot be a
+ * URL path segment, or one an earlier document already uses. `getContentBySlug`
+ * returns the first match, so every later document with that slug (whatever its
+ * type or draft state) is unreachable.
+ */
+function findSlugErrors(documents: readonly ContentDocument[]): ContentError[] {
+  const firstFileBySlug = new Map<string, string>();
+  const errors: ContentError[] = [];
+
+  for (const { file, result } of documents) {
+    if (!result.ok) {
+      continue;
+    }
+
+    const { slug } = result.value;
+
+    if (UNROUTABLE_SLUG_CHARACTERS.test(slug)) {
+      errors.push({
+        file,
+        field: "slug",
+        message: 'Slug contains "/", "?", "#", "%" or "\\", which cannot appear in a URL path segment; set a "slug"',
+        value: slug,
+      });
+
+      continue;
+    }
+
+    const firstFile = firstFileBySlug.get(slug);
+
+    if (firstFile !== undefined) {
+      errors.push({ file, field: "slug", message: `Slug is already used by ${firstFile}`, value: slug });
+
+      continue;
+    }
+
+    firstFileBySlug.set(slug, file);
+  }
+
+  return errors;
+}
+
+/**
  * Audit every markdown document in a directory, returning the errors for any
- * document `listContent` would skip. Empty array means all documents are valid.
+ * document `listContent` would skip or `getContentBySlug` could never serve.
+ * Empty array means all documents are valid.
  */
 export async function validateContentDir(contentDir: string): Promise<ContentError[]> {
   const documents = await loadContentDocuments(contentDir);
 
-  return documents
+  const documentErrors = documents
     .filter((document): document is ContentDocument & { result: { ok: false; error: ContentError } } =>
       !document.result.ok)
     .map((document) => document.result.error);
+
+  return [...documentErrors, ...findSlugErrors(documents)];
 }
 
 /**

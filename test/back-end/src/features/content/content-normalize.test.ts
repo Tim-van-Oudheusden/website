@@ -318,6 +318,76 @@ describe("validateContentDir", () => {
     }
   });
 
+  test("reports a slug that a second document already uses, across content types", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, "a-article.md"), [
+        "---",
+        "title: Article",
+        "date: 2026-01-01",
+        "type: article",
+        "category: Work",
+        "slug: shared-slug",
+        "---",
+        "# Article",
+      ].join("\n"));
+
+      await writeFile(join(dir, "b-project.md"), [
+        "---",
+        "title: Project",
+        "date: 2026-01-01",
+        "type: project",
+        "coverImage: /img.png",
+        "coverImageAlt: img",
+        "slug: shared-slug",
+        "---",
+        "# Project",
+      ].join("\n"));
+
+      const errors = await validateContentDir(dir);
+
+      expect(errors).toHaveLength(1);
+
+      expect(errors[0]).toMatchObject({
+        field: "slug",
+        value: "shared-slug",
+        message: expect.stringMatching(/already used by/),
+      });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test.each([
+    ["a question mark from the file name", "Is this real?.md", []],
+    ["a hash", "hash.md", ["slug: c#-notes"]],
+    ["a slash", "slash.md", ["slug: linux/flatpak"]],
+    ["a percent sign", "percent.md", ["slug: 100%-done"]],
+    ["a backslash", "backslash.md", ["slug: back\\slash"]],
+  ])("reports a slug containing %s", async (_label, file, slugLines) => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, file), [
+        "---",
+        "title: Unroutable",
+        "date: 2026-01-01",
+        "type: article",
+        "category: Work",
+        ...slugLines,
+        "---",
+        "# Unroutable",
+      ].join("\n"));
+
+      expect(await validateContentDir(dir)).toMatchObject([
+        { file, field: "slug", message: expect.stringMatching(/cannot appear in a URL path segment/) },
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   test("passes the real content directory", async () => {
     expect(await validateContentDir(REAL_CONTENT_DIR)).toEqual([]);
   });

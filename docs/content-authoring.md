@@ -47,7 +47,7 @@ the [content checker](#checking-content-before-pushing) before pushing.
 | `tags` | No | List of strings | Tag badges; non-string entries are dropped. |
 | `type` | No | `article` or `project` | Content kind. Missing or any other value counts as `article`, so a typo such as `type: projet` makes a project fail the article rules. |
 | `draft` | No | `true` or `false` (default `false`) | `true` hides the document when `NODE_ENV=production`; it still shows in local dev. Only a YAML boolean counts: `"true"` in quotes is ignored. |
-| `slug` | No | Non-empty string | URL segment (`/articles/<slug>`, `/projects/<slug>`). Defaults to the file name without `.md`, spaces included. |
+| `slug` | No | Non-empty string without `/`, `?`, `#`, `%` or `\` | URL segment (`/articles/<slug>`, `/projects/<slug>`). Defaults to the file name without `.md`, spaces included, so a file name with one of those characters needs an explicit `slug`. Must be unique across all articles and projects, drafts included. The [content checker](#checking-content-before-pushing) fails on a forbidden character or a slug another file already uses: the site would still list that file, but its page would not open. |
 | `socialImage` | No | Image path | Link-preview image; see [Link previews](#link-previews-socialimage). |
 
 #### Article fields (`type: article`)
