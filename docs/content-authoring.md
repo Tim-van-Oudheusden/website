@@ -177,8 +177,9 @@ The [content checker](#checking-content-before-pushing) does not check this
 folder, so open the page in the dev server after editing it. Images work as in
 articles.
 
-A new file in `content/pages/` is not a new page on its own. Each page is a
-route in `front-end/src/App.tsx` (`<StandalonePage slug="now" />`), so adding
-one is a code change. The file name, which is the slug, must be lowercase
-letters, digits and single hyphens (`my-page.md`); any other name is never
-served.
+A new file in `content/pages/` is not a new page on its own. The pages that
+exist are listed in `STANDALONE_PAGE_SLUGS` in `shared/src/index.ts`. The
+front-end registers a `/<slug>` route and a sitemap entry for each slug in that
+list, so adding a page means adding its slug there, which is a code change. The
+file name, which is the slug, must be lowercase letters, digits and single
+hyphens (`my-page.md`); any other name is never served.
