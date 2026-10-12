@@ -41,6 +41,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true };
   }
 
+  /**
+   * React 19's default `onCaughtError` already logs the caught error via
+   * `console.error`, so the error itself appears twice. This is kept so the
+   * component stack, which production builds omit from React's own log, is
+   * recorded too. Log only the error and component stack — both app-internal,
+   * never request/user data.
+   */
+  override componentDidCatch(error: Error, info: { componentStack: string | null }): void {
+    console.error("[error-boundary] caught a render error:", error, info.componentStack);
+  }
+
   /** Re-render children after a captured failure (passed to `fallback`). */
   retry = (): void => {
     this.setState({ hasError: false });
