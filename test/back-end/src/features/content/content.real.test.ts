@@ -1,15 +1,31 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from "bun:test";
+import { existsSync } from "node:fs";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 import type { ArticleFrontmatter, ProjectFrontmatter } from "shared";
+import { ASSET_PATH_PREFIX } from "shared";
 
 import { getContentBySlug, listContent, validateContentDir } from "../../../../../back-end/src/features/content/content";
 
 // Resolve the repo-root content dir from the module location, not CWD, so the
 // test works both standalone and via `bun run test` (workspace filter).
 const REAL_CONTENT_DIR = resolve(import.meta.dir, "../../../../../content");
+const REAL_PUBLIC_DIR = resolve(import.meta.dir, "../../../../../public");
+
+/**
+ * The repository file an image path from content points at: content assets are
+ * served from `content/images`, other site paths from the front-end `public/`,
+ * and relative paths are relative to the content directory.
+ */
+function repositoryFileFor(imagePath: string): string {
+  if (imagePath.startsWith(ASSET_PATH_PREFIX)) {
+    return join(REAL_CONTENT_DIR, "images", decodeURIComponent(imagePath.slice(ASSET_PATH_PREFIX.length)));
+  }
+
+  return imagePath.startsWith("/") ? join(REAL_PUBLIC_DIR, imagePath) : join(REAL_CONTENT_DIR, imagePath);
+}
 
 const VALID_PROJECT = [
   "---",
@@ -396,5 +412,25 @@ describe("real content directory sanity check", () => {
     ]);
 
     expect(project.projectOrder).toBe(10);
+  });
+
+  test("the Minimal Android Launcher shows the MinimalUI brand artwork from files in the repository", async () => {
+    const project = (await getContentBySlug("minimal-android-launcher", REAL_CONTENT_DIR)) as ProjectFrontmatter & { body: string };
+    const bodyImages = [...project.body.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)].map((match) => match[1]);
+
+    expect(bodyImages).toEqual([
+      "/content-assets/images/minimalui/readme-banner.svg",
+      "/content-assets/images/minimalui/social-preview.svg",
+      "/content-assets/images/minimalui/icon-masks.svg",
+      "/content-assets/images/minimalui/social-portrait-filter.svg",
+      "/content-assets/images/minimalui/poster.svg",
+    ]);
+
+    const referenced = [project.coverImage, project.socialImage, ...bodyImages];
+    const missing = referenced.filter(
+      (imagePath) => imagePath === null || imagePath === undefined || !existsSync(repositoryFileFor(imagePath)),
+    );
+
+    expect(missing).toEqual([]);
   });
 });

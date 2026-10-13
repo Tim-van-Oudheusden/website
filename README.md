@@ -160,5 +160,6 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow, quality gates and cod
 | --- | --- |
 | Code and everything not listed below | [MIT](LICENSE) |
 | `content/` (articles and their images) and `public/images/projects/` | [CC BY 4.0](content/LICENSE) |
+| `content/images/minimalui/` and `public/images/projects/minimal-android-launcher.png` (MinimalUI brand artwork) | [GPL-3.0](https://github.com/Tim-van-Oudheusden/MinimalUI/blob/main/LICENSE), copied from [MinimalUI](https://github.com/Tim-van-Oudheusden/MinimalUI/tree/main/docs/brand); the outlined text is [Roboto](https://github.com/googlefonts/roboto-2), © Google, Apache License 2.0 |
 | `public/images/me.png` | All rights reserved |
 | `public/fonts/` (Source Sans 3) | [SIL Open Font License 1.1](public/fonts/OFL.txt) |
