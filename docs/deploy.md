@@ -254,6 +254,13 @@ exits non-zero — check `systemctl --user status website-update.service` /
 `journalctl --user -u website-update.service` after an incident to see
 whether this already happened.
 
+The rolled-back digest is then remembered as rejected, in
+`${XDG_STATE_HOME:-~/.local/state}/website-update/rejected-<image>`. Until a
+new digest is pushed, later ticks keep the rollback image, skip the replay, and
+exit non-zero with `still rejected: <image>:latest <digest>` in the journal.
+They don't redeploy the bad image every 5 minutes. To retry the same digest
+(for example after fixing something on the host), delete that file.
+
 **Manual:** needed when the bad image has survived past the next update cycle
 (so the local `:rollback` tag has been overwritten by a newer pull) or when
 rolling back further than one release. Pull a known-good immutable tag and
