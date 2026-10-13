@@ -20,9 +20,25 @@ export interface ListContentOptions {
   type: ContentType | null;
 }
 
+const CALENDAR_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * A frontmatter date: a zero-padded `YYYY-MM-DD` day that exists on the
+ * calendar. The front-end formats it with Intl, which throws on an invalid
+ * date, and `Date` rolls "2026-02-30" over and reads "2026-10-2" as local time,
+ * so anything else is null.
+ */
 export function normalizeDate(value: unknown): string | null {
-  if (typeof value === "string" && value.trim() !== "") {
-    return value;
+  if (typeof value === "string") {
+    const day = value.trim();
+
+    if (!CALENDAR_DAY_PATTERN.test(day)) {
+      return null;
+    }
+
+    const parsed = new Date(day);
+
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().startsWith(day) ? day : null;
   }
 
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
@@ -155,6 +171,15 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
 
   if (title === null) {
     return reject(file, "title", "Missing required title");
+  }
+
+  for (const field of ["date", "publishDate"]) {
+    if (normalizeString(raw[field]) !== null && normalizeDate(raw[field]) === null) {
+      return {
+        ok: false,
+        error: { file, field, message: `${field} must be a YYYY-MM-DD calendar day`, value: raw[field] },
+      };
+    }
   }
 
   const date = normalizeDate(raw["date"]) ?? normalizeDate(raw["publishDate"]);
