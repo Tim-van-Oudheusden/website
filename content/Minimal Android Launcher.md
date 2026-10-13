@@ -31,6 +31,8 @@ A minimal Android launcher for keyboard-centric phones from Zinwa, Clicks and Un
 
 This project is still in progress; more details will be added as it develops.
 
+[MinimalUI - Promo](https://youtu.be/S72aC8-c0lo)
+
 ## One list, one selected row
 
 The launcher's whole interface is a single list of apps with one selected row, so that list is the brand. The arrow keys move and page through it, Enter opens the selected app, and typing a letter filters it.

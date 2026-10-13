@@ -433,4 +433,16 @@ describe("real content directory sanity check", () => {
 
     expect(missing).toEqual([]);
   });
+
+  test("the Minimal Android Launcher embeds the MinimalUI promo video", async () => {
+    const project = (await getContentBySlug("minimal-android-launcher", REAL_CONTENT_DIR)) as ProjectFrontmatter & { body: string };
+    // The renderer only embeds a YouTube link that stands alone in its paragraph.
+    const standaloneVideoLinks = project.body
+      .split(/\n\s*\n/)
+      .map((paragraph) => /^\[([^\]]+)\]\((https:\/\/(?:youtu\.be|www\.youtube\.com)\/[^)\s]+)\)$/.exec(paragraph.trim()))
+      .filter((match) => match !== null)
+      .map(([, title, href]) => ({ title, href }));
+
+    expect(standaloneVideoLinks).toEqual([{ title: "MinimalUI - Promo", href: "https://youtu.be/S72aC8-c0lo" }]);
+  });
 });
