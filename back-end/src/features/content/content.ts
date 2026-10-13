@@ -3,6 +3,7 @@ import { basename, join } from "path";
 
 import { ARTICLE_CATEGORIES, CONTENT_TYPES, PROJECT_LINK_TYPES, PROJECT_STATUSES } from "shared";
 import type { ArticleCategory, ContentFrontmatter, ContentType, ProjectLink } from "shared";
+import { tagSlug } from "shared/tags";
 
 import type { ParseResult } from "./frontmatter";
 import { readFrontmatter } from "./frontmatter";
@@ -347,6 +348,66 @@ function findSlugErrors(documents: readonly ContentDocument[]): ContentError[] {
 }
 
 /**
+ * Spellings of one tag: letter case, spaces, hyphens and underscores aside,
+ * "Content API", "content-api" and "content_API" are the same tag.
+ */
+function tagSpelling(tag: string): string {
+  return tag.normalize("NFC").toLowerCase().replace(/[\s_-]+/g, " ").trim();
+}
+
+/**
+ * Tag errors for articles, whose tag badges link to `/tags/<slug>` (project
+ * tags link nowhere). A tag with an empty slug links to `/tags/`, which no
+ * route serves; two different tags sharing a slug ("NET" and ".NET") share one
+ * page, headed by whichever the newest article carries. Drafts are checked
+ * too: their tags show in local dev and go live once published.
+ */
+function findTagErrors(documents: readonly ContentDocument[]): ContentError[] {
+  const firstTagBySlug = new Map<string, { tag: string; file: string }>();
+  const errors: ContentError[] = [];
+
+  for (const { file, result } of documents) {
+    if (!result.ok || result.value.type !== "article") {
+      continue;
+    }
+
+    for (const tag of result.value.tags) {
+      const slug = tagSlug(tag);
+
+      if (slug === "") {
+        errors.push({
+          file,
+          field: "tags",
+          message: 'Tag has no letter, digit, "+" or "#", so its /tags/ link would be empty',
+          value: tag,
+        });
+
+        continue;
+      }
+
+      const first = firstTagBySlug.get(slug);
+
+      if (first === undefined) {
+        firstTagBySlug.set(slug, { tag, file });
+
+        continue;
+      }
+
+      if (tagSpelling(first.tag) !== tagSpelling(tag)) {
+        errors.push({
+          file,
+          field: "tags",
+          message: `Tag shares the page /tags/${slug} with tag "${first.tag}" in ${first.file}; use one spelling`,
+          value: tag,
+        });
+      }
+    }
+  }
+
+  return errors;
+}
+
+/**
  * Audit every markdown document in a directory, returning the errors for any
  * document `listContent` would skip or `getContentBySlug` could never serve.
  * Empty array means all documents are valid.
@@ -359,7 +420,7 @@ export async function validateContentDir(contentDir: string): Promise<ContentErr
       !document.result.ok)
     .map((document) => document.result.error);
 
-  return [...documentErrors, ...findSlugErrors(documents)];
+  return [...documentErrors, ...findSlugErrors(documents), ...findTagErrors(documents)];
 }
 
 /**
