@@ -41,3 +41,34 @@ describe("getPageBySlug read errors", () => {
     expect(error).toMatchObject({ code: "ELOOP" });
   });
 });
+
+/** `updated` is formatted with Intl, which throws on a date that is not a real day. */
+describe("getPageBySlug updated date", () => {
+  let contentDir: string;
+
+  beforeEach(async () => {
+    contentDir = await mkdtemp(join(tmpdir(), "website-pages-updated-"));
+    await mkdir(join(contentDir, "pages"));
+  });
+
+  afterEach(async () => {
+    await rm(contentDir, { recursive: true, force: true });
+  });
+
+  async function pageUpdated(updated: string) {
+    await writeFile(join(contentDir, "pages", "now.md"), ["---", "title: Now", `updated: ${updated}`, "---", "Body"].join("\n"));
+
+    return getPageBySlug("now", contentDir);
+  }
+
+  test.each(["2026-13-01", "13-10-2026", "2026-02-30", "2026-10-2", "soon"])(
+    "returns null for an updated of %s",
+    async (updated) => {
+      expect(await pageUpdated(updated)).toBeNull();
+    },
+  );
+
+  test("serves a YYYY-MM-DD updated", async () => {
+    expect(await pageUpdated("2026-10-02")).toMatchObject({ slug: "now", updated: "2026-10-02" });
+  });
+});

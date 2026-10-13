@@ -18,4 +18,9 @@ describe("formatArticleDate", () => {
       "January 23rd, 2025",
     ]);
   });
+
+  // A bad date that slips past validate:content must not throw and blank the app.
+  test("returns a date it cannot read unchanged", () => {
+    expect(formatArticleDate("2026-13-01")).toBe("2026-13-01");
+  });
 });

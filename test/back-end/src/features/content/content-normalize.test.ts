@@ -326,6 +326,47 @@ describe("validateContentDir", () => {
     }
   });
 
+  // The front-end formats these dates with Intl, which throws on an invalid
+  // date and blanks the page; a parseable non-ISO date shows the wrong day.
+  test.each([
+    ["date", "2026-13-01"],
+    ["date", "13-10-2026"],
+    ["date", "2026-02-30"],
+    ["date", "2026-10-2"],
+    ["date", "soon"],
+    ["publishDate", "2026-13-01"],
+  ])("reports a %s of %s that is not a YYYY-MM-DD calendar day", async (field, value) => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, "bad-date.md"), [
+        "---",
+        "title: Bad Date",
+        `${field}: ${value}`,
+        "type: article",
+        "category: Linux",
+        "---",
+        "# Bad Date",
+      ].join("\n"));
+
+      await writeFile(join(dir, "ok.md"), [
+        "---",
+        "title: Ok",
+        "date: 2026-10-02",
+        "type: article",
+        "category: Linux",
+        "---",
+        "# Ok",
+      ].join("\n"));
+
+      expect(await validateContentDir(dir)).toEqual([
+        { file: "bad-date.md", field, message: `${field} must be a YYYY-MM-DD calendar day`, value },
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   test.each([
     ["no opening fence", "no-fence.md", ["title: No Fence", "date: 2026-01-01", "# Body"], /opening ---/],
     ["an unclosed fence", "unclosed.md", ["---", "title: Unclosed", "date: 2026-01-01", "# Body"], /never closed/],

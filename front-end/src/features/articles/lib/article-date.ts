@@ -12,9 +12,17 @@ const ORDINAL_SUFFIXES: Record<Intl.LDMLPluralRule, string> = {
   other: "th",
 };
 
-/** Format an article date as "October 2nd, 2025". */
+/**
+ * Format an article date as "October 2nd, 2025". A date `Date` cannot read is
+ * returned as written: Intl throws on it, which would unmount the whole page.
+ */
 export function formatArticleDate(isoDate: string): string {
   const date = new Date(isoDate);
+
+  if (Number.isNaN(date.getTime())) {
+    return isoDate;
+  }
+
   const day = date.getUTCDate();
 
   return `${MONTH_FORMAT.format(date)} ${String(day)}${ORDINAL_SUFFIXES[ORDINAL_RULES.select(day)]}, ${String(date.getUTCFullYear())}`;
