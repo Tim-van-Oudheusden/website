@@ -2,12 +2,13 @@ import type { JSX } from "react";
 import { Link, useParams } from "react-router";
 
 import type { ArticleSummary } from "shared/articles";
+import { tagSlug } from "shared/tags";
 
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import { httpContentLoader } from "@/shared/lib/content-loader";
 
 import { formatArticleDate } from "../lib/article-date";
-import { selectArticlesByTag, tagSlug } from "../lib/article-tags";
+import { selectArticlesByTag } from "../lib/article-tags";
 import { ARTICLES_PAGE_LAYOUT_CLASSES, ARTICLES_PAGE_TYPOGRAPHY_CLASSES } from "../lib/articles-page-styles";
 
 function loadArticles(): Promise<ArticleSummary[]> {

@@ -28,6 +28,10 @@ describe("tagPath", () => {
   test("keeps non-ASCII letters, percent-encoded", () => {
     expect(tagPath("Café")).toBe("/tags/caf%C3%A9");
   });
+
+  test("links C, C++ and C# to three different, percent-encoded paths", () => {
+    expect([tagPath("C"), tagPath("C++"), tagPath("C#")]).toEqual(["/tags/c", "/tags/c%2B%2B", "/tags/c%23"]);
+  });
 });
 
 describe("selectArticlesByTag", () => {
@@ -44,6 +48,17 @@ describe("selectArticlesByTag", () => {
 
   test("matches a tag by the slug its path uses", () => {
     expect(selectArticlesByTag(articles, "content-api").map((article) => article.slug)).toEqual(["pipeline"]);
+  });
+
+  test("keeps C++ apart from C and C#", () => {
+    const languages = [
+      summary("c", ["C"], "2026-01-01"),
+      summary("cpp", ["C++"], "2026-02-01"),
+      summary("cs", ["C#"], "2026-03-01"),
+    ];
+
+    expect(selectArticlesByTag(languages, "c++").map((article) => article.slug)).toEqual(["cpp"]);
+    expect(selectArticlesByTag(languages, "C").map((article) => article.slug)).toEqual(["c"]);
   });
 
   test("lists nothing for a tag no article carries", () => {

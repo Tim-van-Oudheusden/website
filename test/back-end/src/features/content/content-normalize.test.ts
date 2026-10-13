@@ -439,6 +439,84 @@ describe("validateContentDir", () => {
     }
   });
 
+  function taggedArticle(tags: readonly string[], extraLines: readonly string[] = []): string {
+    return ["---", "title: Tagged", "date: 2026-01-01", "category: Work", ...extraLines, "tags:", ...tags.map((tag) => `  - ${tag}`), "---", "Body"].join("\n");
+  }
+
+  test.each([
+    ["an emoji", "\u{1F980}"],
+    ["only punctuation", "'...'"],
+  ])("reports an article tag made of %s, whose /tags/ link would be empty", async (_label, tag) => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, "symbol-tag.md"), taggedArticle(["Linux", tag]));
+
+      expect(await validateContentDir(dir)).toMatchObject([
+        { file: "symbol-tag.md", field: "tags", message: expect.stringMatching(/no letter, digit, "\+" or "#"/) },
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("reports a second spelling of a tag that links to the same /tags/ page, drafts included", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, "a-dotnet.md"), taggedArticle([".NET"], ["slug: dotnet"]));
+      await writeFile(join(dir, "b-net.md"), taggedArticle(["NET"], ["slug: net", "draft: true"]));
+
+      const errors = await validateContentDir(dir);
+
+      expect(errors).toHaveLength(1);
+
+      expect(errors[0]).toMatchObject({
+        field: "tags",
+        value: expect.stringMatching(/^\.?NET$/),
+        message: expect.stringMatching(/\/tags\/net .*\.?NET/),
+      });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("accepts tags that differ only in letter case, spaces, hyphens or underscores, and C, C++ and C#", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, "a.md"), taggedArticle(["Content API", "C", "C++"], ["slug: a"]));
+      await writeFile(join(dir, "b.md"), taggedArticle(["content-api", "C#", "content_API"], ["slug: b"]));
+
+      expect(await validateContentDir(dir)).toEqual([]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("leaves project tags alone: they link to no tag page", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, "project.md"), [
+        "---",
+        "title: Project",
+        "date: 2026-01-01",
+        "type: project",
+        "coverImage: /img.png",
+        "coverImageAlt: img",
+        "tags:",
+        "  - \u{1F980}",
+        "---",
+        "# Project",
+      ].join("\n"));
+
+      expect(await validateContentDir(dir)).toEqual([]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   test("passes the real content directory", async () => {
     expect(await validateContentDir(REAL_CONTENT_DIR)).toEqual([]);
   });

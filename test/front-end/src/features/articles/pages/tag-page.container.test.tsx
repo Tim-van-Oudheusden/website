@@ -89,6 +89,28 @@ describe("TagPage", () => {
     }
   });
 
+  test("opens the C++ page from its encoded path, apart from C and C#", async () => {
+    const languages = [
+      summary("c", "C", ["C"], "2026-01-01"),
+      summary("cpp", "C++", ["C++"], "2026-02-01"),
+      summary("cs", "C#", ["C#"], "2026-03-01"),
+    ];
+
+    routeFetch({ [LIST_URL]: () => Promise.resolve(jsonResponse(languages)) });
+    const page = mountTagPage("/tags/c%2B%2B");
+
+    try {
+      await settle();
+
+      const [heading] = queryFakeElements(page.container, (el) => el.nodeName === "H1");
+
+      expect(heading?.textContent).toBe("Articles tagged C++");
+      expect(linkHrefs(page)).toEqual(["/articles/cpp"]);
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
   test("says no article carries an unknown tag and links back to every article", async () => {
     routeFetch({ [LIST_URL]: () => Promise.resolve(jsonResponse(ARTICLES)) });
     const page = mountTagPage("/tags/kubernetes");

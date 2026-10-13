@@ -1,14 +1,6 @@
 import type { ArticleSummary } from "shared/articles";
 import { compareArticles } from "shared/articles";
-
-/**
- * The URL form of a tag: lowercase, every run of non-letters/digits one hyphen.
- * Authored tags ("Content API") and route params ("content-api", "Content-API")
- * both pass through it, so matching is case-insensitive by construction.
- */
-export function tagSlug(tag: string): string {
-  return tag.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
-}
+import { tagSlug } from "shared/tags";
 
 /** Client route of the page listing every article carrying `tag`. */
 export function tagPath(tag: string): string {
