@@ -45,7 +45,14 @@ function localDigest(ref: string): string | null {
   return existsSync(file) ? readFileSync(file, "utf8") : null;
 }
 
-function runScript(healthy: readonly string[]): { status: number | null; calls: string[]; stdout: string } {
+interface ScriptRun {
+  status: number | null;
+  calls: string[];
+  stderr: string;
+  stdout: string;
+}
+
+function runScript(healthy: readonly string[]): ScriptRun {
   writeFileSync(callLog, "");
 
   const result = spawnSync("bash", [scriptPath], {
@@ -55,11 +62,12 @@ function runScript(healthy: readonly string[]): { status: number | null; calls: 
       ...process.env,
       PATH: `${stubDir}:${process.env["PATH"] ?? ""}`,
       STUB_HEALTHY: healthy.join(" "),
+      XDG_STATE_HOME: join(stubDir, "state"),
     },
   });
   const calls = readFileSync(callLog, "utf8").trim().split("\n").filter((call) => call !== "");
 
-  return { status: result.status, calls, stdout: result.stdout };
+  return { status: result.status, calls, stderr: result.stderr, stdout: result.stdout };
 }
 
 function restarts(calls: readonly string[]): number {
@@ -209,5 +217,48 @@ describe("deploy/systemd/website-update.sh", () => {
     expect(calls.some((call) => call.startsWith("podman tag "))).toBe(false);
     expect(localDigest(`${FRONT}:rollback`)).toBeNull();
     expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-b");
+  });
+
+  describe("after a rollback, remembers the rejected digest (#811)", () => {
+    beforeEach(() => {
+      setLocal(`${FRONT}:latest`, "sha256:front-a");
+      setLocal(`${BACK}:latest`, "sha256:back-a");
+      setRegistry(`${FRONT}:latest`, "sha256:front-bad");
+      setRegistry(`${BACK}:latest`, "sha256:back-a");
+
+      expect(runScript([BACK_HEALTH]).status).toBe(1);
+    });
+
+    test("does not replay the same bad image again on the next tick, and keeps failing loudly", () => {
+      const { status, calls, stderr } = runScript([BACK_HEALTH]);
+
+      expect(status).not.toBe(0);
+      expect(restarts(calls)).toBe(0);
+      expect(calls.some((call) => call.startsWith("curl "))).toBe(false);
+      expect(stderr).toContain("still rejected: front-end:latest sha256:front-bad");
+      expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-a");
+    });
+
+    test("deploys a newly pushed digest of the rejected image", () => {
+      setRegistry(`${FRONT}:latest`, "sha256:front-fixed");
+
+      const { status, calls } = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+      expect(status).toBe(0);
+      expect(restarts(calls)).toBe(1);
+      expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-fixed");
+    });
+
+    test("still deploys a new digest of the other image while keeping the rejected one held back", () => {
+      setRegistry(`${BACK}:latest`, "sha256:back-b");
+
+      const { status, calls, stderr } = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+      expect(status).not.toBe(0);
+      expect(restarts(calls)).toBe(1);
+      expect(stderr).toContain("still rejected: front-end:latest sha256:front-bad");
+      expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-a");
+      expect(localDigest(`${BACK}:latest`)).toBe("sha256:back-b");
+    });
   });
 });
