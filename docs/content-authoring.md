@@ -69,7 +69,7 @@ the [content checker](#checking-content-before-pushing) before pushing.
 | Field | Required | Allowed values | Effect |
 | --- | --- | --- | --- |
 | `title` | Yes | Non-empty string | Heading, card title, link-preview title. |
-| `date` / `publishDate` | One of them | Date (`2026-02-08`) or non-empty string | Publication date for sorting and display. `date` wins when both are set. |
+| `date` / `publishDate` | One of them | Date as `YYYY-MM-DD` (`2026-02-08`), a day that exists on the calendar | Publication date for sorting and display. `date` wins when both are set. Any other value, such as `2026-02-30`, `2026-10-2`, `13-10-2026` or a time like `2026-06-10T00:30:00+02:00`, makes the document invalid, and the [content checker](#checking-content-before-pushing) reports `date must be a YYYY-MM-DD calendar day`. A valid `publishDate` does not make up for a malformed `date`. |
 | `description` | No | String (default empty) | Summary on cards and in link previews. |
 | `tags` | No | List of strings, one `- item` per line | Tag badges; non-string entries are dropped. Any other value, including a flow list (`tags: [a, b]`) or a single `tags: a`, makes the document invalid. An article's badges link to `/tags/<tag>`: the tag in lowercase, with every run of characters other than letters, digits, `+` and `#` turned into one hyphen (`Content API` → `/tags/content-api`, `C++` → `/tags/c++`). Spellings that differ only in letter case, spaces, hyphens or underscores share a page. The [content checker](#checking-content-before-pushing) fails on an article tag with no letter, digit, `+` or `#` (such as an emoji), and on two other spellings that would share a page (`.NET` and `NET`), drafts included. |
 | `type` | No | `article` or `project` | Content kind. Missing or any other value counts as `article`, so a typo such as `type: projet` makes a project fail the article rules. |
@@ -186,7 +186,7 @@ listings, and they use their own frontmatter instead of the rules above:
 | Field | Required | Allowed values | Effect |
 | --- | --- | --- | --- |
 | `title` | Yes | Non-empty string | Page heading. |
-| `updated` | Yes | Date (`2026-10-08`) | Shown under the heading as "Last updated October 8, 2026". Use `YYYY-MM-DD`: other text passes the back-end check but breaks the page header. |
+| `updated` | Yes | Date as `YYYY-MM-DD` (`2026-10-08`), a day that exists on the calendar | Shown under the heading as "Last updated October 8, 2026". Any other value, such as `October 8` or `2026-02-30`, counts as missing. |
 | `description` | No | String (default empty) | Line under the heading. |
 
 Any other field, such as `type`, `category` or `draft`, is ignored. There is
@@ -200,7 +200,8 @@ updated: 2026-10-08
 ---
 ```
 
-**A page missing `title` or `updated` shows "Page not found", with no error.**
+**A page missing `title` or `updated`, or with an `updated` that is not a
+`YYYY-MM-DD` day, shows "Page not found", with no error.**
 The [content checker](#checking-content-before-pushing) does not check this
 folder, so open the page in the dev server after editing it. Images work as in
 articles.
