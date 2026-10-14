@@ -107,6 +107,27 @@ afterEach(() => {
 });
 
 describe("deploy/systemd/website-update.sh", () => {
+  test("pulls every image the prod pod manifest runs", () => {
+    const prodImages = [
+      ...readFileSync(resolve(rootPath, "deploy/kube/prod.yaml"), "utf8").matchAll(/^\s*image:\s*(\S+)\s*$/gm),
+    ].map((match) => match[1] ?? "");
+
+    expect(prodImages.length).toBeGreaterThan(0);
+
+    for (const image of prodImages) {
+      setLocal(image, "sha256:a");
+      setRegistry(image, "sha256:a");
+    }
+
+    const { status, calls } = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+    expect(status).toBe(0);
+
+    for (const image of prodImages) {
+      expect(calls).toContain(`podman pull ${image}`);
+    }
+  });
+
   test("leaves the pod alone when neither image's digest changed", () => {
     setLocal(`${FRONT}:latest`, "sha256:front-a");
     setLocal(`${BACK}:latest`, "sha256:back-a");
