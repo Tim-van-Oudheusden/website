@@ -10,8 +10,8 @@
  *
  * Supported subset:
  *   key: value                     scalar (string, boolean, number)
- *   tags:                          block list of strings
- *     - One
+ *   tags:                          block list of strings; the items may
+ *     - One                        also sit at the key's own indent
  *     - Two
  *   links:
  *     - type: repo
@@ -278,6 +278,7 @@ export function readFrontmatter(raw: string): FrontmatterRead {
     // A parent key (`tags:`, `links:`) consumes its indented block children.
     // Blank lines never end the block; only a non-blank line indented no
     // deeper than the parent key does, so children cannot leak to top level.
+    // As in YAML, `- item` lines may also sit at the key's own indent.
     const children: string[] = [];
     let next = i + 1;
 
@@ -289,7 +290,9 @@ export function readFrontmatter(raw: string): FrontmatterRead {
       }
 
       if (child.trim() !== "") {
-        if (indentOf(child) <= indent) {
+        const childIndent = indentOf(child);
+
+        if (childIndent < indent || (childIndent === indent && LIST_ITEM_RE.exec(child.trimStart()) === null)) {
           break;
         }
 
