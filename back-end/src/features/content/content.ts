@@ -139,6 +139,42 @@ function reject(file: string, field: string | null, message: string): NormalizeR
   return { ok: false, error: { file, field, message, value: undefined } };
 }
 
+/** Text fields every content type reads. */
+const COMMON_TEXT_FIELDS = ["title", "description", "slug", "socialImage"] as const;
+
+/** Text fields only projects read. */
+const PROJECT_TEXT_FIELDS = ["coverImage", "coverImageAlt", "role", "info"] as const;
+
+/**
+ * The parser reads an unquoted `2025` or `true` as a number or boolean, which
+ * `normalizeString` would treat as absent: `slug: 2025` silently served the
+ * file name and `description: 42` became empty (#835). Reject such a value in
+ * a text field instead, telling the author to quote it.
+ */
+function rejectNonTextField(
+  file: string,
+  raw: Record<string, unknown>,
+  fields: readonly string[],
+): NormalizeResult | null {
+  for (const field of fields) {
+    const value = raw[field];
+
+    if (typeof value === "number" || typeof value === "boolean") {
+      return {
+        ok: false,
+        error: {
+          file,
+          field,
+          message: `${field} must be text; put the value in quotes, e.g. ${field}: "${String(value)}"`,
+          value,
+        },
+      };
+    }
+  }
+
+  return null;
+}
+
 type MarkdownFileResult
   = | { ok: true; parsed: ParseResult }
     | { ok: false; error: ContentError };
@@ -166,6 +202,12 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
   }
 
   const raw = value as Record<string, unknown>;
+
+  const nonTextCommonField = rejectNonTextField(file, raw, COMMON_TEXT_FIELDS);
+
+  if (nonTextCommonField !== null) {
+    return nonTextCommonField;
+  }
 
   const title = normalizeString(raw["title"]);
 
@@ -200,6 +242,15 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
     };
   }
 
+  const nonTextTag = (rawTags ?? []).find((tag) => typeof tag === "number" || typeof tag === "boolean");
+
+  if (nonTextTag !== undefined) {
+    return {
+      ok: false,
+      error: { file, field: "tags", message: `Tag must be text; put it in quotes, e.g. - "${String(nonTextTag)}"`, value: nonTextTag },
+    };
+  }
+
   const tags = (rawTags ?? []).filter((tag): tag is string => typeof tag === "string");
   const type: ContentType = CONTENT_TYPES.find((candidate) => candidate === raw["type"]) ?? "article";
   const draft = normalizeBoolean(raw["draft"], false);
@@ -228,6 +279,12 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
         homeRecommended: normalizeBoolean(raw["homeRecommended"], false),
       },
     };
+  }
+
+  const nonTextProjectField = rejectNonTextField(file, raw, PROJECT_TEXT_FIELDS);
+
+  if (nonTextProjectField !== null) {
+    return nonTextProjectField;
   }
 
   const coverImage = normalizeString(raw["coverImage"]);
