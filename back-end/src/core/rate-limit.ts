@@ -3,7 +3,7 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 
 import { CF_CONNECTING_IP_HEADER } from "shared";
 
-import { isLoopbackAddress } from "./network";
+import { isLoopbackAddress, rateLimitClientKey } from "./network";
 
 const GLOBAL_MAX_REQUESTS = 50;
 const GLOBAL_TIME_WINDOW = "1 minute";
@@ -13,7 +13,9 @@ const NOT_FOUND_TIME_WINDOW = "1 minute";
 /**
  * Rate-limit key: use Cloudflare's `CF-Connecting-IP` when the peer is the
  * local tunnel, otherwise the socket IP, so a directly-connected caller cannot
- * pick its own identity via headers.
+ * pick its own identity via headers. IPv6 clients are grouped by /64 (see
+ * `rateLimitClientKey`) so rotating addresses inside one prefix cannot reset
+ * the limit.
  */
 function keyGenerator(request: FastifyRequest): string {
   const socketAddress = request.raw.socket.remoteAddress;
@@ -24,10 +26,10 @@ function keyGenerator(request: FastifyRequest): string {
     && typeof cfConnectingIp === "string"
     && cfConnectingIp.length > 0
   ) {
-    return cfConnectingIp;
+    return rateLimitClientKey(cfConnectingIp);
   }
 
-  return socketAddress ?? "unknown";
+  return socketAddress === undefined ? "unknown" : rateLimitClientKey(socketAddress);
 }
 
 export async function registerRateLimiting(app: FastifyInstance): Promise<void> {

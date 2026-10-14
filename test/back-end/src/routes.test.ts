@@ -187,6 +187,58 @@ describe("back-end routes use shared ROUTES constants", () => {
     expect(otherClient.statusCode).toBe(200);
   });
 
+  test("CF-Connecting-IP values in the same IPv6 /64 share one rate-limit bucket", async () => {
+    if (app === null) {
+      throw new Error("App not initialized");
+    }
+
+    // One IPv6 client controls a whole /64; rotating the interface ID must not
+    // yield a fresh bucket, while a different /64 is a different client.
+    function requestAs(ip: string): Promise<{ statusCode: number }> {
+      return app!.inject({
+        method: "GET",
+        url: apiUrl(ROUTES.HELLO),
+        remoteAddress: "127.0.0.1",
+        headers: { "CF-Connecting-IP": ip },
+      });
+    }
+
+    let last: { statusCode: number } | null = null;
+
+    for (let i = 0; i < 51; i += 1) {
+      last = await requestAs(`2001:DB8:1:2::${(i + 1).toString(16)}`);
+    }
+
+    expect(last?.statusCode).toBe(429);
+
+    const otherPrefix = await requestAs("2001:db8:1:3::a");
+
+    expect(otherPrefix.statusCode).toBe(200);
+  });
+
+  test("IPv4-mapped and plain IPv4 CF-Connecting-IP share one rate-limit bucket", async () => {
+    if (app === null) {
+      throw new Error("App not initialized");
+    }
+
+    function requestAs(ip: string): Promise<{ statusCode: number }> {
+      return app!.inject({
+        method: "GET",
+        url: apiUrl(ROUTES.HELLO),
+        remoteAddress: "127.0.0.1",
+        headers: { "CF-Connecting-IP": ip },
+      });
+    }
+
+    let last: { statusCode: number } | null = null;
+
+    for (let i = 0; i < 51; i += 1) {
+      last = await requestAs(i % 2 === 0 ? "198.51.100.20" : "::ffff:198.51.100.20");
+    }
+
+    expect(last?.statusCode).toBe(429);
+  });
+
   test("direct requests cannot spoof client identity via CF-Connecting-IP", async () => {
     if (app === null) {
       throw new Error("App not initialized");
