@@ -24,7 +24,8 @@
 # digest clears this. To retry the same digest anyway, delete its file under
 # the state directory below.
 #
-# The image refs below must match deploy/kube/prod.yaml exactly.
+# Every image listed in `images` below must be one the pod runs: its ref
+# "$registry/<name>:latest" must match deploy/kube/prod.yaml exactly.
 set -euo pipefail
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/website-update"
@@ -59,48 +60,52 @@ reject() {
   printf '%s\n' "$2" > "$state_dir/rejected-$1"
 }
 
-changed=0
-front_changed=0
-back_changed=0
+readonly registry=ghcr.io/tim-van-oudheusden/website
+readonly images=(front-end back-end)
+
+# Per image name: the :latest digest before and after the pull.
+declare -A before=() after=()
+# Image names whose new :latest the pod replay will pick up.
+changed=()
 still_rejected=0
 
-front_before="$(digest ghcr.io/tim-van-oudheusden/website/front-end:latest)"
-if [[ -n "$front_before" ]]; then
-  podman tag ghcr.io/tim-van-oudheusden/website/front-end:latest ghcr.io/tim-van-oudheusden/website/front-end:rollback
-fi
-podman pull ghcr.io/tim-van-oudheusden/website/front-end:latest
-front_after="$(digest ghcr.io/tim-van-oudheusden/website/front-end:latest)"
-if [[ -n "$front_after" && "$front_after" == "$(rejected_digest front-end)" ]]; then
-  echo "still rejected: front-end:latest $front_after" >&2
-  still_rejected=1
-  if [[ -n "$front_before" ]]; then
-    podman tag ghcr.io/tim-van-oudheusden/website/front-end:rollback ghcr.io/tim-van-oudheusden/website/front-end:latest
+# Puts the :rollback reference back onto :latest, when there is one (a first
+# deploy has no previously running image to return to).
+restore_rollback() {
+  if [[ -n "${before[$1]}" ]]; then
+    podman tag "$registry/$1:rollback" "$registry/$1:latest"
   fi
-elif [[ -n "$front_after" && "$front_before" != "$front_after" ]]; then
-  echo "image changed: front-end:latest"
-  changed=1
-  front_changed=1
-fi
+}
 
-back_before="$(digest ghcr.io/tim-van-oudheusden/website/back-end:latest)"
-if [[ -n "$back_before" ]]; then
-  podman tag ghcr.io/tim-van-oudheusden/website/back-end:latest ghcr.io/tim-van-oudheusden/website/back-end:rollback
-fi
-podman pull ghcr.io/tim-van-oudheusden/website/back-end:latest
-back_after="$(digest ghcr.io/tim-van-oudheusden/website/back-end:latest)"
-if [[ -n "$back_after" && "$back_after" == "$(rejected_digest back-end)" ]]; then
-  echo "still rejected: back-end:latest $back_after" >&2
-  still_rejected=1
-  if [[ -n "$back_before" ]]; then
-    podman tag ghcr.io/tim-van-oudheusden/website/back-end:rollback ghcr.io/tim-van-oudheusden/website/back-end:latest
+# Tags the running image as :rollback, pulls :latest, then either holds back a
+# rejected digest or records the image as changed. Every image goes through
+# this one path, so a safety check added here protects all of them.
+sync_image() {
+  local name="$1"
+  local ref="$registry/$name"
+
+  before[$name]="$(digest "$ref:latest")"
+  if [[ -n "${before[$name]}" ]]; then
+    podman tag "$ref:latest" "$ref:rollback"
   fi
-elif [[ -n "$back_after" && "$back_before" != "$back_after" ]]; then
-  echo "image changed: back-end:latest"
-  changed=1
-  back_changed=1
-fi
+  podman pull "$ref:latest"
+  after[$name]="$(digest "$ref:latest")"
 
-if [[ "$changed" -eq 0 ]]; then
+  if [[ -n "${after[$name]}" && "${after[$name]}" == "$(rejected_digest "$name")" ]]; then
+    echo "still rejected: $name:latest ${after[$name]}" >&2
+    still_rejected=1
+    restore_rollback "$name"
+  elif [[ -n "${after[$name]}" && "${before[$name]}" != "${after[$name]}" ]]; then
+    echo "image changed: $name:latest"
+    changed+=("$name")
+  fi
+}
+
+for name in "${images[@]}"; do
+  sync_image "$name"
+done
+
+if [[ "${#changed[@]}" -eq 0 ]]; then
   echo "images unchanged; skipping pod restart"
   exit "$still_rejected"
 fi
@@ -115,14 +120,12 @@ fi
 
 echo "update FAILED health check: rolling back to the previously running image(s)" >&2
 
-if [[ "$front_changed" -eq 1 && -n "$front_before" ]]; then
-  podman tag ghcr.io/tim-van-oudheusden/website/front-end:rollback ghcr.io/tim-van-oudheusden/website/front-end:latest
-  reject front-end "$front_after"
-fi
-if [[ "$back_changed" -eq 1 && -n "$back_before" ]]; then
-  podman tag ghcr.io/tim-van-oudheusden/website/back-end:rollback ghcr.io/tim-van-oudheusden/website/back-end:latest
-  reject back-end "$back_after"
-fi
+for name in "${changed[@]}"; do
+  if [[ -n "${before[$name]}" ]]; then
+    restore_rollback "$name"
+    reject "$name" "${after[$name]}"
+  fi
+done
 
 echo "replaying podman-kube@website.service with rolled-back image(s)" >&2
 systemctl --user restart podman-kube@website.service

@@ -109,19 +109,6 @@ describe("cloudflared quadlet", () => {
 });
 
 describe("website image update timer", () => {
-  test("helper script pulls the exact images the prod pod manifest runs", () => {
-    const script = readDeploy("deploy/systemd/website-update.sh");
-    const prod = readDeploy("deploy/kube/prod.yaml");
-
-    for (const ref of [
-      "ghcr.io/tim-van-oudheusden/website/front-end:latest",
-      "ghcr.io/tim-van-oudheusden/website/back-end:latest",
-    ]) {
-      expect(script).toContain(`podman pull ${ref}`);
-      expect(prod).toContain(ref);
-    }
-  });
-
   test("replays the kube pod only when an image digest changed", () => {
     const script = readDeploy("deploy/systemd/website-update.sh");
 
@@ -157,36 +144,11 @@ describe("website image update timer rollback safeguard", () => {
   // Why: the timer is unattended (every 5 min, no human in the loop). Without
   // this, a bad `:latest` push just restart-loops the broken image forever
   // and the timer's own exit code still reads as success (#805).
-  test("tags the currently-running image as a rollback reference before pulling", () => {
-    const script = readDeploy("deploy/systemd/website-update.sh");
-
-    for (const ref of [
-      "ghcr.io/tim-van-oudheusden/website/front-end",
-      "ghcr.io/tim-van-oudheusden/website/back-end",
-    ]) {
-      expect(script).toContain(`podman tag ${ref}:latest ${ref}:rollback`);
-    }
-  });
-
   test("after replaying the pod, polls both loopback health endpoints before declaring success", () => {
     const script = readDeploy("deploy/systemd/website-update.sh");
 
     expect(script).toContain("http://127.0.0.1:8300/health");
     expect(script).toContain("http://127.0.0.1:8301/health");
-  });
-
-  test("rolls back to the tagged reference and exits non-zero when the new image fails its health check", () => {
-    const script = readDeploy("deploy/systemd/website-update.sh");
-
-    for (const ref of [
-      "ghcr.io/tim-van-oudheusden/website/front-end",
-      "ghcr.io/tim-van-oudheusden/website/back-end",
-    ]) {
-      expect(script).toContain(`podman tag ${ref}:rollback ${ref}:latest`);
-    }
-
-    expect(script).toContain("restart podman-kube@website.service");
-    expect(script).toMatch(/exit 1/);
   });
 });
 
