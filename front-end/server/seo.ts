@@ -1,7 +1,7 @@
 import type { ArticleFrontmatter, ContentFrontmatter } from "shared";
-import { STANDALONE_PAGE_SLUGS } from "shared";
+import { HERO_LINE, SITE_NAME, SITE_OWNER, STANDALONE_PAGE_SLUGS } from "shared";
 
-import { CONTENT_PAGE_PREFIX, HERO_LINE, SITE_NAME, SITE_OWNER } from "./social-meta";
+import { CONTENT_PAGE_PREFIX } from "./social-meta";
 
 /**
  * Client routes that exist regardless of content (see App.tsx). The

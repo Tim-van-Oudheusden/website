@@ -2,15 +2,14 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { BRAND_COLOR } from "shared";
+import { BRAND_COLOR, SITE_NAME } from "shared";
 
 describe("index.html", () => {
-  test("defines a non-empty browser tab title", () => {
+  test("titles the browser tab with the site name", () => {
     const html = readFileSync(resolve(import.meta.dir, "../../../front-end/index.html"), "utf-8");
     const titleMatch = /<title>([^<]+)<\/title>/.exec(html);
 
-    expect(titleMatch).not.toBeNull();
-    expect((titleMatch?.[1] ?? "").trim().length).toBeGreaterThan(0);
+    expect(titleMatch?.[1]).toBe(SITE_NAME);
   });
 
   test("declares the SVG favicon so browsers do not fall back to /favicon.ico", () => {
@@ -33,6 +32,7 @@ describe("index.html", () => {
     expect(feeds).toHaveLength(1);
     expect(feeds[0]).toContain('type="application/atom+xml"');
     expect(feeds[0]).toContain('href="/feed.xml"');
+    expect(feeds[0]).toContain(`title="${SITE_NAME}"`);
   });
 
   test("links the home-screen icon, manifest and theme colour for mobile bookmarking", () => {

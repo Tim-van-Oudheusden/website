@@ -1,5 +1,7 @@
 import type { JSX } from "react";
 
+import { SITE_NAME } from "shared";
+
 /**
  * The "Build with Tim" wordmark: a rounded plate with the lettering cut in the opposite colour.
  *
@@ -13,7 +15,7 @@ export function SiteLogo(): JSX.Element {
       width={156}
       height={40}
       role="img"
-      aria-label="Build with Tim"
+      aria-label={SITE_NAME}
       className="h-10 w-auto text-(--ink-5) dark:text-(--paper-1)"
     >
       <rect width="156" height="40" rx="8" fill="currentColor" />
