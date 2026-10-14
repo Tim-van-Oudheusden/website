@@ -83,7 +83,11 @@ function parseScalarValue(value: string): Scalar {
   return trimmed;
 }
 
-const FIELD_RE = /^([A-Za-z0-9_-]+):(?:\s*(.*))?$/;
+// As in YAML, a key ends at `: ` or a colon closing the line, so `Re:Zero`
+// and `https://example.com` stay plain scalars.
+const FIELD_RE = /^([A-Za-z0-9_-]+):(?:\s+(.*))?$/;
+// A whole-line comment; it never ends a block or an object item.
+const COMMENT_LINE_RE = /^\s*#/;
 const LIST_ITEM_RE = /^-(?:\s+(.*))?$/;
 
 export interface ParseResult {
@@ -157,6 +161,12 @@ function parseBlockChildren(children: string[]): FrontmatterValue {
         next += 1;
 
         break;
+      }
+
+      if (COMMENT_LINE_RE.test(sub)) {
+        next += 1;
+
+        continue;
       }
 
       const subIndent = indentOf(sub);
@@ -276,8 +286,9 @@ export function readFrontmatter(raw: string): FrontmatterRead {
     }
 
     // A parent key (`tags:`, `links:`) consumes its indented block children.
-    // Blank lines never end the block; only a non-blank line indented no
-    // deeper than the parent key does, so children cannot leak to top level.
+    // Blank and whole-line comment lines never end the block; only another
+    // line indented no deeper than the parent key does, so children cannot
+    // leak to top level.
     // As in YAML, `- item` lines may also sit at the key's own indent.
     const children: string[] = [];
     let next = i + 1;
@@ -289,7 +300,7 @@ export function readFrontmatter(raw: string): FrontmatterRead {
         break;
       }
 
-      if (child.trim() !== "") {
+      if (child.trim() !== "" && !COMMENT_LINE_RE.test(child)) {
         const childIndent = indentOf(child);
 
         if (childIndent < indent || (childIndent === indent && LIST_ITEM_RE.exec(child.trimStart()) === null)) {

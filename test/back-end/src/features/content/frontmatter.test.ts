@@ -269,6 +269,56 @@ Body
       ],
       { data: { tags: ["Linux: tips", "Containers"], links: [{ type: "repo", label: "Repo: main" }] }, content: "Body" },
     ],
+    [
+      "keeps tags after a column-0 comment line in an indented list",
+      ["---", "tags:", "  - Linux", "# - Windows", "  - macOS", "title: T", "---", "Body"],
+      { data: { tags: ["Linux", "macOS"], title: "T" }, content: "Body" },
+    ],
+    [
+      "keeps tags after a column-0 comment line in an unindented list",
+      ["---", "tags:", "- Linux", "# - Windows", "- macOS", "title: T", "---", "Body"],
+      { data: { tags: ["Linux", "macOS"], title: "T" }, content: "Body" },
+    ],
+    [
+      "keeps link objects after a column-0 comment line instead of hoisting their fields",
+      [
+        "---",
+        "type: project",
+        "links:",
+        "  - type: repo",
+        "    href: https://a",
+        "# - type: demo",
+        "  - label: Site",
+        "    type: docs",
+        "    href: https://b",
+        "---",
+        "Body",
+      ],
+      {
+        data: { type: "project", links: [{ type: "repo", href: "https://a" }, { label: "Site", type: "docs", href: "https://b" }] },
+        content: "Body",
+      },
+    ],
+    [
+      "keeps unindented link objects after a column-0 comment line",
+      ["---", "links:", "- type: repo", "  href: https://a", "# - type: demo", "- type: docs", "  label: Site", "---", "Body"],
+      { data: { links: [{ type: "repo", href: "https://a" }, { type: "docs", label: "Site" }] }, content: "Body" },
+    ],
+    [
+      "keeps a link object's fields after a comment line between them",
+      ["---", "links:", "  - type: repo", "# label: Old", "    # href: https://old", "    href: https://a", "title: T", "---", "Body"],
+      { data: { links: [{ type: "repo", href: "https://a" }], title: "T" }, content: "Body" },
+    ],
+    [
+      "keeps a list item with a colon but no following space a string",
+      ["---", "tags:", "  - Re:Zero", "  - https://example.com", "  - Anime", "---", "Body"],
+      { data: { tags: ["Re:Zero", "https://example.com", "Anime"] }, content: "Body" },
+    ],
+    [
+      "does not read key:value without a space as a field",
+      ["---", "title: T", "draft:true", "---", "Body"],
+      { data: { title: "T" }, content: "Body" },
+    ],
   ])("%s", (_label, lines, expected) => {
     const read = readFrontmatter(lines.join("\n"));
 

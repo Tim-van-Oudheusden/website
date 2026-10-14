@@ -56,6 +56,12 @@ The parser reads a subset of YAML: `key: value` lines, block lists
   write `''` for a quote.
 - A ` # comment` after an unquoted value is ignored: `draft: true # not ready`
   is the boolean `true`.
+- A whole line that starts with `#` is a comment at any indent, including
+  inside a `tags` or `links` list or between a link's fields; it does not end
+  the list, so `# - Windows` between two tags just leaves that tag out.
+- A key needs a space after its colon (`draft: true`). Without one the line is
+  plain text: `- Re:Zero` and `- https://example.com` are string list items,
+  and a `draft:true` line is not a field.
 - An unquoted whole number or `true`/`false` is read as a number or boolean,
   not as text. In a text field (`title`, `description`, `slug`, `socialImage`,
   and on projects `coverImage`, `coverImageAlt`, `role`, `info`) or as a `tags`
