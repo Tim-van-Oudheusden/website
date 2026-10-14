@@ -112,6 +112,7 @@ export interface FakeElement extends FakeNode {
   insertAdjacentElement(position: "beforebegin" | "afterbegin" | "beforeend" | "afterend", element: FakeNode): FakeNode | null;
   /** Element-node children (test-side surface for `aria-hidden` and friends). */
   readonly children: FakeElement[];
+  readonly firstElementChild: FakeElement | null;
   /** Attribute-selector matcher (`[name]`, `[name="value"]`) over this subtree. */
   querySelectorAll(selector: string): FakeElement[];
   scrollTo(options: { left?: number; top?: number; behavior?: string }): void;
@@ -457,6 +458,10 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
     return this.childNodes.filter((child) => child.nodeType === 1) as FakeElement[];
   }
 
+  get firstElementChild(): FakeElement | null {
+    return this.children[0] ?? null;
+  }
+
   get parentElement(): FakeElement | null {
     return this.parentNode?.nodeType === 1 ? (this.parentNode as FakeElement) : null;
   }
@@ -565,10 +570,15 @@ class FakeResizeObserverImpl {
   }
 }
 
-/** One entry handed to `triggerFakeIntersections`: a target and its visible ratio. */
+/**
+ * One entry handed to `triggerFakeIntersections`: a target and its visible
+ * ratio, plus the optional geometry real entries carry.
+ */
 export interface FakeIntersection {
   target: FakeElement;
   intersectionRatio: number;
+  boundingClientRect?: { top: number };
+  rootBounds?: { height: number } | null;
 }
 
 class FakeIntersectionObserverImpl {
