@@ -278,6 +278,10 @@ systemctl --user restart podman-kube@website.service
 To return to tracking `:latest`, revert the two image refs in `prod.yaml` and
 restart again.
 
+Once the incident is over, consider writing it up — see
+[`docs/postmortems/README.md`](postmortems/README.md), especially if the
+automatic rollback above fired or a manual rollback was needed.
+
 ---
 
 ## 5. Secret handling

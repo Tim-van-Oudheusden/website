@@ -134,6 +134,7 @@ The Obsidian settings, image syntax, frontmatter reference and link previews are
 | [`docs/content-authoring.md`](docs/content-authoring.md) | Writing articles and projects: Obsidian, frontmatter, the content check |
 | [`docs/testing.md`](docs/testing.md) | Unit and E2E tests, quality reports, the prod-asset check |
 | [`docs/deploy.md`](docs/deploy.md) | Server runbook: pod, Cloudflare Tunnel, update timer, rollback |
+| [`docs/postmortems/README.md`](docs/postmortems/README.md) | Writing up a production incident or rollback |
 | [`docs/risk-tiers.md`](docs/risk-tiers.md) | How pull requests are classified by risk |
 | [`docs/metrics/README.md`](docs/metrics/README.md) | Quality, coverage and compliance metrics |
 | [`docs/security/SECURITY-AI.md`](docs/security/SECURITY-AI.md) | Security model for AI agents in this repo |
