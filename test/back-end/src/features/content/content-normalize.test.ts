@@ -247,6 +247,70 @@ describe("normalizeContentDocument", () => {
     });
   });
 
+  // The parser reads unquoted `2025` and `true` as a number and a boolean (#835).
+  test.each([
+    ["article", "title", 1984],
+    ["article", "description", 42],
+    ["article", "slug", 2025],
+    ["article", "socialImage", true],
+    ["project", "coverImage", 7],
+    ["project", "coverImageAlt", false],
+    ["project", "role", 1],
+    ["project", "info", 100],
+  ])("rejects an unquoted number or boolean in the %s text field %s, naming the fix", (type, field, value) => {
+    const result = normalizeContentDocument("numeric.md", {
+      title: "Numeric",
+      date: "2026-01-01",
+      type,
+      category: "Work",
+      coverImage: "/img.png",
+      coverImageAlt: "img",
+      [field]: value,
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        file: "numeric.md",
+        field,
+        message: `${field} must be text; put the value in quotes, e.g. ${field}: "${String(value)}"`,
+        value,
+      },
+    });
+  });
+
+  test.each([2025, true])("rejects an unquoted number or boolean tag (%p), naming the fix", (tag) => {
+    const result = normalizeContentDocument("numeric-tag.md", {
+      title: "Numeric tag",
+      date: "2026-01-01",
+      type: "article",
+      category: "Work",
+      tags: ["retrospective", tag],
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        file: "numeric-tag.md",
+        field: "tags",
+        message: `Tag must be text; put it in quotes, e.g. - "${String(tag)}"`,
+        value: tag,
+      },
+    });
+  });
+
+  test("ignores project-only text fields on an article", () => {
+    const result = normalizeContentDocument("article-role.md", {
+      title: "Article",
+      date: "2026-01-01",
+      type: "article",
+      category: "Work",
+      role: 1,
+    });
+
+    expect(result.ok).toBe(true);
+  });
+
   test("falls back to publishDate when date is blank", () => {
     const result = normalizeContentDocument("fallback.md", {
       title: "Fallback",
@@ -553,6 +617,27 @@ describe("validateContentDir", () => {
       ].join("\n"));
 
       expect(await validateContentDir(dir)).toEqual([]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("reports a numeric slug and tag written unquoted instead of serving the file name", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, "year.md"), taggedArticle(["retrospective"], ["slug: 2025"]));
+      await writeFile(join(dir, "tagged.md"), taggedArticle(["2025"], ["slug: tagged"]));
+      await writeFile(join(dir, "quoted.md"), taggedArticle(['"2026"'], ['slug: "2026"']));
+
+      const errors = await validateContentDir(dir);
+
+      expect(errors).toHaveLength(2);
+
+      expect(errors).toEqual(expect.arrayContaining([
+        expect.objectContaining({ file: "year.md", field: "slug", value: 2025 }),
+        expect.objectContaining({ file: "tagged.md", field: "tags", value: 2025 }),
+      ]));
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
