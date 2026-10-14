@@ -20,10 +20,27 @@ export const IMAGE_MIME_TYPES: Readonly<Record<string, string>> = {
 export const IMAGE_EXTENSIONS: readonly string[] = Object.keys(IMAGE_MIME_TYPES);
 
 /**
- * Asset filenames are fixed content paths, so the response is safe to cache
- * immutably for a year.
+ * Asset filenames are authored content paths, not content-hashed build output,
+ * so an image edited in place keeps its URL. Caches may reuse an image for an
+ * hour, then must revalidate it against its ETag (#829).
  */
-export const ASSET_CACHE_CONTROL = "public, max-age=31536000, immutable";
+export const ASSET_CACHE_CONTROL = "public, max-age=3600";
+
+/**
+ * Whether an `If-None-Match` header matches `etag`, using the weak comparison
+ * RFC 9110 §13.1.2 prescribes for it: `*`, or any listed tag ignoring `W/`.
+ */
+export function ifNoneMatchHits(ifNoneMatch: string | undefined, etag: string): boolean {
+  if (ifNoneMatch === undefined) {
+    return false;
+  }
+
+  return ifNoneMatch.split(",").some((candidate) => {
+    const tag = candidate.trim();
+
+    return tag === "*" || tag.replace(/^W\//, "") === etag;
+  });
+}
 
 /**
  * Assets are served from the site's own origin, and an SVG opened directly is a

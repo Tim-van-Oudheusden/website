@@ -111,7 +111,60 @@ describe("content routes mount JSON under /api and images at the root", () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.headers["content-type"]).toContain("image/png");
-    expect(res.headers["cache-control"]).toContain("immutable");
+  });
+
+  // An image edited in place keeps its name, so a year-long `immutable` cache would
+  // keep serving the old bytes to visitors and the edge (#829).
+  test("lets caches keep a content image for an hour, then revalidate it", async () => {
+    const res = await app!.inject({ method: "GET", url: "/content-assets/images/pixel.png" });
+
+    expect(res.headers["cache-control"]).toBe("public, max-age=3600");
+    expect(res.headers.etag).toMatch(/^"[^"]+"$/);
+  });
+
+  test("answers a revalidation of an unchanged image with 304 and no body", async () => {
+    const first = await app!.inject({ method: "GET", url: "/content-assets/images/pixel.png" });
+    const etag = String(first.headers.etag);
+
+    for (const ifNoneMatch of [etag, `W/${etag}`, `"stale", ${etag}`, "*"]) {
+      const res = await app!.inject({
+        method: "GET",
+        url: "/content-assets/images/pixel.png",
+        headers: { "if-none-match": ifNoneMatch },
+      });
+
+      expect(res.statusCode, ifNoneMatch).toBe(304);
+      expect(res.body, ifNoneMatch).toBe("");
+      expect(res.headers.etag, ifNoneMatch).toBe(etag);
+      expect(res.headers["cache-control"], ifNoneMatch).toBe("public, max-age=3600");
+    }
+  });
+
+  test("serves the new bytes with a new ETag after an image is edited in place", async () => {
+    await writeFile(join(contentDir, "images", "edited.png"), "original-bytes");
+    const before = await app!.inject({ method: "GET", url: "/content-assets/images/edited.png" });
+
+    await writeFile(join(contentDir, "images", "edited.png"), "corrected-bytes");
+    const after = await app!.inject({
+      method: "GET",
+      url: "/content-assets/images/edited.png",
+      headers: { "if-none-match": String(before.headers.etag) },
+    });
+
+    expect(after.statusCode).toBe(200);
+    expect(after.body).toBe("corrected-bytes");
+    expect(after.headers.etag).not.toBe(before.headers.etag);
+  });
+
+  test("If-None-Match: * on a missing image is still a 404, not a 304", async () => {
+    const res = await app!.inject({
+      method: "GET",
+      url: "/content-assets/images/missing.png",
+      headers: { "if-none-match": "*" },
+    });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.headers.etag).toBeUndefined();
   });
 
   test("unknown content image returns 404", async () => {
