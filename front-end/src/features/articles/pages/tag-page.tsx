@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router";
 import type { ArticleSummary } from "shared/articles";
 import { tagSlug } from "shared/tags";
 
+import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import { httpContentLoader } from "@/shared/lib/content-loader";
 
@@ -22,7 +23,7 @@ export function TagPage(): JSX.Element {
 
   if (list.data === null) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
+      <main id={MAIN_CONTENT_ID} className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
         <h1 className="sr-only">{`Articles tagged ${tag}`}</h1>
         {list.error === null
           ? <p className="text-muted-foreground">Loading articles...</p>
@@ -36,7 +37,7 @@ export function TagPage(): JSX.Element {
   const tagName = tagged[0]?.tags.find((articleTag) => tagSlug(articleTag) === tagSlug(tag)) ?? tag;
 
   return (
-    <main className={ARTICLES_PAGE_LAYOUT_CLASSES.container}>
+    <main id={MAIN_CONTENT_ID} className={ARTICLES_PAGE_LAYOUT_CLASSES.container}>
       <div className={ARTICLES_PAGE_LAYOUT_CLASSES.content}>
         <div className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleBodyMeasure}>
           <h1 className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.pageTitle}>{`Articles tagged ${tagName}`}</h1>

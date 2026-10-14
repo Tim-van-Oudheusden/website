@@ -9,6 +9,7 @@ import { HomePage } from "@/features/home/pages/home-page";
 import { ProjectPage } from "@/features/projects/pages/project-page";
 import { ProjectsPage } from "@/features/projects/pages/projects-page";
 import { StandalonePage } from "@/features/standalone-pages/pages/standalone-page";
+import { SkipLink } from "@/shared/components/skip-link";
 import { TopBar } from "@/shared/components/top-bar";
 
 /** Route table only, so it can be asserted independently of the browser router. */
@@ -32,6 +33,7 @@ export function App(): JSX.Element {
   return (
     <BrowserRouter>
       <div className="flex min-h-svh flex-col">
+        <SkipLink />
         <TopBar />
         <AppRoutes />
       </div>

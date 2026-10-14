@@ -1,6 +1,7 @@
 import type { JSX, MouseEvent } from "react";
 import { useState } from "react";
 
+import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { httpContentLoader, shareArticleList } from "@/shared/lib/content-loader";
 
 import { HomeFloatingNav } from "../components/home-floating-nav";
@@ -50,7 +51,7 @@ export function HomePage(): JSX.Element {
   const [loader] = useState(() => shareArticleList(httpContentLoader));
 
   return (
-    <main className="flex-1 scroll-smooth motion-reduce:scroll-auto">
+    <main id={MAIN_CONTENT_ID} className="flex-1 scroll-smooth motion-reduce:scroll-auto">
       {HOME_SECTIONS.map((section) => (
         <HomeSection
           key={section.id}
