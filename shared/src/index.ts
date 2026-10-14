@@ -4,6 +4,21 @@
 
 export const APP_NAME = "website";
 
+/**
+ * Site name and hero line, verbatim from `BRANDING.md` §1–2. Hand-copied into
+ * `front-end/index.html` (title, atom feed link) and `public/manifest.webmanifest`
+ * (name) — those static files can't import this constant, but their tests
+ * assert against it so the copies can't silently drift apart. The front-end's
+ * SiteLogo wordmark and home "start" section import it directly instead.
+ */
+export const SITE_NAME = "Build with Tim";
+
+/** Site owner, as `BRANDING.md` §3 names him: author of every article. */
+export const SITE_OWNER = "Tim van Oudheusden";
+
+/** The home "start" section's hero copy, verbatim from `BRANDING.md` §2. */
+export const HERO_LINE = "I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.";
+
 /* ── Network Constants ── */
 
 /** Default port the back-end listens on. */

@@ -1,4 +1,5 @@
 import type { ContentFrontmatter } from "shared";
+import { HERO_LINE, SITE_NAME, SITE_OWNER } from "shared";
 import { resolveSocialImagePath } from "shared/social-image";
 import { SOCIAL_LINKS } from "shared/social-links";
 
@@ -16,11 +17,6 @@ interface JsonLdPerson {
   "sameAs": string[];
 }
 
-/** Site name and hero line, verbatim from BRANDING.md §1–2 (the home 'start' section shows the same copy). */
-export const SITE_NAME = "Build with Tim";
-/** Site owner, as BRANDING.md §3 names him: author of every article. */
-export const SITE_OWNER = "Tim van Oudheusden";
-export const HERO_LINE = "I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.";
 const HOME_IMAGE_PATH = "/images/me.png";
 
 /** Where each content type's page lives in the client router (see App.tsx). */

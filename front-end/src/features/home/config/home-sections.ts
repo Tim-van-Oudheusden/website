@@ -1,3 +1,4 @@
+import { HERO_LINE } from "shared";
 import { SOCIAL_LINKS } from "shared/social-links";
 
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
@@ -17,7 +18,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     id: "start",
     label: "start",
     heading: "Build with Tim.",
-    body: "I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.",
+    body: HERO_LINE,
     bgColor: "var(--site-page-bg)",
     ctaLabel: "Discover",
     ctaTargetId: "for-you",

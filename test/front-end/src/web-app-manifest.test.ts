@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { BRAND_COLOR } from "shared";
+import { BRAND_COLOR, SITE_NAME } from "shared";
 
 const publicDir = resolve(import.meta.dir, "../../../public");
 const cssPath = resolve(import.meta.dir, "../../../front-end/src/index.css");
@@ -39,7 +39,7 @@ describe("public/manifest.webmanifest", () => {
   const manifest = JSON.parse(readFileSync(resolve(publicDir, "manifest.webmanifest"), "utf-8")) as WebAppManifest;
 
   test("names the site and opens on the home page", () => {
-    expect(manifest.name).toBe("Build with Tim");
+    expect(manifest.name).toBe(SITE_NAME);
     expect(manifest.short_name.length).toBeGreaterThan(0);
     expect(manifest.short_name.length).toBeLessThanOrEqual(12);
     expect(manifest.start_url).toBe("/");
