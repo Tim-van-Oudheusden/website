@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { readFile } from "fs/promises";
 import { resolve } from "path";
 
@@ -7,7 +8,7 @@ import type { ContentType } from "shared";
 import { ASSET_PATH_PREFIX, CONTENT_TYPES, ROUTES } from "shared";
 
 import { getContentBySlug, listContent } from "./content";
-import { ASSET_CACHE_CONTROL, ASSET_CONTENT_SECURITY_POLICY, resolveContentAsset } from "./image-assets";
+import { ASSET_CACHE_CONTROL, ASSET_CONTENT_SECURITY_POLICY, ifNoneMatchHits, resolveContentAsset } from "./image-assets";
 
 /**
  * Register content JSON API routes on a Fastify instance scoped under API_BASE.
@@ -55,9 +56,17 @@ export function registerContentImageRoutes(app: FastifyInstance, contentDir: str
 
     try {
       const imageBuffer = await readFile(resolved.fullPath);
+      // Derived from the bytes, so the strong ETag changes exactly when the image does.
+      const etag = `"${createHash("sha256").update(imageBuffer).digest("base64url")}"`;
 
       reply.header("Cache-Control", ASSET_CACHE_CONTROL);
+      reply.header("ETag", etag);
       reply.header("Content-Security-Policy", ASSET_CONTENT_SECURITY_POLICY);
+
+      if (ifNoneMatchHits(request.headers["if-none-match"], etag)) {
+        return await reply.status(304).send();
+      }
+
       reply.type(resolved.contentType);
 
       return await reply.send(imageBuffer);
