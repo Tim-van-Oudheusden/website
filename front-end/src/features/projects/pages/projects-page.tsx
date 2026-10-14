@@ -3,6 +3,7 @@ import { Link } from "react-router";
 
 import type { ProjectFrontmatter } from "shared";
 
+import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -90,7 +91,7 @@ export function ProjectsPage(): JSX.Element {
 
   if (status === "loading") {
     return (
-      <main className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
+      <main id={MAIN_CONTENT_ID} className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
         <p className="text-muted-foreground">Loading projects...</p>
       </main>
     );
@@ -98,7 +99,7 @@ export function ProjectsPage(): JSX.Element {
 
   if (projects === null) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
+      <main id={MAIN_CONTENT_ID} className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
         <p className="text-destructive">{error}</p>
       </main>
     );
@@ -106,7 +107,7 @@ export function ProjectsPage(): JSX.Element {
 
   if (projects.length === 0) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--site-page-bg) p-4">
+      <main id={MAIN_CONTENT_ID} className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--site-page-bg) p-4">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Projects</h1>
         <p className="text-muted-foreground">Projects are being prepared.</p>
       </main>
@@ -119,7 +120,7 @@ export function ProjectsPage(): JSX.Element {
   const galleryProjects = resolveGalleryProjects(projects);
 
   return (
-    <main className={PROJECTS_PAGE_LAYOUT_CLASSES.main}>
+    <main id={MAIN_CONTENT_ID} className={PROJECTS_PAGE_LAYOUT_CLASSES.main}>
       <div className={PROJECTS_PAGE_LAYOUT_CLASSES.inner}>
         <section className={PROJECTS_PAGE_LAYOUT_CLASSES.heroWell} aria-labelledby="projects-heading">
           <p className={PROJECTS_PAGE_TYPOGRAPHY_CLASSES.eyebrow}>{PROJECTS_PAGE_TEXT.eyebrow}</p>

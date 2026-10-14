@@ -6,6 +6,7 @@ import type { ProjectFrontmatter } from "shared";
 
 import { ErrorBoundary, renderErrorFallback } from "@/shared/components/error-boundary";
 import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
+import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { ApiError } from "@/shared/lib/api";
@@ -140,7 +141,7 @@ export function ProjectPage(): JSX.Element {
 
   if (loading) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
+      <main id={MAIN_CONTENT_ID} className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
         <p className="text-muted-foreground">Loading project...</p>
       </main>
     );
@@ -148,7 +149,7 @@ export function ProjectPage(): JSX.Element {
 
   if (notFound) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--site-page-bg) p-4">
+      <main id={MAIN_CONTENT_ID} className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--site-page-bg) p-4">
         <h1 className="text-3xl font-semibold">Project not found</h1>
         <Link to="/projects" className="text-[var(--ink-5)] dark:text-[var(--paper-1)] underline">
           Back to projects
@@ -159,14 +160,14 @@ export function ProjectPage(): JSX.Element {
 
   if (error !== null || project === null) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
+      <main id={MAIN_CONTENT_ID} className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
         <p className="text-destructive">{error ?? "Something went wrong"}</p>
       </main>
     );
   }
 
   return (
-    <main className={PROJECT_PAGE_LAYOUT_CLASSES.main}>
+    <main id={MAIN_CONTENT_ID} className={PROJECT_PAGE_LAYOUT_CLASSES.main}>
       <article className={PROJECT_PAGE_LAYOUT_CLASSES.articleMeasure}>
         <ProjectMetaHeader project={project} />
         <ErrorBoundary fallback={renderErrorFallback}>

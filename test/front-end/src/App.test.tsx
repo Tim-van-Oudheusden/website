@@ -69,7 +69,44 @@ describe("AppRoutes", () => {
   });
 });
 
+describe("AppRoutes main landmark", () => {
+  test.each([
+    "/",
+    "/projects",
+    "/projects/some-project",
+    "/articles",
+    "/articles/introduction",
+    "/tags/docker",
+    "/now",
+    "/uses",
+  ])("%s renders one <main> that the skip link can target", (pathname) => {
+    const mains = renderRoute(pathname).match(/<main[^>]*>/g) ?? [];
+
+    expect(mains).toHaveLength(1);
+    expect(mains[0]).toContain('id="main-content"');
+  });
+});
+
 describe("App", () => {
+  test("renders a skip-to-content link as the first focusable element, before the top bar", () => {
+    const html = renderToStaticMarkup(createElement(App));
+
+    const firstLink = /<a [^>]*>[^<]*<\/a>/.exec(html)?.[0] ?? "";
+
+    expect(firstLink).toContain('href="#main-content"');
+    expect(firstLink).toContain(">Skip to content</a>");
+    expect(html.indexOf(firstLink)).toBeLessThan(html.indexOf("<header"));
+  });
+
+  test("keeps the skip link visually hidden until it receives keyboard focus", () => {
+    const html = renderToStaticMarkup(createElement(App));
+
+    const classes = /<a [^>]*class="([^"]*)"[^>]*>Skip to content<\/a>/.exec(html)?.[1]?.split(" ") ?? [];
+
+    expect(classes).toContain("sr-only");
+    expect(classes).toContain("focus:not-sr-only");
+  });
+
   test("renders the top bar above the page for the browser's current URL", () => {
     window.location.pathname = "/projects";
 
