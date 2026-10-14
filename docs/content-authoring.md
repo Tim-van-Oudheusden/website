@@ -58,7 +58,8 @@ The parser reads a subset of YAML: `key: value` lines, block lists
   is the boolean `true`.
 - Flow lists and multi-line values are not supported; write lists one
   `- item` per line. A flow list such as `tags: [a, b]` is read as one string,
-  which breaks the `tags` rule below.
+  which breaks the `tags` rule below. The `- item` lines may be indented under
+  their key or sit at the key's own indent; both read the same.
 
 **A document that breaks a rule is silently left out of the site.** No error is
 shown: it disappears from every listing and its URL returns "not found". Run

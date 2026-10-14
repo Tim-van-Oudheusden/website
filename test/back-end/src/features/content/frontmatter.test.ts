@@ -215,6 +215,21 @@ Body
       { data: { title: "T", links: [{ type: "repo", url: "https://x" }] }, content: "Body" },
     ],
     [
+      "reads a list written at the same indent as its key",
+      ["---", "title: T", "tags:", "- Linux", "- Containers", "slug: t", "---", "Body"],
+      { data: { title: "T", tags: ["Linux", "Containers"], slug: "t" }, content: "Body" },
+    ],
+    [
+      "reads an object list written at the same indent as its key",
+      ["---", "links:", "- type: repo", "  label: Repo", "- type: docs", "  label: Docs", "title: T", "---", "Body"],
+      { data: { links: [{ type: "repo", label: "Repo" }, { type: "docs", label: "Docs" }], title: "T" }, content: "Body" },
+    ],
+    [
+      "keeps an unindented list across a blank line and ends it at the next key",
+      ["---", "tags:", "- Linux", "", "- Containers", "links:", "  - type: repo", "---", "Body"],
+      { data: { tags: ["Linux", "Containers"], links: [{ type: "repo" }] }, content: "Body" },
+    ],
+    [
       "drops a trailing # comment from an unquoted value",
       ["---", "title: T", "draft: true # not ready yet", "---", "Body"],
       { data: { title: "T", draft: true }, content: "Body" },
