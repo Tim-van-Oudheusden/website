@@ -29,7 +29,10 @@
     /* Quality */
     "skipLibCheck": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+
+    /* Ambient types (TypeScript 6 no longer loads every @types package) */
+    "types": ["bun"]
   },
   "include": ["playwright.config.ts"],
   "references": [

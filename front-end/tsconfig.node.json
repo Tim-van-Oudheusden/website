@@ -9,7 +9,8 @@
     "skipLibCheck": true,
     "noEmit": true,
     "verbatimModuleSyntax": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "types": ["bun"]
   },
   "include": ["vite.config.ts", "../shared/src/index.ts"]
 }
