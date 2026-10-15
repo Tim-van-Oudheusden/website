@@ -8,7 +8,7 @@ import type { ArticleData } from "shared/articles";
 import type * as ProjectPageModule from "../../../../../../front-end/src/features/projects/pages/project-page";
 import type { FakeMount } from "../../../../src/test/dom-harness";
 import { initFakeDomHarness, jsonResponse, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
-import { uninstallFakeDom } from "../../../../src/test/fake-dom";
+import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 // Module-loading boundary: react-dom captures `canUseDOM` at module load, so it
 // must be imported after the fake DOM is installed by the harness. ProjectPage
@@ -95,6 +95,10 @@ function pageText(page: FakeMount): string {
   return page.container.textContent;
 }
 
+function headingTexts(page: FakeMount, tagName: string): string[] {
+  return queryFakeElements(page.container, (el) => el.tagName === tagName).map((el) => el.textContent);
+}
+
 describe("ProjectPage", () => {
   test("renders the loading state before the loader resolves", () => {
     const page = mountProjectPage();
@@ -171,6 +175,23 @@ describe("ProjectPage", () => {
       expect(text).toContain("Back to projects");
       expect(text).toContain("Shipped");
       expect(text).not.toContain("Loading project...");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("keeps the header title the only h1 when the markdown body opens with its own `#` title", async () => {
+    stubFetch(jsonResponse({ ...projectItem(), body: "# Sweet App\n\n## Approach\n\nHow it works." }));
+    const page = mountProjectPage();
+
+    try {
+      await act(async () => {
+        await settleMicrotasks();
+      });
+
+      expect(headingTexts(page, "H1")).toEqual(["Sweet App"]);
+      expect(headingTexts(page, "H2")).toEqual(["Sweet App"]);
+      expect(headingTexts(page, "H3")).toEqual(["Approach"]);
     } finally {
       unmountFakeDomRoot(page);
     }

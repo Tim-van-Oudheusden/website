@@ -171,7 +171,7 @@ export function ProjectPage(): JSX.Element {
       <article className={PROJECT_PAGE_LAYOUT_CLASSES.articleMeasure}>
         <ProjectMetaHeader project={project} />
         <ErrorBoundary fallback={renderErrorFallback}>
-          <MarkdownRenderer content={project.body} headingLevelOffset={0} />
+          <MarkdownRenderer content={project.body} headingLevelOffset={1} />
         </ErrorBoundary>
       </article>
     </main>

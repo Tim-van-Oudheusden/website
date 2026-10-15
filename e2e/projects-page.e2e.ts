@@ -33,9 +33,13 @@ test.describe("Projects page", () => {
     await expect(page).toHaveURL(/\/projects\/obsidian-content-pipeline$/);
     const article = page.getByRole("article");
 
-    // The markdown body repeats the title as its own `#` heading; the page header owns the real one.
-    await expect(article.locator("header").getByRole("heading", { level: 1, name: "Obsidian Content Pipeline" })).toBeVisible();
-    await expect(article.getByRole("heading", { level: 2, name: "Approach" })).toBeVisible();
+    // The markdown body repeats the title as its own `#` heading, demoted to <h2>; the page header owns the only <h1>.
+    const title = page.getByRole("heading", { level: 1 });
+
+    await expect(title).toHaveText("Obsidian Content Pipeline");
+    await expect(title).toHaveCount(1);
+    await expect(article.locator("header").getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(article.locator(".prose").getByRole("heading", { level: 3, name: "Approach" })).toBeVisible();
     await expect(article.getByText("The pipeline normalizes frontmatter, filters drafts in production")).toBeVisible();
   });
 });
