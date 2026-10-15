@@ -27,7 +27,8 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --name-only "${BASE_SHA}...${HEAD_SHA}" | scripts/tier-classify.sh > tier.txt
+          # --no-renames: a file moved out of a high-risk path is listed under its old path too.
+          git diff --name-only --no-renames "${BASE_SHA}...${HEAD_SHA}" | scripts/tier-classify.sh > tier.txt
           tier="$(sed -n 's/^tier=//p' tier.txt)"
           echo "::notice title=Risk tier::${tier} (see docs/risk-tiers.md)"
           {
