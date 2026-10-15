@@ -66,6 +66,10 @@ export function StandalonePage({ slug }: StandalonePageProps): JSX.Element {
             <time dateTime={page.updated}>{UPDATED_FORMAT.format(new Date(page.updated))}</time>
           </p>
         </header>
+        {/*
+          Offset 0: page bodies (content/pages/) start at `##`, so sections render as <h2> under the header's <h1>.
+          A body that opens with `#` would add a second <h1>; switch to 1 (as project/article pages do) if that changes.
+        */}
         <ErrorBoundary fallback={renderErrorFallback}>
           <MarkdownRenderer content={page.body} headingLevelOffset={0} />
         </ErrorBoundary>
