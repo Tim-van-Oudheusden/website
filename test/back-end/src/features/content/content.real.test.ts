@@ -421,8 +421,8 @@ describe("real content directory sanity check", () => {
     expect(bodyImages).toEqual([
       "/content-assets/images/minimalui/readme-banner.svg",
       "/content-assets/images/minimalui/social-preview.svg",
-      "/content-assets/images/minimalui/icon-masks.svg",
       "/content-assets/images/minimalui/social-portrait-filter.svg",
+      "/content-assets/images/minimalui/icon-masks.svg",
       "/content-assets/images/minimalui/poster.svg",
     ]);
 
@@ -434,7 +434,7 @@ describe("real content directory sanity check", () => {
     expect(missing).toEqual([]);
   });
 
-  test("the Minimal Android Launcher embeds the MinimalUI promo video", async () => {
+  test("the Minimal Android Launcher embeds the MinimalUI walkthrough video", async () => {
     const project = (await getContentBySlug("minimal-android-launcher", REAL_CONTENT_DIR)) as ProjectFrontmatter & { body: string };
     // The renderer only embeds a YouTube link that stands alone in its paragraph.
     const standaloneVideoLinks = project.body
@@ -443,6 +443,6 @@ describe("real content directory sanity check", () => {
       .filter((match) => match !== null)
       .map(([, title, href]) => ({ title, href }));
 
-    expect(standaloneVideoLinks).toEqual([{ title: "MinimalUI - Promo", href: "https://youtu.be/S72aC8-c0lo" }]);
+    expect(standaloneVideoLinks).toEqual([{ title: "MinimalUI - Walkthrough", href: "https://youtu.be/pnP0TemZbZI" }]);
   });
 });

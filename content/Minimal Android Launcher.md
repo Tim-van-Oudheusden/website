@@ -29,29 +29,57 @@ info: A minimal launcher for Zinwa, Clicks and Unihertz keyboard-centric phones,
 
 A minimal Android launcher for keyboard-centric phones from Zinwa, Clicks and Unihertz, inspired by MinUI and Cannoli.
 
-This project is still in progress; more details will be added as it develops.
+Less on screen, more room for everything else. That is the whole idea behind MinimalUI. No icons and no transition animations, just black and white text and a keyboard to drive it. I made a short walkthrough video that shows every part of it in under two minutes, and this page walks through the same steps in writing.
 
-[MinimalUI - Promo](https://youtu.be/S72aC8-c0lo)
+[MinimalUI - Walkthrough](https://youtu.be/pnP0TemZbZI)
 
-## One list, one selected row
+## One list
 
-The launcher's whole interface is a single list of apps with one selected row, so that list is the brand. The arrow keys move and page through it, Enter opens the selected app, and typing a letter filters it.
+When you press the home key, you land on a single list of apps. Your favourites come first, marked with a star, then the apps you opened last, and then every app from A to Z. The up and down keys move one row at a time, and left and right turn a whole screen at once, so even a long list of apps is only a few key presses away.
+
+The bottom row of every screen names the keys that work there, like `☰ MENU` on the left and `⏎ OPEN` on the right of the home screen. You never have to remember a shortcut, and tapping a hint does the same as pressing its key if you do want to use the touchscreen.
 
 ![MinimalUI on a keyboard phone: the app list with Camera selected, next to the key map for move, page, open and filter](/content-assets/images/minimalui/social-preview.svg)
 
-## Icon
-
-The icon is three rows of that list: a label, the selected pill with its label cut out, and a shorter label. It holds up under the square, squircle and circle masks that Android launchers apply.
-
-![The MinimalUI icon under square, squircle and circle launcher masks](/content-assets/images/minimalui/icon-masks.svg)
-
 ## Type to filter
 
-Letters narrow the list as you type, and Enter opens the top match.
+On a phone with a real keyboard, the fastest way to find an app is to start typing its name. Each letter narrows the list and selects the first match, so `cam` followed by Enter opens the camera. When you come back from an app, it is still selected and your filter is still there, so opening it again takes a single key press.
 
 ![Typing "ca" narrows the list to Calculator, Calendar and Camera, with Calculator selected](/content-assets/images/minimalui/social-portrait-filter.svg)
 
-## Poster
+## One key away
+
+The menu key opens the menu of the selected app: App info, Uninstall, Add to favourites, Add to collection, Add to group, Rename, Hide and Clear recently used. Make an app a favourite and it rises to the top of the list, marked with a star.
+
+## Groups sort themselves
+
+You don't have to organise anything to get some structure. Every app lands in a group based on the category its developer declared, like Games, Audio, Images, Maps, Productivity or Social, and apps that declared nothing end up in Other. The Groups row sits at the very bottom of the list, so pressing up from the first app reaches it straight away. You can also make groups of your own from the app menu.
+
+## Collections are yours
+
+Where groups sort themselves, collections are entirely up to you. A collection is a named list of apps, kept in the order you choose, like the "Morning" collection in the video with Weather, Calendar, Messages and Music. Once you have a collection, a Collections row shows up on the home screen to open them.
+
+## Call things what you like
+
+Rename any app to whatever makes sense to you. The new name is used everywhere: in the list, when filtering, and in collections and groups. In the video, Notes becomes Journal, and from then on typing `jo` finds it.
+
+## Hide what you don't need
+
+Most phones come with apps you will never open but can't uninstall. Hiding an app takes it off the list, out of your favourites and out of every collection and group. It is not gone though: type its name and it still turns up, in grey, and the Hidden apps setting lists everything you hid so you can bring it back.
+
+## Settings, kept small
+
+MinimalUI hides Android's status bar and shows a small pill in the top right corner instead, with the Wi-Fi, the battery and the time. The settings are kept just as small: choose whether the pill shows the clock and the battery percentage, how many recently used apps appear at the top of the list (off, 3, 5 or 15), and find your hidden apps. Enter or the left and right keys change the selected value.
+
+## Trying it yourself
+
+MinimalUI is still in alpha. It runs on Android 9 or newer, and it is free and open source under GPL-3.0. Releases are published as APK files on the [releases page](https://github.com/Tim-van-Oudheusden/MinimalUI/releases), and after installing you pick MinimalUI as your default home app in Android's settings. No phone is officially supported until someone has tested it on one, so if you try it on yours, the [devices list](https://github.com/Tim-van-Oudheusden/MinimalUI/blob/main/DEVICES.md) explains how to report how it went.
+
+## The artwork
+
+The icon is three rows of that same list: a label, the selected pill with its label cut out, and a shorter label. It holds up under the square, squircle and circle masks that Android launchers apply.
+
+![The MinimalUI icon under square, squircle and circle launcher masks](/content-assets/images/minimalui/icon-masks.svg)
 
 ![MinimalUI poster: "A plain list of apps, driven by keys." above a keyboard phone showing the app list and the key map](/content-assets/images/minimalui/poster.svg)
 
