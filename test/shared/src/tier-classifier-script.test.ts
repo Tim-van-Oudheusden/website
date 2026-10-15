@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -131,6 +131,71 @@ describe(".github/workflows/tier-classifier.yml", () => {
     expect(workflow).toContain("pull_request:");
     expect(workflow).toContain("scripts/tier-classify.sh");
     expect(workflow).not.toMatch(/run:[^\n]*\$\{\{\s*github\.event\.pull_request/);
+  });
+
+  describe("Classify changed files", () => {
+    let workDir: string;
+
+    beforeEach(() => {
+      workDir = mkdtempSync(join(tmpdir(), "tier-classifier-step-"));
+    });
+
+    afterEach(() => {
+      rmSync(workDir, { recursive: true, force: true });
+    });
+
+    function git(...args: string[]): string {
+      const result = spawnSync("git", args, { cwd: workDir, encoding: "utf8" });
+
+      expect(result.status).toBe(0);
+
+      return result.stdout.trim();
+    }
+
+    test("rates a PR that moves a high-risk file out of its path by the old path too", () => {
+      // Parsed from this repo's own workflow, not outside input: a wrong shape fails the assertions below.
+      const workflow = Bun.YAML.parse(readFileSync(workflowPath, "utf8")) as {
+        jobs: { classify: { steps: { name?: string; run?: string }[] } };
+      };
+      const step = workflow.jobs.classify.steps.find((s) => s.name === "Classify changed files");
+
+      expect(step?.run).toBeDefined();
+
+      git("init", "-q");
+      git("config", "user.email", "test@example.com");
+      git("config", "user.name", "Test");
+      git("config", "commit.gpgsign", "false");
+      mkdirSync(join(workDir, ".github/workflows"), { recursive: true });
+      writeFileSync(join(workDir, ".github/workflows/ci.yml"), "name: CI\non: push\njobs: {}\n");
+      git("add", ".");
+      git("commit", "-qm", "base");
+      const baseSha = git("rev-parse", "HEAD");
+
+      mkdirSync(join(workDir, "docs"));
+      git("mv", ".github/workflows/ci.yml", "docs/ci-moved.yml");
+      git("commit", "-qm", "move");
+      const headSha = git("rev-parse", "HEAD");
+
+      // The step calls scripts/tier-classify.sh relative to the checkout; link it
+      // untracked so it stays out of the diff, and point it at the real policy.
+      symlinkSync(resolve(rootPath, "scripts"), join(workDir, "scripts"));
+      const summaryPath = join(workDir, "summary.md");
+
+      const result = spawnSync("bash", ["-c", step?.run ?? ""], {
+        cwd: workDir,
+        encoding: "utf8",
+        env: {
+          PATH: process.env["PATH"] ?? "",
+          BASE_SHA: baseSha,
+          HEAD_SHA: headSha,
+          GITHUB_STEP_SUMMARY: summaryPath,
+          RISK_TIER_POLICY: resolve(rootPath, ".github/policies/risk-tiers.policy"),
+        },
+      });
+
+      expect(`${result.stdout}${result.stderr}`).toContain("::notice title=Risk tier::high");
+      expect(readFileSync(summaryPath, "utf8")).toMatch(/^high\s+\.github\/workflows\/ci\.yml$/m);
+    });
   });
 });
 
