@@ -83,7 +83,7 @@ Tiers and the review each expects are defined in
 [`docs/risk-tiers.md`](../risk-tiers.md).
 
 ```bash
-git diff --name-only origin/main...HEAD | scripts/tier-classify.sh
+git diff --name-only --no-renames origin/main...HEAD | scripts/tier-classify.sh
 ```
 
 ## Adding a metric
