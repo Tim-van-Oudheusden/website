@@ -16,7 +16,7 @@ function today(): string {
 
 /**
  * POST /views/:slug (under API_BASE) — the front-end beacon fired when an
- * article is opened. Only slugs that exist on disk are counted, so the store
+ * article or project is opened. Only slugs that exist on disk are counted, so the store
  * stays bounded by the content.
  */
 export function registerViewBeaconRoute(app: FastifyInstance, contentDir: string, store: ViewStore): void {
