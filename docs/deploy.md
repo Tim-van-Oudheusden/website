@@ -112,11 +112,12 @@ for i in $(seq 1 55); do
 done | sort | uniq -c   # all 200; the same IP 55 times yields 429s after 50
 ```
 
-### Article view counts
+### Content view counts
 
-The back-end counts article opens without cookies or visitor data. The site
-POSTs `/api/views/<slug>` when an article is shown; only slugs that exist in
-the content are counted. Counts are stored per slug and day in SQLite at
+The back-end counts article and project opens without cookies or visitor data.
+The site POSTs `/api/views/<slug>` when an article or project is shown; only
+slugs that exist in the content are counted. `/views` returns only the slug,
+so article and project slugs appear mixed together in the same list. Counts are stored per slug and day in SQLite at
 `VIEWS_DB_PATH` (`/data/views.sqlite` in the pod). `/data` is a `hostPath`
 volume, which `kube play` creates next to the manifest
 (`deploy/kube/website-data/`, git-ignored), so counts survive pod replays and

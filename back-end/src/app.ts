@@ -26,7 +26,7 @@ interface BuildAppOptions {
 }
 
 /**
- * @param viewStore Per-article view counts; defaults to an in-memory store
+ * @param viewStore Per-slug (article and project) view counts; defaults to an in-memory store
  *   (not persisted). The app closes it on shutdown.
  */
 export async function buildApp(

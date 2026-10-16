@@ -1,7 +1,7 @@
 import { API_BASE, ROUTES } from "shared";
 
 /**
- * Fire-and-forget view beacon: tells the back-end an article was opened.
+ * Fire-and-forget view beacon: tells the back-end an article or project was opened.
  * No cookies, no identifiers; a failure never blocks or breaks reading, but
  * it is logged so a systemic failure (back-end down, a route rename) is
  * still observable instead of silently undercounting views.

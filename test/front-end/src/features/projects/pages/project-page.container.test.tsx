@@ -180,6 +180,26 @@ describe("ProjectPage", () => {
     }
   });
 
+  test("fires the view beacon once the project loads, but not on a not-found or error outcome", async () => {
+    stubFetch(jsonResponse(projectItem()));
+    const page = mountProjectPage();
+
+    try {
+      await act(async () => {
+        await settleMicrotasks();
+      });
+
+      const fetchMock = globalThis.fetch as unknown as { mock: { calls: unknown[][] } };
+      const viewBeaconCalls = fetchMock.mock.calls.filter(([, init]) =>
+        (init as RequestInit | undefined)?.method === "POST");
+
+      expect(viewBeaconCalls).toHaveLength(1);
+      expect(String(viewBeaconCalls[0]?.[0])).toContain("/views/sweet-app");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
   test("keeps the header title the only h1 when the markdown body opens with its own `#` title", async () => {
     stubFetch(jsonResponse({ ...projectItem(), body: "# Sweet App\n\n## Approach\n\nHow it works." }));
     const page = mountProjectPage();
