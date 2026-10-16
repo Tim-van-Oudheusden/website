@@ -13,12 +13,14 @@ files get a real review until they are classified.
 Run it locally against your branch:
 
 ```bash
-git diff --name-only --no-renames origin/main...HEAD | scripts/tier-classify.sh
+git diff -z --name-only --no-renames origin/main...HEAD | scripts/tier-classify.sh -z
 ```
 
 `--no-renames` lists a moved or renamed file under its old path as well as its
 new one, so moving a workflow out of `.github/workflows/` still counts as a
-workflow edit.
+workflow edit. `-z` passes paths NUL-terminated and unquoted; without it git
+quotes any name holding non-ASCII, `"`, `\` or a tab, and a quoted name matches
+no rule.
 
 ## Tier: high
 
