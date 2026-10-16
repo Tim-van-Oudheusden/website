@@ -3,6 +3,10 @@
 # prints each path with its risk tier, then the PR's overall tier as
 # `tier=<low|medium|high>`. The highest tier of any changed file wins.
 #
+# With -z, paths are NUL-terminated instead (`git diff -z --name-only`). Without
+# it, git C-quotes any path holding non-ASCII, `"`, `\` or control characters,
+# and a quoted path matches no rule.
+#
 # Per-path tiers come from the policy file .github/policies/risk-tiers.policy
 # (RISK_TIER_POLICY overrides the path): the first rule whose glob matches a
 # path sets its tier, and unrecognised paths are medium. A missing or malformed
@@ -37,8 +41,11 @@ while read -r tier glob extra || [ -n "${tier:-}" ]; do
   rule_globs+=("$glob")
 done < "$policy"
 
+delim=$'\n'
+[ "${1:-}" = "-z" ] && delim=''
+
 max=1
-while IFS= read -r path || [ -n "$path" ]; do
+while IFS= read -r -d "$delim" path || [ -n "$path" ]; do
   [ -n "$path" ] || continue
   r=2
   for i in "${!rule_globs[@]}"; do

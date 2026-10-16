@@ -76,6 +76,62 @@ describe("scripts/tier-classify.sh", () => {
   });
 });
 
+describe("scripts/tier-classify.sh -z", () => {
+  function classifyNul(input: string): { status: number | null; output: string } {
+    const result = spawnSync("bash", [scriptPath, "-z"], {
+      cwd: rootPath,
+      encoding: "utf8",
+      input,
+      env: { PATH: process.env["PATH"] ?? "" },
+    });
+
+    return { status: result.status, output: `${result.stdout}${result.stderr}` };
+  }
+
+  test("classifies NUL-terminated paths by their rule, whatever characters the names hold", () => {
+    const { status, output } = classifyNul(
+      [".github/workflows/déploy.yml", "deploy/tab\there.yml", 'scripts/"q".sh', "content/Café.md", ""].join("\0"),
+    );
+
+    expect(status).toBe(0);
+    expect(output).toMatch(/^high\s+\.github\/workflows\/déploy\.yml$/m);
+    expect(output).toMatch(/^high\s+deploy\/tab\there\.yml$/m);
+    expect(output).toMatch(/^high\s+scripts\/"q"\.sh$/m);
+    expect(output).toMatch(/^low\s+content\/Café\.md$/m);
+    expect(output).toContain("tier=high");
+  });
+
+  test("classifies the last path when the input does not end in NUL", () => {
+    expect(classifyNul("docs/testing.md\0bun.lock").output).toContain("tier=high");
+  });
+
+  test("rates a file git would quote by its rule when fed by git diff -z", () => {
+    const workDir = mkdtempSync(join(tmpdir(), "tier-classify-z-"));
+
+    function run(command: string) {
+      return spawnSync("bash", ["-c", command], { cwd: workDir, encoding: "utf8" });
+    }
+
+    try {
+      expect(run("git init -q && git -c user.email=t@example.com -c user.name=T commit -q --allow-empty -m base").status).toBe(0);
+      mkdirSync(join(workDir, "content"));
+      mkdirSync(join(workDir, "scripts"));
+      writeFileSync(join(workDir, "content/note.md"), "# Note\n");
+      writeFileSync(join(workDir, "scripts/déploy.sh"), "echo deploy\n");
+      expect(run("git add . && git -c user.email=t@example.com -c user.name=T commit -q -m add").status).toBe(0);
+
+      // The command docs/risk-tiers.md gives for classifying a branch locally.
+      const result = run(`git diff -z --name-only --no-renames HEAD~1...HEAD | bash '${scriptPath}' -z`);
+
+      expect(result.stdout).toMatch(/^low\s+content\/note\.md$/m);
+      expect(result.stdout).toMatch(/^high\s+scripts\/déploy\.sh$/m);
+      expect(result.stdout).toContain("tier=high");
+    } finally {
+      rmSync(workDir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("scripts/tier-classify.sh with a custom policy", () => {
   let workDir: string;
   let policyPath: string;
@@ -206,5 +262,9 @@ describe("docs/risk-tiers.md", () => {
     for (const tier of ["low", "medium", "high"]) {
       expect(doc).toMatch(new RegExp(`^#+ .*\\b${tier}\\b`, "im"));
     }
+  });
+
+  test("gives a local command that passes paths NUL-terminated", () => {
+    expect(readFileSync(docPath, "utf8")).toContain("git diff -z --name-only --no-renames origin/main...HEAD | scripts/tier-classify.sh -z");
   });
 });
