@@ -445,4 +445,57 @@ describe("real content directory sanity check", () => {
 
     expect(standaloneVideoLinks).toEqual([{ title: "MinimalUI - Walkthrough", href: "https://youtu.be/pnP0TemZbZI" }]);
   });
+
+  test("lists the real projects in homepage order, with Dailies after the featured launcher", async () => {
+    const projects = (await listContent(REAL_CONTENT_DIR, { type: "project" })) as ProjectFrontmatter[];
+    const byOrder = [...projects].sort((left, right) => left.projectOrder - right.projectOrder);
+
+    expect(byOrder.map((project) => [project.slug, project.featured])).toEqual([
+      ["minimal-android-launcher", true],
+      ["dailies", false],
+      ["obsidian-content-pipeline", false],
+    ]);
+  });
+
+  test("Dailies links to its source repository", async () => {
+    const project = (await getContentBySlug("dailies", REAL_CONTENT_DIR)) as ProjectFrontmatter | null;
+
+    expect(project?.links).toEqual([
+      { type: "repo", label: "Source repository", href: "https://github.com/Tim-van-Oudheusden/Dailies" },
+    ]);
+  });
+
+  test("Dailies shows its icon and screenshots from files in the repository", async () => {
+    const project = (await getContentBySlug("dailies", REAL_CONTENT_DIR)) as ProjectFrontmatter & { body: string };
+    const bodyImages = [...project.body.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)].map((match) => match[1]);
+
+    expect(bodyImages).toEqual([
+      "/content-assets/images/dailies/icon.svg",
+      "/content-assets/images/dailies/favorites.png",
+      "/content-assets/images/dailies/popular.png",
+      "/content-assets/images/dailies/dark-style.png",
+      "/content-assets/images/dailies/built-in-browser.png",
+    ]);
+
+    const referenced = [project.coverImage, project.socialImage, ...bodyImages];
+    const missing = referenced.filter(
+      (imagePath) => imagePath === null || imagePath === undefined || !existsSync(repositoryFileFor(imagePath)),
+    );
+
+    expect(missing).toEqual([]);
+  });
+
+  test("Dailies embeds its introduction video", async () => {
+    const project = (await getContentBySlug("dailies", REAL_CONTENT_DIR)) as ProjectFrontmatter & { body: string };
+    // The renderer only embeds a YouTube link that stands alone in its paragraph.
+    const standaloneVideoLinks = project.body
+      .split(/\n\s*\n/)
+      .map((paragraph) => /^\[([^\]]+)\]\((https:\/\/(?:youtu\.be|www\.youtube\.com)\/[^)\s]+)\)$/.exec(paragraph.trim()))
+      .filter((match) => match !== null)
+      .map(([, title, href]) => ({ title, href }));
+
+    expect(standaloneVideoLinks).toEqual([
+      { title: "Dailies - Introduction", href: "https://www.youtube.com/watch?v=LrEyWpnOZiE" },
+    ]);
+  });
 });

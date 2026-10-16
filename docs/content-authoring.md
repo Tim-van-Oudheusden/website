@@ -124,16 +124,16 @@ category: Introduction
 
 ```yaml
 ---
-title: Pi Sandbox Automation
-date: 2026-06-10
+title: Dailies
+date: 2026-10-16
 type: project
-coverImage: /images/projects/pi-sandbox-automation.svg
-coverImageAlt: Small computer board with container blocks.
-status: Shipped
+coverImage: /images/projects/dailies.webp
+coverImageAlt: The Dailies icon above the name Dailies and its tagline.
+status: In Progress
 links:
   - type: repo
-    label: Repository scripts
-    href: https://github.com/Tim-van-Oudheusden/website
+    label: Source repository
+    href: https://github.com/Tim-van-Oudheusden/Dailies
 ---
 ```
 

@@ -1,7 +1,8 @@
 import { expect, test } from "./fixtures";
 
 // Expectations come from the project entries in content/: "Minimal Android
-// Launcher" is the only `featured: true` project, the other two fill the gallery.
+// Launcher" is the only `featured: true` project, the other two fill the gallery
+// in `projectOrder`.
 test.describe("Projects page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/projects", { waitUntil: "domcontentloaded" });
@@ -12,8 +13,8 @@ test.describe("Projects page", () => {
 
     const cards = [
       { region: "Featured project", title: "Minimal Android Launcher", href: "/projects/minimal-android-launcher" },
+      { region: "More projects", title: "Dailies", href: "/projects/dailies" },
       { region: "More projects", title: "Obsidian Content Pipeline", href: "/projects/obsidian-content-pipeline" },
-      { region: "More projects", title: "Pi Sandbox Automation", href: "/projects/pi-sandbox-automation" },
     ];
 
     for (const { region, title, href } of cards) {

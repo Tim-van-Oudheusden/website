@@ -23,11 +23,16 @@ test.describe("Home placeholder sections implemented", () => {
 
     scrollToSection(page, "for-devs");
     await expect(section.getByRole("heading", { level: 2, name: "Open-source projects" })).toBeVisible();
-    await expect(section.getByRole("heading", { level: 3 }).first()).toHaveText("Minimal Android Launcher");
 
-    const github = section.getByRole("link", { name: "Learn more: Pi Sandbox Automation (opens in a new tab)" });
+    await expect(section.getByRole("heading", { level: 3 })).toHaveText([
+      "Minimal Android Launcher",
+      "Dailies",
+      "Obsidian Content Pipeline",
+    ]);
 
-    await expect(github).toHaveAttribute("href", "https://github.com/Tim-van-Oudheusden/website");
+    const github = section.getByRole("link", { name: "Learn more: Dailies (opens in a new tab)" });
+
+    await expect(github).toHaveAttribute("href", "https://github.com/Tim-van-Oudheusden/Dailies");
     await expect(github).toHaveAttribute("target", "_blank");
 
     await expect(section.getByRole("link", { name: "Learn more: Obsidian Content Pipeline" })).toHaveAttribute(
