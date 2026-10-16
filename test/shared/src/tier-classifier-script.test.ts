@@ -77,8 +77,8 @@ describe("scripts/tier-classify.sh", () => {
 });
 
 describe("scripts/tier-classify.sh -z", () => {
-  function classifyNul(input: string): { status: number | null; output: string } {
-    const result = spawnSync("bash", [scriptPath, "-z"], {
+  function classifyNul(input: string, args: string[] = ["-z"]): { status: number | null; output: string } {
+    const result = spawnSync("bash", [scriptPath, ...args], {
       cwd: rootPath,
       encoding: "utf8",
       input,
@@ -90,15 +90,33 @@ describe("scripts/tier-classify.sh -z", () => {
 
   test("classifies NUL-terminated paths by their rule, whatever characters the names hold", () => {
     const { status, output } = classifyNul(
-      [".github/workflows/déploy.yml", "deploy/tab\there.yml", 'scripts/"q".sh', "content/Café.md", ""].join("\0"),
+      [".github/workflows/déploy.yml", "deploy/tab\there.yml", 'scripts/"q".sh', "deploy/back\\slash.yml", "content/Café.md", ""].join(
+        "\0",
+      ),
     );
 
     expect(status).toBe(0);
     expect(output).toMatch(/^high\s+\.github\/workflows\/déploy\.yml$/m);
-    expect(output).toMatch(/^high\s+deploy\/tab\there\.yml$/m);
+    // A name holding a control character is printed %q-quoted.
+    expect(output).toMatch(/^high\s+\$'deploy\/tab\\there\.yml'$/m);
     expect(output).toMatch(/^high\s+scripts\/"q"\.sh$/m);
+    expect(output).toMatch(/^high\s+deploy\/back\\slash\.yml$/m);
     expect(output).toMatch(/^low\s+content\/Café\.md$/m);
     expect(output).toContain("tier=high");
+  });
+
+  test("a newline in a file name cannot forge the tier line", () => {
+    const { output } = classifyNul("deploy/x\ntier=low\0");
+
+    expect(output.match(/^tier=.*$/gm)).toEqual(["tier=high"]);
+  });
+
+  test("rejects an unknown argument without printing a tier", () => {
+    const { status, output } = classifyNul("docs/testing.md\0", ["--z"]);
+
+    expect(status).toBe(2);
+    expect(output).toContain("usage: tier-classify.sh [-z]");
+    expect(output).not.toContain("tier=");
   });
 
   test("classifies the last path when the input does not end in NUL", () => {
@@ -208,7 +226,15 @@ describe(".github/workflows/tier-classifier.yml", () => {
       return result.stdout.trim();
     }
 
-    test("rates a PR that moves a high-risk file out of its path by the old path too", () => {
+    function initRepo(): void {
+      git("init", "-q");
+      git("config", "user.email", "test@example.com");
+      git("config", "user.name", "Test");
+      git("config", "commit.gpgsign", "false");
+    }
+
+    // Runs the workflow step in workDir and returns its notice output and job summary.
+    function runStep(baseSha: string, headSha: string): { output: string; summary: string } {
       // Parsed from this repo's own workflow, not outside input: a wrong shape fails the assertions below.
       const workflow = Bun.YAML.parse(readFileSync(workflowPath, "utf8")) as {
         jobs: { classify: { steps: { name?: string; run?: string }[] } };
@@ -216,21 +242,6 @@ describe(".github/workflows/tier-classifier.yml", () => {
       const step = workflow.jobs.classify.steps.find((s) => s.name === "Classify changed files");
 
       expect(step?.run).toBeDefined();
-
-      git("init", "-q");
-      git("config", "user.email", "test@example.com");
-      git("config", "user.name", "Test");
-      git("config", "commit.gpgsign", "false");
-      mkdirSync(join(workDir, ".github/workflows"), { recursive: true });
-      writeFileSync(join(workDir, ".github/workflows/ci.yml"), "name: CI\non: push\njobs: {}\n");
-      git("add", ".");
-      git("commit", "-qm", "base");
-      const baseSha = git("rev-parse", "HEAD");
-
-      mkdirSync(join(workDir, "docs"));
-      git("mv", ".github/workflows/ci.yml", "docs/ci-moved.yml");
-      git("commit", "-qm", "move");
-      const headSha = git("rev-parse", "HEAD");
 
       // The step calls scripts/tier-classify.sh relative to the checkout; link it
       // untracked so it stays out of the diff, and point it at the real policy.
@@ -249,8 +260,44 @@ describe(".github/workflows/tier-classifier.yml", () => {
         },
       });
 
-      expect(`${result.stdout}${result.stderr}`).toContain("::notice title=Risk tier::high");
-      expect(readFileSync(summaryPath, "utf8")).toMatch(/^high\s+\.github\/workflows\/ci\.yml$/m);
+      return { output: `${result.stdout}${result.stderr}`, summary: readFileSync(summaryPath, "utf8") };
+    }
+
+    test("rates a PR that moves a high-risk file out of its path by the old path too", () => {
+      initRepo();
+      mkdirSync(join(workDir, ".github/workflows"), { recursive: true });
+      writeFileSync(join(workDir, ".github/workflows/ci.yml"), "name: CI\non: push\njobs: {}\n");
+      git("add", ".");
+      git("commit", "-qm", "base");
+      const baseSha = git("rev-parse", "HEAD");
+
+      mkdirSync(join(workDir, "docs"));
+      git("mv", ".github/workflows/ci.yml", "docs/ci-moved.yml");
+      git("commit", "-qm", "move");
+      const headSha = git("rev-parse", "HEAD");
+
+      const { output, summary } = runStep(baseSha, headSha);
+
+      expect(output).toContain("::notice title=Risk tier::high");
+      expect(summary).toMatch(/^high\s+\.github\/workflows\/ci\.yml$/m);
+    });
+
+    test("rates a high-risk file by its rule even when git would quote its name", () => {
+      initRepo();
+      git("commit", "-q", "--allow-empty", "-m", "base");
+      const baseSha = git("rev-parse", "HEAD");
+
+      // Non-ASCII is C-quoted by plain `git diff --name-only`.
+      mkdirSync(join(workDir, ".github/workflows"), { recursive: true });
+      writeFileSync(join(workDir, ".github/workflows/déploy.yml"), "name: CI\non: push\njobs: {}\n");
+      git("add", ".");
+      git("commit", "-qm", "add workflow");
+      const headSha = git("rev-parse", "HEAD");
+
+      const { output, summary } = runStep(baseSha, headSha);
+
+      expect(output).toContain("::notice title=Risk tier::high");
+      expect(summary).toMatch(/^high\s+\.github\/workflows\/déploy\.yml$/m);
     });
   });
 });

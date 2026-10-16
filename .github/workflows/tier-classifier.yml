@@ -28,7 +28,8 @@ jobs:
         run: |
           set -euo pipefail
           # --no-renames: a file moved out of a high-risk path is listed under its old path too.
-          git diff --name-only --no-renames "${BASE_SHA}...${HEAD_SHA}" | scripts/tier-classify.sh > tier.txt
+          # -z: unquoted, NUL-terminated paths, so a non-ASCII or quoted file name still matches its rule.
+          git diff -z --name-only --no-renames "${BASE_SHA}...${HEAD_SHA}" | scripts/tier-classify.sh -z > tier.txt
           tier="$(sed -n 's/^tier=//p' tier.txt)"
           echo "::notice title=Risk tier::${tier} (see docs/risk-tiers.md)"
           {
