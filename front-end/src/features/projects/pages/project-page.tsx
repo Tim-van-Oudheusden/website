@@ -11,6 +11,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { ApiError } from "@/shared/lib/api";
 import { httpContentLoader } from "@/shared/lib/content-loader";
+import { recordView } from "@/shared/lib/record-view";
 
 export type ProjectData = ProjectFrontmatter & { body: string };
 
@@ -138,6 +139,14 @@ export function ProjectPage(): JSX.Element {
       cancelled = true;
     };
   }, [slug]);
+
+  const viewedSlug = project?.slug ?? null;
+
+  useEffect(() => {
+    if (viewedSlug !== null) {
+      recordView(viewedSlug);
+    }
+  }, [viewedSlug]);
 
   if (loading) {
     return (
