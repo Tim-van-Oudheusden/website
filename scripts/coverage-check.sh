@@ -10,6 +10,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=lib/coverage-metrics.sh
+source "$ROOT/scripts/lib/coverage-metrics.sh"
 
 workspace="${1:?usage: coverage-check.sh <workspace> <min-funcs-pct> <min-lines-pct>}"
 min_funcs="${2:?min funcs % required}"
@@ -28,13 +30,7 @@ if [ "$test_status" -ne 0 ]; then
   exit "$test_status"
 fi
 
-metrics="$(printf '%s\n' "$report" | awk -F'|' '
-  /^All files[[:space:]]*\|/ {
-    gsub(/[[:space:]]/, "", $2)
-    gsub(/[[:space:]]/, "", $3)
-    print $2, $3
-    exit
-  }')"
+metrics="$(printf '%s\n' "$report" | coverage_metrics)"
 
 if [ -z "$metrics" ]; then
   echo "Coverage summary row not found in bun test output" >&2

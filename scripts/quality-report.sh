@@ -13,6 +13,8 @@
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=lib/coverage-metrics.sh
+source "$ROOT/scripts/lib/coverage-metrics.sh"
 cd "$ROOT"
 
 commit="${GITHUB_SHA:-$(git rev-parse HEAD 2>/dev/null || echo unknown)}"
@@ -46,13 +48,7 @@ for workspace in back-end shared front-end; do
   report="$(cd "$ROOT/$workspace" && bun test "../test/$workspace" --coverage 2>&1)" || test_status=$?
   printf '%s\n' "$report" >&2
 
-  metrics="$(printf '%s\n' "$report" | awk -F'|' '
-    /^All files[[:space:]]*\|/ {
-      gsub(/[[:space:]]/, "", $2)
-      gsub(/[[:space:]]/, "", $3)
-      print $2, $3
-      exit
-    }')"
+  metrics="$(printf '%s\n' "$report" | coverage_metrics)"
 
   # A failing test run makes its coverage numbers meaningless, so report n/a.
   if [ "$test_status" -ne 0 ] || [ -z "$metrics" ]; then
