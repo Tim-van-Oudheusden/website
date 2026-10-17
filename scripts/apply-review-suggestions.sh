@@ -28,8 +28,12 @@ rows="$(cd "$bun_cwd" && bun -e '
   const field = (value) => String(value ?? "").replace(/[\\\t\n\r]/g, (c) => escapes[c]);
   const comments = await Bun.file(process.env.COMMENTS_FILE).json();
 
+  // A suggestion ends at a line holding a fence at least as long as the one
+  // that opened it, so ````suggestion can carry a ``` code block (CommonMark).
+  const fenced = /(`{3,})suggestion[ \t]*\n([\s\S]*?)^\1`*[ \t]*$/m;
+
   const suggestions = comments.flatMap((c) => {
-    const match = /```suggestion\n([\s\S]*?)```/.exec(c.body.replaceAll("\r", ""));
+    const match = fenced.exec(c.body.replaceAll("\r", ""));
     if (!match) return [];
     const skip = !trusted.includes(c.author_association)
       ? `author ${c.author_association ?? null} has no write access`
@@ -39,7 +43,7 @@ rows="$(cd "$bun_cwd" && bun -e '
       path: c.path,
       end: c.line ?? 0,
       start: c.start_line ?? c.line ?? 0,
-      action: skip ? ["skip", skip] : ["apply", Buffer.from(match[1]).toString("base64")],
+      action: skip ? ["skip", skip] : ["apply", Buffer.from(match[2]).toString("base64")],
     }];
   });
 
