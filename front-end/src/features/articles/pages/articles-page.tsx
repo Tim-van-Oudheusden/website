@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
-import { recordView } from "@/shared/lib/record-view";
+import { useRecordView } from "@/shared/hooks/use-record-view";
 
 import { ArticleContent } from "../components/article-content";
 import { ArticlesSidebar } from "../components/articles-sidebar";
@@ -27,13 +27,7 @@ export function ArticlesPage(): JSX.Element {
   } = useArticles(slug);
   const toc = useArticleToc(selectedArticle, loadingArticle);
 
-  const viewedSlug = selectedArticle?.slug ?? null;
-
-  useEffect(() => {
-    if (viewedSlug !== null) {
-      recordView(viewedSlug);
-    }
-  }, [viewedSlug]);
+  useRecordView(selectedArticle?.slug ?? null);
 
   useEffect(() => {
     if (selectedArticle === null) {

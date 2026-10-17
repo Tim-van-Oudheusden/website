@@ -9,9 +9,9 @@ import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
+import { useRecordView } from "@/shared/hooks/use-record-view";
 import { ApiError } from "@/shared/lib/api";
 import { httpContentLoader } from "@/shared/lib/content-loader";
-import { recordView } from "@/shared/lib/record-view";
 
 export type ProjectData = ProjectFrontmatter & { body: string };
 
@@ -140,13 +140,7 @@ export function ProjectPage(): JSX.Element {
     };
   }, [slug]);
 
-  const viewedSlug = project?.slug ?? null;
-
-  useEffect(() => {
-    if (viewedSlug !== null) {
-      recordView(viewedSlug);
-    }
-  }, [viewedSlug]);
+  useRecordView(project?.slug ?? null);
 
   if (loading) {
     return (
