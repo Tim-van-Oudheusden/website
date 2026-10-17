@@ -165,4 +165,17 @@ describe("scripts/apply-review-suggestions.sh", () => {
     expect(readFileSync(join(checkoutDir, "a.ts"), "utf8")).toBe("one-two\n3\nsix\nseven\n");
     expect(output).toContain("skipped: comment 4");
   });
+
+  test("keeps a fenced code block inside a suggestion opened with a longer fence", () => {
+    writeFileSync(join(checkoutDir, "README.md"), "# Doc\n\nRun the build.\n\nEnd.\n");
+    const replacement = "Run the build:\n\n```sh\nbun run build\n```\n";
+
+    const { status, output } = runApply([
+      comment({ path: "README.md", line: 3, body: `Show the command:\n\`\`\`\`suggestion\n${replacement}\`\`\`\`\n` }),
+    ]);
+
+    expect(status).toBe(0);
+    expect(readFileSync(join(checkoutDir, "README.md"), "utf8")).toBe(`# Doc\n\n${replacement}\nEnd.\n`);
+    expect(output).toContain("applied: README.md:3-3 (comment 1)");
+  });
 });
