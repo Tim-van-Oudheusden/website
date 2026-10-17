@@ -94,6 +94,7 @@ describe("useRecordView", () => {
       expect(beaconPaths()).toHaveLength(1);
 
       probe.rerender("second");
+
       expect(beaconPaths()).toEqual([
         expect.stringContaining("/views/first"),
         expect.stringContaining("/views/second"),
