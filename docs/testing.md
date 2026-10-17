@@ -40,7 +40,8 @@ change:
   release upstream are listed in `AUDIT_IGNORE` in the script, each with the
   reason it can't be fixed; remove an entry once a fix ships.
 - **Draft leak guard** — fails if any file in `content/` has `draft: true`
-  front matter, the same rule the `release` job in `ci.yml` enforces.
+  front matter, with or without a trailing `# comment`, the same rule the
+  `release` job in `ci.yml` enforces.
 
 `scripts/nightly-compliance.sh` writes the report, published as the run's job
 summary and as the `nightly-compliance` artifact. Every check runs even if an

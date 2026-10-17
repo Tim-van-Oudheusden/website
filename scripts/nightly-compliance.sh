@@ -45,7 +45,9 @@ AUDIT_IGNORE=(GHSA-vfj7-8cjw-p6xm)
 bun audit --audit-level=high "${AUDIT_IGNORE[@]/#/--ignore=}" >&2
 row "Dependency audit (high+)" $?
 
-if grep -RIl '^draft:[[:space:]]*true[[:space:]]*$' "$content_dir" >&2; then
+# Like the front-matter parser, allow a ` # comment` after the value: `draft: true # wip`
+# is still a draft. `true#wip` (no space before #) is a string there, so not one here.
+if grep -RIlE '^draft:[[:space:]]*true([[:space:]]+(#.*)?)?$' "$content_dir" >&2; then
   row "Draft leak guard" 1
 else
   row "Draft leak guard" 0
