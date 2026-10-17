@@ -38,6 +38,43 @@ captioned with the link; the link text becomes the player's accessible title:
 `watch?v=`, `youtu.be/`, `/shorts/`, `/embed/` and `/live/` links work, and a `t=`/`start=`
 start time carries over. A YouTube link inside a sentence stays a plain link.
 
+### Markdown body
+
+The body is CommonMark plus GitHub Flavored Markdown: tables, `~~strikethrough~~`
+and `- [ ]` task lists work.
+
+**Headings.** On article and project pages the title from frontmatter is the
+page heading, so a body `#` renders one level lower, as a section heading under
+it; `##` and `###` shift the same way. Standalone pages (`content/pages/`)
+render headings as written, so start their bodies at `##`.
+
+Articles get a table of contents built from the body's `#`, `##` and `###`
+headings; `####` and deeper are left out. An article with none of those
+headings has no table of contents. Project and standalone pages have none.
+
+Each of those headings gets an anchor for in-page links: the heading text in
+lowercase, with quotes dropped and every other run of non-letters and
+non-digits turned into one `-`. A repeated heading gets `-1`, `-2` and so on.
+`## What's new in 2026?` is `#whats-new-in-2026`.
+
+**Callouts.** Obsidian callout syntax renders as a callout box:
+
+```md
+> [!tip] Before you start
+> Back up the drive first.
+```
+
+Any type made of letters, digits, `-` and `_` works, and every type looks the
+same. Without a title the type becomes the title: `> [!my-tip]` is headed
+"My Tip". Obsidian's fold markers are not supported: `> [!note]-` and
+`> [!note]+` render as a plain quote that shows the `[!note]-` text.
+
+**Code.** Fenced code blocks are syntax-highlighted when the opening fence
+names a language, such as ` ```ts ` or ` ```bash `.
+
+**HTML.** Raw HTML is not rendered. A `<br>`, `<span>` or `<div>` in the body
+shows up on the page as literal text, so use Markdown instead.
+
 ### Frontmatter reference
 
 Every `content/*.md` file starts with a YAML frontmatter block. The back-end
