@@ -67,6 +67,13 @@ describe("AppRoutes", () => {
     expect(renderRoute("/now")).toContain("Loading page...");
     expect(renderRoute("/uses")).toContain("Loading page...");
   });
+
+  test("renders a not-found page linking back into the site for a path no route matches", () => {
+    const html = renderRoute("/blog/foo");
+
+    expect(html).toMatch(/<h1[^>]*>Page not found<\/h1>/);
+    expect([...html.matchAll(/<a [^>]*href="([^"]*)"/g)].map((match) => match[1])).toEqual(["/", "/articles", "/projects"]);
+  });
 });
 
 describe("AppRoutes main landmark", () => {
@@ -79,6 +86,7 @@ describe("AppRoutes main landmark", () => {
     "/tags/docker",
     "/now",
     "/uses",
+    "/blog/foo",
   ])("%s renders one <main> that the skip link can target", (pathname) => {
     const mains = renderRoute(pathname).match(/<main[^>]*>/g) ?? [];
 

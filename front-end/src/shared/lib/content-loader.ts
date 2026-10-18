@@ -19,9 +19,9 @@ export type ContentItem = ArticleData | (ProjectFrontmatter & { body: string });
  * Production loader: every read is an HTTP GET against the content API.
  *
  * Transport and HTTP errors reject so callers can surface them. `getArticle`
- * and `getProject` reject with `ApiError(404)` when the slug is absent, and
- * `getProject` also rejects when the slug resolves to an article so article
- * content can never render as a project page.
+ * and `getProject` reject with `ApiError(404)` when the slug is absent or
+ * resolves to the other content type, so a project can never render as an
+ * article page or the other way round.
  */
 export const httpContentLoader: ContentLoader = {
   async listArticles(): Promise<ArticleSummary[]> {
@@ -32,8 +32,13 @@ export const httpContentLoader: ContentLoader = {
 
   async getArticle(slug: string): Promise<ArticleData> {
     const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", slug);
+    const data = await apiGet<ContentItem>(path);
 
-    return apiGet<ArticleData>(path);
+    if (data.type !== "article") {
+      throw new ApiError(`Article not found: ${slug}`, 404);
+    }
+
+    return data;
   },
 
   async listProjects(): Promise<ProjectFrontmatter[]> {

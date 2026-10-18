@@ -160,6 +160,28 @@ describe("ArticlesPage states", () => {
       unmountFakeDomRoot(page);
     }
   });
+
+  test("renders the not-found page, not the API error, for a slug that names no article", async () => {
+    routeFetch({
+      [LIST_URL]: respond([summary("introduction", "Introduction")]),
+      "/api/content/no-such-article": () => Promise.resolve(new Response("", { status: 404, statusText: "Not Found" })),
+      "/api/content/a-project": respond({ ...LINUX_SETUP, type: "project", slug: "a-project" }),
+    });
+
+    for (const path of ["/articles/no-such-article", "/articles/a-project"]) {
+      const page = mountArticlesPage(path);
+
+      try {
+        await settle();
+
+        expect(page.container.textContent).toContain("Page not found");
+        expect(page.container.textContent).not.toContain("Request failed");
+        expect(page.container.textContent).not.toContain("Partition the disk.");
+      } finally {
+        unmountFakeDomRoot(page);
+      }
+    }
+  });
 });
 
 describe("ArticlesPage layout", () => {

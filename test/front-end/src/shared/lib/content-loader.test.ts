@@ -106,7 +106,7 @@ describe("httpContentLoader", () => {
   });
 
   test("getArticle requests the content-by-slug route with the slug substituted", async () => {
-    const fetchMock = stubFetch(jsonResponse({ slug: "introduction", title: "Intro", body: "# Heading" }));
+    const fetchMock = stubFetch(jsonResponse({ slug: "introduction", title: "Intro", type: "article", body: "# Heading" }));
 
     const article = await httpContentLoader.getArticle("introduction");
 
@@ -116,6 +116,18 @@ describe("httpContentLoader", () => {
 
     expect(article.slug).toBe("introduction");
     expect(article.body).toBe("# Heading");
+  });
+
+  test("getArticle rejects with ApiError(404) for a slug that resolves to a project", async () => {
+    stubFetch(jsonResponse({ slug: "minimal-launcher", title: "Launcher", type: "project", body: "# Heading" }));
+
+    try {
+      await httpContentLoader.getArticle("minimal-launcher");
+      expect.unreachable("expected a 404 ApiError for a project slug");
+    } catch (err) {
+      expect(err).toBeInstanceOf(ApiError);
+      expect((err as ApiError).status).toBe(404);
+    }
   });
 
   test("listProjects requests the project list", async () => {

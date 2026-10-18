@@ -97,6 +97,18 @@ on the host:
 curl -s http://127.0.0.1:8300/articles/introduction | grep 'og:'
 ```
 
+A URL that names no page gets the app shell with status `404` and
+`<meta name="robots" content="noindex" />`, so search engines drop it instead
+of indexing a "not found" page. That covers a path no client route matches
+(`/blog/foo`) and an article or project slug the back-end answers with a `404`
+(removed content, or a slug from the other section). If the back-end is down or
+rate-limits the lookup, the page is still served as a `200`, so an outage never
+de-indexes real pages. Check on the host:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8300/articles/no-such-article   # 404
+```
+
 The template plays the pod with `--network pasta:--host-lo-to-ns-lo`. With
 that option, connections to the loopback-published ports arrive on the pod's
 own loopback. The back-end therefore sees cloudflared as `127.0.0.1`, which is

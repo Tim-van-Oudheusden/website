@@ -2,10 +2,10 @@ import { stat } from "node:fs/promises";
 import { join } from "node:path";
 
 import type { ContentFrontmatter, HealthCheckResponse } from "shared";
-import { API_BASE, APP_NAME, CF_CONNECTING_IP_HEADER, ROUTES } from "shared";
+import { API_BASE, APP_NAME, CF_CONNECTING_IP_HEADER, ROUTES, STANDALONE_PAGE_SLUGS } from "shared";
 
 import { renderFeed, renderLlmsTxt, renderRobotsTxt, renderSitemap } from "./seo";
-import { CONTENT_PAGE_PREFIX, renderHomeMeta, renderSocialMeta } from "./social-meta";
+import { CONTENT_PAGE_PREFIX, renderHomeMeta, renderNotFoundMeta, renderSocialMeta } from "./social-meta";
 
 export interface RequestHandlerOptions {
   /** Directory holding the Vite build output (index.html + assets). */
@@ -17,7 +17,20 @@ export interface RequestHandlerOptions {
   fetchBackend: (path: string, headers: Record<string, string>) => Promise<Response>;
 }
 
-const CONTENT_PATH = /^(\/(?:articles|projects)\/)([^/]+)\/?$/;
+/** The back-end's answer for a slug; `unavailable` when it could not say (down, rate-limited, …). */
+type ContentLookup
+  = | { status: "found"; item: ContentFrontmatter }
+    | { status: "missing" }
+    | { status: "unavailable" };
+
+/** Article and project pages. Like React Router, it ignores case and a trailing slash. */
+const CONTENT_PATH = /^(\/(?:articles|projects)\/)([^/]+)\/?$/i;
+
+/**
+ * Every other route in App.tsx's AppRoutes, matched the same way. Any path
+ * outside these and CONTENT_PATH renders the client's not-found page.
+ */
+const APP_ROUTE = new RegExp(`^/(?:articles|projects|tags/[^/]+|${STANDALONE_PAGE_SLUGS.join("|")})?/?$`, "i");
 
 /**
  * The same baseline @fastify/helmet gives the back-end (security-headers.ts):
@@ -109,20 +122,29 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     }
 
     const indexHtml = await indexFile.text();
-    const [, pagePrefix, slug] = CONTENT_PATH.exec(url.pathname) ?? [];
-    const item = slug === undefined ? null : await fetchContentItem(options.fetchBackend, slug, backendHeaders);
-
     const origin = requestOrigin(request, url);
+    const [, pagePrefix, slug] = CONTENT_PATH.exec(url.pathname) ?? [];
     let html = indexHtml;
+    let status = 200;
 
-    // A slug under the other section (/articles/<project slug>) is not a real page there.
-    if (item !== null && CONTENT_PAGE_PREFIX[item.type] === pagePrefix) {
-      html = renderSocialMeta(indexHtml, item, origin);
+    if (pagePrefix !== undefined && slug !== undefined) {
+      const lookup = await fetchContentItem(options.fetchBackend, slug, backendHeaders);
+
+      // A slug under the other section (/articles/<project slug>) is not a real page there.
+      // When the back-end cannot say, serve a plain 200: an outage must not de-index real pages.
+      if (lookup.status === "found" && CONTENT_PAGE_PREFIX[lookup.item.type] === pagePrefix.toLowerCase()) {
+        html = renderSocialMeta(indexHtml, lookup.item, origin);
+      } else if (lookup.status !== "unavailable") {
+        status = 404;
+      }
     } else if (url.pathname === "/") {
       html = renderHomeMeta(indexHtml, origin);
+    } else if (!APP_ROUTE.test(url.pathname)) {
+      status = 404;
     }
 
-    return new Response(html, {
+    return new Response(status === 404 ? renderNotFoundMeta(html) : html, {
+      status,
       headers: { ...SECURITY_HEADERS, "content-type": "text/html; charset=utf-8" },
     });
   };
@@ -181,24 +203,28 @@ async function fetchContentList(
 }
 
 /**
- * Look up an article or project for its preview tags. Any miss (unknown slug,
- * back-end down) yields null: the page must load regardless, so the caller
- * falls back to the plain app shell.
+ * Look up an article or project for its preview tags and status code. Only a
+ * back-end 404 means the slug is unknown; any other failure (back-end down,
+ * rate-limited) is `unavailable`, and the page must load regardless.
  */
 async function fetchContentItem(
   fetchBackend: RequestHandlerOptions["fetchBackend"],
   slug: string,
   headers: Record<string, string>,
-): Promise<ContentFrontmatter | null> {
+): Promise<ContentLookup> {
   try {
     const response = await fetchBackend(`${API_BASE}/content/${slug}`, headers);
 
-    if (!response.ok) {
-      return null;
+    if (response.status === 404) {
+      return { status: "missing" };
     }
 
-    return await response.json() as ContentFrontmatter;
+    if (!response.ok) {
+      return { status: "unavailable" };
+    }
+
+    return { status: "found", item: await response.json() as ContentFrontmatter };
   } catch {
-    return null;
+    return { status: "unavailable" };
   }
 }

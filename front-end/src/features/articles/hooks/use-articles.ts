@@ -3,12 +3,26 @@ import { useCallback, useMemo, useState } from "react";
 import type { ArticleData, ArticleSummary } from "shared/articles";
 
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
+import { ApiError } from "@/shared/lib/api";
 import { httpContentLoader } from "@/shared/lib/content-loader";
 
 import { getDefaultArticleSlug } from "../lib/articles-sidebar";
 
 function loadArticles(): Promise<ArticleSummary[]> {
   return httpContentLoader.listArticles();
+}
+
+/** The article, or null when the API has no article under `slug`. */
+async function loadArticleOrNull(slug: string): Promise<ArticleData | null> {
+  try {
+    return await httpContentLoader.getArticle(slug);
+  } catch (err: unknown) {
+    if (err instanceof ApiError && err.status === 404) {
+      return null;
+    }
+
+    throw err;
+  }
 }
 
 const NO_ARTICLES: ArticleSummary[] = [];
@@ -21,6 +35,8 @@ export interface UseArticlesResult {
   loadingArticle: boolean;
   listError: string | null;
   articleError: string | null;
+  /** The selected slug names no article: show the not-found page, not an error. */
+  articleNotFound: boolean;
   selectSlug: (slug: string) => void;
 }
 
@@ -50,7 +66,7 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
   const selectedSlug = pickedSlug ?? (list.data === null ? null : getDefaultArticleSlug(list.data));
 
   const loadSelectedArticle = useMemo(
-    () => (selectedSlug === null ? null : () => httpContentLoader.getArticle(selectedSlug)),
+    () => (selectedSlug === null ? null : () => loadArticleOrNull(selectedSlug)),
     [selectedSlug],
   );
   const article = useLoadOnMount(loadSelectedArticle, "Failed to load article");
@@ -67,6 +83,7 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
     loadingArticle: article.status === "loading",
     listError: list.error,
     articleError: article.error,
+    articleNotFound: article.status === "success" && article.data === null,
     selectSlug,
   };
 }
