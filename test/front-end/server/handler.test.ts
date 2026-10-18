@@ -3,9 +3,12 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { createRoutesFromChildren } from "react-router";
+
 import type { ArticleFrontmatter } from "shared";
 
 import { createRequestHandler } from "../../../front-end/server/handler";
+import { AppRoutes } from "../../../front-end/src/App";
 
 const INDEX_HTML = `<!doctype html>
 <html lang="en">
@@ -52,6 +55,13 @@ afterAll(() => {
 const PROJECT = { ...ARTICLE, type: "project", slug: "pi-sandbox-automation", title: "Pi Sandbox Automation" };
 
 const NOINDEX = '<meta name="robots" content="noindex" />';
+
+/** A real URL for each parameterised client route; every other route path is its own URL. */
+const ROUTE_SAMPLES: Readonly<Record<string, string>> = {
+  "/articles/:slug": "/articles/yoga-nidra",
+  "/projects/:slug": "/projects/pi-sandbox-automation",
+  "/tags/:tag": "/tags/docker",
+};
 
 /** A back-end that knows one article and one project, at their real API paths. */
 function backend(path: string): Promise<Response> {
@@ -163,11 +173,32 @@ describe("front-end request handler", () => {
     expect(await mixedCase.text()).toContain('<link rel="canonical" href="https://buildwithtim.dev/articles/yoga-nidra" />');
   });
 
+  test("serves every route App.tsx declares as an indexable 200, so the server's route list cannot fall behind it", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const paths = createRoutesFromChildren(AppRoutes().props.children)
+      .map((route) => route.path)
+      .filter((path) => path !== "*");
+
+    expect(paths).toContain("/now");
+
+    for (const path of paths) {
+      const url = ROUTE_SAMPLES[path ?? ""] ?? path ?? "";
+
+      // A new parameterised route needs a real URL in ROUTE_SAMPLES.
+      expect(url).not.toContain(":");
+
+      const response = await handle(new Request(`https://buildwithtim.dev${url}`));
+
+      expect({ url, status: response.status }).toEqual({ url, status: 200 });
+      expect(await response.text()).not.toContain(NOINDEX);
+    }
+  });
+
   test("answers a path no client route matches with the app shell as a noindex 404", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
     // "/images" is a build directory, not a page.
-    for (const path of ["/blog/foo", "/images", "/tags", "/projects/pi-sandbox-automation/extra", "/nowhere", "/now/extra"]) {
+    for (const path of ["/blog/foo", "/images", "/tags", "/projects/pi-sandbox-automation/extra", "/tags/docker/extra", "/nowhere", "/now/extra"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
       const html = await response.text();
 
