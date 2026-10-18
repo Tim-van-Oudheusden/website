@@ -51,6 +51,8 @@ afterAll(() => {
 
 const PROJECT = { ...ARTICLE, type: "project", slug: "pi-sandbox-automation", title: "Pi Sandbox Automation" };
 
+const NOINDEX = '<meta name="robots" content="noindex" />';
+
 /** A back-end that knows one article and one project, at their real API paths. */
 function backend(path: string): Promise<Response> {
   if (path === "/api/content") {
@@ -92,22 +94,41 @@ describe("front-end request handler", () => {
     expect(html).toContain('<div id="root"></div>');
   });
 
-  test("still serves the plain app shell when the back-end cannot supply an article", async () => {
-    const withBackend = createRequestHandler({ distDir, fetchBackend: backend });
-    const backendDown = createRequestHandler({
-      distDir,
-      fetchBackend: () => Promise.reject(new Error("connect ECONNREFUSED 127.0.0.1:3001")),
-    });
+  test("answers an unknown slug, or one from the other section, with the app shell as a noindex 404", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
-    for (const [handle, path] of [
-      [withBackend, "/articles/no-such-article"],
-      [withBackend, "/articles/pi-sandbox-automation"],
-      [backendDown, "/articles/yoga-nidra"],
-    ] as const) {
+    for (const path of [
+      "/articles/no-such-article",
+      "/articles/pi-sandbox-automation",
+      "/projects/yoga-nidra",
+      "/projects/no-such-project",
+    ]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+      const html = await response.text();
 
-      expect(response.status).toBe(200);
-      expect(await response.text()).toBe(INDEX_HTML);
+      expect(response.status).toBe(404);
+      expect(response.headers.get("content-type")).toContain("text/html");
+      expect(html).toContain(NOINDEX);
+      expect(html).toContain('<div id="root"></div>');
+      expect(html).not.toContain("og:title");
+    }
+  });
+
+  test("keeps a content URL an indexable 200 when the back-end cannot say whether it exists", async () => {
+    // A 404 here during an outage or a rate-limit burst would de-index real pages.
+    for (const fetchBackend of [
+      () => Promise.reject(new Error("connect ECONNREFUSED 127.0.0.1:3001")),
+      () => Promise.resolve(new Response("", { status: 503 })),
+      () => Promise.resolve(new Response("", { status: 429 })),
+    ]) {
+      const handle = createRequestHandler({ distDir, fetchBackend });
+
+      for (const path of ["/articles/yoga-nidra", "/projects/no-such-project"]) {
+        const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+
+        expect(response.status).toBe(200);
+        expect(await response.text()).toBe(INDEX_HTML);
+      }
     }
   });
 
@@ -125,18 +146,39 @@ describe("front-end request handler", () => {
     expect(html).toContain('<div id="root"></div>');
   });
 
-  test("serves the plain app shell for a project URL naming an article or an unknown slug", async () => {
+  test("serves every client route as an indexable 200 app shell, matched like the router matches it", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
-    for (const path of ["/projects/yoga-nidra", "/projects/no-such-project"]) {
+    // React Router ignores case and a trailing slash, so these render real pages too.
+    for (const path of ["/projects", "/projects/", "/articles", "/Articles", "/tags/docker", "/now", "/uses/"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe(INDEX_HTML);
     }
+
+    const mixedCase = await handle(new Request("https://buildwithtim.dev/Articles/yoga-nidra/"));
+
+    expect(mixedCase.status).toBe(200);
+    expect(await mixedCase.text()).toContain('<link rel="canonical" href="https://buildwithtim.dev/articles/yoga-nidra" />');
   });
 
-  test("serves built files as-is and every other route as the app shell", async () => {
+  test("answers a path no client route matches with the app shell as a noindex 404", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+
+    // "/images" is a build directory, not a page.
+    for (const path of ["/blog/foo", "/images", "/tags", "/projects/pi-sandbox-automation/extra", "/nowhere", "/now/extra"]) {
+      const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+      const html = await response.text();
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("content-type")).toContain("text/html");
+      expect(html).toContain(NOINDEX);
+      expect(html).toContain('<div id="root"></div>');
+    }
+  });
+
+  test("serves built files as-is", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
     const image = await handle(new Request("https://buildwithtim.dev/images/me.png"));
@@ -144,13 +186,6 @@ describe("front-end request handler", () => {
     expect(image.status).toBe(200);
     expect(image.headers.get("content-type")).toBe("image/png");
     expect(new Uint8Array(await image.arrayBuffer())).toEqual(new Uint8Array(readFileSync(join(distDir, "images", "me.png"))));
-
-    for (const path of ["/projects", "/articles", "/images"]) {
-      const response = await handle(new Request(`https://buildwithtim.dev${path}`));
-
-      expect(response.status).toBe(200);
-      expect(await response.text()).toBe(INDEX_HTML);
-    }
   });
 
   test("never serves a file from outside the build directory", async () => {
@@ -158,8 +193,10 @@ describe("front-end request handler", () => {
 
     for (const path of ["/../secret.txt", "/%2e%2e/secret.txt", "/..%2fsecret.txt", "/images/..%2f..%2fsecret.txt"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+      const html = await response.text();
 
-      expect(await response.text()).toBe(INDEX_HTML);
+      expect(html).not.toContain("outside dist");
+      expect(html).toContain('<div id="root"></div>');
     }
   });
 
@@ -378,7 +415,7 @@ describe("front-end request handler", () => {
   test("sends the back-end's framing and MIME-sniffing protections on every response", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend });
 
-    for (const path of ["/", "/articles/yoga-nidra", "/images/me.png", "/robots.txt", "/llms.txt", "/sitemap.xml", "/feed.xml", "/health"]) {
+    for (const path of ["/", "/articles/yoga-nidra", "/blog/foo", "/images/me.png", "/robots.txt", "/llms.txt", "/sitemap.xml", "/feed.xml", "/health"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
 
       expect(response.headers.get("x-frame-options")).toBe("SAMEORIGIN");

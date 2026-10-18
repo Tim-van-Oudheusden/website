@@ -9,6 +9,7 @@ import { HomePage } from "@/features/home/pages/home-page";
 import { ProjectPage } from "@/features/projects/pages/project-page";
 import { ProjectsPage } from "@/features/projects/pages/projects-page";
 import { StandalonePage } from "@/features/standalone-pages/pages/standalone-page";
+import { NotFoundPage } from "@/shared/components/not-found-page";
 import { SkipLink } from "@/shared/components/skip-link";
 import { TopBar } from "@/shared/components/top-bar";
 
@@ -25,6 +26,7 @@ export function AppRoutes(): JSX.Element {
       {STANDALONE_PAGE_SLUGS.map((slug) => (
         <Route key={slug} path={`/${slug}`} element={<StandalonePage slug={slug} />} />
       ))}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

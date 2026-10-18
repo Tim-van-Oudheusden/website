@@ -26,6 +26,14 @@ export const CONTENT_PAGE_PREFIX: Record<ContentFrontmatter["type"], string> = {
 };
 
 /**
+ * Mark the SPA shell sent with a 404 as not for search engines, so a dead or
+ * mistyped URL never sits in an index as a thin "not found" page.
+ */
+export function renderNotFoundMeta(html: string): string {
+  return injectIntoHead(html, '    <meta name="robots" content="noindex" />');
+}
+
+/**
  * Add the homepage's description, canonical URL and link-preview tags to the
  * SPA shell. The shell itself carries only the <title>, so non-home routes
  * never inherit homepage tags. Origin-dependent values (canonical, og:url,

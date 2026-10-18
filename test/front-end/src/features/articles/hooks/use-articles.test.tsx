@@ -241,7 +241,7 @@ describe("useArticles selected article", () => {
   test("surfaces the message of an ApiError from the article request", async () => {
     routeFetch({
       [LIST_URL]: respond([summary("introduction")]),
-      "/api/content/introduction": failWith(404, "Not Found"),
+      "/api/content/introduction": failWith(500, "Internal Server Error"),
     });
 
     const probe = mountProbe();
@@ -249,7 +249,30 @@ describe("useArticles selected article", () => {
     try {
       await settle();
 
-      expect(probe.latest().articleError).toBe("Request failed: Not Found");
+      expect(probe.latest().articleError).toBe("Request failed: Internal Server Error");
+      expect(probe.latest().articleNotFound).toBe(false);
+      expect(probe.latest().selectedArticle).toBeNull();
+      expect(probe.latest().loadingArticle).toBe(false);
+    } finally {
+      probe.cleanup();
+    }
+  });
+
+  test("reports a 404 for the selected slug as not found rather than as an error", async () => {
+    routeFetch({
+      [LIST_URL]: respond([summary("introduction")]),
+      "/api/content/no-such-article": failWith(404, "Not Found"),
+    });
+
+    const probe = mountProbe("no-such-article");
+
+    try {
+      expect(probe.latest().articleNotFound).toBe(false);
+
+      await settle();
+
+      expect(probe.latest().articleNotFound).toBe(true);
+      expect(probe.latest().articleError).toBeNull();
       expect(probe.latest().selectedArticle).toBeNull();
       expect(probe.latest().loadingArticle).toBe(false);
     } finally {
@@ -277,7 +300,7 @@ describe("useArticles selected article", () => {
   test("selectSlug loads the new article and clears a previous article error", async () => {
     routeFetch({
       [LIST_URL]: respond([summary("introduction"), summary("linux-setup")]),
-      "/api/content/introduction": failWith(404, "Not Found"),
+      "/api/content/introduction": failWith(500, "Internal Server Error"),
       "/api/content/linux-setup": respond(article("linux-setup")),
     });
 
@@ -285,7 +308,7 @@ describe("useArticles selected article", () => {
 
     try {
       await settle();
-      expect(probe.latest().articleError).toBe("Request failed: Not Found");
+      expect(probe.latest().articleError).toBe("Request failed: Internal Server Error");
 
       act(() => {
         probe.latest().selectSlug("linux-setup");

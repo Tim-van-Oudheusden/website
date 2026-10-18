@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 
+import { NotFoundPage } from "@/shared/components/not-found-page";
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { useRecordView } from "@/shared/hooks/use-record-view";
 
@@ -24,6 +25,7 @@ export function ArticlesPage(): JSX.Element {
     loadingArticle,
     listError,
     articleError,
+    articleNotFound,
   } = useArticles(slug);
   const toc = useArticleToc(selectedArticle, loadingArticle);
 
@@ -49,6 +51,10 @@ export function ArticlesPage(): JSX.Element {
       window.cancelAnimationFrame(frameId);
     };
   }, [selectedArticle]);
+
+  if (articleNotFound) {
+    return <NotFoundPage />;
+  }
 
   if (loadingArticles) {
     return (
