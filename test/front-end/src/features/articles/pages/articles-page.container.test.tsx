@@ -340,6 +340,48 @@ describe("ArticlesPage deep links", () => {
     }
   });
 
+  test("scrolls to a heading whose id the hash percent-encodes", async () => {
+    window.location.hash = "#%C3%BCber-mich";
+
+    routeFetch({
+      [LIST_URL]: respond([summary("introduction", "Introduction")]),
+      "/api/content/introduction": respond(article("introduction", "Introduction", "Intro.\n\n## Über mich\n\nHallo.")),
+    });
+
+    const page = mountArticlesPage();
+
+    try {
+      await settle();
+      await flushAnimationFrames();
+
+      expect(headingById("über-mich").scrollIntoViewCalls).toEqual([{ behavior: "smooth", block: "start" }]);
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("keeps the article on screen when the hash is not valid percent-encoding", async () => {
+    window.location.hash = "#100%";
+
+    routeFetch({
+      [LIST_URL]: respond([summary("introduction", "Introduction")]),
+      "/api/content/introduction": respond(INTRODUCTION),
+    });
+
+    const page = mountArticlesPage();
+
+    try {
+      await settle();
+      await flushAnimationFrames();
+
+      expect(page.container.textContent).toContain("Welcome aboard.");
+      expect(headingById("setup-steps").scrollIntoViewCalls).toEqual([]);
+      expect(window.location.hash).toBe("#100%");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
   test("does not scroll anywhere without a hash", async () => {
     routeFetch({
       [LIST_URL]: respond([summary("introduction", "Introduction")]),

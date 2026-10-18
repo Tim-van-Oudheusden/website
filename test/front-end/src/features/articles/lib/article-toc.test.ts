@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import type { ArticleTableOfContentsItem } from "../../../../../../front-end/src/features/articles/lib/article-toc";
 import {
+  readHeadingIdFromHash,
   resolveActiveTocHeadingIds,
   resolveCurrentTocHeadingId,
   resolveTocLinkIndentClass,
@@ -77,5 +78,25 @@ describe("resolveTocLinkIndentClass", () => {
     expect(resolveTocLinkIndentClass(1)).toBe("");
     expect(resolveTocLinkIndentClass(2)).toBe("");
     expect(resolveTocLinkIndentClass(3)).toBe("pl-3");
+  });
+});
+
+describe("readHeadingIdFromHash", () => {
+  test("reads the heading id after the #", () => {
+    expect(readHeadingIdFromHash("#setup-steps")).toBe("setup-steps");
+  });
+
+  test("percent-decodes the fragment", () => {
+    expect(readHeadingIdFromHash("#%C3%BCber-mich")).toBe("über-mich");
+  });
+
+  test("returns a fragment that is not valid percent-encoding as written", () => {
+    expect(readHeadingIdFromHash("#100%")).toBe("100%");
+    expect(readHeadingIdFromHash("#%E0%A4%A")).toBe("%E0%A4%A");
+  });
+
+  test("returns null for an empty hash", () => {
+    expect(readHeadingIdFromHash("")).toBeNull();
+    expect(readHeadingIdFromHash("#")).toBeNull();
   });
 });
