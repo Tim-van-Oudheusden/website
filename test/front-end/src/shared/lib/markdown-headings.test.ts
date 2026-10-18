@@ -83,6 +83,53 @@ describe("extractMarkdownHeadings", () => {
     expect(headings.map(({ text }) => text)).toEqual(["Real"]);
   });
 
+  test("reads --- under a list, quote, table or HTML line as a thematic break, not a heading", () => {
+    const markdown = [
+      "- one\n- two\n---",
+      "> quoted\n---",
+      "| a | b |\n|---|---|\n| 1 | 2 |\n---",
+      "a | b\n--- | ---\n1 | 2\n---",
+      "1. first\nlazy line\n---",
+      "Para\n<div>\n---",
+      "# Real",
+    ].join("\n\n");
+
+    expect(extractMarkdownHeadings(markdown, 3).map(({ text }) => text)).toEqual(["Real"]);
+  });
+
+  test("reads === under a list or quote line as lazy text, not a heading", () => {
+    expect(extractMarkdownHeadings("- item\n===\n\n> quoted\n===", 3)).toEqual([]);
+  });
+
+  test("still reads a setext heading after a thematic break or indented code", () => {
+    const headings = extractMarkdownHeadings("***\nAfter rule\n---\n\n    code\nAfter code\n===", 3);
+
+    expect(headings.map(({ text, depth }) => [text, depth])).toEqual([
+      ["After rule", 2],
+      ["After code", 1],
+    ]);
+  });
+
+  test("reads a setext heading over a paragraph that a list item or 1. does not interrupt", () => {
+    const headings = extractMarkdownHeadings("Text\n2. not a list\n---\n\nIntro\n-\n", 3);
+
+    expect(headings.map(({ text }) => text)).toEqual(["Text 2. not a list", "Intro"]);
+  });
+
+  test("takes every line of a multi-line setext heading", () => {
+    const headings = extractMarkdownHeadingsWithOffsets("Para\n\nLine one\n  Line two\n===", 3);
+
+    expect(headings.map(({ id, text, startOffset, startLine }) => [id, text, startOffset, startLine])).toEqual([
+      ["line-one-line-two", "Line one Line two", 6, 3],
+    ]);
+  });
+
+  test("does not close a fence on a fence line that carries an info string", () => {
+    const markdown = "```md\n```bash\n# install\n```\n\n# After";
+
+    expect(extractMarkdownHeadings(markdown, 3).map(({ text }) => text)).toEqual(["After"]);
+  });
+
   test("extracts atx and setext headings indented by up to three spaces", () => {
     const headings = extractMarkdownHeadings(" # One\n  ## Two\n   ### Three\n\n  Four\n   ---", 3);
 
