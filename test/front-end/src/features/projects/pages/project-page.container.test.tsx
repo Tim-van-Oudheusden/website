@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
+import { afterAll, afterEach, beforeAll, describe, expect, mock, spyOn, test } from "bun:test";
 
 import { act, createElement } from "react";
 import { MemoryRouter, Route, Routes } from "react-router";
@@ -177,6 +177,34 @@ describe("ProjectPage", () => {
       expect(text).not.toContain("Loading project...");
     } finally {
       unmountFakeDomRoot(page);
+    }
+  });
+
+  test("shows the project's calendar day to a reader west of UTC", async () => {
+    // The ICU default time zone is fixed for the process, so stand in for a
+    // reader in Los Angeles: a call that names no time zone gets theirs.
+    const readerInLosAngeles = spyOn(Date.prototype, "toLocaleDateString").mockImplementation(function (
+      this: Date,
+      locales?: Intl.LocalesArgument,
+      options?: Intl.DateTimeFormatOptions,
+    ) {
+      return new Intl.DateTimeFormat(locales, { timeZone: "America/Los_Angeles", ...options }).format(this);
+    });
+
+    stubFetch(jsonResponse({ ...projectItem(), date: "2026-10-16" }));
+    const page = mountProjectPage();
+
+    try {
+      await act(async () => {
+        await settleMicrotasks();
+      });
+
+      const shown = queryFakeElements(page.container, (el) => el.tagName === "TIME").map((el) => el.textContent);
+
+      expect(shown).toEqual([new Intl.DateTimeFormat(undefined, { timeZone: "UTC" }).format(Date.UTC(2026, 9, 16))]);
+    } finally {
+      unmountFakeDomRoot(page);
+      readerInLosAngeles.mockRestore();
     }
   });
 

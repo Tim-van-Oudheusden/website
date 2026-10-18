@@ -15,6 +15,10 @@ import { httpContentLoader } from "@/shared/lib/content-loader";
 
 export type ProjectData = ProjectFrontmatter & { body: string };
 
+// `date` is a calendar day ("2026-10-16"), which `Date` parses as UTC midnight:
+// format in UTC so a reader west of Greenwich doesn't see the day before.
+const PROJECT_DATE_OPTIONS: Intl.DateTimeFormatOptions = { timeZone: "UTC" };
+
 export const PROJECT_PAGE_LAYOUT_CLASSES = {
   main: "w-full flex-1 bg-[var(--site-page-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8",
   articleMeasure: "mx-auto w-full max-w-[75ch]",
@@ -46,7 +50,7 @@ export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): JSX.Elem
       <h1 className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.title}>{project.title}</h1>
       <p className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.description}>{project.description}</p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <time className="text-muted-foreground text-sm font-medium">{new Date(project.date).toLocaleDateString()}</time>
+        <time className="text-muted-foreground text-sm font-medium">{new Date(project.date).toLocaleDateString(undefined, PROJECT_DATE_OPTIONS)}</time>
         {project.status !== null && <Badge variant="secondary" className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.tagBadge}>{project.status}</Badge>}
         {project.tags.map((tag) => (
           <Badge key={tag} variant="outline" className={PROJECT_PAGE_TYPOGRAPHY_CLASSES.tagBadge}>{tag}</Badge>
