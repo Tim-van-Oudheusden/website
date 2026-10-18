@@ -72,6 +72,21 @@ for unit in podman-kube@.service website-update.service; do
 done
 ```
 
+Before the first start, create the back-end's data directory and give it to
+the container's user. The back-end runs as the image's unprivileged `bun` user
+(uid 1000) and writes its view counts to `website-data/` next to the manifest
+(see [Content view counts](#content-view-counts)). Under rootless Podman that
+uid maps to a subordinate host uid, and a directory `kube play` creates for a
+missing `hostPath` belongs to your own user with mode `0755`. The back-end
+then cannot create its database and exits at startup. `podman unshare` runs
+`chown` inside the pod's user namespace, where uid 1000 is the container's
+`bun` (adjust the path if `WEBSITE_REPO` points elsewhere):
+
+```bash
+mkdir -p ~/Git/website/deploy/kube/website-data
+podman unshare chown 1000:1000 ~/Git/website/deploy/kube/website-data
+```
+
 Then enable and start the pod:
 
 ```bash
@@ -138,6 +153,39 @@ and the tunnel does not forward it:
 
 ```bash
 curl -s http://127.0.0.1:8301/views   # [{"slug":"introduction","date":"2026-10-08","count":3}, ...]
+```
+
+#### Backing up and restoring view counts
+
+`website-data/` holds the pod's only state, and nothing backs it up. It is
+git-ignored inside the checkout, so `git clean -fdx` there, or replacing the
+checkout with a fresh clone, deletes every count.
+
+To back it up, take a copy from the running back-end. SQLite's `VACUUM INTO`
+writes a consistent copy while the back-end keeps counting, and refuses to
+overwrite an existing file. Then copy it out of the container:
+
+```bash
+podman exec website-back-end bun -e 'import { Database } from "bun:sqlite"; new Database("/data/views.sqlite").run("VACUUM INTO '\''/data/views-backup.sqlite'\''")'
+mkdir -p ~/backups
+podman cp website-back-end:/data/views-backup.sqlite ~/backups/views-$(date +%F).sqlite
+podman exec website-back-end rm /data/views-backup.sqlite
+```
+
+To restore, stop the update timer first so it cannot replay the pod halfway
+through. Remove any journal left beside the old database, since SQLite would
+apply it to the restored file. Then copy the backup in as uid 1000, as in §1:
+
+```bash
+systemctl --user stop website-update.timer
+systemctl --user stop podman-kube@website.service
+data=~/Git/website/deploy/kube/website-data
+podman unshare rm -f "$data"/views.sqlite-*
+podman unshare cp ~/backups/views-<date>.sqlite "$data/views.sqlite"
+podman unshare chown 1000:1000 "$data/views.sqlite"
+systemctl --user start podman-kube@website.service
+systemctl --user start website-update.timer
+curl -s http://127.0.0.1:8301/views   # the restored counts
 ```
 
 ### Request and process metrics
