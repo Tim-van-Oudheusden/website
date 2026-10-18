@@ -31,14 +31,15 @@ const HEADING_TAGS = ["h1", "h2", "h3", "h4"] as const;
 
 interface ParsedObsidianCallout {
   type: string;
-  title: string;
+  title: ReactNode;
   bodyNodes: ReactNode[];
 }
 
 /** Source start point of a rendered hast node (`node.position.start`); generated nodes have none. */
 type HastPoint = NonNullable<NonNullable<ExtraProps["node"]>["position"]>["start"];
 
-const OBSIDIAN_CALLOUT_MARKER_PATTERN = /^\s*\[!([a-z0-9_-]+)\](?:[ \t]+([^\n]+))?(?:\n([\s\S]*))?$/i;
+// The title starts after a space; `[!note]-` (a fold marker) is no callout.
+const OBSIDIAN_CALLOUT_MARKER_PATTERN = /^\s*\[!([a-z0-9_-]+)\](?:[ \t]([^\n]*))?(?:\n([\s\S]*))?$/i;
 
 function flattenNodeText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") {
@@ -76,6 +77,56 @@ function formatCalloutTitle(type: string): string {
     .join(" ");
 }
 
+/** Trims the whitespace at either end of a run of inline nodes, dropping text left empty. */
+function trimInlineNodes(nodes: readonly ReactNode[]): ReactNode[] {
+  return nodes
+    .map((node, index) => {
+      if (typeof node !== "string") {
+        return node;
+      }
+
+      const start = index === 0 ? node.trimStart() : node;
+
+      return index === nodes.length - 1 ? start.trimEnd() : start;
+    })
+    .filter((node) => node !== "");
+}
+
+/**
+ * Splits the marker paragraph's inline nodes at the end of the marker line.
+ * The marker's own text node may end before the line does, when the title
+ * holds inline markup, so the title runs on until a `\n` or a hard `<br>`.
+ */
+function splitCalloutTitle(
+  markerTitle: string,
+  markerBody: string | undefined,
+  rest: readonly ReactNode[],
+): { titleNodes: ReactNode[]; bodyNodes: ReactNode[] } {
+  if (markerBody !== undefined) {
+    return { titleNodes: [markerTitle], bodyNodes: [markerBody, ...rest] };
+  }
+
+  const titleNodes: ReactNode[] = [markerTitle];
+
+  for (const [index, child] of rest.entries()) {
+    if (isValidElement(child) && child.type === "br") {
+      return { titleNodes, bodyNodes: rest.slice(index + 1) };
+    }
+
+    const lineBreak = typeof child === "string" ? child.indexOf("\n") : -1;
+
+    if (typeof child === "string" && lineBreak !== -1) {
+      titleNodes.push(child.slice(0, lineBreak));
+
+      return { titleNodes, bodyNodes: [child.slice(lineBreak + 1), ...rest.slice(index + 1)] };
+    }
+
+    titleNodes.push(child);
+  }
+
+  return { titleNodes, bodyNodes: [] };
+}
+
 function parseObsidianCallout(children: ReactNode): ParsedObsidianCallout | null {
   // Children.toArray is required here: react-markdown hands over nested/fragmented children and
   // the flattened, keyed list is re-rendered as callout body nodes.
@@ -109,21 +160,18 @@ function parseObsidianCallout(children: ReactNode): ParsedObsidianCallout | null
   }
 
   const type = matchedType.toLowerCase();
-  const title = markerMatch[2]?.trim() ?? formatCalloutTitle(type);
-  const markerRemainder = markerMatch[3]?.trim() ?? "";
-
-  const adjustedFirstParagraphChildren = firstParagraphChildren.slice(1);
-
-  if (markerRemainder.length > 0) {
-    adjustedFirstParagraphChildren.unshift(markerRemainder);
-  }
+  const { titleNodes, bodyNodes } = splitCalloutTitle(
+    markerMatch[2] ?? "",
+    markerMatch[3],
+    firstParagraphChildren.slice(1),
+  );
+  const trimmedTitleNodes = trimInlineNodes(titleNodes);
+  const adjustedFirstParagraphChildren = trimInlineNodes(bodyNodes);
 
   const calloutBodyNodes: ReactNode[] = [];
-  // Judge emptiness by node, not flattened text: an image (with or without alt) still has content.
-  const hasFirstParagraphContent = adjustedFirstParagraphChildren.some((child) =>
-    isValidElement(child) || (typeof child === "string" && child.trim().length > 0));
 
-  if (hasFirstParagraphContent) {
+  // Judge emptiness by node, not flattened text: an image (with or without alt) still has content.
+  if (adjustedFirstParagraphChildren.length > 0) {
     calloutBodyNodes.push(
       <p key="callout-body-first-paragraph" {...firstParagraphElement.props}>
         {adjustedFirstParagraphChildren}
@@ -135,7 +183,7 @@ function parseObsidianCallout(children: ReactNode): ParsedObsidianCallout | null
 
   return {
     type,
-    title,
+    title: trimmedTitleNodes.length > 0 ? trimmedTitleNodes : formatCalloutTitle(type),
     bodyNodes: calloutBodyNodes,
   };
 }

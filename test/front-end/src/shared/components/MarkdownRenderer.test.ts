@@ -115,6 +115,57 @@ describe("MarkdownRenderer", () => {
     expect(html).toContain('src="/d.png"');
   });
 
+  test("keeps the space before inline markup in a callout's first body line", () => {
+    const bold = renderToStaticMarkup(
+      createElement(MarkdownRenderer, { content: "> [!note]\n> Read **this** first.", headingLevelOffset: 0 }),
+    );
+    const code = renderToStaticMarkup(
+      createElement(MarkdownRenderer, { content: "> [!warning]\n> Run `make` before you push.", headingLevelOffset: 0 }),
+    );
+
+    expect(bold).toContain("<p>Read <strong>this</strong> first.</p>");
+    expect(code).toContain("<p>Run <code>make</code> before you push.</p>");
+  });
+
+  test("keeps inline markup in a callout title", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, { content: "> [!tip] Use `bun` here\n> Body.", headingLevelOffset: 0 }),
+    );
+
+    expect(html).toMatch(/<p class="[^"]*">Use <code>bun<\/code> here<\/p>/);
+    expect(html).toContain("<p>Body.</p>");
+  });
+
+  test("reads a callout whose title starts with inline markup", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, { content: "> [!tip] **Bold title**\n> Body.", headingLevelOffset: 0 }),
+    );
+
+    expect(html).toContain('data-callout-type="tip"');
+    expect(html).not.toContain("[!tip]");
+    expect(html).toMatch(/<p class="[^"]*"><strong>Bold title<\/strong><\/p>/);
+    expect(html).toContain("<p>Body.</p>");
+  });
+
+  test("ends a callout title at a hard line break", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, { content: "> [!note] Title  \n> Body.", headingLevelOffset: 0 }),
+    );
+
+    expect(html).toMatch(/<p class="[^"]*">Title<\/p>/);
+    expect(html).toContain("<p>Body.</p>");
+    expect(html).not.toContain("<br");
+  });
+
+  test("renders a fold marker callout as a plain quote", () => {
+    const html = renderToStaticMarkup(
+      createElement(MarkdownRenderer, { content: "> [!note]- Folded\n> Body.", headingLevelOffset: 0 }),
+    );
+
+    expect(html).not.toContain("data-callout-type");
+    expect(html).toContain("[!note]- Folded");
+  });
+
   test("embeds a YouTube link that stands alone in its paragraph as a video player", () => {
     const html = renderToStaticMarkup(
       createElement(MarkdownRenderer, {
