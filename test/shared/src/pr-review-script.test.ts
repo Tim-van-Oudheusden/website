@@ -44,6 +44,23 @@ describe("scripts/pr-review-check.sh", () => {
     expect(runCheck({ PR_TITLE: "feature: add form", PR_BODY: "Fixes #1" }).status).toBe(1);
   });
 
+  test("accepts a keyword ending in a colon and GitHub's owner/repo#N long form", () => {
+    for (const body of ["Closes: #10", "Fixes Tim-van-Oudheusden/website#12", "(Fixes #12)"]) {
+      expect(runCheck({ PR_TITLE: "fix(content): keep embeds", PR_BODY: body }).status).toBe(0);
+    }
+  });
+
+  test("fails a body whose keyword is only part of another word", () => {
+    for (const body of [
+      "Follow-up to the hotfix #3; no issue yet.",
+      "Uses the new prefix #1 format",
+      "See prefs #2",
+      "x_fixes #12",
+    ]) {
+      expect(runCheck({ PR_TITLE: "fix(content): keep embeds", PR_BODY: body }).status).toBe(1);
+    }
+  });
+
   test("fails a body that leaves the template's issue placeholder empty", () => {
     const { status, output } = runCheck({
       PR_TITLE: "fix(deps): tighten route",
