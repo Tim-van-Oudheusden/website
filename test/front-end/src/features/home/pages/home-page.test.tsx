@@ -8,7 +8,7 @@ import { API_BASE, ROUTES } from "shared";
 
 import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
 import { HomePage } from "../../../../../../front-end/src/features/home/pages/home-page";
-import type { FakeMount } from "../../../../src/test/dom-harness";
+import type { FakeMount, FakePointerInit } from "../../../../src/test/dom-harness";
 import { fireFakePointer, initFakeDomHarness, jsonResponse, mountIntoBody, routeFetch, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import type { FakeDocument, FakeElement } from "../../../../src/test/fake-dom";
 import { queryFakeElements, triggerFakeIntersections, uninstallFakeDom } from "../../../../src/test/fake-dom";
@@ -150,6 +150,44 @@ describe("HomePage section anchors", () => {
 
       expect(event.defaultPrevented).toBe(false);
       expect(sectionElement("about-me-detached").scrollIntoViewCalls).toEqual([]);
+      expect(window.location.hash).toBe("");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+});
+
+describe("HomePage section anchors and modified clicks", () => {
+  const modifiedClicks: [string, FakePointerInit][] = [
+    ["Ctrl+click", { ctrlKey: true }],
+    ["Cmd+click", { metaKey: true }],
+    ["Shift+click", { shiftKey: true }],
+    ["Alt+click", { altKey: true }],
+    ["a non-primary button", { button: 1 }],
+  ];
+
+  test.each(modifiedClicks)("%s on a floating-nav anchor keeps the browser's own action", (_label, init) => {
+    const page = mountHomePage();
+
+    try {
+      const event = fireFakePointer(anchorTo(page.container, "about-me", "about me"), "click", init);
+
+      expect(event.defaultPrevented).toBe(false);
+      expect(sectionElement("about-me").scrollIntoViewCalls).toEqual([]);
+      expect(window.location.hash).toBe("");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("Cmd+click on the start call-to-action keeps the browser's own action", () => {
+    const page = mountHomePage();
+
+    try {
+      const event = fireFakePointer(anchorTo(page.container, "for-you", "Discover"), "click", { metaKey: true });
+
+      expect(event.defaultPrevented).toBe(false);
+      expect(sectionElement("for-you").scrollIntoViewCalls).toEqual([]);
       expect(window.location.hash).toBe("");
     } finally {
       unmountFakeDomRoot(page);

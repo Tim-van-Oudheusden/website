@@ -80,12 +80,16 @@ export function findAllBySlot(root: FakeElement, slot: string): FakeElement[] {
   return queryFakeElements(root, (el) => el.getAttribute("data-slot") === slot);
 }
 
+/** Mouse-button and modifier-key fields a test can override on a fired pointer event. */
+export type FakePointerInit = Pick<FakeDomEvent, "button" | "ctrlKey" | "metaKey" | "shiftKey" | "altKey">;
+
 /**
  * Fire a bubbling pointer-ish event (`pointerdown`, `click`, ...) at
  * `element`; React's delegated listeners pick it up from the root container.
+ * `init` overrides the button and modifier keys (a plain left click by default).
  * Returns the event so callers can observe `defaultPrevented`.
  */
-export function fireFakePointer(element: FakeElement, type: string): FakeDomEvent {
+export function fireFakePointer(element: FakeElement, type: string, init: FakePointerInit = {}): FakeDomEvent {
   const event: FakeDomEvent = {
     type,
     target: element,
@@ -102,6 +106,7 @@ export function fireFakePointer(element: FakeElement, type: string): FakeDomEven
       event.defaultPrevented = true;
     },
     stopPropagation: () => undefined,
+    ...init,
   };
 
   act(() => {

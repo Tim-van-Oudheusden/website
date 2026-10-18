@@ -37,6 +37,9 @@ export interface FakeDomEvent {
   key?: string;
   button?: number;
   ctrlKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+  altKey?: boolean;
   pointerType?: string;
   detail?: number;
   isPrimary?: boolean;
