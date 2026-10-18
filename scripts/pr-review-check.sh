@@ -23,7 +23,10 @@ fi
 
 if [[ "$author" == *"[bot]" ]]; then
   echo "ok: bot author, issue link not required"
-elif printf '%s' "$body" | grep -Eiq '(fix(es|ed)?|close[sd]?|resolve[sd]?|refs?)[[:space:]]+#[0-9]+'; then
+# The keyword must be a whole word ("hotfix #3" is no link) and may end in a colon ("Closes: #10");
+# "owner/repo#N" is GitHub's long form.
+elif printf '%s' "$body" |
+  grep -Eiq '(^|[^[:alnum:]_])(fix(es|ed)?|close[sd]?|resolve[sd]?|refs?):?[[:space:]]+([[:alnum:]_.-]+/[[:alnum:]_.-]+)?#[0-9]+'; then
   echo "ok: body links a GitHub issue"
 else
   fail "PR body must link its GitHub issue, e.g. 'Fixes #123' (see .github/pull_request_template.md)"
