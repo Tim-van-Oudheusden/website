@@ -112,6 +112,30 @@ describe("scripts/nightly-compliance.sh", () => {
     expect(log).toContain("Unfinished.md");
   });
 
+  // The front-matter parser drops a trailing ` # comment` from an unquoted
+  // value, so `draft: true # wip` is a draft; `true#wip` is the string "true#wip".
+  test.each(["draft: true # not ready yet", "draft: true\t# wip", "draft: true \r"])(
+    "fails on a draft line the parser reads as true: %p",
+    (line) => {
+      writeFileSync(join(contentDir, "Unfinished.md"), `---\ntitle: Unfinished\n${line}\n---\n`);
+
+      const { status, report, log } = runScript();
+
+      expect(status).toBe(1);
+      expect(report).toMatch(/Draft leak guard.*fail/);
+      expect(log).toContain("Unfinished.md");
+    },
+  );
+
+  test("passes a draft value the parser reads as text, not true", () => {
+    writeFileSync(join(contentDir, "Hashed.md"), "---\ntitle: Hashed\ndraft: true#wip\n---\n");
+
+    const { status, report } = runScript();
+
+    expect(status).toBe(0);
+    expect(report).toMatch(/Draft leak guard.*pass/);
+  });
+
   test("runs every check even when an earlier one fails", () => {
     writeFileSync(join(contentDir, "Unfinished.md"), "---\ndraft: true\n---\n");
 
