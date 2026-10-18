@@ -190,6 +190,16 @@ describe("renderSocialMeta for a project", () => {
     expect(meta.get("og:image")).toBe("https://buildwithtim.dev/content-assets/images/launcher.png");
   });
 
+  // coverImage may be a URL (docs/content-authoring.md); the origin must not be put in front of it.
+  test("previews a cover image URL as written, without the site origin in front", () => {
+    const html = renderSocialMeta(INDEX_HTML, project({ coverImage: "https://example.com/cover.png" }), ORIGIN);
+    const meta = headMeta(html);
+
+    expect(meta.get("og:image")).toBe("https://example.com/cover.png");
+    expect(meta.get("twitter:card")).toBe("summary_large_image");
+    expect(headJsonLd(html)).toMatchObject({ image: "https://example.com/cover.png" });
+  });
+
   // LinkedIn and X drop SVG preview images, which would leave the card imageless.
   test("falls back to the site portrait on a small card when the cover is an SVG", () => {
     const meta = headMeta(

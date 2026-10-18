@@ -1,6 +1,6 @@
 import type { ContentFrontmatter } from "shared";
 import { HERO_LINE, SITE_NAME, SITE_OWNER } from "shared";
-import { resolveSocialImagePath } from "shared/social-image";
+import { ABSOLUTE_URL_PATTERN, resolveSocialImagePath } from "shared/social-image";
 import { SOCIAL_LINKS } from "shared/social-links";
 
 interface MetaTag {
@@ -71,7 +71,8 @@ export function renderSocialMeta(html: string, item: ContentFrontmatter, origin:
   ];
 
   const imagePath = resolveSocialImagePath(previewImageSource(item));
-  const imageUrl = imagePath === null ? null : `${origin}${imagePath}`;
+  // A project's coverImage may be a full URL; only a site path gets the origin.
+  const imageUrl = imagePath === null || ABSOLUTE_URL_PATTERN.test(imagePath) ? imagePath : `${origin}${imagePath}`;
 
   // Without an authored image, fall back to the homepage portrait. It is portrait-shaped,
   // so it keeps the small card, which crops it to a square thumbnail instead of a strip.
