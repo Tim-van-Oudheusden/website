@@ -62,4 +62,54 @@ describe("rewriteObsidianImageEmbeds", () => {
       "![](/content-assets/images/a.png) text ![[Note]] text ![B](/content-assets/images/b.jpg)",
     );
   });
+
+  test.each([
+    ["a single-backtick span", "`![[images/pixel.gif]]`"],
+    ["a double-backtick span", "``a ` and ![[images/pixel.gif]]``"],
+  ])("leaves an embed inside %s untouched", (_label, span) => {
+    expect(rewriteObsidianImageEmbeds(`Write ${span} to embed.`)).toBe(`Write ${span} to embed.`);
+  });
+
+  test("rewrites embeds on both sides of a code span", () => {
+    expect(rewriteObsidianImageEmbeds("![[a.png]] `![[b.png]]` ![[c.png]]")).toBe(
+      "![](/content-assets/images/a.png) `![[b.png]]` ![](/content-assets/images/c.png)",
+    );
+  });
+
+  test("still rewrites an embed after a backtick that opens no code span", () => {
+    expect(rewriteObsidianImageEmbeds("A stray ` here.\n\n![[a.png]] and `x`")).toBe(
+      "A stray ` here.\n\n![](/content-assets/images/a.png) and `x`",
+    );
+  });
+
+  test.each([
+    ["a backtick fence", "```md\n![[images/pixel.gif|Alt]]\n```"],
+    ["a tilde fence", "~~~\n![[images/pixel.gif]]\n~~~"],
+    ["an indented fence in a list item", "- Step:\n\n    ```\n    ![[images/pixel.gif]]\n    ```"],
+    ["a fence in a callout", "> [!tip]\n> ```\n> ![[images/pixel.gif]]\n> ```"],
+  ])("leaves an embed inside %s untouched", (_label, block) => {
+    expect(rewriteObsidianImageEmbeds(block)).toBe(block);
+  });
+
+  test("rewrites embeds before and after a fenced code block", () => {
+    const input = "![[a.png]]\n\n```\n![[b.png]]\n```\n\n![[c.png]]\n";
+
+    expect(rewriteObsidianImageEmbeds(input)).toBe(
+      "![](/content-assets/images/a.png)\n\n```\n![[b.png]]\n```\n\n![](/content-assets/images/c.png)\n",
+    );
+  });
+
+  test("closes a fence only on a bare run of the same character at least as long", () => {
+    const input = "````\n```\n~~~~\n```` not a close\n![[a.png]]\n````\n![[b.png]]";
+
+    expect(rewriteObsidianImageEmbeds(input)).toBe(
+      "````\n```\n~~~~\n```` not a close\n![[a.png]]\n````\n![](/content-assets/images/b.png)",
+    );
+  });
+
+  test("treats an unclosed fence as code to the end of the body", () => {
+    const input = "![[a.png]]\n```\n![[b.png]]\n";
+
+    expect(rewriteObsidianImageEmbeds(input)).toBe("![](/content-assets/images/a.png)\n```\n![[b.png]]\n");
+  });
 });
