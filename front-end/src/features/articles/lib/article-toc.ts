@@ -44,6 +44,25 @@ export function extractArticleTableOfContents(markdownBody: string): ArticleTabl
   }));
 }
 
+/**
+ * The heading id a URL hash names, percent-decoded, or `null` for an empty
+ * hash. A fragment that is not valid percent-encoding (`#100%`) is returned
+ * as written: browsers keep a bare `%`, and `decodeURIComponent` would throw.
+ */
+export function readHeadingIdFromHash(hash: string): string | null {
+  const fragment = hash.startsWith("#") ? hash.slice(1) : hash;
+
+  if (fragment === "") {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(fragment);
+  } catch {
+    return fragment;
+  }
+}
+
 export function navigateToArticleHeadingById(
   headingId: string,
   dependencies: TocNavigationDependencies = DEFAULT_TOC_NAVIGATION_DEPENDENCIES,

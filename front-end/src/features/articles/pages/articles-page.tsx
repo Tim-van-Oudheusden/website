@@ -10,7 +10,7 @@ import { ArticleContent } from "../components/article-content";
 import { ArticlesSidebar } from "../components/articles-sidebar";
 import { useArticleToc } from "../hooks/use-article-toc";
 import { useArticles } from "../hooks/use-articles";
-import { navigateToArticleHeadingById } from "../lib/article-toc";
+import { navigateToArticleHeadingById, readHeadingIdFromHash } from "../lib/article-toc";
 import { ARTICLES_PAGE_LAYOUT_CLASSES, ARTICLES_PAGE_TYPOGRAPHY_CLASSES } from "../lib/articles-page-styles";
 import { resolveArticlesTrailTargetSlug } from "../lib/articles-sidebar";
 
@@ -36,13 +36,12 @@ export function ArticlesPage(): JSX.Element {
       return;
     }
 
-    const hash = window.location.hash;
+    const headingId = readHeadingIdFromHash(window.location.hash);
 
-    if (hash.length <= 1) {
+    if (headingId === null) {
       return;
     }
 
-    const headingId = decodeURIComponent(hash.slice(1));
     const frameId = window.requestAnimationFrame(() => {
       navigateToArticleHeadingById(headingId);
     });
