@@ -9,6 +9,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import { httpContentLoader } from "@/shared/lib/content-loader";
+import { STATUS_PILL_CLASSES } from "@/shared/lib/status-pill";
 import { TAG_PILL_CLASSES } from "@/shared/lib/tag-pill";
 
 import { resolveGalleryProjects, resolvePriorityProjects } from "../lib/project-display";
@@ -58,7 +59,7 @@ export function ProjectCard({ project, featured }: ProjectCardProps): JSX.Elemen
         </div>
         <CardHeader className="gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            {project.status !== null && <Badge variant="secondary">{project.status}</Badge>}
+            {project.status !== null && <Badge variant="secondary" className={STATUS_PILL_CLASSES}>{project.status}</Badge>}
             {project.created !== null && <span className="text-muted-foreground text-xs font-medium">{project.created}</span>}
           </div>
           <CardTitle className={PROJECTS_PAGE_TYPOGRAPHY_CLASSES.cardTitle}>{project.title}</CardTitle>
