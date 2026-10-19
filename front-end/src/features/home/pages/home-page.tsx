@@ -11,8 +11,13 @@ import { useActiveHomeSection } from "../hooks/use-active-home-section";
 import { resolveAnchorScrollBehavior } from "../lib/home-section-nav-scroll";
 import type { HomeSectionId } from "../types/home-section";
 
+/** A primary-button click with no modifier; any other click keeps the browser's own action (new tab, window...). */
+function isPlainPrimaryClick(event: MouseEvent<HTMLAnchorElement>): boolean {
+  return event.button === 0 && !event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey;
+}
+
 function activateSectionAnchor(sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>): void {
-  if (typeof document === "undefined") {
+  if (typeof document === "undefined" || !isPlainPrimaryClick(event)) {
     return;
   }
 
