@@ -12,6 +12,7 @@ import { Button } from "@/shared/components/ui/button";
 import { useRecordView } from "@/shared/hooks/use-record-view";
 import { ApiError } from "@/shared/lib/api";
 import { httpContentLoader } from "@/shared/lib/content-loader";
+import { STATUS_PILL_CLASSES } from "@/shared/lib/status-pill";
 import { TAG_PILL_CLASSES } from "@/shared/lib/tag-pill";
 
 export type ProjectData = ProjectFrontmatter & { body: string };
@@ -32,7 +33,7 @@ export const PROJECT_PAGE_TYPOGRAPHY_CLASSES = {
   description: "text-muted-foreground mt-2 max-w-[65ch] text-base leading-relaxed sm:text-lg",
   metaLabel: "text-muted-foreground text-xs font-bold uppercase tracking-[0.16em]",
   metaValue: "text-sm font-medium",
-  statusBadge: "text-xs font-bold",
+  statusBadge: `text-xs font-bold ${STATUS_PILL_CLASSES}`,
 } as const;
 
 interface ProjectMetaHeaderProps {
