@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -31,6 +31,7 @@ function requireBinary(name: string): string {
 // Resolved up front: the steps run with PATH limited to the stubs.
 const bash = requireBinary("bash");
 const seq = requireBinary("seq");
+const grep = requireBinary("grep");
 
 function findStep(job: string, name: string): Step {
   const step = workflow.jobs[job]?.steps.find((candidate) => candidate.name === name);
@@ -59,8 +60,13 @@ function writeStub(name: string): void {
 
 // Runs a step's script the way GitHub does (`bash -e`), with PATH limited to the
 // stubs so a podman installed on the test host cannot leak in.
-function runStep(step: Step, env: Record<string, string> = {}): { status: number | null; calls: string[] } {
+function runStep(
+  step: Step,
+  env: Record<string, string> = {},
+  cwd?: string,
+): { status: number | null; calls: string[] } {
   const result = spawnSync(bash, ["-e", "-c", step.run ?? ""], {
+    cwd,
     encoding: "utf8",
     env: { ...process.env, PATH: stubDir, ...env },
   });
@@ -139,6 +145,31 @@ describe(".github/workflows/ci.yml", () => {
         `sudo apt-get ${aptOptions} update`,
         `sudo apt-get ${aptOptions} install -y podman`,
       ]);
+    });
+  });
+
+  describe("release → Draft leak guard", () => {
+    function runGuard(draftLine: string): number | null {
+      const repoDir = join(stubDir, "repo");
+
+      mkdirSync(join(repoDir, "content"), { recursive: true });
+      writeFileSync(join(repoDir, "content", "Unfinished.md"), `---\ntitle: Unfinished\n${draftLine}\n---\n`);
+      symlinkSync(grep, join(stubDir, "grep"));
+
+      return runStep(findStep("release", "Draft leak guard"), {}, repoDir).status;
+    }
+
+    // The front-matter parser drops a trailing ` # comment` from an unquoted
+    // value, so `draft: true # wip` is a draft; `true#wip` is the string "true#wip".
+    test.each(["draft: true", "draft: true # not ready yet", "draft: true\t# wip", "draft: true \r"])(
+      "refuses to release a draft line the parser reads as true: %p",
+      (line) => {
+        expect(runGuard(line)).toBe(1);
+      },
+    );
+
+    test.each(["draft: false", "draft: true#wip"])("releases a draft value the parser does not read as true: %p", (line) => {
+      expect(runGuard(line)).toBe(0);
     });
   });
 });
