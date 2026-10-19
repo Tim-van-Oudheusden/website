@@ -25,6 +25,20 @@ Canonical image syntax for guaranteed rendering in this app:
 
 The image route is served by the back-end and maps to files stored in `content/images`.
 
+An Obsidian image embed also renders. Its path is read from `content/images/`, so
+`![[pixel.gif]]`, `![[images/pixel.gif]]` and `![[content/images/pixel.gif]]` all show
+`content/images/pixel.gif`, and an image in a subfolder keeps its folder:
+`![[images/diagrams/flow.svg]]`. The text after `|` is the alt text:
+
+```md
+![[images/pixel.gif|A tiny tracking pixel]]
+```
+
+An Obsidian size option such as `|300` or `|300x200` is dropped and leaves the image without
+alt text, so give alt text instead. A note embed (`![[Some Note]]`), an embed of a file that
+is not an image (`.pdf`), and an embed inside a code span or fenced code block stay as
+literal text.
+
 ### YouTube embeds
 
 A YouTube video link alone in its paragraph (a bare URL or `[text](url)` on its own line)
@@ -124,7 +138,7 @@ the [content checker](#checking-content-before-pushing) before pushing.
 | `type` | No | `article` or `project` | Content kind. Missing or any other value counts as `article`, so a typo such as `type: projet` makes a project fail the article rules. |
 | `draft` | No | `true` or `false` (default `false`) | `true` hides the document when `NODE_ENV=production`; it still shows in local dev. Only a YAML boolean counts: `"true"` in quotes is ignored. |
 | `slug` | No | Non-empty string without `/`, `?`, `#`, `%` or `\` | URL segment (`/articles/<slug>`, `/projects/<slug>`). Defaults to the file name without `.md`, spaces included, so a file name with one of those characters needs an explicit `slug`. Must be unique among published (non-draft) articles and projects. A draft may share a published document's slug while a rewrite is in progress: production serves the published one, while local dev lists both and opens whichever file is read first. The [content checker](#checking-content-before-pushing) fails on a forbidden character (drafts included) or on a published document whose slug another published file already uses: the site would still list that file, but its page would not open. |
-| `socialImage` | No | Image path | Link-preview image; see [Link previews](#link-previews-socialimage). |
+| `socialImage` | No | Image path or URL | Link-preview image; see [Link previews](#link-previews-socialimage). |
 
 #### Article fields (`type: article`)
 
@@ -211,6 +225,7 @@ from frontmatter, a canonical URL, plus the image from `socialImage`:
 ```yaml
 socialImage: images/cover.png   # relative → content/images/cover.png
 socialImage: /images/me.png     # root-absolute → a site path (public/)
+socialImage: https://example.com/cover.png  # full URL → used as written
 ```
 
 Use a PNG or JPEG of 1200×630 (LinkedIn ignores SVG). `content/images/cover.png`
