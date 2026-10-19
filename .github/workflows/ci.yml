@@ -126,8 +126,10 @@ jobs:
             sudo apt-get "${apt_opts[@]}" install -y podman
           fi
       - name: Draft leak guard
+        # Like the front-matter parser, allow a ` # comment` after the value: `draft: true # wip`
+        # is still a draft. `true#wip` (no space before #) is a string there, so not one here.
         run: |
-          if grep -RIl '^draft:[[:space:]]*true[[:space:]]*$' content/; then
+          if grep -RIlE '^draft:[[:space:]]*true([[:space:]]+(#.*)?)?$' content/; then
             echo "::error::draft: true found in content/; refusing to release"
             exit 1
           fi
