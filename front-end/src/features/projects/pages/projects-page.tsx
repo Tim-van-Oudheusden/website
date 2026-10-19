@@ -9,6 +9,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import { httpContentLoader } from "@/shared/lib/content-loader";
+import { TAG_PILL_CLASSES } from "@/shared/lib/tag-pill";
 
 import { resolveGalleryProjects, resolvePriorityProjects } from "../lib/project-display";
 
@@ -27,7 +28,6 @@ export const PROJECTS_PAGE_TYPOGRAPHY_CLASSES = {
   sectionTitle: "text-[1.75rem] font-semibold tracking-tight sm:text-[2rem]",
   cardTitle: "text-xl font-semibold tracking-tight",
   cardDescription: "text-muted-foreground text-sm leading-relaxed",
-  projectTagBadge: "bg-[var(--ink-5)] text-[var(--paper-1)] font-bold [a&]:hover:bg-[var(--ink-5)]/90 dark:bg-[var(--paper-1)] dark:text-[var(--ink-5)] dark:[a&]:hover:bg-[var(--paper-1)]/90",
   learnMoreButton: "w-fit h-14 px-10 text-lg font-semibold tracking-wide bg-[var(--ink-5)] text-white hover:bg-black/90 dark:bg-[var(--paper-1)] dark:text-[var(--ink-5)] dark:hover:bg-[var(--paper-1)]/90",
 } as const;
 
@@ -70,7 +70,7 @@ export function ProjectCard({ project, featured }: ProjectCardProps): JSX.Elemen
           )}
           <div className="flex flex-wrap gap-1.5">
             {project.tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className={`text-xs ${PROJECTS_PAGE_TYPOGRAPHY_CLASSES.projectTagBadge}`}>
+              <Badge key={tag} variant="secondary" className={`text-xs ${TAG_PILL_CLASSES}`}>
                 {tag}
               </Badge>
             ))}

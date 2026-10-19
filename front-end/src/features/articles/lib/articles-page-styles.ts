@@ -1,3 +1,5 @@
+import { TAG_PILL_CLASSES } from "@/shared/lib/tag-pill";
+
 // Below `lg` the page is one column: the article first, the article list after it.
 // From `lg` the list is a sticky left sidebar; from `xl` the TOC is a fixed right rail.
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
@@ -23,7 +25,7 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   articleDescription: "text-muted-foreground mt-4 text-lg sm:text-xl leading-relaxed text-pretty",
   articleMeta: "text-muted-foreground mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium",
   articleBodyMeasure: "mx-auto w-full max-w-[40rem]",
-  articleTagBadge: "bg-[var(--ink-5)] text-[var(--paper-1)] font-bold [a&]:hover:bg-[var(--ink-5)]/90 dark:bg-[var(--paper-1)] dark:text-[var(--ink-5)] dark:[a&]:hover:bg-[var(--paper-1)]/90",
+  articleTagBadge: TAG_PILL_CLASSES,
   relatedTitle: "text-xl font-semibold tracking-tight",
   relatedLink: "hover:bg-accent hover:text-accent-foreground -mx-3 flex flex-col gap-1 rounded-md px-3 py-2 transition-colors",
   relatedLinkTitle: "font-medium",
