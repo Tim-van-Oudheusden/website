@@ -47,7 +47,8 @@ row "Dependency audit (high+)" $?
 
 # Like the front-matter parser, allow a ` # comment` after the value: `draft: true # wip`
 # is still a draft. `true#wip` (no space before #) is a string there, so not one here.
-if grep -RIlE '^draft:[[:space:]]*true([[:space:]]+(#.*)?)?$' "$content_dir" >&2; then
+# The parser also reads an indented ` draft: true` as the top-level key, so allow an indent.
+if grep -RIlE '^[[:space:]]*draft:[[:space:]]*true([[:space:]]+(#.*)?)?$' "$content_dir" >&2; then
   row "Draft leak guard" 1
 else
   row "Draft leak guard" 0
