@@ -114,7 +114,14 @@ describe("scripts/nightly-compliance.sh", () => {
 
   // The front-matter parser drops a trailing ` # comment` from an unquoted
   // value, so `draft: true # wip` is a draft; `true#wip` is the string "true#wip".
-  test.each(["draft: true # not ready yet", "draft: true\t# wip", "draft: true \r"])(
+  // It also trims a key's leading indent, so ` draft: true` is a top-level draft.
+  test.each([
+    "draft: true # not ready yet",
+    "draft: true\t# wip",
+    "draft: true \r",
+    " draft: true",
+    "\tdraft: true # wip",
+  ])(
     "fails on a draft line the parser reads as true: %p",
     (line) => {
       writeFileSync(join(contentDir, "Unfinished.md"), `---\ntitle: Unfinished\n${line}\n---\n`);
