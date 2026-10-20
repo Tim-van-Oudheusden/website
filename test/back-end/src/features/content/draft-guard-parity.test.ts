@@ -68,6 +68,10 @@ describe("nightly compliance draft leak guard", () => {
     'draft: "true"',
     "draft: TRUE",
     "draft: false # shipped",
+    // frontmatter.ts matches keys on `line.trimStart()`, so an indented key is top level (#912).
+    " draft: true",
+    "\tdraft: true # wip",
+    "  draft: false",
   ])("agrees with the real front-matter parser on %p", (line) => {
     const content = `---\ntitle: Parity\n${line}\n---\n`;
     const parsed = readFrontmatter(content);
