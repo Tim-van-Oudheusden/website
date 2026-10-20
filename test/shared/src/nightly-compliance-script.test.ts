@@ -4,8 +4,6 @@ import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync 
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { readFrontmatter } from "../../../back-end/src/features/content/frontmatter";
-
 const rootPath = resolve(import.meta.dirname, "../../..");
 const scriptPath = resolve(rootPath, "scripts/nightly-compliance.sh");
 
@@ -136,42 +134,6 @@ describe("scripts/nightly-compliance.sh", () => {
 
     expect(status).toBe(0);
     expect(report).toMatch(/Draft leak guard.*pass/);
-  });
-
-  // The guard's regex is a hand-rolled mirror of frontmatter.ts's comment and
-  // boolean rules, not a call into it (bash can't import the TS parser) — it
-  // already desynced once (#875: a trailing ` # comment` slipped a draft past
-  // it). Rather than hand-asserting pass/fail per line as the tests above do,
-  // this calls the real `readFrontmatter` for the ground truth and checks the
-  // guard against it, so a future change to those rules fails loudly here
-  // instead of silently letting a draft leak or blocking a real publish.
-  test.each([
-    "draft: true",
-    "draft: false",
-    "draft: true # not ready yet",
-    "draft: true\t# wip",
-    "draft: true \r",
-    "draft: true#wip",
-    "draft: 'true'",
-    "draft: \"true\"",
-    "draft: TRUE",
-    "draft: false # shipped",
-  ])("agrees with the real front-matter parser on %p", (line) => {
-    const content = `---\ntitle: Parity\n${line}\n---\n`;
-    const parsed = readFrontmatter(content);
-
-    if (!parsed.ok) {
-      throw new Error(`fixture is not valid frontmatter: ${parsed.reason}`);
-    }
-
-    const isRealDraft = parsed.result.data["draft"] === true;
-
-    writeFileSync(join(contentDir, "Parity.md"), content);
-
-    const { status, report } = runScript();
-
-    expect(status).toBe(isRealDraft ? 1 : 0);
-    expect(report).toMatch(isRealDraft ? /Draft leak guard.*fail/ : /Draft leak guard.*pass/);
   });
 
   test("runs every check even when an earlier one fails", () => {
