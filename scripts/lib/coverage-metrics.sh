@@ -6,10 +6,13 @@
 # (with no output) if that row is absent.
 coverage_metrics() {
   awk -F'|' '
-    /^All files[[:space:]]*\|/ {
+    # Keep reading after the match: exiting early closes the pipe while the
+    # writer is still sending a large report, failing it with SIGPIPE.
+    /^All files[[:space:]]*\|/ && !found {
       gsub(/[[:space:]]/, "", $2)
       gsub(/[[:space:]]/, "", $3)
-      print $2, $3
-      exit
-    }'
+      metrics = $2 " " $3
+      found = 1
+    }
+    END { if (found) print metrics }'
 }

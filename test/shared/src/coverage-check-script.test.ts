@@ -25,6 +25,9 @@ if [ "\${STUB_NO_SUMMARY:-0}" != 1 ]; then
   echo "All files            |  \${STUB_FUNCS} |  \${STUB_LINES} |"
 fi
 echo " src/example.ts      |  \${STUB_FUNCS} |  \${STUB_LINES} | 12-14"
+if [ "\${STUB_BULK_REPORT:-0}" = 1 ]; then
+  yes " src/bulk.ts          |  100.00 |  100.00 |" | head -n 20000
+fi
 exit "\${STUB_TEST_STATUS:-0}"
 `,
   );
@@ -102,6 +105,16 @@ describe("scripts/coverage-check.sh", () => {
     expect(status).toBe(3);
     expect(stdout).toContain("All files            |  100.00 |  100.00 |");
     expect(stderr).toContain("bun test failed with status 3");
+  });
+
+  test("passes on a report far larger than a pipe buffer with the summary row near the top", () => {
+    const { status, stderr } = runCheck(
+      { funcs: "90", lines: "90" },
+      { STUB_FUNCS: "95.50", STUB_LINES: "90.00", STUB_BULK_REPORT: "1" },
+    );
+
+    expect(stderr).not.toContain("Broken pipe");
+    expect(status).toBe(0);
   });
 
   test("fails when the coverage report has no summary row", () => {
