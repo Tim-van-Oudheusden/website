@@ -27,6 +27,9 @@ const server = Bun.serve({
     distDir: resolve(import.meta.dir, "../dist"),
     fetchBackend: (path, headers) =>
       fetch(`${backendOrigin}${path}`, { headers, signal: AbortSignal.timeout(BACKEND_TIMEOUT_MS) }),
+    onBackendUnavailable: (lookup, reason) => {
+      console.warn(`[front-end-server] back-end ${lookup} lookup unavailable: ${reason}`);
+    },
   }),
 });
 

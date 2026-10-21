@@ -118,7 +118,12 @@ of indexing a "not found" page. That covers a path no client route matches
 (`/blog/foo`) and an article or project slug the back-end answers with a `404`
 (removed content, or a slug from the other section). If the back-end is down or
 rate-limits the lookup, the page is still served as a `200`, so an outage never
-de-indexes real pages. Check on the host:
+de-indexes real pages. Each lookup that fails this way, including those for
+`/sitemap.xml`, `/llms.txt` and `/feed.xml`, writes one line to the front-end
+container's log (`podman logs website-front-end`) such as
+`[front-end-server] back-end content item lookup unavailable: TimeoutError: …`.
+A refused or timed-out connection never reaches the back-end, so its request
+log and `/metrics` cannot show it. Check on the host:
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8300/articles/no-such-article   # 404
