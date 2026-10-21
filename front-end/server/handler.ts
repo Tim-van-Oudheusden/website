@@ -15,7 +15,17 @@ export interface RequestHandlerOptions {
    * request headers (the visitor's CF-Connecting-IP, when known).
    */
   fetchBackend: (path: string, headers: Record<string, string>) => Promise<Response>;
+  /**
+   * Told about each back-end lookup that could not be completed (refused, timed
+   * out, non-OK status). The page is still served, so without this an outage
+   * only shows as missing previews. `lookup` is a fixed name; `reason` is the
+   * status code or error, never the visitor's path or headers.
+   */
+  onBackendUnavailable: (lookup: BackendLookup, reason: string) => void;
 }
+
+/** Which back-end lookup could not be completed. */
+export type BackendLookup = "content item" | "content list";
 
 /** The back-end's answer for a slug; `unavailable` when it could not say (down, rate-limited, …). */
 type ContentLookup
@@ -71,7 +81,7 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     }
 
     if (url.pathname === "/llms.txt") {
-      const items = await fetchContentList(options.fetchBackend, backendHeaders) ?? [];
+      const items = await fetchContentList(options, backendHeaders) ?? [];
 
       return new Response(renderLlmsTxt(requestOrigin(request, url), items), {
         headers: { ...SECURITY_HEADERS, "content-type": "text/plain; charset=utf-8" },
@@ -79,7 +89,7 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     }
 
     if (url.pathname === "/sitemap.xml") {
-      const items = await fetchContentList(options.fetchBackend, backendHeaders) ?? [];
+      const items = await fetchContentList(options, backendHeaders) ?? [];
 
       return new Response(renderSitemap(requestOrigin(request, url), items), {
         headers: { ...SECURITY_HEADERS, "content-type": "application/xml; charset=utf-8" },
@@ -87,7 +97,7 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     }
 
     if (url.pathname === "/feed.xml") {
-      const items = await fetchContentList(options.fetchBackend, backendHeaders);
+      const items = await fetchContentList(options, backendHeaders);
 
       // An empty feed would read as "no articles"; a 503 tells feed readers to retry.
       if (items === null) {
@@ -128,7 +138,7 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     let status = 200;
 
     if (pagePrefix !== undefined && slug !== undefined) {
-      const lookup = await fetchContentItem(options.fetchBackend, slug, backendHeaders);
+      const lookup = await fetchContentItem(options, slug, backendHeaders);
 
       // A slug under the other section (/articles/<project slug>) is not a real page there.
       // When the back-end cannot say, serve a plain 200: an outage must not de-index real pages.
@@ -184,20 +194,24 @@ function requestOrigin(request: Request, url: URL): string {
  * the sitemap then still names the fixed pages, and the feed answers 503.
  */
 async function fetchContentList(
-  fetchBackend: RequestHandlerOptions["fetchBackend"],
+  options: RequestHandlerOptions,
   headers: Record<string, string>,
 ): Promise<ContentFrontmatter[] | null> {
   try {
-    const response = await fetchBackend(`${API_BASE}${ROUTES.CONTENT}`, headers);
+    const response = await options.fetchBackend(`${API_BASE}${ROUTES.CONTENT}`, headers);
 
     if (!response.ok) {
+      options.onBackendUnavailable("content list", `status ${response.status}`);
+
       return null;
     }
 
     const items = await response.json() as ContentFrontmatter[];
 
     return Array.isArray(items) ? items : null;
-  } catch {
+  } catch (error) {
+    options.onBackendUnavailable("content list", describeError(error));
+
     return null;
   }
 }
@@ -208,23 +222,32 @@ async function fetchContentList(
  * rate-limited) is `unavailable`, and the page must load regardless.
  */
 async function fetchContentItem(
-  fetchBackend: RequestHandlerOptions["fetchBackend"],
+  options: RequestHandlerOptions,
   slug: string,
   headers: Record<string, string>,
 ): Promise<ContentLookup> {
   try {
-    const response = await fetchBackend(`${API_BASE}/content/${slug}`, headers);
+    const response = await options.fetchBackend(`${API_BASE}/content/${slug}`, headers);
 
     if (response.status === 404) {
       return { status: "missing" };
     }
 
     if (!response.ok) {
+      options.onBackendUnavailable("content item", `status ${response.status}`);
+
       return { status: "unavailable" };
     }
 
     return { status: "found", item: await response.json() as ContentFrontmatter };
-  } catch {
+  } catch (error) {
+    options.onBackendUnavailable("content item", describeError(error));
+
     return { status: "unavailable" };
   }
+}
+
+/** `TimeoutError: …` for the fetch timeout in main.ts, `Error: connect ECONNREFUSED …` when the back-end is down. */
+function describeError(error: unknown): string {
+  return error instanceof Error ? `${error.name}: ${error.message}` : String(error);
 }

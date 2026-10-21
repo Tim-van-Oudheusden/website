@@ -54,6 +54,10 @@ afterAll(() => {
 
 const PROJECT = { ...ARTICLE, type: "project", slug: "pi-sandbox-automation", title: "Pi Sandbox Automation" };
 
+/** For tests that do not check what the handler reports about the back-end. */
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+function ignoreUnavailable(): void {}
+
 const NOINDEX = '<meta name="robots" content="noindex" />';
 
 /** A real URL for each parameterised client route; every other route path is its own URL. */
@@ -82,7 +86,7 @@ function backend(path: string): Promise<Response> {
 
 describe("front-end request handler", () => {
   test("serves a self-hosted woff2 font as a font, not as the SPA shell", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const response = await handle(new Request("https://buildwithtim.dev/fonts/face.woff2"));
 
@@ -92,7 +96,7 @@ describe("front-end request handler", () => {
   });
 
   test("serves an article URL as the app shell carrying that article's link-preview tags", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const response = await handle(new Request("https://buildwithtim.dev/articles/yoga-nidra"));
     const html = await response.text();
@@ -105,7 +109,7 @@ describe("front-end request handler", () => {
   });
 
   test("answers an unknown slug, or one from the other section, with the app shell as a noindex 404", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     for (const path of [
       "/articles/no-such-article",
@@ -131,7 +135,7 @@ describe("front-end request handler", () => {
       () => Promise.resolve(new Response("", { status: 503 })),
       () => Promise.resolve(new Response("", { status: 429 })),
     ]) {
-      const handle = createRequestHandler({ distDir, fetchBackend });
+      const handle = createRequestHandler({ distDir, fetchBackend, onBackendUnavailable: ignoreUnavailable });
 
       for (const path of ["/articles/yoga-nidra", "/projects/no-such-project"]) {
         const response = await handle(new Request(`https://buildwithtim.dev${path}`));
@@ -142,8 +146,46 @@ describe("front-end request handler", () => {
     }
   });
 
+  test("reports each back-end lookup it could not complete, with the reason", async () => {
+    // Without this an outage only shows as missing previews: a refused or timed-out
+    // connection never reaches the back-end's own request log.
+    const cases: [() => Promise<Response>, string][] = [
+      [() => Promise.reject(new Error("connect ECONNREFUSED 127.0.0.1:3001")), "Error: connect ECONNREFUSED 127.0.0.1:3001"],
+      [() => Promise.resolve(new Response("", { status: 503 })), "status 503"],
+    ];
+
+    for (const [fetchBackend, reason] of cases) {
+      const reports: [string, string][] = [];
+      const handle = createRequestHandler({
+        distDir,
+        fetchBackend,
+        onBackendUnavailable: (lookup, why) => reports.push([lookup, why]),
+      });
+
+      await handle(new Request("https://buildwithtim.dev/articles/yoga-nidra"));
+      await handle(new Request("https://buildwithtim.dev/feed.xml"));
+
+      expect(reports).toEqual([["content item", reason], ["content list", reason]]);
+    }
+  });
+
+  test("does not report a back-end 404 or a lookup that succeeded", async () => {
+    const reports: [string, string][] = [];
+    const handle = createRequestHandler({
+      distDir,
+      fetchBackend: backend,
+      onBackendUnavailable: (lookup, why) => reports.push([lookup, why]),
+    });
+
+    await handle(new Request("https://buildwithtim.dev/articles/yoga-nidra"));
+    await handle(new Request("https://buildwithtim.dev/articles/no-such-article"));
+    await handle(new Request("https://buildwithtim.dev/sitemap.xml"));
+
+    expect(reports).toEqual([]);
+  });
+
   test("serves a project URL as the app shell carrying that project's canonical URL and link-preview tags", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const response = await handle(new Request("https://buildwithtim.dev/projects/pi-sandbox-automation"));
     const html = await response.text();
@@ -157,7 +199,7 @@ describe("front-end request handler", () => {
   });
 
   test("serves every client route as an indexable 200 app shell, matched like the router matches it", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     // React Router ignores case and a trailing slash, so these render real pages too.
     for (const path of ["/projects", "/projects/", "/articles", "/Articles", "/tags/docker", "/now", "/uses/"]) {
@@ -174,7 +216,7 @@ describe("front-end request handler", () => {
   });
 
   test("serves every route App.tsx declares as an indexable 200, so the server's route list cannot fall behind it", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
     const paths = createRoutesFromChildren(AppRoutes().props.children)
       .map((route) => route.path)
       .filter((path) => path !== "*");
@@ -195,7 +237,7 @@ describe("front-end request handler", () => {
   });
 
   test("answers a path no client route matches with the app shell as a noindex 404", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     // "/images" is a build directory, not a page.
     for (const path of ["/blog/foo", "/images", "/tags", "/projects/pi-sandbox-automation/extra", "/tags/docker/extra", "/nowhere", "/now/extra"]) {
@@ -210,7 +252,7 @@ describe("front-end request handler", () => {
   });
 
   test("serves built files as-is", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const image = await handle(new Request("https://buildwithtim.dev/images/me.png"));
 
@@ -220,7 +262,7 @@ describe("front-end request handler", () => {
   });
 
   test("never serves a file from outside the build directory", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     for (const path of ["/../secret.txt", "/%2e%2e/secret.txt", "/..%2fsecret.txt", "/images/..%2f..%2fsecret.txt"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
@@ -232,7 +274,7 @@ describe("front-end request handler", () => {
   });
 
   test("answers /favicon.ico with a 404 instead of the app shell, and still serves /favicon.svg", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const ico = await handle(new Request("https://buildwithtim.dev/favicon.ico"));
 
@@ -247,7 +289,7 @@ describe("front-end request handler", () => {
   });
 
   test("serves the web app manifest with its manifest media type", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const manifest = await handle(new Request("https://buildwithtim.dev/manifest.webmanifest"));
 
@@ -257,7 +299,7 @@ describe("front-end request handler", () => {
   });
 
   test("builds preview URLs with the visitor's scheme when TLS ends at the tunnel", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const response = await handle(new Request("http://buildwithtim.dev/articles/yoga-nidra", {
       headers: { "x-forwarded-proto": "https" },
@@ -275,6 +317,7 @@ describe("front-end request handler", () => {
 
         return backend(path);
       },
+      onBackendUnavailable: ignoreUnavailable,
     });
 
     await handle(new Request("https://buildwithtim.dev/articles/yoga-nidra", { headers: { "cf-connecting-ip": "203.0.113.7" } }));
@@ -284,7 +327,7 @@ describe("front-end request handler", () => {
   });
 
   test("serves a robots.txt that allows crawling and points at the sitemap on the visitor's origin", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const response = await handle(new Request("http://buildwithtim.dev/robots.txt", {
       headers: { "x-forwarded-proto": "https" },
@@ -296,7 +339,7 @@ describe("front-end request handler", () => {
   });
 
   test("serves an llms.txt naming the site and linking its sections, articles and projects on the visitor's origin", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const response = await handle(new Request("http://buildwithtim.dev/llms.txt", {
       headers: { "x-forwarded-proto": "https" },
@@ -316,6 +359,7 @@ describe("front-end request handler", () => {
     const handle = createRequestHandler({
       distDir,
       fetchBackend: () => Promise.reject(new Error("connect ECONNREFUSED 127.0.0.1:3001")),
+      onBackendUnavailable: ignoreUnavailable,
     });
 
     const response = await handle(new Request("https://buildwithtim.dev/llms.txt"));
@@ -327,7 +371,7 @@ describe("front-end request handler", () => {
   });
 
   test("serves a sitemap of the fixed pages and every published article and project", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const response = await handle(new Request("https://buildwithtim.dev/sitemap.xml"));
     const xml = await response.text();
@@ -350,6 +394,7 @@ describe("front-end request handler", () => {
     const handle = createRequestHandler({
       distDir,
       fetchBackend: () => Promise.reject(new Error("connect ECONNREFUSED 127.0.0.1:3001")),
+      onBackendUnavailable: ignoreUnavailable,
     });
 
     const response = await handle(new Request("https://buildwithtim.dev/sitemap.xml"));
@@ -367,7 +412,7 @@ describe("front-end request handler", () => {
   });
 
   test("serves an Atom feed of published articles, not projects, on the visitor's origin", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const response = await handle(new Request("http://buildwithtim.dev/feed.xml", {
       headers: { "x-forwarded-proto": "https" },
@@ -387,6 +432,7 @@ describe("front-end request handler", () => {
     const handle = createRequestHandler({
       distDir,
       fetchBackend: () => Promise.reject(new Error("connect ECONNREFUSED 127.0.0.1:3001")),
+      onBackendUnavailable: ignoreUnavailable,
     });
 
     const response = await handle(new Request("https://buildwithtim.dev/feed.xml"));
@@ -396,7 +442,7 @@ describe("front-end request handler", () => {
   });
 
   test("serves the homepage with the rebrand title, description, canonical URL and preview tags on the visitor's origin", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const response = await handle(new Request("http://buildwithtim.dev/", { headers: { "x-forwarded-proto": "https" } }));
     const html = await response.text();
@@ -413,7 +459,7 @@ describe("front-end request handler", () => {
   });
 
   test("gives the homepage canonical the origin the visitor used, not a hard-coded domain", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const html = await (await handle(new Request("http://localhost:3000/"))).text();
 
@@ -425,7 +471,11 @@ describe("front-end request handler", () => {
 
     mkdirSync(realDist, { recursive: true });
     writeFileSync(join(realDist, "index.html"), readFileSync(join(import.meta.dir, "../../../front-end/index.html")));
-    const handle = createRequestHandler({ distDir: realDist, fetchBackend: backend });
+    const handle = createRequestHandler({
+      distDir: realDist,
+      fetchBackend: backend,
+      onBackendUnavailable: ignoreUnavailable,
+    });
 
     for (const path of ["/", "/articles/yoga-nidra"]) {
       const html = await (await handle(new Request(`https://buildwithtim.dev${path}`))).text();
@@ -444,7 +494,7 @@ describe("front-end request handler", () => {
   });
 
   test("sends the back-end's framing and MIME-sniffing protections on every response", async () => {
-    const handle = createRequestHandler({ distDir, fetchBackend: backend });
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     for (const path of ["/", "/articles/yoga-nidra", "/blog/foo", "/images/me.png", "/robots.txt", "/llms.txt", "/sitemap.xml", "/feed.xml", "/health"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
@@ -459,7 +509,7 @@ describe("front-end request handler", () => {
     // probe that never checks it could report "ok" while every visitor
     // request already 500s (mirrors the back-end's contentDir check, #707).
     test("reports ok when the built site is present", async () => {
-      const handle = createRequestHandler({ distDir, fetchBackend: backend });
+      const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
       const response = await handle(new Request("https://buildwithtim.dev/health"));
       const body = await response.json();
@@ -474,7 +524,11 @@ describe("front-end request handler", () => {
       const emptyDir = mkdtempSync(join(tmpdir(), "front-end-no-dist-"));
 
       try {
-        const handle = createRequestHandler({ distDir: emptyDir, fetchBackend: backend });
+        const handle = createRequestHandler({
+          distDir: emptyDir,
+          fetchBackend: backend,
+          onBackendUnavailable: ignoreUnavailable,
+        });
 
         const response = await handle(new Request("https://buildwithtim.dev/health"));
         const body = await response.json();
