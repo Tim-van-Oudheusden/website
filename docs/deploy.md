@@ -328,6 +328,13 @@ exit non-zero with `still rejected: <image>:latest <digest>` in the journal.
 They don't redeploy the bad image every 5 minutes. To retry the same digest
 (for example after fixing something on the host), delete that file.
 
+That file can outlive the image it rejected (after `podman rmi`, `podman system
+reset`, or a host rebuild that kept `~/.local/state`). Then there is no previous
+image to hold the rejected digest back with, so it stays on `:latest`. The tick
+logs `no previously running <image> image to hold back <digest>`, doesn't
+replay the pod even when the other image changed, and exits non-zero. It keeps
+doing so until a new digest is pushed or the file is deleted.
+
 **Manual:** needed when the bad image has survived past the next update cycle
 (so the local `:rollback` tag has been overwritten by a newer pull) or when
 rolling back further than one release. Pull a known-good immutable tag and

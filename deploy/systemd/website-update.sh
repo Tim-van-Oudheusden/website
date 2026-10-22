@@ -24,6 +24,11 @@
 # digest clears this. To retry the same digest anyway, delete its file under
 # the state directory below.
 #
+# Holding a rejected digest back needs a previously running image. With none
+# (the state directory outlived the image store, e.g. after `podman rmi`), the
+# rejected digest stays on :latest, so the pod is not replayed at all: a replay
+# would start it and then blame the other image's new digest for the failure.
+#
 # Every image listed in `images` below must be one the pod runs: its ref
 # "$registry/<name>:latest" must match deploy/kube/prod.yaml exactly.
 set -euo pipefail
@@ -68,13 +73,12 @@ declare -A before=() after=()
 # Image names whose new :latest the pod replay will pick up.
 changed=()
 still_rejected=0
+# Still-rejected image names with no previously running image to hold them back.
+unheld=()
 
-# Puts the :rollback reference back onto :latest, when there is one (a first
-# deploy has no previously running image to return to).
+# Puts the :rollback reference back onto :latest.
 restore_rollback() {
-  if [[ -n "${before[$1]}" ]]; then
-    podman tag "$registry/$1:rollback" "$registry/$1:latest"
-  fi
+  podman tag "$registry/$1:rollback" "$registry/$1:latest"
 }
 
 # Tags the running image as :rollback, pulls :latest, then either holds back a
@@ -94,7 +98,12 @@ sync_image() {
   if [[ -n "${after[$name]}" && "${after[$name]}" == "$(rejected_digest "$name")" ]]; then
     echo "still rejected: $name:latest ${after[$name]}" >&2
     still_rejected=1
-    restore_rollback "$name"
+    if [[ -n "${before[$name]}" ]]; then
+      restore_rollback "$name"
+    else
+      echo "no previously running $name image to hold back ${after[$name]}; it stays on :latest" >&2
+      unheld+=("$name")
+    fi
   elif [[ -n "${after[$name]}" && "${before[$name]}" != "${after[$name]}" ]]; then
     echo "image changed: $name:latest"
     changed+=("$name")
@@ -108,6 +117,18 @@ done
 if [[ "${#changed[@]}" -eq 0 ]]; then
   echo "images unchanged; skipping pod restart"
   exit "$still_rejected"
+fi
+
+# Keep :latest on what the pod still runs, so a later tick sees each new
+# digest again and replays it once nothing rejected would start with it.
+if [[ "${#unheld[@]}" -gt 0 ]]; then
+  echo "skipping pod restart: a rejected image has nothing to roll back to" >&2
+  for name in "${changed[@]}"; do
+    if [[ -n "${before[$name]}" ]]; then
+      restore_rollback "$name"
+    fi
+  done
+  exit 1
 fi
 
 echo "replaying podman-kube@website.service"
