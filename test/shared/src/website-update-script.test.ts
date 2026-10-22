@@ -52,7 +52,12 @@ interface ScriptRun {
   stdout: string;
 }
 
-function runScript(healthy: readonly string[]): ScriptRun {
+/**
+ * `healthy`: the /health URLs that answer 200. `unstartable`: image digests the pod
+ * cannot start on, so replaying it while one is on :latest fails like `kube play`'s
+ * "failed to start N containers".
+ */
+function runScript(healthy: readonly string[], unstartable: readonly string[] = []): ScriptRun {
   writeFileSync(callLog, "");
 
   const result = spawnSync("bash", [scriptPath], {
@@ -62,6 +67,7 @@ function runScript(healthy: readonly string[]): ScriptRun {
       ...process.env,
       PATH: `${stubDir}:${process.env["PATH"] ?? ""}`,
       STUB_HEALTHY: healthy.join(" "),
+      STUB_UNSTARTABLE: unstartable.join(" "),
       XDG_STATE_HOME: join(stubDir, "state"),
     },
   });
@@ -98,7 +104,13 @@ beforeEach(() => {
 
   // Answers 200 only for URLs listed in STUB_HEALTHY; anything else fails like `curl -f` on a refused port.
   writeStub("curl", `for url in $STUB_HEALTHY; do [ "$url" = "\${@: -1}" ] && exit 0; done; exit 7`);
-  writeStub("systemctl", "exit 0");
+
+  // Fails the replay while an unstartable digest is on :latest, as `kube play` does when a container won't start.
+  writeStub(
+    "systemctl",
+    `for digest in $STUB_UNSTARTABLE; do grep -qxF "$digest" "${imageDir}"/*_latest && exit 1; done; exit 0`,
+  );
+
   writeStub("sleep", "exit 0");
 });
 
@@ -238,6 +250,35 @@ describe("deploy/systemd/website-update.sh", () => {
     expect(calls.some((call) => call.startsWith("podman tag "))).toBe(false);
     expect(localDigest(`${FRONT}:rollback`)).toBeNull();
     expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-b");
+  });
+
+  test("rolls back and exits non-zero when the pod cannot even be replayed on the new image", () => {
+    setLocal(`${FRONT}:latest`, "sha256:front-a");
+    setLocal(`${BACK}:latest`, "sha256:back-a");
+    setRegistry(`${FRONT}:latest`, "sha256:front-unstartable");
+    setRegistry(`${BACK}:latest`, "sha256:back-a");
+
+    const { status, calls, stderr } = runScript([FRONT_HEALTH, BACK_HEALTH], ["sha256:front-unstartable"]);
+
+    expect(status).toBe(1);
+    expect(restarts(calls)).toBe(2);
+    expect(stderr).toContain("update FAILED");
+    expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-a");
+    expect(calls.some((call) => call.startsWith("curl "))).toBe(false);
+  });
+
+  test("after a failed replay, the next tick holds the image back and keeps failing loudly", () => {
+    setLocal(`${FRONT}:latest`, "sha256:front-a");
+    setLocal(`${BACK}:latest`, "sha256:back-a");
+    setRegistry(`${FRONT}:latest`, "sha256:front-unstartable");
+    setRegistry(`${BACK}:latest`, "sha256:back-a");
+    runScript([FRONT_HEALTH, BACK_HEALTH], ["sha256:front-unstartable"]);
+
+    const { status, calls, stderr } = runScript([FRONT_HEALTH, BACK_HEALTH], ["sha256:front-unstartable"]);
+
+    expect(status).not.toBe(0);
+    expect(restarts(calls)).toBe(0);
+    expect(stderr).toContain("still rejected: front-end:latest sha256:front-unstartable");
   });
 
   describe("after a rollback, remembers the rejected digest (#811)", () => {
