@@ -252,6 +252,23 @@ describe("deploy/systemd/website-update.sh", () => {
     expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-b");
   });
 
+  test("with no local image to return to, holds a rejected digest without tagging a rollback reference", () => {
+    const stateDir = join(stubDir, "state", "website-update");
+
+    mkdirSync(stateDir, { recursive: true });
+    writeFileSync(join(stateDir, "rejected-front-end"), "sha256:front-bad\n");
+    setRegistry(`${FRONT}:latest`, "sha256:front-bad");
+    setLocal(`${BACK}:latest`, "sha256:back-a");
+    setRegistry(`${BACK}:latest`, "sha256:back-a");
+
+    const { status, calls, stderr } = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+    expect(status).toBe(1);
+    expect(calls.filter((call) => call.startsWith(`podman tag ${FRONT}`))).toHaveLength(0);
+    expect(restarts(calls)).toBe(0);
+    expect(stderr).toContain("still rejected: front-end:latest sha256:front-bad");
+  });
+
   test("rolls back and exits non-zero when the pod cannot even be replayed on the new image", () => {
     setLocal(`${FRONT}:latest`, "sha256:front-a");
     setLocal(`${BACK}:latest`, "sha256:back-a");
