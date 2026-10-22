@@ -47,13 +47,13 @@ The sidebar sorts the games into ten categories: Words, Numbers & Logic, Movies 
 
 Star the games you play every day, or press `Ctrl` `D`, and they come together under Favorites at the top of the sidebar, in the order you choose. Starred something by accident? You can undo it. Once you have played a game, you can mark it as done today, by hand or automatically, so you can see at a glance what is still left. Your favourites can be exported to a file and imported on another computer.
 
-![The Favorites section of Dailies with eight starred games, among them Wordle, Connections and Worldle, each with its category and a difficulty badge](/content-assets/images/dailies/favorites.png)
+![The Favorites section of Dailies with eight starred games, among them Wordle, Connections and Worldle, each with its own icon, a category badge on the icon's corner and a difficulty badge](/content-assets/images/dailies/favorites.png)
 
 ## See what's popular this week
 
 Under This Week, two shelves show what other people are playing. Popular lists the games that are popular right now, and Trending the ones that are on the rise. Both are worked out every Monday from the [Tranco](https://tranco-list.eu) rank of each game's website, and Dailies picks up the new shelves the next time it refreshes, without needing an update.
 
-![The Popular shelf for this week, with Wordle, Connections, Strands and The Mini Crossword in the first row](/content-assets/images/dailies/popular.png)
+![The Popular shelf for this week, with Pinpoint, Queens, Wordle and Connections in the first row](/content-assets/images/dailies/popular.png)
 
 ## Light or dark, it follows your style
 
