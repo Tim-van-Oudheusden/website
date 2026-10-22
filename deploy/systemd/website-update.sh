@@ -12,7 +12,7 @@
 # replay that leaves the pod broken needs its own safety net (#805): before
 # pulling, the currently-running image is tagged locally as a rollback
 # reference; after a replay, both containers' /health endpoints are polled,
-# and a failure re-tags the rollback image(s) onto :latest, replays again,
+# and a failed replay or health check re-tags the rollback image(s) onto :latest, replays again,
 # and exits non-zero so the failure shows up in `systemctl --user status` /
 # the journal (there's no alerting backend for this site).
 #
@@ -111,14 +111,19 @@ if [[ "${#changed[@]}" -eq 0 ]]; then
 fi
 
 echo "replaying podman-kube@website.service"
-systemctl --user restart podman-kube@website.service
 
-if wait_healthy http://127.0.0.1:8300/health && wait_healthy http://127.0.0.1:8301/health; then
+# A replay that fails outright (kube play exits "failed to start N containers",
+# e.g. an image whose entrypoint or user is missing) takes the same rollback
+# path as an unhealthy one. Unguarded, set -e would end the run here with the
+# pod down, and the next tick would see no digest change and exit 0.
+if systemctl --user restart podman-kube@website.service \
+  && wait_healthy http://127.0.0.1:8300/health \
+  && wait_healthy http://127.0.0.1:8301/health; then
   echo "update healthy: front-end and back-end both answered /health"
   exit "$still_rejected"
 fi
 
-echo "update FAILED health check: rolling back to the previously running image(s)" >&2
+echo "update FAILED (pod replay or health check): rolling back to the previously running image(s)" >&2
 
 for name in "${changed[@]}"; do
   if [[ -n "${before[$name]}" ]]; then

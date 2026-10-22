@@ -314,8 +314,9 @@ a digest changed — the common "no new image" cycle causes zero downtime.
 **Automatic:** `website-update.sh` already guards against this for the common
 case. Before pulling, it tags whatever image is currently running as a local
 `:rollback` reference; after replaying the pod on a digest change, it polls
-both containers' `/health` endpoints for ~20s. If either never comes up
-healthy, it re-tags `:rollback` onto `:latest`, replays the pod again, and
+both containers' `/health` endpoints for ~20s. If the replay itself fails
+(`podman kube play` could not start a container) or either container never
+comes up healthy, it re-tags `:rollback` onto `:latest`, replays the pod again, and
 exits non-zero — check `systemctl --user status website-update.service` /
 `journalctl --user -u website-update.service` after an incident to see
 whether this already happened.
