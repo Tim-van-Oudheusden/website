@@ -11,7 +11,7 @@ type: project
 draft: false
 slug: dailies
 coverImage: /images/projects/dailies.webp
-coverImageAlt: The Dailies icon, a desk-calendar card with a grid of blue and orange tiles, above the name Dailies and the tagline "Play your daily guessing games in one place" on a soft pastel background.
+coverImageAlt: The Dailies icon, a page torn off a pad with a three-by-three grid of grey, orange and blue tiles, above the name Dailies and the tagline "Play your daily guessing games in one place" on a soft pastel background.
 socialImage: images/dailies/social-preview.png
 featured: false
 projectOrder: 15
@@ -27,7 +27,7 @@ info: A GNOME app for daily guessing games like Wordle, Connections and Worldle,
 
 # Dailies
 
-![The Dailies icon: a tear-off desk-calendar card whose page is a grid of blue and orange guessing-game tiles](/content-assets/images/dailies/icon.svg)
+![The Dailies icon: a page torn off a pad, filled by a three-by-three grid of grey, orange and blue guessing-game tiles](/content-assets/images/dailies/icon.svg)
 
 A GNOME app that gathers daily guessing games like Wordle, Connections and Worldle in one window, inspired by Cartridges and Bazaar.
 
@@ -37,7 +37,7 @@ Play your daily guessing games in one place. That is the whole idea behind Daili
 
 ## One home for your daily games
 
-Dailies lists more than a hundred guessing games, from Wordle to Worldle. Every game is a tile with the glyph of its category, its name, its category and how hard it is: Easy, Medium or Hard. Dailies is not a game itself and doesn't copy any game. Opening a tile takes you to the game's own website, exactly as its publisher made it.
+Dailies lists more than a hundred guessing games, from Wordle to Worldle. Every game is a tile with the game's own icon on a square tinted in its category's colour, its name, its category and how hard it is: Easy, Medium or Hard. A small badge on the corner of the icon shows the glyph of the category, and you can hide it in Preferences. A game without an icon of its own shows the glyph instead. Dailies is not a game itself and doesn't copy any game. Opening a tile takes you to the game's own website, exactly as its publisher made it.
 
 ## Sorted into ten categories
 
@@ -69,7 +69,7 @@ Games open in a built-in browser that remembers your logins and streaks between 
 
 ## Simple and private
 
-Dailies opens each game's own website, nothing more. You don't need an account, because there is nothing to sign up for. There is no tracking, and your favourites stay on your device. It also works offline: a copy of the game list is built in, and updating it from GitHub is a bonus rather than a requirement. The only things Dailies downloads are the game list and the game pages you open.
+Dailies opens each game's own website, nothing more. You don't need an account, because there is nothing to sign up for. There is no tracking, and your favourites stay on your device. It also works offline: a copy of the game list is built in, and updating it from GitHub is a bonus rather than a requirement. The only things Dailies downloads are the game list, this week's shelves and the games' icons, all from GitHub, and the game pages you open.
 
 ## Adding a game
 
@@ -81,6 +81,6 @@ Dailies is still early, so releases are numbered 0.x. It is free and open source
 
 ## The artwork
 
-The icon is a tear-off desk-calendar card whose page is a guessing game's grid of tiles, so it shows both a daily page and the guessing games in one picture. The tiles are blue and orange instead of green and yellow, to keep it clearly apart from Wordle.
+The icon is today's page torn off a pad, filled by a guessing game's grid of tiles, so it shows both a daily page and the guessing games in one picture. The grid follows one game from the first guess to the solved row at the bottom. It has no binder rings and no coloured header band, so it doesn't read as a calendar. The tiles are blue and orange instead of green and yellow, to keep it clearly apart from Wordle.
 
 The icon and the screenshots come from the [Dailies repository](https://github.com/Tim-van-Oudheusden/Dailies) and are licensed under GPL-3.0-or-later.

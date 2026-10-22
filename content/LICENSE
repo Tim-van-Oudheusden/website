@@ -14,9 +14,10 @@ outlined text is Roboto, (c) Google, under the Apache License 2.0.
 Also except: the Dailies icon and screenshots in content/images/dailies/
 are copied from https://github.com/Tim-van-Oudheusden/Dailies, and the
 cover public/images/projects/dailies.webp and
-content/images/dailies/social-preview.png are taken from the Dailies
-introduction video, which shows that icon. They are licensed under the
-GNU General Public License v3.0 or later (GPL-3.0-or-later).
+content/images/dailies/social-preview.png are stills from the Dailies
+introduction video, with the icon in them replaced by the current app
+icon from that repository. They are licensed under the GNU General
+Public License v3.0 or later (GPL-3.0-or-later).
 
 The full legal code follows.
 
