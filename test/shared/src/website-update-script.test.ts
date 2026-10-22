@@ -252,6 +252,50 @@ describe("deploy/systemd/website-update.sh", () => {
     expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-b");
   });
 
+  test("with no local image to return to, holds a rejected digest without tagging a rollback reference", () => {
+    const stateDir = join(stubDir, "state", "website-update");
+
+    mkdirSync(stateDir, { recursive: true });
+    writeFileSync(join(stateDir, "rejected-front-end"), "sha256:front-bad\n");
+    setRegistry(`${FRONT}:latest`, "sha256:front-bad");
+    setLocal(`${BACK}:latest`, "sha256:back-a");
+    setRegistry(`${BACK}:latest`, "sha256:back-a");
+
+    const { status, calls, stderr } = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+    expect(status).toBe(1);
+    expect(calls.filter((call) => call.startsWith(`podman tag ${FRONT}`))).toHaveLength(0);
+    expect(restarts(calls)).toBe(0);
+    expect(stderr).toContain("still rejected: front-end:latest sha256:front-bad");
+  });
+
+  test("with no local image to hold a rejected digest back, skips the replay instead of rejecting the other image", () => {
+    const stateDir = join(stubDir, "state", "website-update");
+
+    mkdirSync(stateDir, { recursive: true });
+    writeFileSync(join(stateDir, "rejected-front-end"), "sha256:front-bad\n");
+    setRegistry(`${FRONT}:latest`, "sha256:front-bad");
+    setLocal(`${BACK}:latest`, "sha256:back-a");
+    setRegistry(`${BACK}:latest`, "sha256:back-b");
+
+    const { status, calls, stderr } = runScript([BACK_HEALTH]);
+
+    expect(status).toBe(1);
+    expect(restarts(calls)).toBe(0);
+    expect(stderr).toContain("no previously running front-end image to hold back sha256:front-bad");
+    expect(existsSync(join(stateDir, "rejected-back-end"))).toBe(false);
+    expect(localDigest(`${BACK}:latest`)).toBe("sha256:back-a");
+
+    // :latest stayed on the back-end the pod still runs, so a fixed front-end deploys back-b with it.
+    setRegistry(`${FRONT}:latest`, "sha256:front-fixed");
+
+    const next = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+    expect(next.status).toBe(0);
+    expect(restarts(next.calls)).toBe(1);
+    expect(localDigest(`${BACK}:latest`)).toBe("sha256:back-b");
+  });
+
   test("rolls back and exits non-zero when the pod cannot even be replayed on the new image", () => {
     setLocal(`${FRONT}:latest`, "sha256:front-a");
     setLocal(`${BACK}:latest`, "sha256:back-a");
