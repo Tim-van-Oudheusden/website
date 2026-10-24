@@ -59,7 +59,7 @@ jobs:
             sudo apt-get "${apt_opts[@]}" install -y podman
           fi
       - name: Install Playwright browsers
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: bunx playwright install --with-deps chromium
       - name: Build dev images
         run: |
