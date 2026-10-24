@@ -296,6 +296,28 @@ describe("deploy/systemd/website-update.sh", () => {
     expect(localDigest(`${BACK}:latest`)).toBe("sha256:back-b");
   });
 
+  test("keeps skipping the replay on later ticks, once the unheld rejected digest is the local image", () => {
+    const stateDir = join(stubDir, "state", "website-update");
+
+    mkdirSync(stateDir, { recursive: true });
+    writeFileSync(join(stateDir, "rejected-front-end"), "sha256:front-bad\n");
+    setRegistry(`${FRONT}:latest`, "sha256:front-bad");
+    setLocal(`${BACK}:latest`, "sha256:back-a");
+    setRegistry(`${BACK}:latest`, "sha256:back-b");
+
+    expect(runScript([BACK_HEALTH]).status).toBe(1);
+    // The first tick pulled the rejected front-end, so this one finds it as the local :latest.
+    expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-bad");
+
+    const { status, calls, stderr } = runScript([BACK_HEALTH]);
+
+    expect(status).toBe(1);
+    expect(restarts(calls)).toBe(0);
+    expect(stderr).toContain("no previously running front-end image to hold back sha256:front-bad");
+    expect(existsSync(join(stateDir, "rejected-back-end"))).toBe(false);
+    expect(localDigest(`${BACK}:latest`)).toBe("sha256:back-a");
+  });
+
   test("rolls back and exits non-zero when the pod cannot even be replayed on the new image", () => {
     setLocal(`${FRONT}:latest`, "sha256:front-a");
     setLocal(`${BACK}:latest`, "sha256:back-a");
