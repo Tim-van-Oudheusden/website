@@ -98,7 +98,9 @@ sync_image() {
   if [[ -n "${after[$name]}" && "${after[$name]}" == "$(rejected_digest "$name")" ]]; then
     echo "still rejected: $name:latest ${after[$name]}" >&2
     still_rejected=1
-    if [[ -n "${before[$name]}" ]]; then
+    # A local :latest already on the rejected digest is the one an earlier
+    # unheld tick pulled; the pod never ran it, so it holds nothing back.
+    if [[ -n "${before[$name]}" && "${before[$name]}" != "${after[$name]}" ]]; then
       restore_rollback "$name"
     else
       echo "no previously running $name image to hold back ${after[$name]}; it stays on :latest" >&2
