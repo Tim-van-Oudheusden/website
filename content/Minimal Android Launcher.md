@@ -49,7 +49,7 @@ On a phone with a real keyboard, the fastest way to find an app is to start typi
 
 ## One key away
 
-The menu key opens the menu of the selected app: App info, Uninstall, Add to favourites, Add to collection, Add to group, Rename, Hide and Clear recently used. Make an app a favourite and it rises to the top of the list, marked with a star.
+The menu key opens the menu of the selected app: App info, Uninstall, Add to favourites, Add to collection, Add to group, Rename and Hide, and, when there are recently used apps, Remove from recently used and Clear recently used. Make an app a favourite and it rises to the top of the list, marked with a star; on a favourite the menu offers Remove from favourites instead, and on a hidden app Unhide.
 
 ## Groups sort themselves
 
@@ -69,11 +69,13 @@ Most phones come with apps you will never open but can't uninstall. Hiding an ap
 
 ## Settings, kept small
 
-MinimalUI hides Android's status bar and shows a small pill in the top right corner instead, with the Wi-Fi, the battery and the time. The settings are kept just as small: choose whether the pill shows the clock and the battery percentage, how many recently used apps appear at the top of the list (off, 3, 5 or 15), and find your hidden apps. Enter or the left and right keys change the selected value.
+MinimalUI hides Android's status bar and shows a small pill in the top right corner instead, with the Wi-Fi, the battery and the time. The settings are kept just as small: choose whether the pill shows the clock and the battery percentage, how many recently used apps appear at the top of the list (off, 3, 5 or 15), save or restore your setup, and find your hidden apps. Enter or the left and right keys change the selected value. An About row at the bottom shows the version and the commit the app was built from.
+
+Export setup saves your favourites, collections, groups, renames, hidden apps, recently used apps and settings to one file, wherever you pick in Android's file picker: the phone's Downloads, an SD card or a cloud drive's folder. Import setup brings them back from such a file, and asks before it replaces anything. Neither needs a permission or the network, because the picker only hands MinimalUI the one file you chose.
 
 ## Trying it yourself
 
-MinimalUI is still in alpha. It runs on Android 9 or newer, and it is free and open source under GPL-3.0. Releases are published as APK files on the [releases page](https://github.com/Tim-van-Oudheusden/MinimalUI/releases), and after installing you pick MinimalUI as your default home app in Android's settings. No phone is officially supported until someone has tested it on one, so if you try it on yours, the [devices list](https://github.com/Tim-van-Oudheusden/MinimalUI/blob/main/DEVICES.md) explains how to report how it went.
+MinimalUI is still in alpha. It runs on Android 9 or newer, and it is free and open source under GPL-3.0. Releases are published as APK files on the [releases page](https://github.com/Tim-van-Oudheusden/MinimalUI/releases), and after installing you pick MinimalUI as your default home app in Android's settings. A newer release installs over the one you have and keeps your setup, but switching between a debug build and a release needs an uninstall, which erases it, and a new phone starts empty too, so use Export setup first and Import setup once MinimalUI is installed again. No phone is officially supported until someone has tested it on one, so if you try it on yours, the [devices list](https://github.com/Tim-van-Oudheusden/MinimalUI/blob/main/DEVICES.md) explains how to report how it went.
 
 ## The artwork
 
