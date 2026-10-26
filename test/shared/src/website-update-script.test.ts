@@ -318,6 +318,25 @@ describe("deploy/systemd/website-update.sh", () => {
     expect(localDigest(`${BACK}:latest`)).toBe("sha256:back-a");
   });
 
+  test("skips the replay without tagging the other image back when the image store held neither image", () => {
+    const stateDir = join(stubDir, "state", "website-update");
+
+    mkdirSync(stateDir, { recursive: true });
+    writeFileSync(join(stateDir, "rejected-front-end"), "sha256:front-bad\n");
+    setRegistry(`${FRONT}:latest`, "sha256:front-bad");
+    setRegistry(`${BACK}:latest`, "sha256:back-b");
+    // Left behind by an old deploy; :latest was removed, so the pod is not running it.
+    setLocal(`${BACK}:rollback`, "sha256:back-old");
+
+    const { status, calls, stderr } = runScript([BACK_HEALTH]);
+
+    expect(status).toBe(1);
+    expect(restarts(calls)).toBe(0);
+    expect(calls.some((call) => call.startsWith("podman tag "))).toBe(false);
+    expect(stderr).toContain("skipping pod restart: a rejected image has nothing to roll back to");
+    expect(localDigest(`${BACK}:latest`)).toBe("sha256:back-b");
+  });
+
   test("rolls back and exits non-zero when the pod cannot even be replayed on the new image", () => {
     setLocal(`${FRONT}:latest`, "sha256:front-a");
     setLocal(`${BACK}:latest`, "sha256:back-a");
