@@ -163,7 +163,7 @@ describe("deploy/systemd/website-update.sh", () => {
     const { status, calls, stdout } = runScript([FRONT_HEALTH, BACK_HEALTH]);
 
     expect(status).toBe(0);
-    expect(stdout).toContain("image changed: front-end:latest");
+    expect(stdout).toContain("image changed: front-end:latest sha256:front-a -> sha256:front-b");
     expect(restarts(calls)).toBe(1);
     expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-b");
     expect(localDigest(`${FRONT}:rollback`)).toBe("sha256:front-a");
@@ -329,8 +329,20 @@ describe("deploy/systemd/website-update.sh", () => {
     expect(status).toBe(1);
     expect(restarts(calls)).toBe(2);
     expect(stderr).toContain("update FAILED");
+    expect(stderr).toContain("rejected: front-end:latest sha256:front-unstartable");
     expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-a");
     expect(calls.some((call) => call.startsWith("curl "))).toBe(false);
+  });
+
+  test("names the new digest and (none) for the old one when an image had no local :latest", () => {
+    setLocal(`${BACK}:latest`, "sha256:back-a");
+    setRegistry(`${FRONT}:latest`, "sha256:front-b");
+    setRegistry(`${BACK}:latest`, "sha256:back-a");
+
+    const { status, stdout } = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+    expect(status).toBe(0);
+    expect(stdout).toContain("image changed: front-end:latest (none) -> sha256:front-b");
   });
 
   test("after a failed replay, the next tick holds the image back and keeps failing loudly", () => {
