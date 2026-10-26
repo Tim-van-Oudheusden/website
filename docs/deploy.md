@@ -305,7 +305,10 @@ systemctl --user enable --now website-update.timer
 
 The timer fires every 5 minutes (`Persistent=true`). The service compares the
 image digest before/after each pull and restarts `podman-kube@website` only when
-a digest changed — the common "no new image" cycle causes zero downtime.
+a digest changed — the common "no new image" cycle causes zero downtime. Each
+replay logs `image changed: <image>:latest <old digest> -> <new digest>`, and
+CI pushes every image under its `:<git-sha>` tag too, so the journal shows which
+commit went live.
 
 ---
 
@@ -319,7 +322,8 @@ both containers' `/health` endpoints for ~20s. If the replay itself fails
 comes up healthy, it re-tags `:rollback` onto `:latest`, replays the pod again, and
 exits non-zero — check `systemctl --user status website-update.service` /
 `journalctl --user -u website-update.service` after an incident to see
-whether this already happened.
+whether this already happened. Each image rolled back is logged as
+`rejected: <image>:latest <digest>`.
 
 The rolled-back digest is then remembered as rejected, in
 `${XDG_STATE_HOME:-~/.local/state}/website-update/rejected-<image>`. Until a

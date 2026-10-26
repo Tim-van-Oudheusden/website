@@ -107,7 +107,7 @@ sync_image() {
       unheld+=("$name")
     fi
   elif [[ -n "${after[$name]}" && "${before[$name]}" != "${after[$name]}" ]]; then
-    echo "image changed: $name:latest"
+    echo "image changed: $name:latest ${before[$name]:-(none)} -> ${after[$name]}"
     changed+=("$name")
   fi
 }
@@ -152,6 +152,7 @@ for name in "${changed[@]}"; do
   if [[ -n "${before[$name]}" ]]; then
     restore_rollback "$name"
     reject "$name" "${after[$name]}"
+    echo "rejected: $name:latest ${after[$name]}" >&2
   fi
 done
 
