@@ -41,6 +41,10 @@ Thumbs.db
 playwright-report/
 test-results/
 
+# Mutation testing (Stryker): reports, and the in-place backup a crashed run leaves
+reports/mutation/
+.stryker-tmp/
+
 # Beads / Dolt files (added by bd init)
 .dolt/
 *.db

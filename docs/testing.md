@@ -11,6 +11,7 @@
 | `scripts/quality-report.sh`     | Markdown report of all gates + coverage per workspace | no           |
 | `scripts/nightly-compliance.sh` | Markdown report of dependency audit + draft guard     | no           |
 | `bun scripts/auto-qa-tuner.ts` | Propose ratcheted coverage floors from a quality report | no           |
+| `bun x stryker run stryker/<workspace>.json` | Mutation testing of one workspace (StrykerJS) | no |
 | `bun run screenshots:readme`    | README screenshots + social preview from the dev pod | yes          |
 
 ## Quality report
@@ -70,6 +71,76 @@ scripts/quality-report.sh > quality-report.md
 bun scripts/auto-qa-tuner.ts --report quality-report.md          # preview
 bun scripts/auto-qa-tuner.ts --report quality-report.md --write  # apply
 ```
+
+## Mutation testing
+
+Line and branch coverage only say a branch ran. Mutation testing checks that
+some assertion depends on it: change the code a little (a *mutant*) and see
+whether a test fails. When nothing fails, the mutant *survived*, which marks a
+branch the tests run but never assert. #895, #924 and #939 were each such a
+branch, all at 100% line coverage.
+
+### TypeScript: StrykerJS, nightly and report-only
+
+`.github/workflows/mutation-testing.yml` runs [StrykerJS](https://stryker-mutator.io/)
+nightly (02:47 UTC) and on demand (`workflow_dispatch`), one job per workspace.
+Each job publishes a score table (`scripts/mutation-summary.ts`) as its job
+summary and uploads the HTML and JSON reports as the `mutation-<workspace>`
+artifact. Open the HTML report to see each survivor in place. No job fails on
+the score. Once there is a baseline, the score can get a floor that ratchets
+like the [coverage floors](#coverage-floor-self-tuning).
+
+The configs live in `stryker/<workspace>.json`:
+
+| Workspace   | Mutates                                                        | Tests run per mutant                                                                  |
+| ----------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `back-end`  | `back-end/src/**`                                              | back-end suite                                                                        |
+| `front-end` | `front-end/src/**` and `front-end/server/**`, not `components/ui/` | front-end suite                                                                   |
+| `shared`    | `shared/src/**`                                                | back-end and front-end suites, plus the `test/shared` files that import `shared/src` |
+
+Stryker has no Bun test runner, so the configs use its `command` runner: every
+mutant runs the whole suite and is killed when the command exits non-zero.
+Locally on 2 cores (October 2026), the back-end's 1486 mutants took 21
+minutes and the shared workspace's 60 took 3; the front-end has about 3200
+mutants at roughly 4 s each, so expect around an hour on a 4-core runner. The
+`shared` job leaves out the rest of `test/shared` because those tests check
+repository tooling, and some of them (the typecheck run, for one) fail on any
+instrumented source.
+
+The configs set `inPlace: true`: tests import sources by relative path and
+through the `shared` workspace link, which a sandbox copy would not follow.
+Stryker therefore rewrites the real files during a run and restores them from
+`.stryker-tmp/` at the end. Commit or stash your changes first, and do not edit
+sources while it runs. A run killed before it can clean up (`SIGKILL`, or
+piping its output into `head`) leaves instrumented sources behind; restore
+them with `git checkout -- <workspace>/` and delete `.stryker-tmp/`. To try
+one file:
+
+```bash
+bun x stryker run stryker/front-end.json --mutate front-end/server/handler.ts
+bun scripts/mutation-summary.ts reports/mutation/front-end.json
+```
+
+Stryker's process cleanup calls `ps`, so the host needs procps (CI runners
+have it).
+
+### Shell: a table of hand mutants
+
+No mutation tool fits the shell scripts (`deploy/systemd/*.sh`, `scripts/*.sh`).
+Instead, `test/shared/src/shell-mutants.test.ts` holds a table of hand mutants,
+and runs with the rest of `bun run test`. Each row gives a script, a string in
+it, its replacement, and the test file that must fail once the replacement is
+made. For each row the test builds a throwaway copy of the repository (real
+copies of the script and test file, symlinks for everything else), applies
+the mutant there, and runs the test file. The checkout itself is never
+written to. The row fails when:
+
+- the test file still passes: the mutant survived, so a branch is unasserted;
+- the string no longer occurs exactly once: the script changed under the row,
+  so update the row.
+
+When a hand mutation run finds a survivor, write the test that kills it, then
+add the mutant as a row so a later change to that test can't quietly drop it.
 
 ## Run the E2E suite locally
 
