@@ -1,0 +1,18 @@
+{
+  "$schema": "../node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "mutate": ["shared/src/**/*.ts"],
+  "testRunner": "command",
+  "commandRunner": {
+    "command": "bun run --filter back-end test && bun run --filter front-end test && cd shared && bun test $(grep -lE 'from \"(shared|[./]+/shared/src)' ../test/shared/src/*.test.ts)"
+  },
+  "coverageAnalysis": "off",
+  "inPlace": true,
+  "disableTypeChecks": false,
+  "reporters": ["clear-text", "progress", "html", "json"],
+  "htmlReporter": {
+    "fileName": "reports/mutation/shared.html"
+  },
+  "jsonReporter": {
+    "fileName": "reports/mutation/shared.json"
+  }
+}

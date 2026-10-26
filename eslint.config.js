@@ -352,6 +352,13 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["**/dist/", "**/node_modules/", "**/.pi-sandbox/**", "**/worktrees/**", "**/*.config.js"],
+    ignores: [
+      "**/dist/",
+      "**/node_modules/",
+      "**/.pi-sandbox/**",
+      "**/worktrees/**",
+      "**/*.config.js",
+      "**/.stryker-tmp/",
+    ],
   },
 );
