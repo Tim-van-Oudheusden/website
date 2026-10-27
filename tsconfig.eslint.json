@@ -5,8 +5,10 @@
     "noEmit": true,
     "declaration": false,
     "declarationMap": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "allowJs": true,
+    "checkJs": true
   },
-  "include": ["playwright.config.ts", "scripts/**/*.ts"],
+  "include": ["playwright.config.ts", "scripts/**/*.ts", "stryker/*.mjs"],
   "exclude": []
 }

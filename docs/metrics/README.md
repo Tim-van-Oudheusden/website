@@ -21,7 +21,7 @@ reviewed like code.
 | [PR acceptance rate](#pr-acceptance-rate) | Merged vs. closed-unmerged PRs, agent vs. other | `pr-metrics.yml` | Weekly (Mon 06:17 UTC), manual | Job summary |
 | [Nightly compliance](#nightly-compliance) | Dependency advisories, draft-content leaks, lockfile drift | `scripts/nightly-compliance.sh` via `nightly-compliance.yml` | Nightly (03:23 UTC), manual | Job summary + `nightly-compliance` artifact |
 | [Risk tier](#risk-tier) | Review risk of each PR from the paths it changes | `scripts/tier-classify.sh` via `tier-classifier.yml` | Every PR | Job summary |
-| [Mutation score](#mutation-score) | Share of mutants the unit tests kill, per workspace | StrykerJS (`stryker/<workspace>.json`) and `scripts/mutation-summary.ts` via `mutation-testing.yml` | Nightly (02:47 UTC), manual | Job summary + `mutation-<workspace>` artifact |
+| [Mutation score](#mutation-score) | Share of mutants the unit tests kill, per workspace | StrykerJS (`stryker/<workspace>.conf.mjs`) and `scripts/mutation-summary.ts` via `mutation-testing.yml` | Nightly (02:47 UTC), manual | Job summary + `mutation-<workspace>` artifact |
 
 ## Quality gates
 
@@ -98,7 +98,7 @@ floor yet. Details, and the hand-mutant table for shell scripts, are in
 [`docs/testing.md`](../testing.md#mutation-testing).
 
 ```bash
-bun x stryker run stryker/back-end.json
+bun x stryker run stryker/back-end.conf.mjs
 bun scripts/mutation-summary.ts reports/mutation/back-end.json
 ```
 
