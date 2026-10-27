@@ -93,7 +93,7 @@ const optionalMemberSyntax = [
 /* shadcn-generated components and tests may use optional members (see CONTRIBUTING.md "Code shape"). */
 const optionalMemberExemptFiles = ["front-end/src/shared/components/ui/**", "test/**"];
 
-const defaultExportFiles = ["playwright.config.ts", "front-end/vite.config.ts"];
+const defaultExportFiles = ["playwright.config.ts", "front-end/vite.config.ts", "stryker/*.conf.mjs"];
 
 /* React code: the front-end app and its tests (hooks also live in .ts files). */
 const reactFiles = ["front-end/src/**/*.{ts,tsx}", "test/front-end/**/*.{ts,tsx}"];

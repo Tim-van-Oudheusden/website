@@ -11,7 +11,7 @@
 | `scripts/quality-report.sh`     | Markdown report of all gates + coverage per workspace | no           |
 | `scripts/nightly-compliance.sh` | Markdown report of dependency audit + draft guard     | no           |
 | `bun scripts/auto-qa-tuner.ts` | Propose ratcheted coverage floors from a quality report | no           |
-| `bun x stryker run stryker/<workspace>.json` | Mutation testing of one workspace (StrykerJS) | no |
+| `bun x stryker run stryker/<workspace>.conf.mjs` | Mutation testing of one workspace (StrykerJS) | no |
 | `bun run screenshots:readme`    | README screenshots + social preview from the dev pod | yes          |
 
 ## Quality report
@@ -90,7 +90,9 @@ artifact. Open the HTML report to see each survivor in place. No job fails on
 the score. Once there is a baseline, the score can get a floor that ratchets
 like the [coverage floors](#coverage-floor-self-tuning).
 
-The configs live in `stryker/<workspace>.json`:
+The configs live in `stryker/<workspace>.conf.mjs`. Each spreads the settings
+all three share from `stryker/base.mjs` and adds only its own files to mutate,
+test command and report file names:
 
 | Workspace   | Mutates                                                        | Tests run per mutant                                                                  |
 | ----------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
@@ -117,7 +119,7 @@ them with `git checkout -- <workspace>/` and delete `.stryker-tmp/`. To try
 one file:
 
 ```bash
-bun x stryker run stryker/front-end.json --mutate front-end/server/handler.ts
+bun x stryker run stryker/front-end.conf.mjs --mutate front-end/server/handler.ts
 bun scripts/mutation-summary.ts reports/mutation/front-end.json
 ```
 
