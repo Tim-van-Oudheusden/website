@@ -143,6 +143,13 @@ describe("docs/content-authoring.md frontmatter reference", () => {
 
     expect(sorted(firstColumnNames(reference))).toEqual(sorted(read));
   });
+
+  test("standalone page table names every key back-end/src/features/pages/pages.ts reads, and no other", () => {
+    const table = section(readRootFile("docs/content-authoring.md"), "### Standalone pages (`content/pages/`)");
+    const read = matchAll(readRootFile("back-end/src/features/pages/pages.ts"), /\bdata\["(\w+)"\]/g);
+
+    expect(sorted(firstColumnNames(table))).toEqual(sorted(read));
+  });
 });
 
 describe("docs/testing.md E2E tuning table", () => {
