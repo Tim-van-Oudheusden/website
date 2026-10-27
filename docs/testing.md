@@ -150,8 +150,8 @@ step, so a local run exercises the same path CI does:
 1. `podman build … --target dev` for the front-end and back-end images
 2. `podman kube play deploy/kube/dev.yaml`
 3. poll `http://localhost:3001/health` and `http://localhost:5173/` (60 × 5 s,
-   each request capped at 5 s by `curl --max-time`); on timeout, dump
-   `podman pod logs website` and fail
+   each request capped at 5 s by `curl --max-time`, see `E2E_CURL_MAX_TIME`
+   below); on timeout, dump `podman pod logs website` and fail
 4. `bun run test:e2e`
 5. `podman kube down deploy/kube/dev.yaml` — always, even when a step fails
 
@@ -184,6 +184,7 @@ The script exits with the status of the first failing step.
 | ------------------- | ------- | ----------------------------------------- |
 | `E2E_WAIT_ATTEMPTS` | `60`    | Readiness polls before giving up          |
 | `E2E_WAIT_INTERVAL` | `5`     | Seconds between readiness polls           |
+| `E2E_CURL_MAX_TIME` | `5`     | Seconds each readiness request may take   |
 
 For iterating on a single spec, keep the pod up with `scripts/dev.sh` in one
 terminal and run `bun run test:e2e -- e2e/<spec>.e2e.ts` (or
