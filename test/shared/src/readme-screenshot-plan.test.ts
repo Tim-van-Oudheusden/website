@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import { basename, relative, resolve } from "node:path";
 
 import type { Capture } from "../../../scripts/readme-screenshot-plan";
@@ -23,7 +24,7 @@ describe("scripts/readme-screenshot-plan.ts", () => {
   test("rejects a theme the screenshots cannot pin down", () => {
     for (const theme of ["sepia", "system", "", "Dark"]) {
       expect(() => defineCapture({ file: "home.png", theme, viewport: VIEWPORT, deviceScaleFactor: 1 }))
-        .toThrow(/theme/);
+        .toThrow("expected one of: light, dark");
     }
 
     expect(defineCapture({ file: "home.png", theme: "dark", viewport: VIEWPORT, deviceScaleFactor: 1 }).theme)
@@ -58,5 +59,17 @@ describe("scripts/readme-screenshot-plan.ts", () => {
     expect([light.theme, dark.theme]).toEqual(["light", "dark"]);
     expect(dark.viewport).toEqual(light.viewport);
     expect(dark.deviceScaleFactor).toBe(light.deviceScaleFactor);
+  });
+
+  test("captures each file at the theme and viewport docs/testing.md lists", () => {
+    const documented = [...readFileSync(resolve(ROOT, "docs/testing.md"), "utf8")
+      .matchAll(/^\| `(docs\/assets\/readme\/[^`]+)` +\| `(\w+)` +\| (\d+)×(\d+) +\|$/gm)]
+      .map((row) => row.slice(1).join(" "));
+
+    const planned = README_CAPTURES.map(
+      ({ output, theme, viewport }) => `${output} ${theme} ${String(viewport.width)} ${String(viewport.height)}`,
+    );
+
+    expect(planned).toEqual(documented);
   });
 });
