@@ -94,7 +94,7 @@ See [`docs/testing.md`](docs/testing.md) for prerequisites and why the agent san
 
 CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, and build on every PR, plus an E2E job on the dev pod, a `prod-assets` job on the prod front-end image, and a release job on `main` that waits for all three.
 
-Coverage shows that a branch ran, not that a test asserts on it. `.github/workflows/mutation-testing.yml` runs StrykerJS mutation testing on the TypeScript workspaces nightly, report-only. Shell scripts have a table of hand mutants instead (`test/shared/src/shell-mutants.test.ts`), which `bun run test` runs: when a hand mutation of a script survives, add the test that kills it and the mutant as a row. See [`docs/testing.md`](docs/testing.md#mutation-testing).
+Coverage shows that a branch ran, not that a test asserts on it. `.github/workflows/mutation-testing.yml` runs StrykerJS mutation testing on the TypeScript workspaces and the TypeScript tools in `scripts/` nightly, report-only. Shell scripts have a table of hand mutants instead (`test/shared/src/shell-mutants.test.ts`), which `bun run test` runs: when a hand mutation of a script survives, add the test that kills it and the mutant as a row. See [`docs/testing.md`](docs/testing.md#mutation-testing).
 
 Some docs list things the code also defines: the feature folders in the layout above, the back-end environment variables and the root `package.json` scripts in `README.md`, the frontmatter keys in `docs/content-authoring.md`, and the `E2E_*` variables in `docs/testing.md`. `test/shared/src/doc-claims.test.ts` reads each list from the code and fails `bun run test` when the doc names a different set, so update the doc in the same pull request as the code.
 

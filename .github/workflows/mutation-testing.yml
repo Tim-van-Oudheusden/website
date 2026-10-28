@@ -1,9 +1,10 @@
 name: Mutation testing
 
 # Report-only. Finds branches the unit tests run but never assert, which line
-# coverage cannot show (#939). StrykerJS mutates one workspace's source per job
-# and runs the tests that cover it against each mutant (stryker/<workspace>.conf.mjs);
-# a mutant they still pass on survived. The score goes to the job summary and the
+# coverage cannot show (#939). StrykerJS mutates one workspace's source (or the
+# TypeScript tools in scripts/, #945) per job and runs the tests that cover it
+# against each mutant (stryker/<workspace>.conf.mjs); a mutant they still pass
+# on survived. The score goes to the job summary and the
 # HTML and JSON reports to the mutation-<workspace> artifact. No job fails on the
 # score; once there is a baseline it can get a floor, like the coverage floors.
 
@@ -25,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        workspace: [back-end, front-end, shared]
+        workspace: [back-end, front-end, shared, scripts]
     env:
       WORKSPACE: ${{ matrix.workspace }}
     steps:
