@@ -102,9 +102,11 @@ describe("scripts/mutation-summary.ts", () => {
   test("fails naming the report when one is missing", () => {
     const missing = join(workDir, "front-end.json");
 
-    const { status, stderr } = runSummary(missing);
+    const { status, stdout, stderr } = runSummary(missing);
 
     expect(status).toBe(1);
     expect(stderr).toContain(missing);
+    // The job summary still gets the heading and an empty table.
+    expect(stdout).toBe(`${["## Mutation testing", "", ...HEADER].join("\n")}\n`);
   });
 });

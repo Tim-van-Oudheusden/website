@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -56,6 +56,28 @@ afterEach(() => {
 });
 
 describe("scripts/auto-qa-tuner.ts", () => {
+  test("prints the proposals as a Markdown table under a heading naming the margin", () => {
+    writeConfig(2, { "back-end": { functions: 95, lines: 90 } });
+    writeReport(["| back-end | 99.12% | 96.03% |"]);
+
+    const { status, stdout } = runTuner();
+
+    expect(status).toBe(0);
+
+    expect(stdout).toBe(
+      `${[
+        "## Coverage floor tuning",
+        "",
+        "Margin: 2 percentage points below observed coverage.",
+        "",
+        "| Workspace | Metric | Floor | Observed | Proposed |",
+        "| --------- | ------ | ----- | -------- | -------- |",
+        "| back-end | functions | 95% | 99.12% | 97% ⬆️ |",
+        "| back-end | lines | 90% | 96.03% | 94% ⬆️ |",
+      ].join("\n")}\n`,
+    );
+  });
+
   test("proposes raising a floor to the observed coverage minus the margin, rounded down", () => {
     writeConfig(2, { "back-end": { functions: 95, lines: 90 } });
     writeReport(["| back-end | 99.12% | 96.03% |"]);
@@ -113,6 +135,26 @@ describe("scripts/auto-qa-tuner.ts", () => {
         "back-end": { functions: 97, lines: 94 },
         "shared": { functions: 90, lines: 90 },
       },
+    });
+  });
+
+  // quality-report.yml passes only --report and --write, so the floors it
+  // saves land in the default config path.
+  test("reads .github/auto-qa-tuning.json and quality-report.md from the working directory by default", () => {
+    mkdirSync(join(workDir, ".github"));
+    configPath = join(workDir, ".github/auto-qa-tuning.json");
+    reportPath = join(workDir, "quality-report.md");
+    writeConfig(2, { "back-end": { functions: 95, lines: 90 } });
+    writeReport(["| back-end | 99.12% | 96.03% |"]);
+
+    const result = spawnSync(process.execPath, [scriptPath, "--write"], { cwd: workDir, encoding: "utf8" });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("| back-end | lines | 90% | 96.03% | 94% ⬆️ |");
+
+    expect(JSON.parse(readFileSync(configPath, "utf8"))).toEqual({
+      margin: 2,
+      floors: { "back-end": { functions: 97, lines: 94 } },
     });
   });
 });

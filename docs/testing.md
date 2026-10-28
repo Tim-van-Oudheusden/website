@@ -91,7 +91,7 @@ the score. Once there is a baseline, the score can get a floor that ratchets
 like the [coverage floors](#coverage-floor-self-tuning).
 
 The configs live in `stryker/<workspace>.conf.mjs`. Each spreads the settings
-all three share from `stryker/base.mjs` and adds only its own files to mutate,
+they all share from `stryker/base.mjs` and adds only its own files to mutate,
 test command and report file names:
 
 | Workspace   | Mutates                                                        | Tests run per mutant                                                                  |
@@ -99,6 +99,16 @@ test command and report file names:
 | `back-end`  | `back-end/src/**`                                              | back-end suite                                                                        |
 | `front-end` | `front-end/src/**` and `front-end/server/**`, not `components/ui/` | front-end suite                                                                   |
 | `shared`    | `shared/src/**`                                                | back-end and front-end suites, plus the `test/shared` files that import `shared/src` |
+| `scripts`   | `scripts/**/*.ts`, not `readme-screenshots.ts`                 | the `test/shared` files that run a `scripts/*.ts`                                     |
+
+`scripts` is not a workspace: it covers the TypeScript tools in `scripts/` (the
+coverage-floor tuner, the mutation score table, the README screenshot plan).
+`readme-screenshots.ts` itself drives a browser against the dev pod and has no
+unit test. Its 145 mutants take about 10 s. The nightly workflow does not run
+it yet (#945), so run it locally with
+`bun x stryker run stryker/scripts.conf.mjs`. Stryker restores the files'
+contents but not their mode, so run `git checkout -- scripts/` afterwards to
+put back the executable bit of `scripts/*.ts`.
 
 Stryker has no Bun test runner, so the configs use its `command` runner: every
 mutant runs the whole suite and is killed when the command exits non-zero.
