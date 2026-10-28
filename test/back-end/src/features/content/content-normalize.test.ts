@@ -7,6 +7,7 @@ import type { ProjectFrontmatter } from "shared";
 
 import {
   normalizeContentDocument,
+  normalizeDate,
   validateContentDir,
 } from "../../../../../back-end/src/features/content/content";
 
@@ -325,6 +326,14 @@ describe("normalizeContentDocument", () => {
     if (result.ok) {
       expect(result.value.date).toBe("2026-06-10");
     }
+  });
+});
+
+describe("normalizeDate", () => {
+  // The frontmatter parser yields only string scalars for dates; a Date from
+  // any other caller must not leak a full ISO timestamp past the YYYY-MM-DD contract.
+  test("returns null for a Date object instead of a timestamp", () => {
+    expect(normalizeDate(new Date("2026-10-02T00:00:00Z"))).toBeNull();
   });
 });
 
