@@ -1,13 +1,13 @@
 import { afterAll, afterEach, beforeAll, describe, expect, mock, spyOn, test } from "bun:test";
 
 import { act, createElement } from "react";
-import { MemoryRouter, Route, Routes } from "react-router";
+import { Link, MemoryRouter, Route, Routes } from "react-router";
 
 import type { ArticleData } from "shared/articles";
 
 import type * as ProjectPageModule from "../../../../../../front-end/src/features/projects/pages/project-page";
 import type { FakeMount } from "../../../../src/test/dom-harness";
-import { initFakeDomHarness, jsonResponse, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import { fireFakePointer, initFakeDomHarness, jsonResponse, mountIntoBody, routeFetch, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 // Module-loading boundary: react-dom captures `canUseDOM` at module load, so it
@@ -265,6 +265,60 @@ describe("ProjectPage", () => {
 
     try {
       expect(pageText(page)).toContain("Loading project...");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("following a router link from a missing project to another shows that project, not the stale not-found", async () => {
+    // Same ProjectPage instance, new `:slug`: the earlier 404 must not stick,
+    // and the next project shows the loading state until it arrives.
+    const { promise: nextProject, resolve: resolveNextProject } = Promise.withResolvers<Response>();
+
+    routeFetch({
+      "/api/content/missing": () => Promise.resolve(jsonResponse({ error: "Not found" }, 404)),
+      "/api/content/sweet-app": () => nextProject,
+      "/api/views/sweet-app": () => Promise.resolve(new Response(null, { status: 204 })),
+    });
+
+    const page = mountIntoBody(
+      createElement(
+        MemoryRouter,
+        { initialEntries: ["/projects/missing"] },
+        createElement(Link, { to: "/projects/sweet-app" }, "Next project"),
+        createElement(
+          Routes,
+          null,
+          createElement(Route, { path: "/projects/:slug", element: createElement(ProjectPage) }),
+        ),
+      ),
+    );
+
+    try {
+      await act(async () => {
+        await settleMicrotasks();
+      });
+
+      expect(pageText(page)).toContain("Project not found");
+
+      const nextLink = queryFakeElements(page.container, (el) => el.getAttribute("href") === "/projects/sweet-app")[0];
+
+      if (nextLink === undefined) {
+        throw new Error("Expected the link to the next project");
+      }
+
+      fireFakePointer(nextLink, "click");
+
+      expect(pageText(page)).toContain("Loading project...");
+      expect(pageText(page)).not.toContain("Project not found");
+
+      await act(async () => {
+        resolveNextProject(jsonResponse(projectItem()));
+        await settleMicrotasks();
+      });
+
+      expect(headingTexts(page, "H1")).toEqual(["Sweet App"]);
+      expect(pageText(page)).not.toContain("Project not found");
     } finally {
       unmountFakeDomRoot(page);
     }
