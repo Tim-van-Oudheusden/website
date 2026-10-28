@@ -15,6 +15,12 @@ spec:
   containers:
     - name: front-end
       image: ghcr.io/tim-van-oudheusden/website/front-end:latest
+      # Play the local :latest, which website-update.sh pulls and, on a failed
+      # update, re-tags back to the previous image. With no policy, kube play
+      # pulls a :latest whose registry digest differs from the local one, so
+      # the rollback replay would start the rejected image again (#948). A
+      # host with no local image still pulls it on first play.
+      imagePullPolicy: IfNotPresent
       env:
         - name: NODE_ENV
           value: production
@@ -40,6 +46,8 @@ spec:
 
     - name: back-end
       image: ghcr.io/tim-van-oudheusden/website/back-end:latest
+      # Same as the front-end: keep the image website-update.sh left on :latest.
+      imagePullPolicy: IfNotPresent
       env:
         - name: NODE_ENV
           value: production
