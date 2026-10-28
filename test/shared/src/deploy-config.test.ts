@@ -150,6 +150,22 @@ describe("website image update timer rollback safeguard", () => {
     expect(script).toContain("http://127.0.0.1:8300/health");
     expect(script).toContain("http://127.0.0.1:8301/health");
   });
+
+  test("prod pod plays the local :latest instead of re-pulling it, so a rollback replay keeps the rolled-back image", () => {
+    // Why: with no imagePullPolicy, kube play pulls a `:latest` image whenever
+    // the registry digest differs from the local one. The rollback replay
+    // would then pull the rejected image straight back (#948).
+    const pod = Bun.YAML.parse(readDeploy("deploy/kube/prod.yaml")) as {
+      spec: { containers: { name: string; imagePullPolicy?: string }[] };
+    };
+
+    for (const container of pod.spec.containers) {
+      expect({ name: container.name, imagePullPolicy: container.imagePullPolicy }).toEqual({
+        name: container.name,
+        imagePullPolicy: "IfNotPresent",
+      });
+    }
+  });
 });
 
 describe("podman-kube@ prod pod template", () => {

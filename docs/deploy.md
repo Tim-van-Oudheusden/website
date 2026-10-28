@@ -325,6 +325,14 @@ exits non-zero — check `systemctl --user status website-update.service` /
 whether this already happened. Each image rolled back is logged as
 `rejected: <image>:latest <digest>`.
 
+The rollback replay runs the re-tagged image because both containers in
+`prod.yaml` set `imagePullPolicy: IfNotPresent`. Without it, `kube play` pulls
+a `:latest` image whenever the registry digest differs from the local one, so
+the replay would start the rejected image again (#948). The same setting means
+a pod restart or a reboot runs whatever image is local. Only the timer pulls a
+new image, and it health-checks what it deploys. On a host with no local
+image, the first play still pulls one.
+
 The rolled-back digest is then remembered as rejected, in
 `${XDG_STATE_HOME:-~/.local/state}/website-update/rejected-<image>`. Until a
 new digest is pushed, later ticks keep the rollback image, skip the replay, and
