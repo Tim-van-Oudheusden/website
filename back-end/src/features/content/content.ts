@@ -41,10 +41,6 @@ export function normalizeDate(value: unknown): string | null {
     return !Number.isNaN(parsed.getTime()) && parsed.toISOString().startsWith(day) ? day : null;
   }
 
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return value.toISOString();
-  }
-
   return null;
 }
 
