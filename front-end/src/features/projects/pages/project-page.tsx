@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Link, useParams } from "react-router";
 
 import type { ProjectFrontmatter } from "shared";
@@ -9,6 +9,7 @@ import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
+import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import { useRecordView } from "@/shared/hooks/use-record-view";
 import { ApiError } from "@/shared/lib/api";
 import { httpContentLoader } from "@/shared/lib/content-loader";
@@ -20,6 +21,19 @@ export type ProjectData = ProjectFrontmatter & { body: string };
 // `date` is a calendar day ("2026-10-16"), which `Date` parses as UTC midnight:
 // format in UTC so a reader west of Greenwich doesn't see the day before.
 const PROJECT_DATE_OPTIONS: Intl.DateTimeFormatOptions = { timeZone: "UTC" };
+
+/** The project, or null when the API has no project under `slug`. */
+async function loadProjectOrNull(slug: string): Promise<ProjectData | null> {
+  try {
+    return await httpContentLoader.getProject(slug);
+  } catch (err: unknown) {
+    if (err instanceof ApiError && err.status === 404) {
+      return null;
+    }
+
+    throw err;
+  }
+}
 
 export const PROJECT_PAGE_LAYOUT_CLASSES = {
   main: "w-full flex-1 bg-[var(--site-page-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8",
@@ -97,58 +111,13 @@ export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): JSX.Elem
 
 export function ProjectPage(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
-  const [project, setProject] = useState<ProjectData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!slug) {
-      return;
-    }
-
-    const contentSlug = slug;
-
-    let cancelled = false;
-
-    async function fetchProject(): Promise<void> {
-      try {
-        const data = await httpContentLoader.getProject(contentSlug);
-
-        if (!cancelled) {
-          setProject(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          if (err instanceof ApiError && err.status === 404) {
-            setNotFound(true);
-          } else {
-            let message = "Failed to load project";
-
-            if (err instanceof ApiError) {
-              message = err.message;
-            }
-
-            setError(message);
-          }
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void fetchProject();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [slug]);
+  // No slug means nothing to load: the hook stays idle and the page reads as not found.
+  const load = useMemo(() => (slug ? (): Promise<ProjectData | null> => loadProjectOrNull(slug) : null), [slug]);
+  const { status, data: project, error } = useLoadOnMount(load, "Failed to load project");
 
   useRecordView(project?.slug ?? null);
 
-  if (loading) {
+  if (status === "loading") {
     return (
       <main id={MAIN_CONTENT_ID} className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
         <p className="text-muted-foreground">Loading project...</p>
@@ -156,21 +125,21 @@ export function ProjectPage(): JSX.Element {
     );
   }
 
-  if (notFound) {
+  if (status === "error") {
+    return (
+      <main id={MAIN_CONTENT_ID} className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
+        <p className="text-destructive">{error}</p>
+      </main>
+    );
+  }
+
+  if (project === null) {
     return (
       <main id={MAIN_CONTENT_ID} className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--site-page-bg) p-4">
         <h1 className="text-3xl font-semibold">Project not found</h1>
         <Link to="/projects" className="text-[var(--ink-5)] dark:text-[var(--paper-1)] underline">
           Back to projects
         </Link>
-      </main>
-    );
-  }
-
-  if (error !== null || project === null) {
-    return (
-      <main id={MAIN_CONTENT_ID} className="flex flex-1 items-center justify-center bg-(--site-page-bg) p-4">
-        <p className="text-destructive">{error ?? "Something went wrong"}</p>
       </main>
     );
   }
