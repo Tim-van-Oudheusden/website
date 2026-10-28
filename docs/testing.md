@@ -83,7 +83,7 @@ branch, all at 100% line coverage.
 ### TypeScript: StrykerJS, nightly and report-only
 
 `.github/workflows/mutation-testing.yml` runs [StrykerJS](https://stryker-mutator.io/)
-nightly (02:47 UTC) and on demand (`workflow_dispatch`), one job per workspace.
+nightly (02:47 UTC) and on demand (`workflow_dispatch`), one job per config below.
 Each job publishes a score table (`scripts/mutation-summary.ts`) as its job
 summary and uploads the HTML and JSON reports as the `mutation-<workspace>`
 artifact. Open the HTML report to see each survivor in place. No job fails on
@@ -104,8 +104,7 @@ test command and report file names:
 `scripts` is not a workspace: it covers the TypeScript tools in `scripts/` (the
 coverage-floor tuner, the mutation score table, the README screenshot plan).
 `readme-screenshots.ts` itself drives a browser against the dev pod and has no
-unit test. Its 145 mutants take about 10 s. The nightly workflow does not run
-it yet (#945), so run it locally with
+unit test. Its 145 mutants take about 10 s. To run it locally, use
 `bun x stryker run stryker/scripts.conf.mjs`. Stryker restores the files'
 contents but not their mode, so run `git checkout -- scripts/` afterwards to
 put back the executable bit of `scripts/*.ts`.
