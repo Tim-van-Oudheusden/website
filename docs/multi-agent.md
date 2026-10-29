@@ -7,7 +7,8 @@ an issue is the unit of work, labels and assignees say who holds it, and a pull
 request is the only way into `main`. This page is the contract every agent
 follows so their work does not collide. `AGENTS.md` holds the full agent
 ruleset; [`docs/security/SECURITY-AI.md`](security/SECURITY-AI.md) covers trust
-boundaries and review.
+boundaries and review, and [`docs/ai-ops-runbook.md`](ai-ops-runbook.md) how to
+monitor agent work and debug it when it gets stuck.
 
 ## Agents
 
