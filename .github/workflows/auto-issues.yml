@@ -1,0 +1,50 @@
+name: Auto issues
+
+# Turns a failing Nightly compliance run on main into a GitHub issue, so a new
+# advisory, a leaked draft or lockfile drift is tracked instead of sitting in a
+# job summary nobody opens. scripts/compliance-issue.sh keeps a single issue
+# labelled `nightly-compliance`: later failures comment on it, and the next
+# passing run closes it. Cancelled and skipped runs change nothing.
+
+on:
+  workflow_run:
+    workflows: [Nightly compliance]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+concurrency:
+  group: auto-issues
+  cancel-in-progress: false
+
+jobs:
+  compliance-issue:
+    name: Sync compliance issue
+    if: >-
+      github.event.workflow_run.conclusion == 'success' ||
+      github.event.workflow_run.conclusion == 'failure' ||
+      github.event.workflow_run.conclusion == 'timed_out'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Download compliance report
+        # The report is missing when the run failed before writing it (e.g. a
+        # lockfile-drift install failure); the issue then points at the log.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: gh run download "$RUN_ID" --repo "$REPO" --name nightly-compliance --dir report
+      - name: Open, update or close the tracking issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion == 'success' && 'success' || 'failure' }}
+        run: scripts/compliance-issue.sh "$CONCLUSION" report/nightly-compliance.md

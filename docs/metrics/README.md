@@ -19,7 +19,7 @@ reviewed like code.
 | [Unit-test coverage](#unit-test-coverage) | Function and line coverage per workspace | `scripts/quality-report.sh` via `quality-report.yml` | Same as above | Job summary + `quality-report` artifact |
 | [Coverage floors](#coverage-floors) | Minimum coverage each workspace must keep | `.github/auto-qa-tuning.json`, enforced by `coverage-gate.yml` | Every PR and push to `main` | Check result; proposed floors as `auto-qa-tuning` artifact |
 | [PR acceptance rate](#pr-acceptance-rate) | Merged vs. closed-unmerged PRs, agent vs. other | `pr-metrics.yml` | Weekly (Mon 06:17 UTC), manual | Job summary |
-| [Nightly compliance](#nightly-compliance) | Dependency advisories, draft-content leaks, lockfile drift | `scripts/nightly-compliance.sh` via `nightly-compliance.yml` | Nightly (03:23 UTC), manual | Job summary + `nightly-compliance` artifact |
+| [Nightly compliance](#nightly-compliance) | Dependency advisories, draft-content leaks, lockfile drift | `scripts/nightly-compliance.sh` via `nightly-compliance.yml` | Nightly (03:23 UTC), manual | Job summary + `nightly-compliance` artifact; failures on `main` tracked in a `nightly-compliance` issue |
 | [Risk tier](#risk-tier) | Review risk of each PR from the paths it changes | `scripts/tier-classify.sh` via `tier-classifier.yml` | Every PR | Job summary |
 | [Mutation score](#mutation-score) | Share of mutants the unit tests kill, per workspace | StrykerJS (`stryker/<workspace>.conf.mjs`) and `scripts/mutation-summary.ts` via `mutation-testing.yml` | Nightly (02:47 UTC), manual | Job summary + `mutation-<workspace>` artifact |
 
@@ -75,6 +75,9 @@ critical advisories (except those listed in the script's `AUDIT_IGNORE`), no `dr
 ```bash
 scripts/nightly-compliance.sh > nightly-compliance.md
 ```
+
+A failing run on `main` opens an issue labelled `nightly-compliance`
+(`auto-issues.yml`); see [`docs/testing.md`](../testing.md#nightly-compliance).
 
 ## Risk tier
 
