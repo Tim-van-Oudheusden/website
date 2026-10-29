@@ -14,6 +14,7 @@ interface Workflow {
 // need to read the repo. Jobs needing more must say so with their own block,
 // which replaces the top-level one.
 describe.each([
+  { name: "ai-audit.yml", jobOverrides: { audit: { "contents": "read", "pull-requests": "read" } } },
   { name: "auto-issues.yml", jobOverrides: { "file-issue": { actions: "read", contents: "read", issues: "write" } } },
   { name: "ci.yml", jobOverrides: { release: { contents: "read", packages: "write" } } },
   { name: "coverage-gate.yml", jobOverrides: {} },

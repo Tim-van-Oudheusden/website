@@ -23,6 +23,7 @@ reviewed like code.
 | [Risk tier](#risk-tier) | Review risk of each PR from the paths it changes | `scripts/tier-classify.sh` via `tier-classifier.yml` | Every PR | Job summary |
 | [Mutation score](#mutation-score) | Share of mutants the unit tests kill, per workspace | StrykerJS (`stryker/<workspace>.conf.mjs`) and `scripts/mutation-summary.ts` via `mutation-testing.yml` | Nightly (02:47 UTC), manual | Job summary + `mutation-<workspace>` artifact |
 | [Strategy report](#strategy-report) | Issue and PR flow, open backlog per pipeline stage, ACMM gaps per level | `scripts/strategy-report.ts` via `strategy-report.yml` | Weekly (Mon 06:17 UTC), manual | Job summary |
+| [AI audit trail](#ai-audit-trail) | Every PR merged into `main`: source (Hive agent and model, Claude Code in CI, Dependabot, other), author, merger | `scripts/ai-audit-report.ts` via `ai-audit.yml` | Weekly (Mon 06:17 UTC, past 7 days), manual | Job summary + `ai-audit` artifact (report and raw PR data, kept 90 days) |
 
 ## Quality gates
 
@@ -129,6 +130,36 @@ since="$(date -u -d '28 days ago' +%Y-%m-%d)"
 gh issue list --state all --limit 10000 --json number,title,state,labels,createdAt,closedAt > issues.json
 gh pr list --state merged --limit 1000 --search "merged:>=${since}" --json mergedAt > prs.json
 bun scripts/strategy-report.ts "$since" issues.json prs.json
+```
+
+## AI audit trail
+
+A record of what reached `main` and who was behind it. Each PR merged in the
+window (default 7 days) is attributed to one source, checked in this order:
+
+- **Hive** — the PR body ends with Hive's signature line
+  (`— hive: agent=<name> … model=<model> …`); the agent and model are taken
+  from it. Contributor runs sign without `agent=`, shown as `—`.
+- **Claude Code (CI)** — head branch `claude/*`.
+- **Dependabot** — head branch `dependabot/*`.
+- **Other** — anything else: the maintainer, or a local coding agent
+  ([`docs/multi-agent.md`](../multi-agent.md)).
+
+The report counts merges per source and per merging account (the merge queue
+merges as `app/github-actions`; a merge with no recorded merger is listed last
+as unknown), then lists every merge oldest first with its source, agent,
+model, author, merger, branch and title. The weekly run covers the past 7
+days, so consecutive runs leave no gap. The `ai-audit` artifact keeps the
+report and the raw `gh pr list` output for 90 days.
+
+Run it with a different window from the Actions tab (**AI audit trail → Run
+workflow → days**), or locally:
+
+```bash
+since="$(date -u -d '7 days ago' +%Y-%m-%d)"
+gh pr list --state merged --limit 1000 --search "merged:>=${since}" \
+  --json number,title,author,headRefName,mergedAt,mergedBy,body > ai-audit-prs.json
+bun scripts/ai-audit-report.ts "$since" ai-audit-prs.json
 ```
 
 ## Adding a metric
