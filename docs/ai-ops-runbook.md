@@ -72,14 +72,19 @@ picks a PR that meets all of the conditions in
 1. **Draft or `hold`**: `gh pr view <N> --json isDraft,labels`. Hive sets
    `hold` on its own PRs, and the queue sets it on a PR that failed
    verification.
-2. **Required checks**: `gh pr view <N> --json mergeStateStatus` must be
+2. **`sentinel-alert`**: Hive's sentinel flagged the PR as touching sensitive
+   files or matching a suspicious pattern, and its comment on the PR names the
+   findings. Review the diff against them; only once you are satisfied, remove
+   the label (`gh pr edit <N> --remove-label sentinel-alert`), which queues
+   the PR again.
+3. **Required checks**: `gh pr view <N> --json mergeStateStatus` must be
    `CLEAN`. `BLOCKED` means a required check failed or has not run (CI, Coverage
    gate, PR review rubric), or a review thread is still unresolved. `BEHIND` and
    `DIRTY` mean the branch needs a rebase or a conflict fixed.
-3. **High risk**: the queue leaves high-risk PRs for the maintainer and logs
+4. **High risk**: the queue leaves high-risk PRs for the maintainer and logs
    `#<N> is high risk` as a notice in its run. The tier comes from the path
    rules in [`risk-tiers.md`](risk-tiers.md).
-4. **Fork**: the queue never picks a PR from a fork.
+5. **Fork**: the queue never picks a PR from a fork.
 
 If the PR meets every condition and still sits there, no event has started the
 queue since it became ready. Drain the queue by hand with

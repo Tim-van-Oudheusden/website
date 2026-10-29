@@ -59,7 +59,7 @@ Hive's agents, Claude Code in CI, and locally run coding agents work issues at t
 1. Create a branch off `main`.
 2. Pick an issue, and work it **test-first** (see below).
 3. Commit early and often, with [Conventional Commits][conventional-commits] messages, e.g. `feat(home): add contact form`, `fix(deps): tighten route`, `docs(agents): clarify e2e flow`.
-4. Open a pull request; fill in the PR template (which links the issue and pastes evidence). `main` is protected: changes land only through pull requests, and CI must pass before merge. The [merge queue](docs/multi-agent.md#merge-queue) then merges it; high-risk PRs and PRs labelled `hold` wait for the maintainer.
+4. Open a pull request; fill in the PR template (which links the issue and pastes evidence). `main` is protected: changes land only through pull requests, and CI must pass before merge. The [merge queue](docs/multi-agent.md#merge-queue) then merges it; high-risk PRs and PRs labelled `hold` or `sentinel-alert` wait for the maintainer.
 
 [conventional-commits]: https://www.conventionalcommits.org/
 

@@ -4,8 +4,8 @@ name: Merge queue
 # needs an organization-owned repository, so this one runs on Actions:
 #
 #   pick   - scripts/merge-queue.sh next: the oldest same-repo, non-draft PR
-#            without the `hold` label whose required checks all pass and whose
-#            risk tier is not high (docs/risk-tiers.md).
+#            without the `hold` or `sentinel-alert` label whose required checks
+#            all pass and whose risk tier is not high (docs/risk-tiers.md).
 #   verify - merges that PR onto the current main and runs the gates on the
 #            result, with a read-only token and the PR's code.
 #   land   - merges the PR if neither it nor main moved, then starts main's
@@ -14,7 +14,7 @@ name: Merge queue
 #
 # Land and reject start the next run, so the queue drains one PR at a time.
 # Runs whenever a required-check workflow succeeds, a draft is marked ready,
-# or `hold` comes off; workflow_dispatch drains it on demand.
+# or `hold` or `sentinel-alert` comes off; workflow_dispatch drains it on demand.
 #
 # Security: no step with write access runs code from a PR; pick, land and
 # reject run main's scripts. Fork PRs are never picked, and their events would
@@ -43,7 +43,7 @@ concurrency:
       (github.event_name == 'workflow_dispatch'
         || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
         || (github.event_name == 'pull_request'
-            && (github.event.action == 'ready_for_review' || github.event.label.name == 'hold')))
+            && (github.event.action == 'ready_for_review' || contains(fromJSON('["hold","sentinel-alert"]'), github.event.label.name))))
       && 'merge-queue' || format('merge-queue-ignored-{0}', github.run_id)
     }}
   cancel-in-progress: false
@@ -55,7 +55,7 @@ jobs:
       github.event_name == 'workflow_dispatch'
       || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
       || (github.event_name == 'pull_request'
-          && (github.event.action == 'ready_for_review' || github.event.label.name == 'hold'))
+          && (github.event.action == 'ready_for_review' || contains(fromJSON('["hold","sentinel-alert"]'), github.event.label.name)))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

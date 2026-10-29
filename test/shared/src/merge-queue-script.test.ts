@@ -194,6 +194,19 @@ describe("scripts/merge-queue.sh next", () => {
     expect(output["head"]).toBe(heads.get(8));
   });
 
+  test("leaves a pull request Hive's sentinel flagged for the maintainer and picks the next one", () => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [
+      { number: 2, labels: ["sentinel-alert"] },
+      { number: 8 },
+    ]);
+
+    const { status, output } = runScript("next");
+
+    expect(status).toBe(0);
+    expect(output["number"]).toBe("8");
+    expect(output["head"]).toBe(heads.get(8));
+  });
+
   // Moving a workflow out of .github/ still edits CI; git's rename detection
   // would list only the new, medium-risk path.
   test("rates a file moved out of a high-risk path by its old path", () => {
@@ -267,6 +280,7 @@ describe("scripts/merge-queue.sh land", () => {
 
   test.each<[string, Partial<PullRequest>]>([
     ["put on hold", { labels: ["hold"] }],
+    ["flagged by Hive's sentinel", { labels: ["sentinel-alert"] }],
     ["turned back into a draft", { isDraft: true }],
     ["no longer passing its required checks", { mergeStateStatus: "BLOCKED" }],
   ])("does not merge a pull request %s during verification", (_, change) => {

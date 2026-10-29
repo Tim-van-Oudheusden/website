@@ -33,7 +33,7 @@ flowchart LR
     branch --> pr["Pull request<br/>body says Fixes #N"]
     pr --> checks["Required checks<br/>CI, coverage gate, PR review rubric"]
     checks --> queue["Merge queue<br/>re-tests on latest main, merges"]
-    checks --> manual["Maintainer merges<br/>high risk or hold"]
+    checks --> manual["Maintainer merges<br/>high risk, hold or sentinel-alert"]
     queue --> close["Issue closes<br/>bd github sync --pull-only"]
     manual --> close
 ```
@@ -55,18 +55,18 @@ flowchart LR
    PR, whoever opened it.
 5. **The merge queue merges.** `main` is protected; the
    [merge queue](#merge-queue) merges a PR once its required checks pass. The
-   maintainer merges high-risk PRs and any PR labelled `hold`. Agents never
-   run `gh pr merge` themselves.
+   maintainer merges high-risk PRs and any PR labelled `hold` or
+   `sentinel-alert`. Agents never run `gh pr merge` themselves.
 
 ## Merge queue
 
 GitHub's own merge queue needs an organization-owned repository, so
 `.github/workflows/merge-queue.yml` runs one on Actions. Whenever CI, the
 coverage gate or the PR review rubric succeeds, a draft is marked ready, or
-`hold` comes off a PR, it takes the oldest open PR that:
+`hold` or `sentinel-alert` comes off a PR, it takes the oldest open PR that:
 
 - comes from this repository, not a fork, and is not a draft;
-- has no `hold` label;
+- has no `hold` label and no `sentinel-alert` label;
 - passes every required check (merge state `CLEAN`, so review threads are
   resolved too);
 - is not high risk ([`risk-tiers.md`](risk-tiers.md)), rated from `main`'s
@@ -95,6 +95,7 @@ logic lives in `scripts/merge-queue.sh`.
 | `hive/claimed-by-<agent>` | Hive | That Hive agent holds the issue |
 | `stage/<NNN>-<name>` | Hive | Where the issue or PR is in Hive's pipeline, from `stage/010-actionable` to `stage/100-merge-queue`; the label descriptions on GitHub define each stage |
 | `hold` | Hive, the merge queue, or a person | Keeps the PR out of the merge queue until removed: Hive sets it on its PRs, the queue on a PR that failed on the latest `main` |
+| `sentinel-alert` | Hive's sentinel sweep | The PR touches sensitive files or matches a suspicious pattern (a weakened CI gate, removed tests, an exposed secret, escalated permissions). Keeps it out of the merge queue and out of Hive's approval and auto-merge paths; a maintainer reviews the PR, removes the label, and the queue picks it up again |
 | `acmm` | Hive | A gap found by Hive's ACMM evaluation |
 
 ## Beads
