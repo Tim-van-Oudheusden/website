@@ -52,6 +52,8 @@ content/               articles and projects (Markdown); content/pages/ holds st
 
 We favour small, focused changes tied to a tracked issue.
 
+Hive's agents, Claude Code in CI, and locally run coding agents work issues at the same time. [`docs/multi-agent.md`](docs/multi-agent.md) sets out how they claim work and hand it off, and which labels carry that state.
+
 ## Development workflow
 
 1. Create a branch off `main`.
