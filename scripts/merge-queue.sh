@@ -10,8 +10,9 @@
 #       Writes nothing when none is ready.
 #   scripts/merge-queue.sh land <number> <head-sha> <verified-main-sha>
 #       Merge the pull request at <head-sha> if main is still the commit it was
-#       verified on and the pull request is still ready, then start main's push
-#       workflows (a merge made with GITHUB_TOKEN starts none) and the next run.
+#       verified on and the pull request is still ready, then do what a merge
+#       made with GITHUB_TOKEN does not: start main's push workflows and close
+#       the issues the pull request links with `Fixes #<N>`. Start the next run.
 #   scripts/merge-queue.sh reject <number> <run-url>
 #       Hold a pull request that failed verification, link the run, move on.
 #
@@ -102,7 +103,24 @@ land() {
   for workflow in ci.yml coverage-gate.yml quality-report.yml; do
     gh workflow run "$workflow" --ref main
   done
+  close_linked_issues "$number"
   queue_next_run
+}
+
+# Closes the issues in this repository that the merged pull request links with
+# a closing keyword. GitHub records the link but leaves the issues open when
+# GITHUB_TOKEN merges (#986). An issue in another repository is skipped: this
+# token cannot close it, and its number would name an unrelated issue here.
+close_linked_issues() {
+  local number="$1" issues issue
+  # shellcheck disable=SC2016 # $here is a jq variable, not a shell one.
+  issues="$(gh pr view "$number" --json url,closingIssuesReferences \
+    --jq '(.url | sub("/pull/[0-9]+$"; "/issues/")) as $here
+      | .closingIssuesReferences[] | select(.url | startswith($here)) | .number')"
+  for issue in $issues; do
+    gh issue close "$issue" --reason completed \
+      --comment "The merge queue merged #${number}, which closes this issue."
+  done
 }
 
 reject() {

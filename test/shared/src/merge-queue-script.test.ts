@@ -7,7 +7,8 @@ import { dirname, join, resolve } from "node:path";
 const scriptPath = resolve(import.meta.dirname, "../../../scripts/merge-queue.sh");
 const workflowsDir = resolve(import.meta.dirname, "../../../.github/workflows");
 
-const RUN_URL = "https://github.com/owner/website/actions/runs/42";
+const REPO_URL = "https://github.com/owner/website";
+const RUN_URL = `${REPO_URL}/actions/runs/42`;
 
 // Stands in for the gh CLI. `gh pr list` and `gh pr view <n>` answer from the
 // pull requests in $FAKE_DIR/prs.json, filtered through `--jq` like gh does.
@@ -43,6 +44,8 @@ interface PullRequest {
   isCrossRepository?: boolean;
   labels?: string[];
   mergeStateStatus?: string;
+  /** URLs of the issues the PR closes on merge (`Fixes #<N>`), as GitHub links them. */
+  closingIssues?: string[];
 }
 
 interface Workflow {
@@ -130,11 +133,16 @@ function setUpRepository(mainFiles: Record<string, string>, pullRequests: PullRe
     JSON.stringify(
       pullRequests.map((pullRequest) => ({
         number: pullRequest.number,
+        url: `${REPO_URL}/pull/${pullRequest.number}`,
         headRefOid: heads.get(pullRequest.number),
         isDraft: pullRequest.isDraft ?? false,
         isCrossRepository: pullRequest.isCrossRepository ?? false,
         labels: (pullRequest.labels ?? []).map((name) => ({ name })),
         mergeStateStatus: pullRequest.mergeStateStatus ?? "CLEAN",
+        closingIssuesReferences: (pullRequest.closingIssues ?? []).map((url) => ({
+          number: Number(url.split("/").at(-1)),
+          url,
+        })),
       })),
     ),
   );
@@ -281,13 +289,41 @@ describe("scripts/merge-queue.sh land", () => {
     expect(calls.slice(1, -1).sort()).toEqual(mainPushWorkflows.map((name) => `workflow run ${name} --ref main`));
   });
 
+  // A merge made with GITHUB_TOKEN leaves the issues the PR links with
+  // `Fixes #<N>` open (#986), so land closes them. An issue in another
+  // repository is not this token's to close, and its number would name an
+  // unrelated issue here.
+  test("closes each issue the merged pull request links in this repository, with a comment naming the pull request", () => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [
+      {
+        number: 7,
+        closingIssues: [`${REPO_URL}/issues/12`, "https://github.com/owner/other/issues/3", `${REPO_URL}/issues/15`],
+      },
+    ]);
+    const head = heads.get(7) ?? "";
+
+    const { status, calls } = runScript("land", "7", head, git(cloneDir, "rev-parse", "HEAD"));
+    const closes = calls.filter((call) => call.startsWith("issue close "));
+
+    expect(status).toBe(0);
+    expect(calls[0]).toBe(`pr merge 7 --merge --match-head-commit ${head}`);
+    expect(closes.map((call) => call.split(" ")[2])).toEqual(["12", "15"]);
+
+    for (const close of closes) {
+      expect(close).toContain(" --reason completed ");
+      expect(close).toMatch(/ --comment .*#7\b/);
+    }
+
+    expect(calls.at(-1)).toBe("workflow run merge-queue.yml --ref main");
+  });
+
   // `gh workflow run` fails on a workflow without a workflow_dispatch trigger.
   test.each(mainPushWorkflows)("can start %s, which runs on a push to main", (name) => {
     expect(workflowTriggers.get(name)).toHaveProperty("workflow_dispatch");
   });
 
-  test("does not merge when main moved after verification, and queues a re-run against the new main", () => {
-    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7 }]);
+  test("does not merge or close issues when main moved after verification, and queues a re-run against the new main", () => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, closingIssues: [`${REPO_URL}/issues/12`] }]);
     const verifiedMain = git(cloneDir, "rev-parse", "HEAD");
 
     commitFiles(join(workDir, "seed"), { "docs/other.md": "other\n" }, "other");
@@ -304,8 +340,10 @@ describe("scripts/merge-queue.sh land", () => {
     ["flagged by Hive's sentinel", { labels: ["sentinel-alert"] }],
     ["turned back into a draft", { isDraft: true }],
     ["no longer passing its required checks", { mergeStateStatus: "BLOCKED" }],
-  ])("does not merge a pull request %s during verification", (_, change) => {
-    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, ...change }]);
+  ])("does not merge or close issues of a pull request %s during verification", (_, change) => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [
+      { number: 7, closingIssues: [`${REPO_URL}/issues/12`], ...change },
+    ]);
 
     const { status, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
 

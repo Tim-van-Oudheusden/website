@@ -107,6 +107,14 @@ by hand:
 `for w in ci.yml coverage-gate.yml quality-report.yml; do gh workflow run "$w" --ref main; done`.
 The release job in `ci.yml` publishes the image only from a `main` run.
 
+### An issue stayed open after a queued merge
+
+A merge made with `GITHUB_TOKEN` leaves the issues the PR links with
+`Fixes #<N>` open, so the queue's `land` job closes them itself. If one is still
+open, look at that job, then close it by hand:
+`gh issue close <N> --reason completed --comment "Closed by #<PR>."`.
+An issue in another repository is never closed by the queue.
+
 ### The PR review rubric fails
 
 `scripts/pr-review-check.sh` has two requirements: a Conventional Commits
