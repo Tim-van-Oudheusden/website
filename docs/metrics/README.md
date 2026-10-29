@@ -22,6 +22,7 @@ reviewed like code.
 | [Nightly compliance](#nightly-compliance) | Dependency advisories, draft-content leaks, lockfile drift | `scripts/nightly-compliance.sh` via `nightly-compliance.yml` | Nightly (03:23 UTC), manual | Job summary + `nightly-compliance` artifact; a failure on `main` opens or comments on the **Nightly compliance failing** issue (`auto-issues.yml`) |
 | [Risk tier](#risk-tier) | Review risk of each PR from the paths it changes | `scripts/tier-classify.sh` via `tier-classifier.yml` | Every PR | Job summary |
 | [Mutation score](#mutation-score) | Share of mutants the unit tests kill, per workspace | StrykerJS (`stryker/<workspace>.conf.mjs`) and `scripts/mutation-summary.ts` via `mutation-testing.yml` | Nightly (02:47 UTC), manual | Job summary + `mutation-<workspace>` artifact |
+| [Strategy report](#strategy-report) | Issue and PR flow, open backlog per pipeline stage, ACMM gaps per level | `scripts/strategy-report.ts` via `strategy-report.yml` | Weekly (Mon 06:17 UTC), manual | Job summary |
 
 ## Quality gates
 
@@ -100,6 +101,34 @@ floor yet. Details, and the hand-mutant table for shell scripts, are in
 ```bash
 bun x stryker run stryker/back-end.conf.mjs
 bun scripts/mutation-summary.ts reports/mutation/back-end.json
+```
+
+## Strategy report
+
+The strategic dashboard: where the project is heading rather than how one
+change fared. Three tables:
+
+- **Flow** — issues opened and closed and PRs merged in the reporting window
+  (default 28 days), the net change in the backlog, and how many issues are
+  open now. A backlog that grows week on week is outrunning the agents working
+  it.
+- **Backlog by stage** — open issues per `stage/*` label, the pipeline Hive
+  moves issues through ([`docs/multi-agent.md`](../multi-agent.md)), in
+  pipeline order; open issues with no stage label are counted last. Issues
+  piling up in one stage show where work stalls.
+- **ACMM progress** — per maturity level, the `acmm` issues the Hive
+  evaluation filed (`[ACMM L<level>] Add <criterion>`), closed and still open,
+  naming the open ones. It counts only gaps the evaluation filed, not every
+  criterion of a level.
+
+Run it with a different window from the Actions tab (**Strategy report → Run
+workflow → days**), or locally:
+
+```bash
+since="$(date -u -d '28 days ago' +%Y-%m-%d)"
+gh issue list --state all --limit 10000 --json number,title,state,labels,createdAt,closedAt > issues.json
+gh pr list --state merged --limit 1000 --search "merged:>=${since}" --json mergedAt > prs.json
+bun scripts/strategy-report.ts "$since" issues.json prs.json
 ```
 
 ## Adding a metric

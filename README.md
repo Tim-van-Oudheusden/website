@@ -136,7 +136,7 @@ The Obsidian settings, image syntax, frontmatter reference and link previews are
 | [`docs/deploy.md`](docs/deploy.md) | Server runbook: pod, Cloudflare Tunnel, update timer, rollback |
 | [`docs/postmortems/README.md`](docs/postmortems/README.md) | Writing up a production incident or rollback |
 | [`docs/risk-tiers.md`](docs/risk-tiers.md) | How pull requests are classified by risk |
-| [`docs/metrics/README.md`](docs/metrics/README.md) | Quality, coverage and compliance metrics |
+| [`docs/metrics/README.md`](docs/metrics/README.md) | Quality, coverage, compliance and strategy metrics |
 | [`docs/multi-agent.md`](docs/multi-agent.md) | How Hive, Claude Code and local agents share issues and PRs |
 | [`docs/security/SECURITY-AI.md`](docs/security/SECURITY-AI.md) | Security model for AI agents in this repo |
 | [`BRANDING.md`](BRANDING.md) | Name, voice, colours and typography |
