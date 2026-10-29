@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
 const scriptPath = resolve(import.meta.dirname, "../../../scripts/merge-queue.sh");
+const workflowsDir = resolve(import.meta.dirname, "../../../.github/workflows");
 
 const RUN_URL = "https://github.com/owner/website/actions/runs/42";
 
@@ -43,6 +44,23 @@ interface PullRequest {
   labels?: string[];
   mergeStateStatus?: string;
 }
+
+interface Workflow {
+  on: Record<string, { branches?: string[] } | null>;
+}
+
+const workflowTriggers = new Map(
+  readdirSync(workflowsDir)
+    .filter((name) => name.endsWith(".yml") || name.endsWith(".yaml"))
+    .map((name) => [name, (Bun.YAML.parse(readFileSync(join(workflowsDir, name), "utf8")) as Workflow).on]),
+);
+
+// The workflows GitHub starts on a push to main, read from their `on:`
+// triggers. A bare `push:` filters no branch, so it covers main too.
+const mainPushWorkflows = [...workflowTriggers]
+  .filter(([, on]) => "push" in on && (on["push"]?.branches?.includes("main") ?? true))
+  .map(([name]) => name)
+  .sort();
 
 let workDir: string;
 let originDir: string;
@@ -248,21 +266,24 @@ describe("scripts/merge-queue.sh next", () => {
 });
 
 describe("scripts/merge-queue.sh land", () => {
-  test("merges the verified head, then starts main's push workflows and the next queue run", () => {
+  // A merge made with GITHUB_TOKEN starts no push workflow, so land has to
+  // start every workflow that runs on a push to main, or that gate never runs
+  // for queue merges.
+  test("merges the verified head, then starts each of main's push workflows and the next queue run", () => {
     const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7 }]);
     const head = heads.get(7) ?? "";
 
     const { status, calls } = runScript("land", "7", head, git(cloneDir, "rev-parse", "HEAD"));
 
     expect(status).toBe(0);
+    expect(calls[0]).toBe(`pr merge 7 --merge --match-head-commit ${head}`);
+    expect(calls.at(-1)).toBe("workflow run merge-queue.yml --ref main");
+    expect(calls.slice(1, -1).sort()).toEqual(mainPushWorkflows.map((name) => `workflow run ${name} --ref main`));
+  });
 
-    expect(calls).toEqual([
-      `pr merge 7 --merge --match-head-commit ${head}`,
-      "workflow run ci.yml --ref main",
-      "workflow run coverage-gate.yml --ref main",
-      "workflow run quality-report.yml --ref main",
-      "workflow run merge-queue.yml --ref main",
-    ]);
+  // `gh workflow run` fails on a workflow without a workflow_dispatch trigger.
+  test.each(mainPushWorkflows)("can start %s, which runs on a push to main", (name) => {
+    expect(workflowTriggers.get(name)).toHaveProperty("workflow_dispatch");
   });
 
   test("does not merge when main moved after verification, and queues a re-run against the new main", () => {
