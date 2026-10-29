@@ -42,6 +42,12 @@ Review: a human reviews the full diff line by line. Dependency changes follow
 the rules in `AGENTS.md` (approved, exact version, lockfile from `bun install`).
 Workflow changes keep PR-supplied fields in `env:`, never inline in `run:`.
 
+`.github/CODEOWNERS` makes the maintainer the owner of exactly these paths, so
+a PR that touches one requests his review automatically.
+`test/shared/src/codeowners.test.ts` fails if a tracked file is rated high but
+has no owner, or has an owner but is not rated high, so a new high-risk rule
+needs a matching CODEOWNERS pattern in the same PR.
+
 ## Tier: medium
 
 Application code and anything not otherwise classified: `front-end/`,

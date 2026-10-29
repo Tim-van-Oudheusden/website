@@ -1,0 +1,35 @@
+# Code owners: the maintainer owns every path the risk tiers rate high
+# (docs/risk-tiers.md): CI and gates, runtime and images, scripts,
+# dependencies, and agent instructions. A pull request that touches one asks
+# for his review; the merge queue leaves those pull requests for him to merge.
+# Low- and medium-risk paths have no owner, so their PRs merge through the
+# queue once the required checks pass.
+#
+# Keep this file and the high-risk rules in step: test/shared/src/codeowners.test.ts
+# fails if a tracked file is high risk but unowned, or owned but not high risk.
+# Patterns use .gitignore syntax: a leading `/` anchors to the repository root,
+# and a pattern without a `/` matches at any depth.
+
+# CI gates, review rubric, release job, and this file itself.
+/.github/          @Tim-van-Oudheusden
+
+# Runtime and image configuration.
+/deploy/           @Tim-van-Oudheusden
+/Dockerfile*       @Tim-van-Oudheusden
+Dockerfile         @Tim-van-Oudheusden
+/.devcontainer/    @Tim-van-Oudheusden
+
+# Gate and release tooling.
+/scripts/          @Tim-van-Oudheusden
+
+# Dependencies (supply chain).
+package.json       @Tim-van-Oudheusden
+/bun.lock          @Tim-van-Oudheusden
+
+# Agent instructions and governance.
+/AGENTS.md         @Tim-van-Oudheusden
+/CLAUDE.md         @Tim-van-Oudheusden
+/.claude/          @Tim-van-Oudheusden
+/.cursor/          @Tim-van-Oudheusden
+/.beads/           @Tim-van-Oudheusden
+/prompts/          @Tim-van-Oudheusden
