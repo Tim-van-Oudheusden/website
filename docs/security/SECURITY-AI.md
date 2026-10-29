@@ -70,7 +70,7 @@ Enforced by `.claude/settings.json` (see the safety layers in
 | `sudo`, `rm -rf` on `/` or `~` | Denied |
 | `git rebase`, `git reset`, `git clean`, `git branch -D` | Needs confirmation |
 | `bun add` / `remove` / `update`, `npm install` | Needs confirmation |
-| `gh pr merge` | Needs confirmation; agents never merge their own PRs |
+| `gh pr merge` | Needs confirmation; agents never merge their own PRs (the merge queue workflow merges, see `docs/multi-agent.md`) |
 
 Personal `.claude/settings.local.json` overrides may add permissions but
 cannot lift the project's deny rules.
@@ -82,7 +82,10 @@ Agent changes go through the same gates as human ones, with no shortcuts:
 - CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, build,
   E2E, and prod-assets checks. The coverage gate and the PR review rubric
   (`.github/workflows/review.yml`) run as well.
-- A human reviews and merges every PR. Look harder at changes that touch:
+- The merge queue (`.github/workflows/merge-queue.yml`) merges low- and
+  medium-risk PRs once their required checks pass; review them before then or
+  add `hold`. A human reviews and merges every high-risk PR
+  ([`docs/risk-tiers.md`](../risk-tiers.md)). Look harder at changes that touch:
   - `.github/workflows/`: keep `permissions:` least-privilege. Don't add
     `pull_request_target` to a job that checks out or runs PR code, and don't
     interpolate untrusted event fields straight into `run:` (pass them through
