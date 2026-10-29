@@ -22,7 +22,7 @@ describe.each([
     name: "merge-queue.yml",
     jobOverrides: {
       pick: { "contents": "read", "pull-requests": "read" },
-      land: { "actions": "write", "contents": "write", "pull-requests": "write" },
+      land: { "actions": "write", "contents": "write", "issues": "write", "pull-requests": "write" },
       reject: { "actions": "write", "contents": "read", "issues": "write", "pull-requests": "write" },
     },
   },
