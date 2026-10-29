@@ -1,0 +1,45 @@
+name: Auto issues
+
+# Turns a failed scheduled check on main into a tracked issue, so a failure
+# nobody was watching becomes work like any other. After each failed Nightly
+# compliance run, scripts/auto-issue.sh opens "Nightly compliance failing" with
+# the run's report, or comments on it if an earlier failure left it open. The
+# PR that fixes the check closes it with `Fixes #<number>`.
+
+on:
+  workflow_run:
+    workflows: [Nightly compliance]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  file-issue:
+    name: File issue for failed run
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+    env:
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # A run that fails before writing its report (lockfile drift fails the
+      # install) uploads no artifact; the script then files the run link alone.
+      - name: Download report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: gh run download "$RUN_ID" --name nightly-compliance --dir report || echo "::warning::run $RUN_ID has no nightly-compliance report"
+      - name: File or update issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: scripts/auto-issue.sh "Nightly compliance failing" report/nightly-compliance.md "$RUN_URL"

@@ -49,6 +49,12 @@ summary and as the `nightly-compliance` artifact. Every check runs even if an
 earlier one fails, and the job fails if any check failed. Run it locally with
 `scripts/nightly-compliance.sh > nightly-compliance.md`.
 
+A failed nightly run on `main` becomes an issue: `.github/workflows/auto-issues.yml`
+runs after it, downloads the report, and calls `scripts/auto-issue.sh`, which
+opens **Nightly compliance failing** with the run link and report, or comments
+on that issue if it is still open from an earlier failure. The PR that fixes the
+check closes it with `Fixes #<number>`.
+
 ## Coverage floor self-tuning
 
 The per-workspace coverage floors that `coverage-gate.yml` enforces live in

@@ -9,10 +9,12 @@ interface Workflow {
   jobs: Record<string, { permissions?: unknown }>;
 }
 
-// These jobs run third-party install scripts on push/schedule/dispatch, where the
-// default GITHUB_TOKEN may be write-scoped; they only need to read the repo. Jobs
-// needing more must say so with their own block, which replaces the top-level one.
+// These jobs run third-party install scripts on push/schedule/dispatch, or run
+// on workflow_run, where the default GITHUB_TOKEN may be write-scoped; they only
+// need to read the repo. Jobs needing more must say so with their own block,
+// which replaces the top-level one.
 describe.each([
+  { name: "auto-issues.yml", jobOverrides: { "file-issue": { actions: "read", contents: "read", issues: "write" } } },
   { name: "ci.yml", jobOverrides: { release: { contents: "read", packages: "write" } } },
   { name: "coverage-gate.yml", jobOverrides: {} },
   { name: "quality-report.yml", jobOverrides: {} },
