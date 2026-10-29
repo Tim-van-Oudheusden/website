@@ -26,6 +26,8 @@ interface ShellMutant {
 
 const UPDATE_SCRIPT = "deploy/systemd/website-update.sh";
 const UPDATE_TEST = "test/shared/src/website-update-script.test.ts";
+const MERGE_QUEUE_SCRIPT = "scripts/merge-queue.sh";
+const MERGE_QUEUE_TEST = "test/shared/src/merge-queue-script.test.ts";
 
 const MUTANTS: readonly ShellMutant[] = [
   {
@@ -97,6 +99,20 @@ const MUTANTS: readonly ShellMutant[] = [
     from: `  echo "images unchanged; skipping pod restart"\n  exit "$still_rejected"`,
     to: `  echo "images unchanged; skipping pod restart"\n  exit 0`,
     killedBy: UPDATE_TEST,
+  },
+  {
+    name: "land warns when it cannot read the issues a merged PR closes (#994)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `    echo "::warning title=Merge queue::could not read the issues #\${number} closes; close them by hand"\n`,
+    to: "    :\n",
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
+    name: "next fails instead of reporting an empty queue when listing PRs fails (#994)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `| "\\(.number) \\(.headRefOid)"')"`,
+    to: `| "\\(.number) \\(.headRefOid)"' || true)"`,
+    killedBy: MERGE_QUEUE_TEST,
   },
 ];
 
