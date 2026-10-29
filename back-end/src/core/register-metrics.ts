@@ -8,8 +8,8 @@ const MILLISECONDS_PER_SECOND = 1000;
 
 /**
  * Records a bounded counter/histogram per response and exposes them at
- * `/metrics` in Prometheus text format, restricted to loopback callers the
- * same way the health probe's trusted-proxy check is (#app.ts) — this is a
+ * `/metrics` in Prometheus text format, restricted to loopback callers by the
+ * same `isLoopbackAddress` predicate app.ts passes as `trustProxy` — this is a
  * local scrape target, not a publicly reachable endpoint.
  */
 export function registerMetrics(app: FastifyInstance): void {
