@@ -21,7 +21,8 @@ interface CounterEntry {
 interface HistogramEntry {
   method: string;
   route: string;
-  bucketCounts: number[];
+  /** Per bound in DURATION_BUCKETS_SECONDS: requests at or below it (Prometheus `le` semantics). */
+  cumulativeBucketCounts: number[];
   sum: number;
   count: number;
 }
@@ -50,12 +51,12 @@ export function recordRequest(method: string, route: string, statusCode: number,
   const histogram = requestDurations.get(histogramKey(method, route)) ?? {
     method,
     route,
-    bucketCounts: DURATION_BUCKETS_SECONDS.map(() => 0),
+    cumulativeBucketCounts: DURATION_BUCKETS_SECONDS.map(() => 0),
     sum: 0,
     count: 0,
   };
 
-  histogram.bucketCounts = histogram.bucketCounts.map(
+  histogram.cumulativeBucketCounts = histogram.cumulativeBucketCounts.map(
     (count, i) => (durationSeconds <= (DURATION_BUCKETS_SECONDS[i] ?? Infinity) ? count + 1 : count),
   );
 
@@ -107,13 +108,11 @@ export function renderPrometheusMetrics(): string {
   lines.push("# HELP http_request_duration_seconds Request duration in seconds, by method/route.");
   lines.push("# TYPE http_request_duration_seconds histogram");
 
-  for (const { method, route, bucketCounts, sum, count } of requestDurations.values()) {
+  for (const { method, route, cumulativeBucketCounts, sum, count } of requestDurations.values()) {
     const labels = `method="${escapeLabelValue(method)}",route="${escapeLabelValue(route)}"`;
-    let cumulative = 0;
 
     for (let i = 0; i < DURATION_BUCKETS_SECONDS.length; i += 1) {
-      cumulative += bucketCounts[i] ?? 0;
-      lines.push(`http_request_duration_seconds_bucket{${labels},le="${DURATION_BUCKETS_SECONDS[i]}"} ${cumulative}`);
+      lines.push(`http_request_duration_seconds_bucket{${labels},le="${DURATION_BUCKETS_SECONDS[i]}"} ${cumulativeBucketCounts[i] ?? 0}`);
     }
 
     lines.push(`http_request_duration_seconds_bucket{${labels},le="+Inf"} ${count}`);
