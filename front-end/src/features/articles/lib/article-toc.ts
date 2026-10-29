@@ -1,9 +1,10 @@
+import type { TocHeadingDepth } from "@/shared/lib/markdown-headings";
 import { extractMarkdownHeadings, TOC_MAX_DEPTH } from "@/shared/lib/markdown-headings";
 
 export interface ArticleTableOfContentsItem {
   id: string;
   text: string;
-  depth: 1 | 2 | 3;
+  depth: TocHeadingDepth;
 }
 
 export interface TocNavigationDependencies {
@@ -40,7 +41,7 @@ export function extractArticleTableOfContents(markdownBody: string): ArticleTabl
   return extractMarkdownHeadings(markdownBody, TOC_MAX_DEPTH).map((heading) => ({
     id: heading.id,
     text: heading.text,
-    depth: heading.depth as 1 | 2 | 3,
+    depth: heading.depth as TocHeadingDepth,
   }));
 }
 
@@ -149,7 +150,7 @@ export function resolveCurrentTocHeadingId(
   return passedHeadingId ?? firstVisibleHeadingId;
 }
 
-export function resolveTocLinkIndentClass(depth: 1 | 2 | 3): string {
+export function resolveTocLinkIndentClass(depth: TocHeadingDepth): string {
   if (depth === 3) {
     return "pl-3";
   }

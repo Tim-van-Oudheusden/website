@@ -33,8 +33,11 @@ const INDENTED_CODE_PATTERN = /^(?: {4}| {0,3}\t)/;
 const ESCAPED_MARKDOWN_SYMBOL_PATTERN = /\\([\\`*_[\]{}()#+\-.!])/g;
 const HTML_TAG_PATTERN = /<\/?[^>]+>/g;
 
+/** Heading levels that get table-of-contents ids; widen it together with TOC_MAX_DEPTH. */
+export type TocHeadingDepth = 1 | 2 | 3;
+
 /** Deepest heading level that participates in table-of-contents ids. */
-export const TOC_MAX_DEPTH = 3;
+export const TOC_MAX_DEPTH: TocHeadingDepth = 3;
 
 /**
  * Remove HTML tags until none are left, so the result is tag-free by
