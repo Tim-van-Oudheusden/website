@@ -227,7 +227,8 @@ async function fetchContentItem(
   headers: Record<string, string>,
 ): Promise<ContentLookup> {
   try {
-    const response = await options.fetchBackend(`${API_BASE}/content/${slug}`, headers);
+    const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", slug);
+    const response = await options.fetchBackend(`${API_BASE}${path}`, headers);
 
     if (response.status === 404) {
       return { status: "missing" };
