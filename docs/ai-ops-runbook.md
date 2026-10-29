@@ -132,16 +132,6 @@ exposed secret first, open an issue, and add a line to
 `.claude/memory/corrections.tsv` saying where the fix is encoded. If the lesson
 needs context, write a reflection in `docs/reflections/`.
 
-### Beads is out of step with GitHub
-
-GitHub is the source of truth. In a non-interactive shell, export the token
-first. Then pull only, because a bidirectional sync can hang:
-
-```bash
-export GITHUB_TOKEN="$(gh auth token)"
-bd github sync --pull-only
-```
-
 ## Stopping the agents
 
 To pause agent work, for example during an incident or while a bad instruction

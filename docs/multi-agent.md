@@ -34,7 +34,7 @@ flowchart LR
     pr --> checks["Required checks<br/>CI, coverage gate, PR review rubric"]
     checks --> queue["Merge queue<br/>re-tests on latest main, merges"]
     checks --> manual["Maintainer merges<br/>high risk, hold or sentinel-alert"]
-    queue --> close["Issue closes<br/>bd github sync --pull-only"]
+    queue --> close["Issue closes"]
     manual --> close
 ```
 
@@ -47,9 +47,8 @@ flowchart LR
    `hive/claimed-by-<agent>`. Before starting, check the issue's assignees and
    labels and `gh pr list --search "<number>"`; skip an issue someone else holds
    or an open PR already covers (`stage/040-covered-by-pr`, `🐝 covered by PR`).
-3. **One issue, one branch, one PR.** Pick work with `bd ready` or
-   `gh issue list`; a child or follow-up issue waits until its parent lands,
-   whatever its number.
+3. **One issue, one branch, one PR.** Pick work with `gh issue list`; a child
+   or follow-up issue waits until its parent lands, whatever its number.
 4. **Same gates for every author.** CI, the coverage gate, the PR review
    rubric and the risk tier ([`risk-tiers.md`](risk-tiers.md)) run on every
    PR, whoever opened it.
@@ -99,10 +98,3 @@ logic lives in `scripts/merge-queue.sh`.
 | `hold` | Hive, the merge queue, or a person | Keeps the PR out of the merge queue until removed: Hive sets it on its PRs, the queue on a PR that failed on the latest `main` |
 | `sentinel-alert` | Hive's sentinel sweep | The PR touches sensitive files or matches a suspicious pattern (a weakened CI gate, removed tests, an exposed secret, escalated permissions). Keeps it out of the merge queue and out of Hive's approval and auto-merge paths; a maintainer reviews the PR, removes the label, and the queue picks it up again |
 | `acmm` | Hive | A gap found by Hive's ACMM evaluation |
-
-## Beads
-
-`bd` mirrors GitHub issue state into a local ledger so an agent can see ready
-work and dependencies offline. GitHub stays the source of truth: claim and
-close issues there, then run `bd github sync --pull-only`. Hive keeps its own
-ledgers outside this repository.
