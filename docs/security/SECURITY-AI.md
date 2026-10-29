@@ -86,7 +86,11 @@ Agent changes go through the same gates as human ones, with no shortcuts:
   medium-risk PRs once their required checks pass; review them before then or
   add `hold`. A human reviews and merges every high-risk PR
   ([`docs/risk-tiers.md`](../risk-tiers.md)). Look harder at changes that touch:
-  - `.github/workflows/`: keep `permissions:` least-privilege. Don't add
+  - `.github/workflows/`: keep `permissions:` least-privilege. Every
+    workflow's token grants are policy as code in
+    `.github/policies/workflow-permissions.yml`, and `bun run test` fails when
+    a workflow's `permissions:` blocks differ from its rule, so a wider grant
+    shows up as a change to that policy file. Don't add
     `pull_request_target` to a job that checks out or runs PR code, and don't
     interpolate untrusted event fields straight into `run:` (pass them through
     `env:`, as `review.yml` does). `labeler.yml` is the sanctioned
