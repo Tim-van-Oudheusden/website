@@ -61,15 +61,17 @@ is left on anything meant for release.
 
 ## Changing the tiers
 
-The rules are policy as code in `.github/policies/risk-tiers.policy`: one
-`<tier> <glob>` rule per line, where the **first matching rule wins** — keep
-high-risk rules above broad low-risk globs such as `*.md`. `*` matches across
-`/`. `scripts/tier-classify.sh` evaluates the policy and fails without a tier
-if a rule is malformed or names an unknown tier; set `RISK_TIER_POLICY` to try
-a different policy file locally.
+The rules are policy as code in the risk assessment config,
+`.github/risk-assessment.yml`: an ordered `rules:` list of `- <tier> <glob>`
+items, one per line, where the **first matching rule wins** — keep high-risk
+rules above broad low-risk globs such as `*.md`. `*` matches across `/`.
+`scripts/tier-classify.sh` evaluates the rules and fails without a tier if a
+line is not a blank line, a whole-line `#` comment, the `rules:` line or such
+an item, or if an item names an unknown tier; set `RISK_TIER_POLICY` to try a
+different file locally.
 
 The engine and the shipped rules are covered by
-`test/shared/src/tier-classifier-script.test.ts`. Update the policy, its tests,
-and the tables above in the same PR. The policy file (`high .github/*`) and
+`test/shared/src/tier-classifier-script.test.ts`. Update the rules, their
+tests, and the tables above in the same PR. The config (`high .github/*`) and
 `scripts/tier-classify.sh` (`high scripts/*`) are high risk; this doc and the
 test take their ordinary tiers (low and medium).
