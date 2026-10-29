@@ -26,6 +26,7 @@ describe.each([
     },
   },
   { name: "quality-report.yml", jobOverrides: {} },
+  { name: "strategy-report.yml", jobOverrides: { report: { "contents": "read", "issues": "read", "pull-requests": "read" } } },
 ])(".github/workflows/$name", ({ name, jobOverrides }) => {
   test("restricts GITHUB_TOKEN to reading repository contents unless a job opts into more", () => {
     const workflow = Bun.YAML.parse(readFileSync(resolve(workflowsDir, name), "utf8")) as Workflow;
