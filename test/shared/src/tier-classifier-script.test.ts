@@ -156,7 +156,7 @@ describe("scripts/tier-classify.sh with a custom policy", () => {
 
   beforeEach(() => {
     workDir = mkdtempSync(join(tmpdir(), "tier-policy-"));
-    policyPath = join(workDir, "risk-tiers.policy");
+    policyPath = join(workDir, "risk-assessment.yml");
   });
 
   afterEach(() => {
@@ -170,7 +170,7 @@ describe("scripts/tier-classify.sh with a custom policy", () => {
   }
 
   test("applies the first matching rule, ignoring comments and blank lines", () => {
-    const policy = ["# secrets first", "high  vault/keys.md", "", "low   vault/*", "low   *.md"].join("\n");
+    const policy = ["# secrets first", "rules:", "  - high  vault/keys.md", "", "  # then the rest", "  - low   vault/*", "  - low   *.md"].join("\n");
 
     const { status, output } = classifyWith(policy, ["vault/keys.md", "vault/readme.txt", "notes.md", "src/app.ts"]);
 
@@ -183,10 +183,18 @@ describe("scripts/tier-classify.sh with a custom policy", () => {
   });
 
   test("rejects a rule with an unknown tier instead of classifying", () => {
-    const { status, output } = classifyWith("critical  deploy/*\n", ["deploy/kube/prod.yaml"]);
+    const { status, output } = classifyWith("rules:\n  - critical  deploy/*\n", ["deploy/kube/prod.yaml"]);
 
     expect(status).not.toBe(0);
     expect(output).toContain("critical");
+    expect(output).not.toContain("tier=");
+  });
+
+  test("rejects a rule outside the rules list instead of classifying", () => {
+    const { status, output } = classifyWith("high  deploy/*\nrules:\n  - low  docs/*\n", ["deploy/kube/prod.yaml"]);
+
+    expect(status).not.toBe(0);
+    expect(output).toContain(":1:");
     expect(output).not.toContain("tier=");
   });
 
@@ -256,7 +264,7 @@ describe(".github/workflows/tier-classifier.yml", () => {
           BASE_SHA: baseSha,
           HEAD_SHA: headSha,
           GITHUB_STEP_SUMMARY: summaryPath,
-          RISK_TIER_POLICY: resolve(rootPath, ".github/policies/risk-tiers.policy"),
+          RISK_TIER_POLICY: resolve(rootPath, ".github/risk-assessment.yml"),
         },
       });
 
@@ -299,6 +307,20 @@ describe(".github/workflows/tier-classifier.yml", () => {
       expect(output).toContain("::notice title=Risk tier::high");
       expect(summary).toMatch(/^high\s+\.github\/workflows\/déploy\.yml$/m);
     });
+  });
+});
+
+describe(".github/risk-assessment.yml", () => {
+  test("is YAML whose rules list holds one '<tier> <glob>' item per rule", () => {
+    const assessment = Bun.YAML.parse(readFileSync(resolve(rootPath, ".github/risk-assessment.yml"), "utf8")) as {
+      rules: unknown[];
+    };
+
+    expect(assessment.rules.length).toBeGreaterThan(0);
+
+    for (const rule of assessment.rules) {
+      expect(rule).toMatch(/^(low|medium|high)\s+\S+$/);
+    }
   });
 });
 
