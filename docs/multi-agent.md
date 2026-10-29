@@ -82,6 +82,11 @@ would not run. If they fail, the PR gets `hold` and a comment linking the
 run; fix it and remove `hold` to queue it again. Each run starts the next, so
 the queue merges one PR at a time.
 
+If the run cannot read or close a merged PR's linked issues, it warns
+(`::warning`) and still starts `main`'s workflows and the next run; close the
+issue by hand. If it cannot list the open PRs, the run fails rather than
+passing for an empty queue.
+
 To keep a PR out of the queue, add `hold` or leave it a draft. Dependabot's PRs
 change dependency or workflow files, which are high risk, so the maintainer
 merges them. To drain the queue by hand: `gh workflow run merge-queue.yml`. The

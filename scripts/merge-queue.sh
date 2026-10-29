@@ -55,23 +55,38 @@ tier_of() {
 # GitHub does not act on `Fixes #N` when GITHUB_TOKEN merges a pull request,
 # so close the issues it links ourselves. By URL, so a link to another
 # repository closes that issue, not this repository's issue with the same
-# number. The merge has landed by now: a close that fails is a warning, not a
-# reason to skip main's workflows or the next run.
+# number. The merge has landed by now: failing to read the links or to close
+# an issue is a warning, not a reason to skip main's workflows or the next run.
+# The links are read into a variable first: bash drops the exit status of a
+# `< <(...)` process, so a failed lookup would look like a PR that links none.
 close_linked_issues() {
-  local number="$1" issue
+  local number="$1" issues issue
+  if ! issues="$(gh pr view "$number" --json closingIssuesReferences --jq '.closingIssuesReferences[].url')"; then
+    echo "::warning title=Merge queue::could not read the issues #${number} closes; close them by hand"
+    return 0
+  fi
   while read -r issue; do
     [ -n "$issue" ] || continue
     gh issue close "$issue" --reason completed \
       --comment "Closed by #${number}, which the merge queue merged." \
       || echo "::warning title=Merge queue::could not close ${issue} after merging #${number}"
-  done < <(gh pr view "$number" --json closingIssuesReferences --jq '.closingIssuesReferences[].url')
+  done <<< "$issues"
 }
 
 next() {
-  local number head tier
+  local candidates number head tier
   # gh lists open pull requests by default; --jq runs gh's built-in jq, so the
-  # runner needs no jq.
+  # runner needs no jq. Listed into a variable so a failed listing fails the
+  # job (set -e) instead of passing for an empty queue.
+  candidates="$(HOLD="$HOLD_LABEL" SENTINEL="$SENTINEL_LABEL" gh pr list --base main --limit 100 \
+    --json number,headRefOid,isDraft,isCrossRepository,labels \
+    --jq 'sort_by(.number) | .[]
+      | select((.isDraft or .isCrossRepository) | not)
+      | select(all(.labels[]; .name != env.HOLD and .name != env.SENTINEL))
+      | "\(.number) \(.headRefOid)"')"
   while read -r number head; do
+    # An empty listing still reads one empty line.
+    [ -n "$number" ] || continue
     [ "$(merge_state "$number")" = CLEAN ] || continue
     git fetch --no-tags --quiet origin "refs/pull/${number}/head"
     # A push since the listing: the next run sees it.
@@ -87,12 +102,7 @@ next() {
       echo "main=$(git rev-parse HEAD)"
     } >> "$GITHUB_OUTPUT"
     return 0
-  done < <(HOLD="$HOLD_LABEL" SENTINEL="$SENTINEL_LABEL" gh pr list --base main --limit 100 \
-    --json number,headRefOid,isDraft,isCrossRepository,labels \
-    --jq 'sort_by(.number) | .[]
-      | select((.isDraft or .isCrossRepository) | not)
-      | select(all(.labels[]; .name != env.HOLD and .name != env.SENTINEL))
-      | "\(.number) \(.headRefOid)"')
+  done <<< "$candidates"
 }
 
 land() {

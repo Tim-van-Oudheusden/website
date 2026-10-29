@@ -11,11 +11,18 @@ const RUN_URL = "https://github.com/owner/website/actions/runs/42";
 
 // Stands in for the gh CLI. `gh pr list` and `gh pr view <n>` answer from the
 // pull requests in $FAKE_DIR/prs.json, filtered through `--jq` like gh does.
-// Every other call is appended to $FAKE_DIR/calls.log, one line per call, and
-// fails if it starts with the text in $FAKE_DIR/fail.
+// Every other call is appended to $FAKE_DIR/calls.log, one line per call. Any
+// call fails if it starts with the text in $FAKE_DIR/fail.
 const FAKE_GH = `#!/usr/bin/env bash
 set -euo pipefail
+fails() {
+  [ -f "$FAKE_DIR/fail" ] && [[ "$*" == "$(cat "$FAKE_DIR/fail")"* ]]
+}
 if [ "$1" = pr ] && { [ "$2" = list ] || [ "$2" = view ]; }; then
+  if fails "$@"; then
+    echo "gh: HTTP 502" >&2
+    exit 1
+  fi
   sub="$2"
   shift 2
   number=""
@@ -35,7 +42,7 @@ if [ "$1" = pr ] && { [ "$2" = list ] || [ "$2" = view ]; }; then
   exit 0
 fi
 echo "$*" >> "$FAKE_DIR/calls.log"
-if [ -f "$FAKE_DIR/fail" ] && [[ "$*" == "$(cat "$FAKE_DIR/fail")"* ]]; then
+if fails "$@"; then
   exit 1
 fi
 `;
@@ -151,7 +158,12 @@ function setUpRepository(mainFiles: Record<string, string>, pullRequests: PullRe
   return heads;
 }
 
-function runScript(...args: string[]): { status: number | null; output: Record<string, string>; calls: string[] } {
+function runScript(...args: string[]): {
+  status: number | null;
+  stdout: string;
+  output: Record<string, string>;
+  calls: string[];
+} {
   const outputPath = join(workDir, "github-output");
   const callLog = join(workDir, "calls.log");
 
@@ -178,7 +190,7 @@ function runScript(...args: string[]): { status: number | null; output: Record<s
   );
   const calls = existsSync(callLog) ? readFileSync(callLog, "utf8").split("\n").filter(Boolean) : [];
 
-  return { status: result.status, output, calls };
+  return { status: result.status, stdout: result.stdout, output, calls };
 }
 
 beforeEach(() => {
@@ -272,6 +284,29 @@ describe("scripts/merge-queue.sh next", () => {
     expect(output).toEqual({});
     expect(calls).toEqual([]);
   });
+
+  // An empty listing is an empty queue; a failed one is not, and must not
+  // pass for it.
+  test("fails instead of reporting an empty queue when listing the pull requests fails", () => {
+    setUpRepository({ "README.md": "site\n" }, [{ number: 7 }]);
+
+    writeFileSync(join(workDir, "fail"), "pr list");
+
+    const { status, output } = runScript("next");
+
+    expect(status).not.toBe(0);
+    expect(output).toEqual({});
+  });
+
+  test("picks nothing when no pull request is open", () => {
+    setUpRepository({ "README.md": "site\n" }, []);
+
+    const { status, output, calls } = runScript("next");
+
+    expect(status).toBe(0);
+    expect(output).toEqual({});
+    expect(calls).toEqual([]);
+  });
 });
 
 describe("scripts/merge-queue.sh land", () => {
@@ -321,6 +356,20 @@ describe("scripts/merge-queue.sh land", () => {
 
     expect(status).toBe(0);
     expect(calls.filter((call) => call.startsWith("issue close "))).toHaveLength(2);
+    expect(calls.filter((call) => call.startsWith("workflow run ")).sort()).toEqual(expectedRuns.sort());
+  });
+
+  test("warns, and still starts main's push workflows and the next queue run, when reading the linked issues fails", () => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, closingIssues: [12] }]);
+
+    writeFileSync(join(workDir, "fail"), "pr view 7 --json closingIssuesReferences");
+
+    const { status, stdout, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
+    const expectedRuns = [...mainPushWorkflows, "merge-queue.yml"].map((name) => `workflow run ${name} --ref main`);
+
+    expect(status).toBe(0);
+    expect(stdout).toContain("::warning title=Merge queue::");
+    expect(stdout).toContain("#7");
     expect(calls.filter((call) => call.startsWith("workflow run ")).sort()).toEqual(expectedRuns.sort());
   });
 
