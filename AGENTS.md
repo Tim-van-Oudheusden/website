@@ -37,6 +37,7 @@ bd prime                     # Full beads workflow reference
 
 - Before working an issue: read it with `gh issue view <number>` (or the API); claim/assign it there, then branch off an up-to-date `main` as `<type>/<number>-<slug>` (e.g. `docs/639-pr-based-landing`)
 - When done: push the branch and open a pull request whose body says `Fixes #<number>`; the maintainer merges it once the required checks pass, and the merge closes the issue. Run `bd github sync --pull-only` to mirror issue state into beads
+- Other agents (Hive, Claude Code in CI) work this repo concurrently; check an issue's assignees, labels and open PRs before claiming it. The coordination contract is `docs/multi-agent.md`
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
