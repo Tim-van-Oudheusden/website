@@ -40,7 +40,8 @@ flowchart LR
 
 1. **Issue first.** Every change starts from a GitHub issue. Work an agent
    finds but does not do becomes a new issue (`gh issue create`), not an
-   unrelated change in the current PR.
+   unrelated change in the current PR. How each change links back to its issue
+   is in [`agent-tasks/`](agent-tasks/README.md).
 2. **Claim before working.** A local or CI agent assigns the issue
    (`gh issue edit <number> --add-assignee @me`); Hive adds
    `hive/claimed-by-<agent>`. Before starting, check the issue's assignees and
