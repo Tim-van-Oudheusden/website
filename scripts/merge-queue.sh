@@ -15,15 +15,19 @@
 #   scripts/merge-queue.sh reject <number> <run-url>
 #       Hold a pull request that failed verification, link the run, move on.
 #
-# Ready means: from this repository (not a fork), not a draft, no `hold` label,
-# every required check passing (merge state CLEAN), and not high risk by
-# scripts/tier-classify.sh — high-risk changes wait for the maintainer.
+# Ready means: from this repository (not a fork), not a draft, no `hold` or
+# `sentinel-alert` label, every required check passing (merge state CLEAN), and
+# not high risk by scripts/tier-classify.sh — high-risk changes, and PRs Hive's
+# sentinel flagged, wait for the maintainer.
 # Needs gh authenticated (GH_TOKEN) and pointed at the repository (GH_REPO, or
 # run from a checkout).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOLD_LABEL=hold
+# Hive's sentinel sweep sets it on a PR that touches sensitive files or looks
+# like it weakens a gate; a maintainer reviews the PR and removes it.
+SENTINEL_LABEL=sentinel-alert
 
 # Picks up runs that land, reject or skip a pull request, so each merge is
 # verified against the main it lands on.
@@ -68,11 +72,11 @@ next() {
       echo "main=$(git rev-parse HEAD)"
     } >> "$GITHUB_OUTPUT"
     return 0
-  done < <(HOLD="$HOLD_LABEL" gh pr list --base main --limit 100 \
+  done < <(HOLD="$HOLD_LABEL" SENTINEL="$SENTINEL_LABEL" gh pr list --base main --limit 100 \
     --json number,headRefOid,isDraft,isCrossRepository,labels \
     --jq 'sort_by(.number) | .[]
       | select((.isDraft or .isCrossRepository) | not)
-      | select(all(.labels[]; .name != env.HOLD))
+      | select(all(.labels[]; .name != env.HOLD and .name != env.SENTINEL))
       | "\(.number) \(.headRefOid)"')
 }
 
@@ -85,8 +89,8 @@ land() {
     return 0
   fi
 
-  ready="$(HOLD="$HOLD_LABEL" gh pr view "$number" --json isDraft,labels \
-    --jq '(.isDraft | not) and all(.labels[]; .name != env.HOLD)')"
+  ready="$(HOLD="$HOLD_LABEL" SENTINEL="$SENTINEL_LABEL" gh pr view "$number" --json isDraft,labels \
+    --jq '(.isDraft | not) and all(.labels[]; .name != env.HOLD and .name != env.SENTINEL)')"
   if [ "$ready" != true ] || [ "$(merge_state "$number")" != CLEAN ]; then
     echo "::notice title=Merge queue::#${number} stopped being ready during verification; skipped"
     queue_next_run
