@@ -7,6 +7,7 @@ import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import remarkGfm from "remark-gfm";
 
+import type { TocHeadingDepth } from "@/shared/lib/markdown-headings";
 import {
   extractMarkdownHeadingsWithOffsets,
   normalizeMarkdownHeadingText,
@@ -226,7 +227,7 @@ function resolveHeadingIdFromPosition(
 
 /** A markdown heading of `depth` (1-3), rendered `headingLevelOffset` levels lower, with its TOC id. */
 function createHeadingComponent(
-  depth: 1 | 2 | 3,
+  depth: TocHeadingDepth,
   headingIds: HeadingIdLookup,
   headingLevelOffset: 0 | 1,
 ): (props: HeadingProps) => JSX.Element {
