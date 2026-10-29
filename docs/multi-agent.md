@@ -15,7 +15,7 @@ monitor agent work and debug it when it gets stuck.
 | Agent | Started by | Branches | Instructions |
 | --- | --- | --- | --- |
 | Hive agents (`app/hive-forge-app`), e.g. scanner, architect, quality, craftsman, strategist | Hive's own scheduler, outside this repo | `<type>/…` or `<agent>/…`, e.g. `fix/948-…`, `craftsman/…`, `quality/…` | `AGENTS.md` |
-| Claude Code in CI (`.github/workflows/claude.yml`) | The `ai-fix-requested` label, or an `@claude` mention from an `OWNER`/`MEMBER`/`COLLABORATOR` | `claude/*` | `CLAUDE.md`, then `AGENTS.md` |
+| Claude Code in CI (`.github/workflows/claude.yml`) | The `ai-fix-requested` label applied by a person, or an `@claude` mention from an `OWNER`/`MEMBER`/`COLLABORATOR` | `claude/*` | `CLAUDE.md`, then `AGENTS.md` |
 | Local coding agents (Claude Code, Cursor, Copilot, …) | A maintainer, one session per issue | `<type>/<number>-<slug>` | `AGENTS.md`, plus `CLAUDE.md`, `.cursor/rules/agent-guidance.mdc` or `.github/copilot-instructions.md`; the `github-issue-flow` skill in `.claude/skills/` |
 | Dependabot (`.github/dependabot.yml`) | Weekly schedule | `dependabot/*` | — |
 
@@ -91,7 +91,7 @@ logic lives in `scripts/merge-queue.sh`.
 
 | Label | Set by | Meaning |
 | --- | --- | --- |
-| `ai-fix-requested` | A triager, or Hive on issues it files | Hand the issue to Claude Code in CI |
+| `ai-fix-requested` | A triager, or Hive on issues it files | Hand the issue to Claude Code in CI. Only a person's label starts a run; on Hive's issues the job is skipped until a maintainer adds the label again |
 | `agent/<name>` | Hive | The Hive agent that filed the issue |
 | `hive/claimed-by-<agent>` | Hive | That Hive agent holds the issue |
 | `stage/<NNN>-<name>` | Hive | Where the issue or PR is in Hive's pipeline, from `stage/010-actionable` to `stage/100-merge-queue`; the label descriptions on GitHub define each stage |

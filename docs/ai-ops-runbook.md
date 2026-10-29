@@ -45,14 +45,16 @@ exception is a failing Nightly compliance run, which files an issue on its own
 
 `gh run list --workflow claude.yml` lists one run for each label event:
 
-- **`skipped`** is expected for every other label put on the issue. Only the
-  `ai-fix-requested` event passes the job's `if`. A comment or review only
-  passes when it mentions `@claude` and its author is `OWNER`, `MEMBER` or
-  `COLLABORATOR`.
-- **`failure` with "Workflow initiated by non-human actor"** means a bot added
-  the label (Hive files its ACMM issues already labelled). Claude Code's action
-  refuses runs started by bots. To hand the issue over, a maintainer removes the
-  label and adds it again:
+- **`skipped`** is expected for every other label put on the issue. Only an
+  `ai-fix-requested` event from a person passes the job's `if`. A comment or
+  review only passes when it mentions `@claude` and its author is `OWNER`,
+  `MEMBER` or `COLLABORATOR`.
+- **`skipped` on the `ai-fix-requested` event itself** means a bot added the
+  label (Hive files its ACMM issues already labelled). Claude Code's action
+  refuses runs started by bots, so the job only answers a person's label. To
+  hand the issue over, first check that no Hive agent holds it (no
+  `hive/claimed-by-<agent>` or `hive/in-progress` label, no open PR), then a
+  maintainer removes the label and adds it again:
   `gh issue edit <N> --remove-label ai-fix-requested && gh issue edit <N> --add-label ai-fix-requested`.
 - **`failure` at "Refuse fork pull requests"**: the PR comes from a fork. Review
   it locally; the workflow never runs fork code.

@@ -11,6 +11,7 @@ function readWorkflow(name: string): string {
 
 // Parsed from this repo's own workflow, not outside input: a wrong shape fails the assertions below.
 const claudeWorkflow = Bun.YAML.parse(readWorkflow("claude.yml")) as {
+  concurrency: { group: string };
   jobs: { claude: { if: string; steps: { name?: string; if?: string; run?: string }[] } };
 };
 
@@ -30,6 +31,18 @@ describe(".github/workflows/claude.yml", () => {
     expect(jobIf.match(/contains\(github\.event\.(comment|review)\.body, '@claude'\)/g)).toHaveLength(3);
     expect(jobIf.match(/fromJSON\('\["OWNER","MEMBER","COLLABORATOR"\]'\)/g)).toHaveLength(3);
     expect(workflow).not.toContain("pull_request_target");
+  });
+
+  // claude-code-action refuses a bot sender, and Hive files its ACMM issues
+  // already labelled, so a bot's label must skip the job instead of failing it.
+  // The concurrency group is resolved before the job's `if`, so it needs the
+  // same check or a bot's label could replace a pending run a person asked for.
+  test("only answers the label when a person applies it", () => {
+    const labelGate = /github\.event\.label\.name == 'ai-fix-requested'\s*&& github\.event\.sender\.type == 'User'/;
+
+    expect(claudeWorkflow.jobs.claude.if).toMatch(labelGate);
+    expect(claudeWorkflow.concurrency.group).toMatch(labelGate);
+    expect(readWorkflow("claude.yml")).not.toContain("allowed_bots");
   });
 
   // claude-code-action checks out the PR head (fork PRs via refs/pull/N/head) and
