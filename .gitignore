@@ -29,13 +29,13 @@ Thumbs.db
 .tmp/
 .superpowers/
 
-# bv (beads viewer) local config and caches
+# Leftover local state of the retired beads tracker (#988); never commit it
+.beads/
+.beads.gate.lock
 .bv/
 .bv.lock
-
-# beads transient locks
-.beads/bd.sock.startlock
-.beads.gate.lock
+.dolt/
+*.db
 
 # Playwright artifacts
 playwright-report/
@@ -45,10 +45,7 @@ test-results/
 reports/mutation/
 .stryker-tmp/
 
-# Beads / Dolt files (added by bd init)
-.dolt/
-*.db
-.beads-credential-key
+# Local dev container config
 .devcontainer/
 .devcontainer/*
 

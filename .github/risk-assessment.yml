@@ -36,7 +36,6 @@ rules:
   - high    CLAUDE.md
   - high    .claude/*
   - high    .cursor/*
-  - high    .beads/*
   - high    prompts/*
 
   # Prose and static assets that do not execute.

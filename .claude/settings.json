@@ -16,10 +16,7 @@
       "Bash(git diff)",
       "Bash(git diff *)",
       "Bash(git log *)",
-      "Bash(git show *)",
-      "Bash(bd ready)",
-      "Bash(bd show *)",
-      "Bash(bd prime)"
+      "Bash(git show *)"
     ],
     "ask": [
       "Bash(bun add *)",
@@ -37,7 +34,6 @@
       "Read(./.env.*)",
       "Read(./**/.env)",
       "Read(./**/.env.*)",
-      "Read(./.beads-credential-key)",
       "Edit(./bun.lock)",
       "Write(./bun.lock)",
       "Bash(git push --force *)",

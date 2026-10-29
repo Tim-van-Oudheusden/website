@@ -36,7 +36,7 @@ A mistake here can bypass every other check or reach production directly.
 | `deploy/**`, `Dockerfile*`, `*/Dockerfile`, `.devcontainer/**`     | Runtime and image configuration      |
 | `scripts/**`                                                       | Gate and release tooling             |
 | `package.json`, `*/package.json`, `bun.lock`                       | Dependencies (supply chain)          |
-| `AGENTS.md`, `CLAUDE.md`, `.claude/**`, `.cursor/**`, `prompts/**`, `.beads/**` | Agent instructions and governance |
+| `AGENTS.md`, `CLAUDE.md`, `.claude/**`, `.cursor/**`, `prompts/**` | Agent instructions and governance    |
 
 Review: a human reviews the full diff line by line. Dependency changes follow
 the rules in `AGENTS.md` (approved, exact version, lockfile from `bun install`).

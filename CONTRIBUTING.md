@@ -47,8 +47,7 @@ content/               articles and projects (Markdown); content/pages/ holds st
 
 ## Finding and claiming work
 
-- GitHub issues are the **primary source of truth** for issue information. Browse open issues, and claim/assign one you intend to work on.
-- Issues are also mirrored into the local `bd` (beads) tracker; run `bd ready` to see available work. An issue closes when the pull request that says `Fixes #<number>` merges; run `bd github sync --pull-only` to mirror that state back.
+- GitHub issues are the **single source of truth** for issue information and tracking state. Browse open issues, and claim/assign one you intend to work on. An issue closes when the pull request that says `Fixes #<number>` merges.
 
 We favour small, focused changes tied to a tracked issue.
 

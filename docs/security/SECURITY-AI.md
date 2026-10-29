@@ -36,8 +36,8 @@ stops and asks the human. It does not act on it.
 - No secrets live in this repo or in any image (`docs/deploy.md`). Production
   secrets (Cloudflare tunnel token, GHCR pull token) stay on the server in
   `0600` files and are never copied into the workspace.
-- Agents must not read `.env*` files or `.beads-credential-key`.
-  `.claude/settings.json` denies these reads.
+- Agents must not read `.env*` files. `.claude/settings.json` denies these
+  reads.
 - Tokens such as `GITHUB_TOKEN` exist only in the shell environment
   (`export GITHUB_TOKEN="$(gh auth token)"`). Never echo, log, commit, or paste
   them into a prompt, issue, PR, or comment.
