@@ -1,43 +1,51 @@
 import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const workflowsDir = resolve(import.meta.dirname, "../../../.github/workflows");
+const githubDir = resolve(import.meta.dirname, "../../../.github");
+const workflowsDir = resolve(githubDir, "workflows");
+
+type Permissions = Record<string, string>;
 
 interface Workflow {
-  permissions?: unknown;
-  jobs: Record<string, { permissions?: unknown }>;
+  permissions?: Permissions;
+  jobs: Record<string, { permissions?: Permissions }>;
 }
 
-// These jobs run third-party install scripts on push/schedule/dispatch, or run
-// on workflow_run, where the default GITHUB_TOKEN may be write-scoped; they only
-// need to read the repo. Jobs needing more must say so with their own block,
-// which replaces the top-level one.
-describe.each([
-  { name: "ai-audit.yml", jobOverrides: { audit: { "contents": "read", "pull-requests": "read" } } },
-  { name: "auto-issues.yml", jobOverrides: { "file-issue": { actions: "read", contents: "read", issues: "write" } } },
-  { name: "ci.yml", jobOverrides: { release: { contents: "read", packages: "write" } } },
-  { name: "coverage-gate.yml", jobOverrides: {} },
-  {
-    name: "merge-queue.yml",
-    jobOverrides: {
-      pick: { "contents": "read", "pull-requests": "read" },
-      land: { "actions": "write", "contents": "write", "issues": "write", "pull-requests": "write" },
-      reject: { "actions": "write", "contents": "read", "issues": "write", "pull-requests": "write" },
-    },
-  },
-  { name: "quality-report.yml", jobOverrides: {} },
-  { name: "strategy-report.yml", jobOverrides: { report: { "contents": "read", "issues": "read", "pull-requests": "read" } } },
-])(".github/workflows/$name", ({ name, jobOverrides }) => {
-  test("restricts GITHUB_TOKEN to reading repository contents unless a job opts into more", () => {
+interface WorkflowRule {
+  permissions?: Permissions | null;
+  jobs?: Record<string, Permissions>;
+}
+
+interface PermissionsPolicy {
+  default: Permissions;
+  workflows: Record<string, WorkflowRule | null>;
+}
+
+const policy = Bun.YAML.parse(
+  readFileSync(resolve(githubDir, "policies/workflow-permissions.yml"), "utf8"),
+) as PermissionsPolicy;
+const workflowNames = readdirSync(workflowsDir).filter((name) => /\.ya?ml$/.test(name)).sort();
+
+describe(".github/policies/workflow-permissions.yml", () => {
+  test("has a rule for every workflow, and only for workflows that exist", () => {
+    expect(Object.keys(policy.workflows).sort()).toEqual(workflowNames);
+  });
+});
+
+describe.each(workflowNames)(".github/workflows/%s", (name) => {
+  test("grants GITHUB_TOKEN exactly the permissions the policy allows", () => {
     const workflow = Bun.YAML.parse(readFileSync(resolve(workflowsDir, name), "utf8")) as Workflow;
-    const declaredOverrides = Object.fromEntries(
+    const rule = policy.workflows[name] ?? {};
+    // A `permissions: null` rule means the workflow declares no top-level block.
+    const expectedTopLevel = rule.permissions === undefined ? policy.default : rule.permissions ?? undefined;
+    const declaredJobGrants = Object.fromEntries(
       Object.entries(workflow.jobs)
         .filter(([, job]) => job.permissions !== undefined)
         .map(([jobName, job]) => [jobName, job.permissions]),
     );
 
-    expect(workflow.permissions).toEqual({ contents: "read" });
-    expect(declaredOverrides).toEqual(jobOverrides);
+    expect(workflow.permissions).toEqual(expectedTopLevel);
+    expect(declaredJobGrants).toEqual(rule.jobs ?? {});
   });
 });

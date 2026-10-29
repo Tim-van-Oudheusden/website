@@ -1,0 +1,75 @@
+# Policy: what GITHUB_TOKEN may do in each workflow.
+# Evaluated by test/shared/src/workflow-permissions.test.ts, which `bun run test`
+# runs in CI: it fails when a workflow under .github/workflows/ has no rule here,
+# when a rule names a workflow that does not exist, or when a workflow's
+# `permissions:` blocks differ from its rule in either direction.
+#
+# Every workflow declares a top-level `permissions:` block equal to `default`,
+# so a job without its own block can only read the repository. A rule changes
+# that with:
+#   permissions  the top-level block instead of `default`; `null` means the
+#                workflow has no top-level block (every job declares its own).
+#   jobs         the exact `permissions:` block of each job that declares one.
+#                A job's block replaces the top-level one; jobs not listed must
+#                not declare a block.
+# A rule of `{}` means the default and no job-level blocks.
+#
+# Widening a grant is a change to this file and to the workflow, both high
+# risk (docs/risk-tiers.md), so the maintainer reviews and merges it.
+
+default:
+  contents: read
+
+workflows:
+  ai-audit.yml:
+    jobs:
+      audit: { contents: read, pull-requests: read }
+
+  auto-issues.yml:
+    jobs:
+      file-issue: { actions: read, contents: read, issues: write }
+
+  # Commits review suggestions to the PR branch and reports on the PR.
+  auto-review.yml:
+    permissions: { contents: write, pull-requests: write }
+
+  ci.yml:
+    jobs:
+      # Publishes the release images to GHCR.
+      release: { contents: read, packages: write }
+
+  claude.yml:
+    permissions: null
+    jobs:
+      claude: { actions: read, contents: write, id-token: write, issues: write, pull-requests: write }
+
+  coverage-gate.yml: {}
+
+  # The sanctioned pull_request_target exception (docs/security/SECURITY-AI.md):
+  # checks out nothing and only labels the PR.
+  labeler.yml:
+    permissions: { contents: read, pull-requests: write }
+
+  merge-queue.yml:
+    jobs:
+      pick: { contents: read, pull-requests: read }
+      land: { actions: write, contents: write, issues: write, pull-requests: write }
+      reject: { actions: write, contents: read, issues: write, pull-requests: write }
+
+  mutation-testing.yml: {}
+
+  nightly-compliance.yml: {}
+
+  # Reads PR history only; it never checks out the repository.
+  pr-metrics.yml:
+    permissions: { pull-requests: read }
+
+  quality-report.yml: {}
+
+  review.yml: {}
+
+  strategy-report.yml:
+    jobs:
+      report: { contents: read, issues: read, pull-requests: read }
+
+  tier-classifier.yml: {}
