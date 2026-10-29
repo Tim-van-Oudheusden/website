@@ -11,7 +11,8 @@ const RUN_URL = "https://github.com/owner/website/actions/runs/42";
 
 // Stands in for the gh CLI. `gh pr list` and `gh pr view <n>` answer from the
 // pull requests in $FAKE_DIR/prs.json, filtered through `--jq` like gh does.
-// Every other call is appended to $FAKE_DIR/calls.log, one line per call.
+// Every other call is appended to $FAKE_DIR/calls.log, one line per call, and
+// fails if it starts with the text in $FAKE_DIR/fail.
 const FAKE_GH = `#!/usr/bin/env bash
 set -euo pipefail
 if [ "$1" = pr ] && { [ "$2" = list ] || [ "$2" = view ]; }; then
@@ -34,6 +35,9 @@ if [ "$1" = pr ] && { [ "$2" = list ] || [ "$2" = view ]; }; then
   exit 0
 fi
 echo "$*" >> "$FAKE_DIR/calls.log"
+if [ -f "$FAKE_DIR/fail" ] && [[ "$*" == "$(cat "$FAKE_DIR/fail")"* ]]; then
+  exit 1
+fi
 `;
 
 interface PullRequest {
@@ -43,6 +47,7 @@ interface PullRequest {
   isCrossRepository?: boolean;
   labels?: string[];
   mergeStateStatus?: string;
+  closingIssues?: number[];
 }
 
 interface Workflow {
@@ -135,6 +140,10 @@ function setUpRepository(mainFiles: Record<string, string>, pullRequests: PullRe
         isCrossRepository: pullRequest.isCrossRepository ?? false,
         labels: (pullRequest.labels ?? []).map((name) => ({ name })),
         mergeStateStatus: pullRequest.mergeStateStatus ?? "CLEAN",
+        closingIssuesReferences: (pullRequest.closingIssues ?? []).map((number) => ({
+          number,
+          url: `https://github.com/owner/website/issues/${number}`,
+        })),
       })),
     ),
   );
@@ -286,8 +295,37 @@ describe("scripts/merge-queue.sh land", () => {
     expect(workflowTriggers.get(name)).toHaveProperty("workflow_dispatch");
   });
 
-  test("does not merge when main moved after verification, and queues a re-run against the new main", () => {
-    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7 }]);
+  // GitHub does not close an issue linked with `Fixes #N` when GITHUB_TOKEN
+  // merges the pull request, so land closes it.
+  test("closes every issue the merged pull request links with a closing keyword", () => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, closingIssues: [12, 13] }]);
+
+    const { status, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
+    const closes = calls.filter((call) => call.startsWith("issue close "));
+
+    expect(status).toBe(0);
+    expect(calls.indexOf(closes[0] ?? "")).toBeGreaterThan(calls.indexOf(`pr merge 7 --merge --match-head-commit ${heads.get(7) ?? ""}`));
+    expect(closes).toHaveLength(2);
+    expect(closes[0]).toStartWith("issue close https://github.com/owner/website/issues/12 --reason completed --comment ");
+    expect(closes[1]).toStartWith("issue close https://github.com/owner/website/issues/13 --reason completed --comment ");
+    expect(closes[0]).toContain("#7");
+  });
+
+  test("still starts main's push workflows and the next queue run when closing an issue fails", () => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, closingIssues: [12, 13] }]);
+
+    writeFileSync(join(workDir, "fail"), "issue close https://github.com/owner/website/issues/12");
+
+    const { status, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
+    const expectedRuns = [...mainPushWorkflows, "merge-queue.yml"].map((name) => `workflow run ${name} --ref main`);
+
+    expect(status).toBe(0);
+    expect(calls.filter((call) => call.startsWith("issue close "))).toHaveLength(2);
+    expect(calls.filter((call) => call.startsWith("workflow run ")).sort()).toEqual(expectedRuns.sort());
+  });
+
+  test("does not merge or close issues when main moved after verification, and queues a re-run against the new main", () => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, closingIssues: [12] }]);
     const verifiedMain = git(cloneDir, "rev-parse", "HEAD");
 
     commitFiles(join(workDir, "seed"), { "docs/other.md": "other\n" }, "other");
@@ -304,8 +342,8 @@ describe("scripts/merge-queue.sh land", () => {
     ["flagged by Hive's sentinel", { labels: ["sentinel-alert"] }],
     ["turned back into a draft", { isDraft: true }],
     ["no longer passing its required checks", { mergeStateStatus: "BLOCKED" }],
-  ])("does not merge a pull request %s during verification", (_, change) => {
-    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, ...change }]);
+  ])("does not merge a pull request %s during verification, or close its issues", (_, change) => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, closingIssues: [12], ...change }]);
 
     const { status, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
 

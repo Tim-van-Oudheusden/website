@@ -75,9 +75,11 @@ coverage gate or the PR review rubric succeeds, a draft is marked ready, or
 It merges that PR onto the current `main` and runs lint, typecheck, unit tests
 and build on the result; E2E and the prod-assets check are not re-run there.
 If they pass and neither the PR nor `main` moved, it merges the PR (a merge
-commit) and starts CI, the coverage gate and the quality report on `main` (a
-merge made with `GITHUB_TOKEN` starts no push run, so the release job would
-otherwise not run). If they fail, the PR gets `hold` and a comment linking the
+commit), closes the issues the PR links with `Fixes #<N>` (or `Closes`,
+`Resolves`), and starts CI, the coverage gate and the quality report on `main`.
+A merge made with `GITHUB_TOKEN` neither closes linked issues nor starts a push
+run, so without these steps the issue would stay open and the release job
+would not run. If they fail, the PR gets `hold` and a comment linking the
 run; fix it and remove `hold` to queue it again. Each run starts the next, so
 the queue merges one PR at a time.
 

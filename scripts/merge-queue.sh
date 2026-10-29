@@ -52,6 +52,21 @@ tier_of() {
   git diff -z --name-only --no-renames "HEAD...$1" | "$HERE/tier-classify.sh" -z | sed -n 's/^tier=//p'
 }
 
+# GitHub does not act on `Fixes #N` when GITHUB_TOKEN merges a pull request,
+# so close the issues it links ourselves. By URL, so a link to another
+# repository closes that issue, not this repository's issue with the same
+# number. The merge has landed by now: a close that fails is a warning, not a
+# reason to skip main's workflows or the next run.
+close_linked_issues() {
+  local number="$1" issue
+  while read -r issue; do
+    [ -n "$issue" ] || continue
+    gh issue close "$issue" --reason completed \
+      --comment "Closed by #${number}, which the merge queue merged." \
+      || echo "::warning title=Merge queue::could not close ${issue} after merging #${number}"
+  done < <(gh pr view "$number" --json closingIssuesReferences --jq '.closingIssuesReferences[].url')
+}
+
 next() {
   local number head tier
   # gh lists open pull requests by default; --jq runs gh's built-in jq, so the
@@ -99,6 +114,7 @@ land() {
 
   # --match-head-commit refuses the merge if the branch moved past what was verified.
   gh pr merge "$number" --merge --match-head-commit "$head"
+  close_linked_issues "$number"
   for workflow in ci.yml coverage-gate.yml quality-report.yml; do
     gh workflow run "$workflow" --ref main
   done

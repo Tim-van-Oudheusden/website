@@ -8,8 +8,9 @@ name: Merge queue
 #            all pass and whose risk tier is not high (docs/risk-tiers.md).
 #   verify - merges that PR onto the current main and runs the gates on the
 #            result, with a read-only token and the PR's code.
-#   land   - merges the PR if neither it nor main moved, then starts main's
-#            push workflows (merges made with GITHUB_TOKEN start none).
+#   land   - merges the PR if neither it nor main moved, closes the issues it
+#            links with `Fixes #N`, then starts main's push workflows (merges
+#            made with GITHUB_TOKEN close no issue and start no workflow).
 #   reject - a PR that failed verification gets `hold` and a comment.
 #
 # Land and reject start the next run, so the queue drains one PR at a time.
@@ -121,6 +122,7 @@ jobs:
     permissions:
       actions: write
       contents: write
+      issues: write
       pull-requests: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
