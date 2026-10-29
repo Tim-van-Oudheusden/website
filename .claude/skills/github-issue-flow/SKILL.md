@@ -40,7 +40,8 @@ required checks pass, so the issue branch is what you push.
    that link or a Conventional Commits title.
 3. Confirm `git status` shows up to date with `origin/<branch>`, and hand off
    the PR URL. The issue is done when the PR is open with CI running; the
-   maintainer merges it, and the merge closes the issue.
+   merge queue (or the maintainer, for high-risk or `hold` PRs) merges it, and
+   the merge closes the issue.
 4. Mirror into beads. Non-interactive shells lack the token:
    `export GITHUB_TOKEN="$(gh auth token)"`.
    GitHub-only changes: `export GITHUB_OWNER="Tim-van-Oudheusden" GITHUB_REPO="website"`

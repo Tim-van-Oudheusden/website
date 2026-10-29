@@ -36,7 +36,7 @@ bd prime                     # Full beads workflow reference
 ## Sessions with GitHub issues
 
 - Before working an issue: read it with `gh issue view <number>` (or the API); claim/assign it there, then branch off an up-to-date `main` as `<type>/<number>-<slug>` (e.g. `docs/639-pr-based-landing`)
-- When done: push the branch and open a pull request whose body says `Fixes #<number>`; the maintainer merges it once the required checks pass, and the merge closes the issue. Run `bd github sync --pull-only` to mirror issue state into beads
+- When done: push the branch and open a pull request whose body says `Fixes #<number>`. Once the required checks pass, the merge queue (`docs/multi-agent.md`) merges it, or the maintainer does if it is high risk or labelled `hold`; the merge closes the issue. Run `bd github sync --pull-only` to mirror issue state into beads
 - Other agents (Hive, Claude Code in CI) work this repo concurrently; check an issue's assignees, labels and open PRs before claiming it. The coordination contract is `docs/multi-agent.md`
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
@@ -84,7 +84,7 @@ bd close <id>         # Complete work
 - Work is NOT complete until the branch is pushed and its PR is open
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push and open the PR
-- Push only the issue branch; the maintainer merges the PR into `main` after the required checks pass
+- Push only the issue branch; never merge it yourself. The merge queue (or the maintainer, for high-risk or `hold` PRs) merges the PR into `main` after the required checks pass
 - If push fails, resolve and retry until it succeeds
 <!-- END BEADS INTEGRATION -->
 

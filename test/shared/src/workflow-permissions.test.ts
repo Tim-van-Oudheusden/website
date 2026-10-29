@@ -17,6 +17,14 @@ describe.each([
   { name: "auto-issues.yml", jobOverrides: { "file-issue": { actions: "read", contents: "read", issues: "write" } } },
   { name: "ci.yml", jobOverrides: { release: { contents: "read", packages: "write" } } },
   { name: "coverage-gate.yml", jobOverrides: {} },
+  {
+    name: "merge-queue.yml",
+    jobOverrides: {
+      pick: { "contents": "read", "pull-requests": "read" },
+      land: { "actions": "write", "contents": "write", "pull-requests": "write" },
+      reject: { "actions": "write", "contents": "read", "issues": "write", "pull-requests": "write" },
+    },
+  },
   { name: "quality-report.yml", jobOverrides: {} },
 ])(".github/workflows/$name", ({ name, jobOverrides }) => {
   test("restricts GITHUB_TOKEN to reading repository contents unless a job opts into more", () => {

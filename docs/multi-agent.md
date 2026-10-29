@@ -31,8 +31,10 @@ flowchart LR
     claim --> branch["Branch off main<br/>one issue per branch"]
     branch --> pr["Pull request<br/>body says Fixes #N"]
     pr --> checks["Required checks<br/>CI, coverage gate, PR review rubric"]
-    checks --> merge["Maintainer merges"]
-    merge --> close["Issue closes<br/>bd github sync --pull-only"]
+    checks --> queue["Merge queue<br/>re-tests on latest main, merges"]
+    checks --> manual["Maintainer merges<br/>high risk or hold"]
+    queue --> close["Issue closes<br/>bd github sync --pull-only"]
+    manual --> close
 ```
 
 1. **Issue first.** Every change starts from a GitHub issue. Work an agent
@@ -49,9 +51,38 @@ flowchart LR
 4. **Same gates for every author.** CI, the coverage gate, the PR review
    rubric and the risk tier ([`risk-tiers.md`](risk-tiers.md)) run on every
    PR, whoever opened it.
-5. **A person merges.** `main` is protected and nothing auto-merges: the
-   maintainer merges every PR once its required checks pass. Hive's PRs carry
-   the `hold` label until then. Agents never merge their own PRs.
+5. **The merge queue merges.** `main` is protected; the
+   [merge queue](#merge-queue) merges a PR once its required checks pass. The
+   maintainer merges high-risk PRs and any PR labelled `hold`. Agents never
+   run `gh pr merge` themselves.
+
+## Merge queue
+
+GitHub's own merge queue needs an organization-owned repository, so
+`.github/workflows/merge-queue.yml` runs one on Actions. Whenever CI, the
+coverage gate or the PR review rubric succeeds, a draft is marked ready, or
+`hold` comes off a PR, it takes the oldest open PR that:
+
+- comes from this repository, not a fork, and is not a draft;
+- has no `hold` label;
+- passes every required check (merge state `CLEAN`, so review threads are
+  resolved too);
+- is not high risk ([`risk-tiers.md`](risk-tiers.md)), rated from `main`'s
+  `scripts/tier-classify.sh`.
+
+It merges that PR onto the current `main` and runs lint, typecheck, unit tests
+and build on the result; E2E and the prod-assets check are not re-run there.
+If they pass and neither the PR nor `main` moved, it merges the PR (a merge
+commit) and starts CI, the coverage gate and the quality report on `main` (a
+merge made with `GITHUB_TOKEN` starts no push run, so the release job would
+otherwise not run). If they fail, the PR gets `hold` and a comment linking the
+run; fix it and remove `hold` to queue it again. Each run starts the next, so
+the queue merges one PR at a time.
+
+To keep a PR out of the queue, add `hold` or leave it a draft. Dependabot's PRs
+change dependency or workflow files, which are high risk, so the maintainer
+merges them. To drain the queue by hand: `gh workflow run merge-queue.yml`. The
+logic lives in `scripts/merge-queue.sh`.
 
 ## Labels that carry state
 
@@ -61,7 +92,7 @@ flowchart LR
 | `agent/<name>` | Hive | The Hive agent that filed the issue |
 | `hive/claimed-by-<agent>` | Hive | That Hive agent holds the issue |
 | `stage/<NNN>-<name>` | Hive | Where the issue or PR is in Hive's pipeline, from `stage/010-actionable` to `stage/100-merge-queue`; the label descriptions on GitHub define each stage |
-| `hold` | Hive | Hive-authored PR that waits for the maintainer to merge it |
+| `hold` | Hive, the merge queue, or a person | Keeps the PR out of the merge queue until removed: Hive sets it on its PRs, the queue on a PR that failed on the latest `main` |
 | `acmm` | Hive | A gap found by Hive's ACMM evaluation |
 
 ## Beads
