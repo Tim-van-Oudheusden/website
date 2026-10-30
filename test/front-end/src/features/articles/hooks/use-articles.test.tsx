@@ -64,19 +64,21 @@ function failWith(status: number, statusText: string): () => Promise<Response> {
 
 interface Probe {
   latest: () => UseArticlesResult;
+  /** Re-render with a new URL slug, the way the page changes selection. */
+  navigate: (urlSlug: string) => void;
   cleanup: () => void;
 }
 
 function mountProbe(urlSlug?: string): Probe {
   const latestRef: { current: UseArticlesResult | null } = { current: null };
 
-  function ArticlesProbe(): null {
-    latestRef.current = useArticles(urlSlug);
+  function ArticlesProbe({ slug }: { slug: string | undefined }): null {
+    latestRef.current = useArticles(slug);
 
     return null;
   }
 
-  const mount = mountIntoBody(createElement(ArticlesProbe));
+  const mount = mountIntoBody(createElement(ArticlesProbe, { slug: urlSlug }));
 
   return {
     latest: () => {
@@ -85,6 +87,11 @@ function mountProbe(urlSlug?: string): Probe {
       }
 
       return latestRef.current;
+    },
+    navigate: (nextSlug) => {
+      act(() => {
+        mount.root.render(createElement(ArticlesProbe, { slug: nextSlug }));
+      });
     },
     cleanup: () => {
       unmountFakeDomRoot(mount);
@@ -297,7 +304,7 @@ describe("useArticles selected article", () => {
     }
   });
 
-  test("selectSlug loads the new article and clears a previous article error", async () => {
+  test("a new URL slug loads that article and clears a previous article error", async () => {
     routeFetch({
       [LIST_URL]: respond([summary("introduction"), summary("linux-setup")]),
       "/api/content/introduction": failWith(500, "Internal Server Error"),
@@ -310,9 +317,7 @@ describe("useArticles selected article", () => {
       await settle();
       expect(probe.latest().articleError).toBe("Request failed: Internal Server Error");
 
-      act(() => {
-        probe.latest().selectSlug("linux-setup");
-      });
+      probe.navigate("linux-setup");
 
       expect(probe.latest().loadingArticle).toBe(true);
       expect(probe.latest().articleError).toBeNull();
@@ -321,31 +326,6 @@ describe("useArticles selected article", () => {
       expect(probe.latest().selectedSlug).toBe("linux-setup");
       expect(probe.latest().selectedArticle?.slug).toBe("linux-setup");
       expect(probe.latest().loadingArticle).toBe(false);
-    } finally {
-      probe.cleanup();
-    }
-  });
-
-  test("selectSlug is not reverted while the URL still names another slug", async () => {
-    routeFetch({
-      [LIST_URL]: respond([summary("introduction"), summary("linux-setup")]),
-      "/api/content/introduction": respond(article("introduction")),
-      "/api/content/linux-setup": respond(article("linux-setup")),
-    });
-
-    const probe = mountProbe("linux-setup");
-
-    try {
-      await settle();
-
-      act(() => {
-        probe.latest().selectSlug("introduction");
-      });
-
-      await settle();
-
-      expect(probe.latest().selectedSlug).toBe("introduction");
-      expect(probe.latest().selectedArticle?.slug).toBe("introduction");
     } finally {
       probe.cleanup();
     }
@@ -366,9 +346,7 @@ describe("useArticles selected article", () => {
       await settle();
 
       // The introduction request is still in flight when the reader moves on.
-      act(() => {
-        probe.latest().selectSlug("linux-setup");
-      });
+      probe.navigate("linux-setup");
 
       await settle();
       expect(probe.latest().selectedArticle?.slug).toBe("linux-setup");

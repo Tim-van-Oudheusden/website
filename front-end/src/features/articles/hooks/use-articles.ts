@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { ArticleData, ArticleSummary } from "shared/articles";
 
@@ -37,7 +37,6 @@ export interface UseArticlesResult {
   articleError: string | null;
   /** The selected slug names no article: show the not-found page, not an error. */
   articleNotFound: boolean;
-  selectSlug: (slug: string) => void;
 }
 
 /**
@@ -51,8 +50,8 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
   const [pickedSlug, setPickedSlug] = useState<string | null>(urlSlug ?? null);
   const [syncedUrlSlug, setSyncedUrlSlug] = useState(urlSlug);
 
-  // React to URL changes only: an in-page selectSlug must not be reverted
-  // while the URL still names the slug the page was opened on.
+  // React to URL changes only: a URL without a slug (`/articles` after
+  // `/articles/<slug>`, same page instance) keeps the current selection.
   if (urlSlug !== syncedUrlSlug) {
     setSyncedUrlSlug(urlSlug);
 
@@ -71,10 +70,6 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
   );
   const article = useLoadOnMount(loadSelectedArticle, "Failed to load article");
 
-  const selectSlug = useCallback((slug: string) => {
-    setPickedSlug(slug);
-  }, []);
-
   return {
     articles,
     selectedSlug,
@@ -84,6 +79,5 @@ export function useArticles(urlSlug: string | undefined): UseArticlesResult {
     listError: list.error,
     articleError: article.error,
     articleNotFound: article.status === "success" && article.data === null,
-    selectSlug,
   };
 }
