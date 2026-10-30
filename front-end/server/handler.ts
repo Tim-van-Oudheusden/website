@@ -227,6 +227,8 @@ async function fetchContentItem(
   headers: Record<string, string>,
 ): Promise<ContentLookup> {
   try {
+    // `slug` comes straight from url.pathname, so it is still percent-encoded;
+    // unlike the client loaders, encoding it again would double-encode it.
     const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", slug);
     const response = await options.fetchBackend(`${API_BASE}${path}`, headers);
 
