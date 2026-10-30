@@ -118,6 +118,14 @@ describe("httpContentLoader", () => {
     expect(article.body).toBe("# Heading");
   });
 
+  test("getArticle encodes the slug so URL syntax in it cannot name another document", async () => {
+    const fetchMock = stubFetch(jsonResponse({ slug: "foo", title: "Foo", type: "article", body: "# Foo" }));
+
+    await httpContentLoader.getArticle("foo?x#y/z");
+
+    expect(requestedPath(fetchMock)).toBe(`${API_BASE}/content/foo%3Fx%23y%2Fz`);
+  });
+
   test("getArticle rejects with ApiError(404) for a slug that resolves to a project", async () => {
     stubFetch(jsonResponse({ slug: "minimal-launcher", title: "Launcher", type: "project", body: "# Heading" }));
 
@@ -148,6 +156,14 @@ describe("httpContentLoader", () => {
       expect(err).toBeInstanceOf(ApiError);
       expect((err as ApiError).status).toBe(404);
     }
+  });
+
+  test("getProject encodes the slug so URL syntax in it cannot name another document", async () => {
+    const fetchMock = stubFetch(jsonResponse(projectItem({ slug: "foo" })));
+
+    await httpContentLoader.getProject("foo?x#y/z");
+
+    expect(requestedPath(fetchMock)).toBe(`${API_BASE}/content/foo%3Fx%23y%2Fz`);
   });
 });
 

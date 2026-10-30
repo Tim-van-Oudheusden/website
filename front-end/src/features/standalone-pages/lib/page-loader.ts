@@ -9,7 +9,7 @@ import { ApiError, apiGet } from "@/shared/lib/api";
  */
 export async function fetchPage(slug: string): Promise<PageData | null> {
   try {
-    return await apiGet<PageData>(ROUTES.PAGE_BY_SLUG.replace(":slug", slug));
+    return await apiGet<PageData>(ROUTES.PAGE_BY_SLUG.replace(":slug", encodeURIComponent(slug)));
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) {
       return null;

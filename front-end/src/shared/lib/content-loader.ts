@@ -31,7 +31,7 @@ export const httpContentLoader: ContentLoader = {
   },
 
   async getArticle(slug: string): Promise<ArticleData> {
-    const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", slug);
+    const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", encodeURIComponent(slug));
     const data = await apiGet<ContentItem>(path);
 
     if (data.type !== "article") {
@@ -46,7 +46,7 @@ export const httpContentLoader: ContentLoader = {
   },
 
   async getProject(slug: string): Promise<ProjectFrontmatter & { body: string }> {
-    const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", slug);
+    const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", encodeURIComponent(slug));
     const data = await apiGet<ContentItem>(path);
 
     if (data.type !== "project") {
