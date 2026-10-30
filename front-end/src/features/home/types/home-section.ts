@@ -11,15 +11,12 @@ export type HomeSectionId
     | "experience"
     | "socials";
 
-export type HomeSectionContentDirection = "row" | "column";
-
 interface HomeSectionBase {
   id: HomeSectionId;
   label: string;
   heading: string;
   body: string;
   bgColor: string;
-  contentDirection: HomeSectionContentDirection;
 }
 
 export interface HomeStartSection extends HomeSectionBase {
