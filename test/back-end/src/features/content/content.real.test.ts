@@ -46,9 +46,6 @@ const VALID_PROJECT = [
   "  - type: repo",
   "    label: Source repository",
   "    href: https://github.com/example/repo",
-  "  - type: bogus",
-  "    label: Dropped link",
-  "    href: https://example.com/dropped",
   "---",
   "# Launcher",
 ].join("\n");
@@ -94,6 +91,17 @@ const FIXTURES = {
     "---",
     "# Broken Status",
   ].join("\n"),
+  "blank-role.md": [
+    "---",
+    "title: Blank Role",
+    "date: 2026-02-15",
+    "type: project",
+    "coverImage: /images/projects/z.png",
+    "coverImageAlt: Z",
+    "role:   ",
+    "---",
+    "# Blank Role",
+  ].join("\n"),
   "bad-links.md": [
     "---",
     "title: Broken Links",
@@ -101,7 +109,6 @@ const FIXTURES = {
     "type: project",
     "coverImage: /images/projects/y.png",
     "coverImageAlt: Y",
-    "role:   ",
     "links:",
     "  - type: repo",
     "    label: Kept",
@@ -301,33 +308,31 @@ describe("content normalization against controlled fixtures", () => {
     const items = await listContent(contentDir, { type: null });
 
     expect(items.some((item) => item.slug === "bad-status")).toBe(false);
-    const badLinks = items.find((item) => item.slug === "bad-links");
+    const blankRole = items.find((item) => item.slug === "blank-role");
 
-    expect((badLinks as ProjectFrontmatter | undefined)?.role).toBeNull();
+    expect((blankRole as ProjectFrontmatter | undefined)?.role).toBeNull();
   });
 
   test("reports invalid, untitled, and unparseable documents via the directory audit", async () => {
     const errors = await validateContentDir(contentDir);
 
     expect(errors.map((error) => [error.file, error.field]).sort()).toEqual([
+      ["bad-links.md", "links"],
       ["bad-status.md", "status"],
       ["no-frontmatter.md", null],
       ["no-title.md", "title"],
     ]);
   });
 
-  test("keeps valid links and drops invalid link entries", async () => {
+  test("keeps valid links and skips a project with a link it cannot render", async () => {
     const items = await listContent(contentDir, { type: null });
     const healthy = items.find((item) => item.slug === "launcher");
-    const broken = items.find((item) => item.slug === "bad-links");
 
     expect((healthy as ProjectFrontmatter | undefined)?.links).toEqual([
       { type: "repo", label: "Source repository", href: "https://github.com/example/repo" },
     ]);
 
-    expect((broken as ProjectFrontmatter | undefined)?.links).toEqual([
-      { type: "repo", label: "Kept", href: "https://github.com/example/kept" },
-    ]);
+    expect(items.some((item) => item.slug === "bad-links")).toBe(false);
   });
 
   test("resolves valid project fields through normalization", async () => {
