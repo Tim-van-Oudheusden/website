@@ -10,6 +10,7 @@ import { headingIdFor } from "../config/home-sections";
 import { resolveRecommendedPool, selectRecommendedArticles } from "../lib/recommended-articles";
 import type { HomeRecommendationsSection } from "../types/home-section";
 
+import { HomeLoadSlot } from "./home-load-slot";
 import { HomeSectionHeading } from "./home-section-heading";
 import { HOME_SECTION_FRAME_CLASSES, HomeSectionFrame } from "./home-section-shell";
 import { RecommendedArticleCard } from "./recommended-article-card";
@@ -22,27 +23,24 @@ function RecommendationsContent({
   articles: ArticleSummary[] | null;
   loadError: boolean;
 }): JSX.Element {
-  if (loadError) {
-    return (
-      <p role="alert" className="text-sm text-red-600 dark:text-destructive">
-        Recommendations could not be loaded right now. Please try again later.
-      </p>
-    );
-  }
-
-  if (articles === null) {
-    return <p className="text-sm text-(--ink-5)/60 dark:text-white/60">Loading recommendations...</p>;
-  }
-
   return (
-    <ul className="grid grid-cols-1 gap-x-4 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-6">
-      {articles.map((article, index) => (
-        // Like Kent's layout, the third card only shows once three columns fit.
-        <li key={article.slug} className={index >= 2 ? "hidden lg:block" : undefined}>
-          <RecommendedArticleCard article={article} />
-        </li>
-      ))}
-    </ul>
+    <HomeLoadSlot
+      data={articles}
+      loadError={loadError}
+      errorMessage="Recommendations could not be loaded right now. Please try again later."
+      loadingMessage="Loading recommendations..."
+    >
+      {(loaded) => (
+        <ul className="grid grid-cols-1 gap-x-4 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-6">
+          {loaded.map((article, index) => (
+            // Like Kent's layout, the third card only shows once three columns fit.
+            <li key={article.slug} className={index >= 2 ? "hidden lg:block" : undefined}>
+              <RecommendedArticleCard article={article} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </HomeLoadSlot>
   );
 }
 

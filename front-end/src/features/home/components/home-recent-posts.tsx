@@ -10,6 +10,7 @@ import type { ContentLoader } from "@/shared/lib/content-loader";
 
 import type { HomeRecentPostsSection } from "../types/home-section";
 
+import { HomeLoadSlot } from "./home-load-slot";
 import { HomeHeadedSectionShell } from "./home-section-shell";
 
 export const RECENT_POSTS_COUNT = 4;
@@ -53,19 +54,16 @@ export function RecentPostsContent({
   posts: ArticleSummary[] | null;
   loadError: boolean;
 }): JSX.Element {
-  if (loadError) {
-    return (
-      <p role="alert" className="text-sm text-red-600 dark:text-destructive">
-        Recent posts could not be loaded right now. Please try again later.
-      </p>
-    );
-  }
-
-  if (posts === null) {
-    return <p className="text-sm text-(--ink-5)/60 dark:text-white/60">Loading recent posts...</p>;
-  }
-
-  return <RecentPostsList posts={posts} />;
+  return (
+    <HomeLoadSlot
+      data={posts}
+      loadError={loadError}
+      errorMessage="Recent posts could not be loaded right now. Please try again later."
+      loadingMessage="Loading recent posts..."
+    >
+      {(loaded) => <RecentPostsList posts={loaded} />}
+    </HomeLoadSlot>
+  );
 }
 
 interface HomeRecentPostsProps {
