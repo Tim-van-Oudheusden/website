@@ -90,32 +90,53 @@ function normalizePrioritySlot(value: unknown): 1 | 2 | 3 | null {
   return null;
 }
 
-function normalizeProjectLinks(value: unknown): ProjectLink[] {
-  if (!Array.isArray(value)) {
-    return [];
+type ProjectLinksResult
+  = | { ok: true; links: ProjectLink[] }
+    | { ok: false; message: string; value: unknown };
+
+/**
+ * Read the `links:` list. Like an unknown `status`, a link the project page
+ * cannot render is reported rather than silently left off the page.
+ */
+function normalizeProjectLinks(value: unknown): ProjectLinksResult {
+  if (value === undefined) {
+    return { ok: true, links: [] };
   }
 
-  return value.flatMap((item): ProjectLink[] => {
+  if (!Array.isArray(value)) {
+    return { ok: false, message: "links must be a list of `- type: ...` blocks, each with a label and an href", value };
+  }
+
+  const links: ProjectLink[] = [];
+
+  for (const item of value) {
     if (typeof item !== "object" || item === null) {
-      return [];
+      return { ok: false, message: "Each link must be a `- type: ...` block with a label and an href", value: item };
     }
 
     const rawLink = item as Record<string, unknown>;
-    const type = rawLink["type"];
-    const label = normalizeString(rawLink["label"]);
-    const href = normalizeString(rawLink["href"]);
+    const type = PROJECT_LINK_TYPES.find((candidate) => candidate === rawLink["type"]);
 
-    if (
-      typeof type !== "string"
-      || !(PROJECT_LINK_TYPES as readonly string[]).includes(type)
-      || label === null
-      || href === null
-    ) {
-      return [];
+    if (type === undefined) {
+      return { ok: false, message: `Link type must be one of ${PROJECT_LINK_TYPES.join(", ")}`, value: item };
     }
 
-    return [{ type: type as ProjectLink["type"], label, href }];
-  });
+    const label = normalizeString(rawLink["label"]);
+
+    if (label === null) {
+      return { ok: false, message: "Link must have a text label", value: item };
+    }
+
+    const href = normalizeString(rawLink["href"]);
+
+    if (href === null) {
+      return { ok: false, message: "Link must have a text href", value: item };
+    }
+
+    links.push({ type, label, href });
+  }
+
+  return { ok: true, links };
 }
 
 export interface ContentError {
@@ -309,6 +330,12 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
     };
   }
 
+  const links = normalizeProjectLinks(raw["links"]);
+
+  if (!links.ok) {
+    return { ok: false, error: { file, field: "links", message: links.message, value: links.value } };
+  }
+
   return {
     ok: true,
     value: {
@@ -327,7 +354,7 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
       status: projectStatus,
       role: normalizeString(raw["role"]),
       created: normalizeTimeframe(raw["created"]),
-      links: normalizeProjectLinks(raw["links"]),
+      links: links.links,
       info: normalizeString(raw["info"]),
       prioritySlot,
     },

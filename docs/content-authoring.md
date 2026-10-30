@@ -159,7 +159,7 @@ the [content checker](#checking-content-before-pushing) before pushing.
 | `projectOrder` | No | Number (default `0`) | Sort order: lower first, ties broken by newest date. |
 | `role` | No | String | "Role" on the project page. |
 | `created` | No | String or number (e.g. `2026`) | Timeframe on the card and the project page. |
-| `links` | No | List of `{ type, label, href }`; `type` is one of `demo`, `repo`, `docs`, `article`, `external` | Link buttons on the project page. Entries with another `type` or a missing `label`/`href` are dropped without rejecting the file. |
+| `links` | No | List of `{ type, label, href }`; `type` is one of `demo`, `repo`, `docs`, `article`, `external` (exact case) | Link buttons on the project page. A `links` value that is not a list, or an entry with another `type` or without a text `label` and `href`, rejects the file. |
 | `info` | No | String | Highlight line on the card and "Info" on the project page. |
 
 Minimal valid examples:

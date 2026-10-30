@@ -145,6 +145,81 @@ describe("normalizeContentDocument", () => {
     }
   });
 
+  test("emits each valid project link as written", () => {
+    const result = normalizeContentDocument("linked.md", {
+      title: "Linked",
+      date: "2026-01-01",
+      type: "project",
+      coverImage: "/img.png",
+      coverImageAlt: "img",
+      links: [
+        { type: "repo", label: "Source", href: "https://example.com/repo" },
+        { type: "article", label: "Write-up", href: "/articles/write-up" },
+      ],
+    });
+
+    expect(result.ok).toBe(true);
+
+    if (result.ok) {
+      expect((result.value as ProjectFrontmatter).links).toEqual([
+        { type: "repo", label: "Source", href: "https://example.com/repo" },
+        { type: "article", label: "Write-up", href: "/articles/write-up" },
+      ]);
+    }
+  });
+
+  const validLink = { type: "repo", label: "Source", href: "https://example.com/repo" };
+
+  test.each([
+    [
+      "a links value that is not a list",
+      "https://example.com/repo",
+      "links must be a list of `- type: ...` blocks, each with a label and an href",
+      "https://example.com/repo",
+    ],
+    [
+      "a link written as plain text",
+      [validLink, "https://example.com/demo"],
+      "Each link must be a `- type: ...` block with a label and an href",
+      "https://example.com/demo",
+    ],
+    [
+      "a link with an unknown type",
+      [validLink, { type: "website", label: "Site", href: "https://example.com" }],
+      "Link type must be one of demo, repo, docs, article, external",
+      { type: "website", label: "Site", href: "https://example.com" },
+    ],
+    [
+      "a link whose type differs in case",
+      [{ type: "Repo", label: "Source", href: "https://example.com/repo" }],
+      "Link type must be one of demo, repo, docs, article, external",
+      { type: "Repo", label: "Source", href: "https://example.com/repo" },
+    ],
+    [
+      "a link without a label",
+      [validLink, { type: "docs", href: "https://example.com/docs" }],
+      "Link must have a text label",
+      { type: "docs", href: "https://example.com/docs" },
+    ],
+    [
+      "a link with a misspelled href",
+      [{ type: "demo", label: "Demo", herf: "https://example.com/demo" }],
+      "Link must have a text href",
+      { type: "demo", label: "Demo", herf: "https://example.com/demo" },
+    ],
+  ])("rejects %s with a links error naming the entry", (_case, links, message, value) => {
+    const result = normalizeContentDocument("bad-links.md", {
+      title: "Bad links",
+      date: "2026-01-01",
+      type: "project",
+      coverImage: "/img.png",
+      coverImageAlt: "img",
+      links,
+    });
+
+    expect(result).toEqual({ ok: false, error: { file: "bad-links.md", field: "links", message, value } });
+  });
+
   test("rejects an article without a valid category instead of throwing", () => {
     const result = normalizeContentDocument("no-category.md", {
       title: "No Category",
