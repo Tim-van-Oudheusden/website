@@ -8,6 +8,14 @@
 
 import { API_BASE } from "shared";
 
+/**
+ * Fill the `:slug` placeholder of a `ROUTES.*_BY_SLUG` path. The slug is
+ * URL-encoded so `?`, `#` or `/` in it cannot name another resource (#998).
+ */
+export function slugPath(route: string, slug: string): string {
+  return route.replace(":slug", encodeURIComponent(slug));
+}
+
 export class ApiError extends Error {
   public readonly status: number;
 

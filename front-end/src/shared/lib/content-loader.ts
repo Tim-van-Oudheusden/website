@@ -2,7 +2,7 @@ import type { ProjectFrontmatter } from "shared";
 import { ROUTES } from "shared";
 import type { ArticleData, ArticleSummary } from "shared/articles";
 
-import { ApiError, apiGet } from "./api";
+import { ApiError, apiGet, slugPath } from "./api";
 
 /** The content-load surface every content-consuming feature depends on. */
 export interface ContentLoader {
@@ -31,7 +31,7 @@ export const httpContentLoader: ContentLoader = {
   },
 
   async getArticle(slug: string): Promise<ArticleData> {
-    const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", encodeURIComponent(slug));
+    const path = slugPath(ROUTES.CONTENT_BY_SLUG, slug);
     const data = await apiGet<ContentItem>(path);
 
     if (data.type !== "article") {
@@ -46,7 +46,7 @@ export const httpContentLoader: ContentLoader = {
   },
 
   async getProject(slug: string): Promise<ProjectFrontmatter & { body: string }> {
-    const path = ROUTES.CONTENT_BY_SLUG.replace(":slug", encodeURIComponent(slug));
+    const path = slugPath(ROUTES.CONTENT_BY_SLUG, slug);
     const data = await apiGet<ContentItem>(path);
 
     if (data.type !== "project") {
