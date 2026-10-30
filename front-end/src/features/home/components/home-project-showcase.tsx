@@ -10,6 +10,7 @@ import { headingIdFor } from "../config/home-sections";
 import { selectShowcaseProjects } from "../lib/showcase-projects";
 import type { HomeProjectsSection } from "../types/home-section";
 
+import { HomeLoadSlot } from "./home-load-slot";
 import { HomeSectionHeading } from "./home-section-heading";
 import { HOME_SECTION_FRAME_CLASSES, HomeSectionFrame } from "./home-section-shell";
 import { ProjectShowcaseCard } from "./project-showcase-card";
@@ -22,27 +23,24 @@ function ShowcaseContent({
   projects: ProjectFrontmatter[] | null;
   loadError: boolean;
 }): JSX.Element {
-  if (loadError) {
-    return (
-      <p role="alert" className="text-sm text-red-600 dark:text-destructive">
-        Projects could not be loaded right now. Please try again later.
-      </p>
-    );
-  }
-
-  if (projects === null) {
-    return <p className="text-sm text-(--ink-5)/60 dark:text-white/60">Loading projects...</p>;
-  }
-
   return (
-    // The layout follows the grid's own width (container query), not the viewport.
-    <ul className="@container/grid grid grid-cols-12 gap-6">
-      {projects.map((project, index) => (
-        <li key={project.slug} className={index === 0 ? "col-span-full" : "col-span-full @2xl/grid:col-span-6"}>
-          <ProjectShowcaseCard project={project} featured={index === 0} />
-        </li>
-      ))}
-    </ul>
+    <HomeLoadSlot
+      data={projects}
+      loadError={loadError}
+      errorMessage="Projects could not be loaded right now. Please try again later."
+      loadingMessage="Loading projects..."
+    >
+      {(loaded) => (
+        // The layout follows the grid's own width (container query), not the viewport.
+        <ul className="@container/grid grid grid-cols-12 gap-6">
+          {loaded.map((project, index) => (
+            <li key={project.slug} className={index === 0 ? "col-span-full" : "col-span-full @2xl/grid:col-span-6"}>
+              <ProjectShowcaseCard project={project} featured={index === 0} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </HomeLoadSlot>
   );
 }
 
