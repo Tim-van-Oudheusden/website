@@ -13,7 +13,6 @@ const SECTION: HomeAboutSection = {
   heading: "About me",
   body: "A short introduction.",
   bgColor: "var(--site-page-bg)",
-  contentDirection: "row",
   variant: "about",
   aboutItems: ["Second item first", "A", "Third, much longer item than the others"],
   imageSrc: "/images/me.png",

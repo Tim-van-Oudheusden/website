@@ -38,7 +38,6 @@ function section(entries: ExperienceEntry[]): HomeExperienceSection {
     heading: "Experience",
     body: "Where I have worked.",
     bgColor: "var(--site-page-bg)",
-    contentDirection: "row",
     variant: "experience",
     entries,
     profileUrl: "https://www.linkedin.com/in/tim-van-oudheusden",
