@@ -1,7 +1,7 @@
 import type { ArticleFrontmatter, ContentFrontmatter } from "shared";
 import { HERO_LINE, SITE_NAME, SITE_OWNER, STANDALONE_PAGE_SLUGS } from "shared";
 
-import { CONTENT_PAGE_PREFIX } from "./social-meta";
+import { contentPagePath } from "./social-meta";
 
 /**
  * Client routes that exist regardless of content (see App.tsx). The
@@ -22,7 +22,7 @@ export function renderRobotsTxt(origin: string): string {
  */
 export function renderLlmsTxt(origin: string, items: readonly ContentFrontmatter[]): string {
   function link(item: ContentFrontmatter): string {
-    return `- [${item.title}](${origin}${CONTENT_PAGE_PREFIX[item.type]}${encodeURIComponent(item.slug)}): ${item.description}`;
+    return `- [${item.title}](${origin}${contentPagePath(item)}): ${item.description}`;
   }
 
   function section(heading: string, type: ContentFrontmatter["type"]): string[] {
@@ -55,7 +55,7 @@ export function renderLlmsTxt(origin: string, items: readonly ContentFrontmatter
 export function renderSitemap(origin: string, items: readonly ContentFrontmatter[]): string {
   const paths = [
     ...STATIC_PAGE_PATHS,
-    ...items.map((item) => `${CONTENT_PAGE_PREFIX[item.type]}${encodeURIComponent(item.slug)}`),
+    ...items.map(contentPagePath),
   ];
 
   const entries = paths
@@ -82,7 +82,7 @@ export function renderFeed(origin: string, items: readonly ContentFrontmatter[])
   const updated = new Date(articles[0]?.time ?? 0).toISOString();
 
   const entries = articles.map(({ article, time }) => {
-    const url = escapeXml(`${origin}${CONTENT_PAGE_PREFIX.article}${encodeURIComponent(article.slug)}`);
+    const url = escapeXml(`${origin}${contentPagePath(article)}`);
     const timestamp = new Date(time).toISOString();
 
     return [
