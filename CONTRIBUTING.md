@@ -99,6 +99,8 @@ Coverage shows that a branch ran, not that a test asserts on it. `.github/workfl
 
 Some docs list things the code also defines: the feature folders in the layout above, the back-end environment variables and the root `package.json` scripts in `README.md`, the frontmatter keys in `docs/content-authoring.md`, and the `E2E_*` variables in `docs/testing.md`. `test/shared/src/doc-claims.test.ts` reads each list from the code and fails `bun run test` when the doc names a different set, so update the doc in the same pull request as the code.
 
+Some values are written out in files that cannot read each other: a label list in a workflow expression and in a shell script, say. When you give a value a second copy like that, add a row to `test/shared/src/shared-literals.test.ts` that names the value and reads each copy. `bun run test` fails when the copies differ, or when a reader no longer finds its copy exactly once. Add a row there rather than a new one-off parity test.
+
 ### Applying review suggestions
 
 Comment `/apply-suggestions` on a pull request to have `.github/workflows/auto-review.yml` commit every GitHub ```` ```suggestion ```` block on the PR's current diff (`scripts/apply-review-suggestions.sh`). Only comments from `OWNER`/`MEMBER`/`COLLABORATOR` trigger it or have their suggestions applied; outdated, overlapping, and out-of-checkout suggestions are skipped, and fork PRs are refused. If the PR head was committed after your comment, the run refuses; comment again to apply suggestions to the new head. The run reports what it applied and skipped as a PR comment. Its commit is pushed with `GITHUB_TOKEN`, which does not start CI, so CI runs again on your next push.
