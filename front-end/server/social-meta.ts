@@ -25,6 +25,11 @@ export const CONTENT_PAGE_PREFIX: Record<ContentFrontmatter["type"], string> = {
   project: "/projects/",
 };
 
+/** The path of an article's or project's page, with the slug percent-encoded as a single path segment. */
+export function contentPagePath(item: Pick<ContentFrontmatter, "slug" | "type">): string {
+  return `${CONTENT_PAGE_PREFIX[item.type]}${encodeURIComponent(item.slug)}`;
+}
+
 /**
  * Mark the SPA shell sent with a 404 as not for search engines, so a dead or
  * mistyped URL never sits in an index as a thin "not found" page.
@@ -68,7 +73,7 @@ export function renderHomeMeta(html: string, origin: string): string {
  * these tags must be in the HTML the server sends.
  */
 export function renderSocialMeta(html: string, item: ContentFrontmatter, origin: string): string {
-  const pageUrl = `${origin}${CONTENT_PAGE_PREFIX[item.type]}${encodeURIComponent(item.slug)}`;
+  const pageUrl = `${origin}${contentPagePath(item)}`;
   const tags: MetaTag[] = [
     { attribute: "name", key: "description", content: item.description },
     { attribute: "property", key: "og:type", content: item.type === "article" ? "article" : "website" },
