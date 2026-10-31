@@ -10,6 +10,7 @@
 | `scripts/prod-assets.sh`        | Prod front-end image serves every `public/` file      | yes          |
 | `scripts/quality-report.sh`     | Markdown report of all gates + coverage per workspace | no           |
 | `scripts/nightly-compliance.sh` | Markdown report of dependency audit + draft guard     | no           |
+| `scripts/draft-leak-guard.sh <dir>` | Lists files with `draft: true` front matter; fails if any | no |
 | `bun scripts/auto-qa-tuner.ts` | Propose ratcheted coverage floors from a quality report | no           |
 | `bun x stryker run stryker/<workspace>.conf.mjs` | Mutation testing of one workspace (StrykerJS) | no |
 | `bun run screenshots:readme`    | README screenshots + social preview from the dev pod | yes          |
@@ -40,9 +41,9 @@ change:
   critical advisory in the locked dependency tree. Advisories with no patched
   release upstream are listed in `AUDIT_IGNORE` in the script, each with the
   reason it can't be fixed; remove an entry once a fix ships.
-- **Draft leak guard** — fails if any file in `content/` has `draft: true`
-  front matter, with or without a trailing `# comment`, the same rule the
-  `release` job in `ci.yml` enforces.
+- **Draft leak guard** — `scripts/draft-leak-guard.sh` fails if any file in
+  `content/` has `draft: true` front matter, indented or not, with or without a
+  trailing `# comment`. The `release` job in `ci.yml` runs the same script.
 
 `scripts/nightly-compliance.sh` writes the report, published as the run's job
 summary and as the `nightly-compliance` artifact. Every check runs even if an

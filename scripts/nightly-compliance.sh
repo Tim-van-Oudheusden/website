@@ -8,8 +8,9 @@
 # rather than only on push:
 #   - Dependency audit: `bun audit` finds no high or critical advisories in
 #     the locked dependency tree, except those in AUDIT_IGNORE below.
-#   - Draft leak guard: no `draft: true` front matter in content/ (CONTENT_DIR
-#     overrides the directory), the same rule the release job enforces.
+#   - Draft leak guard: scripts/draft-leak-guard.sh finds no `draft: true` front
+#     matter in content/ (CONTENT_DIR overrides the directory), the same check
+#     the release job runs.
 # Check output goes to stderr so stdout stays a clean report. Every check runs
 # even when an earlier one fails; the script exits non-zero if any failed.
 set -uo pipefail
@@ -45,13 +46,7 @@ AUDIT_IGNORE=(GHSA-vfj7-8cjw-p6xm)
 bun audit --audit-level=high "${AUDIT_IGNORE[@]/#/--ignore=}" >&2
 row "Dependency audit (high+)" $?
 
-# Like the front-matter parser, allow a ` # comment` after the value: `draft: true # wip`
-# is still a draft. `true#wip` (no space before #) is a string there, so not one here.
-# The parser also reads an indented ` draft: true` as the top-level key, so allow an indent.
-if grep -RIlE '^[[:space:]]*draft:[[:space:]]*true([[:space:]]+(#.*)?)?$' "$content_dir" >&2; then
-  row "Draft leak guard" 1
-else
-  row "Draft leak guard" 0
-fi
+"$ROOT/scripts/draft-leak-guard.sh" "$content_dir" >&2
+row "Draft leak guard" $?
 
 exit "$failed"
