@@ -25,7 +25,10 @@
  * multi-line scalars, and other YAML forms are not part of the subset.
  *
  * `readFrontmatter` returns the parsed data object plus the body after the
- * closing `---`, or the reason no valid leading frontmatter block exists.
+ * closing `---`, or the reason no valid leading frontmatter block exists. A
+ * line under a block key that is not a `- ` item (or a field of an object
+ * item) is such a reason, so a value written without its marker is reported
+ * instead of dropped.
  *
  * A leading UTF-8 byte-order mark is ignored and frontmatter lines may end in
  * CRLF; the body keeps its original line endings.
@@ -101,11 +104,17 @@ function indentOf(line: string): number {
   return INDENT_RE.exec(line)?.[0].length ?? 0;
 }
 
+type BlockRead
+  = | { ok: true; value: FrontmatterValue }
+    | { ok: false; line: string };
+
 /**
  * Parse a block of indented child lines. Returns a string[] when every item is
- * a scalar, otherwise a list of objects.
+ * a scalar, otherwise a list of objects. A line that neither starts a `- `
+ * item nor belongs to an object item's fields is returned so the caller can
+ * report it rather than drop it.
  */
-function parseBlockChildren(children: string[]): FrontmatterValue {
+function parseBlockChildren(children: string[]): BlockRead {
   const items: FrontmatterValue[] = [];
   let index = 0;
 
@@ -121,9 +130,7 @@ function parseBlockChildren(children: string[]): FrontmatterValue {
     const itemMatch = LIST_ITEM_RE.exec(line.trimStart());
 
     if (itemMatch === null) {
-      index += 1;
-
-      continue;
+      return { ok: false, line: line.trim() };
     }
 
     const itemIndent = indentOf(line);
@@ -192,7 +199,7 @@ function parseBlockChildren(children: string[]): FrontmatterValue {
     index = next;
   }
 
-  return items;
+  return { ok: true, value: items };
 }
 
 export type FrontmatterRead
@@ -313,7 +320,13 @@ export function readFrontmatter(raw: string): FrontmatterRead {
       next += 1;
     }
 
-    data[key] = parseBlockChildren(children);
+    const read = parseBlockChildren(children);
+
+    if (!read.ok) {
+      return { ok: false, reason: `${key} has a line that is not a \`- item\`: ${read.line}` };
+    }
+
+    data[key] = read.value;
     i = next;
   }
 
