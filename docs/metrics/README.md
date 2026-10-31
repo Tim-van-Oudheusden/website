@@ -18,7 +18,7 @@ reviewed like code.
 | [Quality gates](#quality-gates) | Pass/fail of lint, typecheck, unit tests, build | `scripts/quality-report.sh` via `quality-report.yml` | Push to `main`, weekly (Mon 06:17 UTC), manual | Job summary + `quality-report` artifact |
 | [Unit-test coverage](#unit-test-coverage) | Function and line coverage per workspace | `scripts/quality-report.sh` via `quality-report.yml` | Same as above | Job summary + `quality-report` artifact |
 | [Coverage floors](#coverage-floors) | Minimum coverage each workspace must keep | `.github/auto-qa-tuning.json`, enforced by `coverage-gate.yml` | Every PR and push to `main` | Check result; proposed floors as `auto-qa-tuning` artifact |
-| [PR acceptance rate](#pr-acceptance-rate) | Merged vs. closed-unmerged PRs, agent vs. other | `pr-metrics.yml` | Weekly (Mon 06:17 UTC), manual | Job summary |
+| [PR acceptance rate](#pr-acceptance-rate) | Merged vs. closed-unmerged PRs per source (Hive, Claude Code in CI, Dependabot, other) | `scripts/pr-metrics.ts` via `pr-metrics.yml` | Weekly (Mon 06:17 UTC), manual | Job summary |
 | [Nightly compliance](#nightly-compliance) | Dependency advisories, draft-content leaks, lockfile drift | `scripts/nightly-compliance.sh` via `nightly-compliance.yml` | Nightly (03:23 UTC), manual | Job summary + `nightly-compliance` artifact; a failure on `main` opens or comments on the **Nightly compliance failing** issue (`auto-issues.yml`) |
 | [Risk tier](#risk-tier) | Review risk of each PR from the paths it changes | `scripts/tier-classify.sh` via `tier-classifier.yml` | Every PR | Job summary |
 | [Mutation score](#mutation-score) | Share of mutants the unit tests kill, per workspace | StrykerJS (`stryker/<workspace>.conf.mjs`) and `scripts/mutation-summary.ts` via `mutation-testing.yml` | Nightly (02:47 UTC), manual | Job summary + `mutation-<workspace>` artifact |
@@ -61,12 +61,21 @@ bun scripts/auto-qa-tuner.ts --report quality-report.md
 ## PR acceptance rate
 
 Of the PRs closed in the reporting window (default 28 days), how many were
-merged vs. closed without merging. Split by head branch: `claude/*` counts as
-agent-authored, everything else as other. A falling agent acceptance rate is
-the signal to revisit agent instructions or skills.
+merged vs. closed without merging, per source. The source is decided by the
+same rule as the [AI audit trail](#ai-audit-trail) (`scripts/pr-source.ts`):
+Hive's signature line in the PR body first, then a `claude/*` or
+`dependabot/*` head branch, else other. A falling acceptance rate for an agent
+source is the signal to revisit that agent's instructions or skills.
 
 Run it with a different window from the Actions tab (**PR metrics → Run
-workflow → days**).
+workflow → days**), or locally:
+
+```bash
+since="$(date -u -d '28 days ago' +%Y-%m-%d)"
+gh pr list --state closed --limit 1000 --search "closed:>=${since}" \
+  --json headRefName,mergedAt,body > prs.json
+bun scripts/pr-metrics.ts "$since" prs.json
+```
 
 ## Nightly compliance
 
