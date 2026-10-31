@@ -130,11 +130,21 @@ jobs:
           fi
       - name: Draft leak guard
         # The rule lives in scripts/draft-leak-guard.sh, shared with scripts/nightly-compliance.sh.
+        # It exits 1 for a draft and 2 when it could not read content/; say which.
         run: |
-          if ! scripts/draft-leak-guard.sh content/; then
-            echo "::error::draft: true found in content/; refusing to release"
-            exit 1
-          fi
+          status=0
+          scripts/draft-leak-guard.sh content/ || status=$?
+          case $status in
+            0) ;;
+            1)
+              echo "::error::draft: true found in content/; refusing to release"
+              exit 1
+              ;;
+            *)
+              echo "::error::could not read all of content/ to check for drafts; refusing to release"
+              exit 1
+              ;;
+          esac
       - name: Build production images
         run: |
           podman build -f front-end/Dockerfile --target prod \
