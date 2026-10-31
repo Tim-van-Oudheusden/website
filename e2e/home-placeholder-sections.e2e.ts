@@ -3,8 +3,8 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import { openHome } from "./home-page";
 
-function scrollToSection(page: Page, sectionId: string): void {
-  void page.evaluate((id) => {
+async function scrollToSection(page: Page, sectionId: string): Promise<void> {
+  await page.evaluate((id) => {
     const element = document.getElementById(id);
 
     element?.scrollIntoView({ block: "start" });
@@ -21,7 +21,7 @@ test.describe("Home placeholder sections implemented", () => {
 
     const section = page.locator("section#for-devs");
 
-    scrollToSection(page, "for-devs");
+    await scrollToSection(page, "for-devs");
     await expect(section.getByRole("heading", { level: 2, name: "Open-source projects" })).toBeVisible();
 
     await expect(section.getByRole("heading", { level: 3 })).toHaveText([
@@ -46,7 +46,7 @@ test.describe("Home placeholder sections implemented", () => {
 
     const section = page.locator("section#about-me");
 
-    scrollToSection(page, "about-me");
+    await scrollToSection(page, "about-me");
     await expect(section.getByRole("heading", { level: 2, name: "About me" })).toBeVisible();
     await expect(section.getByRole("listitem").first()).toBeVisible();
     await expect(section.getByRole("img", { name: "Portrait of Tim van Oudheusden" })).toBeVisible();
@@ -57,7 +57,7 @@ test.describe("Home placeholder sections implemented", () => {
 
     const section = page.locator("section#whats-new");
 
-    scrollToSection(page, "whats-new");
+    await scrollToSection(page, "whats-new");
     await expect(section.getByRole("heading", { name: "What's new from the blog" })).toBeVisible();
     const introLink = section.getByRole("link", { name: /Introduction/ }).first();
 
@@ -74,7 +74,7 @@ test.describe("Home placeholder sections implemented", () => {
 
     const section = page.locator("section#experience");
 
-    scrollToSection(page, "experience");
+    await scrollToSection(page, "experience");
     await expect(section.getByRole("heading", { level: 2, name: "Experience" })).toBeVisible();
 
     const current = section.getByRole("link", { name: "Senior Software Engineer at Gemeente Tilburg (opens in a new tab)" });
@@ -89,7 +89,7 @@ test.describe("Home placeholder sections implemented", () => {
 
     const footer = page.locator("footer#socials");
 
-    scrollToSection(page, "socials");
+    await scrollToSection(page, "socials");
     await expect(footer.getByRole("heading", { level: 2, name: "Socials" })).toBeVisible();
 
     const github = footer.getByRole("link", { name: "GitHub (opens in a new tab)" });
