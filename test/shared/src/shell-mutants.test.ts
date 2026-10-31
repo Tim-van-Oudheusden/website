@@ -114,6 +114,13 @@ const MUTANTS: readonly ShellMutant[] = [
     to: `| "\\(.number) \\(.headRefOid)"' || true)"`,
     killedBy: MERGE_QUEUE_TEST,
   },
+  {
+    name: "the draft leak guard fails instead of passing when grep cannot read the content directory (#1024)",
+    file: "scripts/draft-leak-guard.sh",
+    from: "    exit 2\n",
+    to: "    exit 0\n",
+    killedBy: "test/shared/src/ci-workflow.test.ts",
+  },
 ];
 
 let shadowRoot: string | null = null;
