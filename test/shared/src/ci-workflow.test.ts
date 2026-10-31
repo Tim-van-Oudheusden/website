@@ -151,12 +151,14 @@ describe(".github/workflows/ci.yml", () => {
   });
 
   describe("release → Draft leak guard", () => {
-    function runGuard(draftLine: string): number | null {
+    function runGuard(draftLine: string, setup: (contentDir: string) => void = () => undefined): number | null {
       const repoDir = join(stubDir, "repo");
+      const contentDir = join(repoDir, "content");
 
-      mkdirSync(join(repoDir, "content"), { recursive: true });
+      mkdirSync(contentDir, { recursive: true });
       mkdirSync(join(repoDir, "scripts"));
-      writeFileSync(join(repoDir, "content", "Unfinished.md"), `---\ntitle: Unfinished\n${draftLine}\n---\n`);
+      writeFileSync(join(contentDir, "Unfinished.md"), `---\ntitle: Unfinished\n${draftLine}\n---\n`);
+      setup(contentDir);
       symlinkSync(guardScript, join(repoDir, "scripts", "draft-leak-guard.sh"));
       symlinkSync(bash, join(stubDir, "bash"));
       symlinkSync(grep, join(stubDir, "grep"));
@@ -176,6 +178,34 @@ describe(".github/workflows/ci.yml", () => {
 
     test.each(["draft: false", "draft: true#wip"])("releases a draft value the parser does not read as true: %p", (line) => {
       expect(runGuard(line)).toBe(0);
+    });
+
+    // grep exits 2 on a read error even when it also listed a draft, so a file
+    // it could not read must fail the guard, not count as "no draft" (#1024).
+    test.each(["draft: true", "draft: false"])(
+      "refuses to release when a file under content/ cannot be read, next to %p",
+      (line) => {
+        const status = runGuard(line, (contentDir) => {
+          symlinkSync("missing.md", join(contentDir, "Dangling.md"));
+        });
+
+        expect(status).not.toBe(0);
+      },
+    );
+
+    test("refuses to release when the content directory does not exist", () => {
+      const status = runGuard("draft: false", (contentDir) => {
+        rmSync(contentDir, { recursive: true });
+      });
+
+      expect(status).not.toBe(0);
+    });
+
+    test("exits 2, not 1, when it cannot read the content directory, so a caller can tell it from a draft", () => {
+      const result = spawnSync(bash, [guardScript, join(stubDir, "missing")], { encoding: "utf8" });
+
+      expect(result.status).toBe(2);
+      expect(result.stderr).toContain("draft-leak-guard: could not read");
     });
   });
 });
