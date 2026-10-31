@@ -4,7 +4,9 @@ import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, w
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-const workflowPath = resolve(import.meta.dirname, "../../../.github/workflows/ci.yml");
+const rootPath = resolve(import.meta.dirname, "../../..");
+const workflowPath = resolve(rootPath, ".github/workflows/ci.yml");
+const guardScript = resolve(rootPath, "scripts/draft-leak-guard.sh");
 
 interface Step {
   "name"?: string;
@@ -153,7 +155,10 @@ describe(".github/workflows/ci.yml", () => {
       const repoDir = join(stubDir, "repo");
 
       mkdirSync(join(repoDir, "content"), { recursive: true });
+      mkdirSync(join(repoDir, "scripts"));
       writeFileSync(join(repoDir, "content", "Unfinished.md"), `---\ntitle: Unfinished\n${draftLine}\n---\n`);
+      symlinkSync(guardScript, join(repoDir, "scripts", "draft-leak-guard.sh"));
+      symlinkSync(bash, join(stubDir, "bash"));
       symlinkSync(grep, join(stubDir, "grep"));
 
       return runStep(findStep("release", "Draft leak guard"), {}, repoDir).status;
@@ -161,7 +166,8 @@ describe(".github/workflows/ci.yml", () => {
 
     // The front-matter parser drops a trailing ` # comment` from an unquoted
     // value, so `draft: true # wip` is a draft; `true#wip` is the string "true#wip".
-    test.each(["draft: true", "draft: true # not ready yet", "draft: true\t# wip", "draft: true \r"])(
+    // It also trims a key's leading indent, so ` draft: true` is a top-level draft.
+    test.each(["draft: true", "draft: true # not ready yet", "draft: true\t# wip", "draft: true \r", " draft: true", "\tdraft: true # wip"])(
       "refuses to release a draft line the parser reads as true: %p",
       (line) => {
         expect(runGuard(line)).toBe(1);
