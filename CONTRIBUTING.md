@@ -170,7 +170,7 @@ AI agents working in this repo are bounded by several layers, each catching what
 
 The security side of these layers (trust boundaries, secrets, supply chain, review focus, reporting) is set out in [`docs/security/SECURITY-AI.md`](docs/security/SECURITY-AI.md).
 
-What these layers produce is measurable: quality gates, coverage and its floors, PR acceptance (agent vs. other), nightly compliance, the strategy report (backlog flow and ACMM progress), and the AI audit trail (every merged PR with the agent and model behind it) are catalogued in [`docs/metrics/`](docs/metrics/README.md) with where each is published and how to reproduce it.
+What these layers produce is measurable: quality gates, coverage and its floors, PR acceptance (per source: Hive, Claude Code in CI, Dependabot, other), nightly compliance, the strategy report (backlog flow and ACMM progress), and the AI audit trail (every merged PR with the agent and model behind it) are catalogued in [`docs/metrics/`](docs/metrics/README.md) with where each is published and how to reproduce it.
 
 ## Release notes
 

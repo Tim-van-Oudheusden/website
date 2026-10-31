@@ -23,7 +23,7 @@ exception is a failing Nightly compliance run, which files an issue on its own
 | Did Claude Code run, and how did it end? | `Claude Code` workflow runs | `gh run list --workflow claude.yml` |
 | Why is a PR not merging? | Merge queue runs and their `::notice` lines, the `hold` label, the merge state | `gh run list --workflow merge-queue.yml`, `gh pr view <N> --json mergeStateStatus,isDraft,labels` |
 | How risky is a PR? | `Change classification` job summary | `git diff -z --name-only --no-renames origin/main...<branch> \| scripts/tier-classify.sh -z` |
-| Are agent PRs being accepted? | Weekly `PR metrics` job summary (agent = `claude/*`) | `gh workflow run pr-metrics.yml -f days=28` |
+| Are agent PRs being accepted? | Weekly `PR metrics` job summary (per source: Hive, Claude Code in CI, Dependabot, other) | `gh workflow run pr-metrics.yml -f days=28` |
 | Is the backlog shrinking? | Weekly `Strategy report` job summary | `gh workflow run strategy-report.yml -f days=28` |
 | Is `main` healthy? | `Quality report` (every push to `main`), `Nightly compliance`, `Mutation testing` | `gh run list --branch main --limit 20` |
 | Have agents been corrected before? | `.claude/memory/corrections.tsv`, `docs/reflections/` | — |

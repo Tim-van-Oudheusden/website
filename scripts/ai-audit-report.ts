@@ -13,6 +13,9 @@
 // usage.
 import { readFileSync } from "node:fs";
 
+import type { Attribution } from "./pr-source";
+import { attribute, SOURCES } from "./pr-source";
+
 interface PullRequest {
   number: number;
   title: string;
@@ -23,43 +26,9 @@ interface PullRequest {
   body: string;
 }
 
-const SOURCES = ["Hive", "Claude Code (CI)", "Dependabot", "Other"] as const;
-
-interface Attribution {
-  source: (typeof SOURCES)[number];
-  agent: string;
-  model: string;
-}
-
 interface Entry {
   pr: PullRequest;
   attribution: Attribution;
-}
-
-// Hive ends every PR body it writes with a signature line such as
-// "— hive: agent=quality backend=claude model=claude-opus-5-5 effort=high";
-// contributor runs leave out `agent=`.
-const HIVE_SIGNATURE = /^— hive: (.*)$/m;
-
-function attribute(pr: PullRequest): Attribution {
-  const signature = HIVE_SIGNATURE.exec(pr.body)?.[1];
-
-  if (signature !== undefined) {
-    const fields = new Map([...signature.matchAll(/(\w+)=(\S+)/g)].map(([, key, value]) => [key, value]));
-
-    return { source: "Hive", agent: fields.get("agent") ?? "—", model: fields.get("model") ?? "—" };
-  }
-
-  // Branch prefixes as docs/multi-agent.md assigns them.
-  if (pr.headRefName.startsWith("claude/")) {
-    return { source: "Claude Code (CI)", agent: "—", model: "—" };
-  }
-
-  if (pr.headRefName.startsWith("dependabot/")) {
-    return { source: "Dependabot", agent: "—", model: "—" };
-  }
-
-  return { source: "Other", agent: "—", model: "—" };
 }
 
 /** Escapes `|` so text from a PR cannot add or shift table columns. */

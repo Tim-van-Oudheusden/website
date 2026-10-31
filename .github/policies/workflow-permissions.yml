@@ -60,9 +60,9 @@ workflows:
 
   nightly-compliance.yml: {}
 
-  # Reads PR history only; it never checks out the repository.
   pr-metrics.yml:
-    permissions: { pull-requests: read }
+    jobs:
+      acceptance: { contents: read, pull-requests: read }
 
   quality-report.yml: {}
 
