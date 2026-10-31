@@ -66,7 +66,7 @@ function runStep(
   step: Step,
   env: Record<string, string> = {},
   cwd?: string,
-): { status: number | null; calls: string[] } {
+): { status: number | null; stdout: string; calls: string[] } {
   const result = spawnSync(bash, ["-e", "-c", step.run ?? ""], {
     cwd,
     encoding: "utf8",
@@ -74,7 +74,7 @@ function runStep(
   });
   const calls = readFileSync(callLog, "utf8").trim().split("\n").filter(Boolean);
 
-  return { status: result.status, calls };
+  return { status: result.status, stdout: result.stdout, calls };
 }
 
 beforeEach(() => {
@@ -151,7 +151,13 @@ describe(".github/workflows/ci.yml", () => {
   });
 
   describe("release → Draft leak guard", () => {
-    function runGuard(draftLine: string, setup: (contentDir: string) => void = () => undefined): number | null {
+    const draftAnnotation = "::error::draft: true found in content/";
+    const unreadableAnnotation = "::error::could not read all of content/";
+
+    function runGuard(
+      draftLine: string,
+      setup: (contentDir: string) => void = () => undefined,
+    ): { status: number | null; stdout: string } {
       const repoDir = join(stubDir, "repo");
       const contentDir = join(repoDir, "content");
 
@@ -163,7 +169,7 @@ describe(".github/workflows/ci.yml", () => {
       symlinkSync(bash, join(stubDir, "bash"));
       symlinkSync(grep, join(stubDir, "grep"));
 
-      return runStep(findStep("release", "Draft leak guard"), {}, repoDir).status;
+      return runStep(findStep("release", "Draft leak guard"), {}, repoDir);
     }
 
     // The front-matter parser drops a trailing ` # comment` from an unquoted
@@ -172,12 +178,16 @@ describe(".github/workflows/ci.yml", () => {
     test.each(["draft: true", "draft: true # not ready yet", "draft: true\t# wip", "draft: true \r", " draft: true", "\tdraft: true # wip"])(
       "refuses to release a draft line the parser reads as true: %p",
       (line) => {
-        expect(runGuard(line)).toBe(1);
+        const { status, stdout } = runGuard(line);
+
+        expect(status).toBe(1);
+        expect(stdout).toContain(draftAnnotation);
+        expect(stdout).not.toContain(unreadableAnnotation);
       },
     );
 
     test.each(["draft: false", "draft: true#wip"])("releases a draft value the parser does not read as true: %p", (line) => {
-      expect(runGuard(line)).toBe(0);
+      expect(runGuard(line).status).toBe(0);
     });
 
     // grep exits 2 on a read error even when it also listed a draft, so a file
@@ -185,20 +195,23 @@ describe(".github/workflows/ci.yml", () => {
     test.each(["draft: true", "draft: false"])(
       "refuses to release when a file under content/ cannot be read, next to %p",
       (line) => {
-        const status = runGuard(line, (contentDir) => {
+        const { status, stdout } = runGuard(line, (contentDir) => {
           symlinkSync("missing.md", join(contentDir, "Dangling.md"));
         });
 
         expect(status).not.toBe(0);
+        expect(stdout).toContain(unreadableAnnotation);
+        expect(stdout).not.toContain(draftAnnotation);
       },
     );
 
     test("refuses to release when the content directory does not exist", () => {
-      const status = runGuard("draft: false", (contentDir) => {
+      const { status, stdout } = runGuard("draft: false", (contentDir) => {
         rmSync(contentDir, { recursive: true });
       });
 
       expect(status).not.toBe(0);
+      expect(stdout).toContain(unreadableAnnotation);
     });
 
     test("exits 2, not 1, when it cannot read the content directory, so a caller can tell it from a draft", () => {
@@ -206,6 +219,31 @@ describe(".github/workflows/ci.yml", () => {
 
       expect(result.status).toBe(2);
       expect(result.stderr).toContain("draft-leak-guard: could not read");
+    });
+
+    test("exits 1, not 2, when it lists a draft, so a caller can tell it from a read error", () => {
+      const contentDir = join(stubDir, "content");
+
+      mkdirSync(contentDir);
+      writeFileSync(join(contentDir, "Unfinished.md"), "---\ntitle: Unfinished\ndraft: true\n---\n");
+
+      const result = spawnSync(bash, [guardScript, contentDir], { encoding: "utf8" });
+
+      expect(result.status).toBe(1);
+      expect(result.stdout).toContain("Unfinished.md");
+    });
+
+    // Any grep exit but 0 and 1 means "could not check", not only its own 2: a
+    // grep that cannot run at all (127) must not fall out of the case as a pass.
+    test("exits 2 when grep itself cannot run", () => {
+      const contentDir = join(stubDir, "content");
+
+      mkdirSync(contentDir);
+      writeFileSync(join(contentDir, "Finished.md"), "---\ntitle: Finished\ndraft: false\n---\n");
+
+      const result = spawnSync(bash, [guardScript, contentDir], { encoding: "utf8", env: { PATH: stubDir } });
+
+      expect(result.status).toBe(2);
     });
   });
 });

@@ -121,6 +121,20 @@ const MUTANTS: readonly ShellMutant[] = [
     to: "    exit 0\n",
     killedBy: "test/shared/src/ci-workflow.test.ts",
   },
+  {
+    name: "the draft leak guard exits 1 for a draft, not the read-error 2 (#1024)",
+    file: "scripts/draft-leak-guard.sh",
+    from: "  0) exit 1 ;;",
+    to: "  0) exit 2 ;;",
+    killedBy: "test/shared/src/ci-workflow.test.ts",
+  },
+  {
+    name: "the draft leak guard fails when grep cannot run at all, not only on grep's exit 2 (#1024)",
+    file: "scripts/draft-leak-guard.sh",
+    from: "  *)\n",
+    to: "  2)\n",
+    killedBy: "test/shared/src/ci-workflow.test.ts",
+  },
 ];
 
 let shadowRoot: string | null = null;
