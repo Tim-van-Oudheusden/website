@@ -168,7 +168,7 @@ add the mutant as a row so a later change to that test can't quietly drop it.
 YAML. `test/back-end/src/features/content/frontmatter-yaml.test.ts` checks it
 against `Bun.YAML`, which the pinned Bun runtime ships: for every frontmatter
 block in `content/`, and every block of up to three generated lines (each one
-of six line shapes at one of five space and tab indents), the parser must
+of seven line shapes at one of seven space and tab indents), the parser must
 either reject the block or return the data YAML returns. Two allowances map
 YAML to the subset's terms: the subset has no null, so a key with nothing after
 its colon is an empty list at top level and an empty string in a list item;
