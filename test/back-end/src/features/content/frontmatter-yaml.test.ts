@@ -90,10 +90,11 @@ const LINE_KINDS: ((position: number) => string)[] = [
   (position) => `k${position}:`,
   (position) => `- v${position}`,
   (position) => `- k${position}: v${position}`,
+  (position) => `-  k${position}: v${position}`,
   (position) => `wrapped words ${position}`,
   () => "# note",
 ];
-const INDENTS = ["", "  ", "    ", "\t", "  \t"];
+const INDENTS = ["", " ", "  ", "   ", "    ", "\t", "  \t"];
 const MAX_LINES = 3;
 
 /** Every block of 1 to MAX_LINES lines, each line any kind at any indent. */
