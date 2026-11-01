@@ -168,14 +168,16 @@ add the mutant as a row so a later change to that test can't quietly drop it.
 YAML. `test/back-end/src/features/content/frontmatter-yaml.test.ts` checks it
 against `Bun.YAML`, which the pinned Bun runtime ships: for every frontmatter
 block in `content/`, and every block of up to three generated lines (each one
-of six line shapes at one of five space and tab indents), the parser must
+of eight line shapes at one of five space and tab indents), the parser must
 either reject the block or return the data YAML returns. Two allowances map
-YAML to the subset's terms: the subset has no null, so a key with nothing after
-its colon is an empty list at top level and an empty string in a list item;
-and a tab in a line's indent counts as a YAML error, as the YAML spec says,
-though `Bun.YAML` accepts it. When the test fails, it prints the first ten
-blocks the parser misreads: make the parser reject them or read them as YAML
-does.
+YAML to the subset's terms. First, the subset reads `null`, `Null`, `NULL` and
+`~` as null, as YAML does, but a key with nothing after its colon is an empty
+list at top level and an empty string in a list item, where YAML reads null; so
+the test marks each spelled-out null before `Bun.YAML` reads the block, and
+maps only the unmarked nulls to the subset's empty values. Second, a tab in a
+line's indent counts as a YAML error, as the YAML spec says, though `Bun.YAML`
+accepts it. When the test fails, it prints the first ten blocks the parser
+misreads: make the parser reject them or read them as YAML does.
 
 ## Run the E2E suite locally
 
