@@ -73,8 +73,9 @@ export const ASSET_PATH_PREFIX = "/content-assets/images/";
 /**
  * Slugs of standalone markdown pages served from `content/pages/<slug>.md`,
  * routed at `/<slug>`. Used by the front-end router (to register each route)
- * and the front-end server (to list each page in the sitemap and llms.txt),
- * so a page can never be wired into one without the other.
+ * and the front-end server (to list each page in the sitemap, and to answer
+ * the page's path with the app shell instead of a 404), so a page can never be
+ * wired into one without the other. llms.txt does not list these pages.
  */
 export const STANDALONE_PAGE_SLUGS = ["now", "uses"] as const;
 
