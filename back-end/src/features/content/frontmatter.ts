@@ -28,8 +28,12 @@
  * closing `---`, or the reason no valid leading frontmatter block exists. Every
  * line the subset does not recognise is such a reason, so it is reported
  * instead of dropped: a line under a block key that is not a `- ` item (or a
- * field of an object item), a top-level line that is not `key: value`, and a
- * line indented under a key that has a value on its own line.
+ * field of an object item), a top-level line that is not `key: value`, a line
+ * indented under a key that has a value on its own line, and a line indented
+ * with a tab or out of line with the lines it belongs with (a top-level key
+ * left of the first key, a `- ` item off its list's indent, an object item's
+ * field off its first field's column), which YAML would reject or read as
+ * part of another value.
  *
  * A leading UTF-8 byte-order mark is ignored and frontmatter lines may end in
  * CRLF; the body keeps its original line endings.
@@ -100,6 +104,10 @@ export interface ParseResult {
 }
 
 const INDENT_RE = /^ +/;
+// YAML forbids tabs in indentation; counting spaces only, a tab-indented line
+// would read as unindented. A tab before a comment is valid YAML, but Bun's
+// reader rejects it in places, so the subset rejects it everywhere.
+const TAB_INDENTED_RE = /^[ \t]*\t[ \t]*\S/;
 
 function indentOf(line: string): number {
   return INDENT_RE.exec(line)?.[0].length ?? 0;
@@ -107,16 +115,20 @@ function indentOf(line: string): number {
 
 type BlockRead
   = | { ok: true; value: FrontmatterValue }
-    | { ok: false; line: string };
+    | { ok: false; problem: string; line: string };
+
+const NOT_AN_ITEM = "has a line that is not a `- item`";
 
 /**
  * Parse a block of indented child lines. Returns a string[] when every item is
  * a scalar, otherwise a list of objects. A line that neither starts a `- `
- * item nor is a `key: value` field of an object item is returned so the caller
- * can report it rather than drop it.
+ * item nor is a `key: value` field of an object item, or that is out of line
+ * with its list or item, is returned so the caller can report it rather than
+ * drop it.
  */
 function parseBlockChildren(children: string[]): BlockRead {
   const items: FrontmatterValue[] = [];
+  const listIndent = indentOf(children[0] ?? "");
   let index = 0;
 
   while (index < children.length) {
@@ -131,10 +143,17 @@ function parseBlockChildren(children: string[]): BlockRead {
     const itemMatch = LIST_ITEM_RE.exec(line.trimStart());
 
     if (itemMatch === null) {
-      return { ok: false, line: line.trim() };
+      return { ok: false, problem: NOT_AN_ITEM, line: line.trim() };
     }
 
     const itemIndent = indentOf(line);
+
+    // YAML reads a deeper `- ` as more of the previous item and rejects a
+    // shallower one.
+    if (itemIndent !== listIndent) {
+      return { ok: false, problem: "has a `- item` indented differently from its first item", line: line.trim() };
+    }
+
     const rest = itemMatch[1] ?? "";
 
     // Plain scalar item: `- One` (no colon-field inside).
@@ -159,6 +178,9 @@ function parseBlockChildren(children: string[]): BlockRead {
     const obj: FrontmatterMap = {
       [inlineKey]: parseScalarValue(inlineField[2] ?? ""),
     };
+
+    // The column of `type` in `  - type: repo`.
+    const fieldIndent = line.length - rest.length;
 
     let next = index + 1;
 
@@ -186,7 +208,12 @@ function parseBlockChildren(children: string[]): BlockRead {
       const subField = FIELD_RE.exec(sub.trimStart());
 
       if (subField === null) {
-        return { ok: false, line: sub.trim() };
+        return { ok: false, problem: NOT_AN_ITEM, line: sub.trim() };
+      }
+
+      // The item's fields share the column of the field after its `- `.
+      if (subIndent !== fieldIndent) {
+        return { ok: false, problem: "has a field out of line with its item's first field", line: sub.trim() };
       }
 
       const subKey = subField[1];
@@ -247,11 +274,19 @@ export function readFrontmatter(raw: string): FrontmatterRead {
     return { ok: false, reason: "Frontmatter block is never closed with ---" };
   }
 
+  const tabIndented = block.find((line) => TAB_INDENTED_RE.test(line));
+
+  if (tabIndented !== undefined) {
+    return { ok: false, reason: `Frontmatter has a line indented with a tab: ${tabIndented.trim()}` };
+  }
+
   const content = lines.slice(index).join("\n");
   const data: FrontmatterMap = {};
   // The last key read with a value on its line. A deeper line after it would
   // continue that value (or nest under it), which the subset does not support.
   let valueKey: { key: string; indent: number } | null = null;
+  // Top-level keys share the first key's indent; YAML rejects one left of it.
+  let keyIndent: number | null = null;
 
   let i = 0;
 
@@ -280,6 +315,12 @@ export function readFrontmatter(raw: string): FrontmatterRead {
 
     if (valueKey !== null && indent > valueKey.indent) {
       return { ok: false, reason: `${valueKey.key} has a line indented under its value: ${line.trim()}` };
+    }
+
+    keyIndent ??= indent;
+
+    if (indent < keyIndent) {
+      return { ok: false, reason: `Frontmatter has a line indented less than its first key: ${line.trim()}` };
     }
 
     const field = FIELD_RE.exec(line.trimStart());
@@ -341,7 +382,7 @@ export function readFrontmatter(raw: string): FrontmatterRead {
     const read = parseBlockChildren(children);
 
     if (!read.ok) {
-      return { ok: false, reason: `${key} has a line that is not a \`- item\`: ${read.line}` };
+      return { ok: false, reason: `${key} ${read.problem}: ${read.line}` };
     }
 
     data[key] = read.value;

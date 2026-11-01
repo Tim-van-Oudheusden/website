@@ -131,6 +131,13 @@ The parser reads a subset of YAML: `key: value` lines, block lists
   makes the document invalid, such as a `description` wrapped onto a second
   line or a `draft: true` indented under `description: Notes`, and so does a
   top-level line that is not `key: value`.
+- Indent with spaces, never tabs: a tab in a line's indent, even before a
+  comment, makes the document invalid. Obsidian's editor indents with tabs, so
+  check a hand-indented line. Lines that belong together share one indent: the
+  top-level keys, the `- ` items of one list, and an object item's fields,
+  which line up with the field after its `- ` (`href` under `type` in
+  `  - type: repo`). A line out of line with them makes the document invalid,
+  since YAML would reject it or read it as more of the line above.
 
 **A document that breaks a rule is silently left out of the site.** No error is
 shown: it disappears from every listing and its URL returns "not found". Run
