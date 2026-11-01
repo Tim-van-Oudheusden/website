@@ -42,10 +42,10 @@ change:
   release upstream are listed in `AUDIT_IGNORE` in the script, each with the
   reason it can't be fixed; remove an entry once a fix ships.
 - **Draft leak guard** — `scripts/draft-leak-guard.sh` fails if any file in
-  `content/` has `draft: true` front matter, indented or not, with or without a
-  trailing `# comment`. It also fails (exit 2) when it cannot read `content/` or
-  a file in it, such as a dangling symlink. The `release` job in `ci.yml` runs
-  the same script.
+  `content/` has `draft: true` (or `True`, `TRUE`) front matter, indented or
+  not, with or without a trailing `# comment`. It also fails (exit 2) when it
+  cannot read `content/` or a file in it, such as a dangling symlink. The
+  `release` job in `ci.yml` runs the same script.
 
 `scripts/nightly-compliance.sh` writes the report, published as the run's job
 summary and as the `nightly-compliance` artifact. Every check runs even if an

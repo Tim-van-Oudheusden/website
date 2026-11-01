@@ -103,8 +103,9 @@ The parser reads a subset of YAML: `key: value` lines, block lists
 - Quote a value that contains `: ` or starts with `#`, e.g.
   `title: "Flatpak: a field guide"`. Double or single quotes both work; the
   quotes are removed, and a quoted value is always a string. Inside double
-  quotes write `\"` for a quote and `\\` for a backslash; inside single quotes
-  write `''` for a quote.
+  quotes write `\"` for a quote and `\\` for a backslash, and YAML's other
+  escapes such as `\n` work too; inside single quotes write `''` for a quote
+  and a backslash is just a backslash.
 - A ` # comment` after an unquoted value is ignored: `draft: true # not ready`
   is the boolean `true`.
 - A whole line that starts with `#` is a comment at any indent, including
@@ -113,10 +114,12 @@ The parser reads a subset of YAML: `key: value` lines, block lists
 - A key needs a space after its colon (`draft: true`). Without one the line is
   plain text: `- Re:Zero` and `- https://example.com` are string list items,
   and a top-level `draft:true` line makes the document invalid.
-- An unquoted whole number or `true`/`false` is read as a number or boolean,
-  not as text. In a text field (`title`, `description`, `slug`, `socialImage`,
-  and on projects `coverImage`, `coverImageAlt`, `role`, `info`) or as a `tags`
-  entry it makes the document invalid; quote it instead: `slug: "2025"`,
+- An unquoted value is typed as YAML types it, not read as text: `2025`,
+  `1.5` and `+5` are numbers, `true`, `True` and `TRUE` (and the same spellings
+  of `false`) are booleans, and `null` or `~` is no value at all. A number or
+  boolean in a text field (`title`, `description`, `slug`, `socialImage`, and
+  on projects `coverImage`, `coverImageAlt`, `role`, `info`) or as a `tags`
+  entry makes the document invalid; quote it instead: `slug: "2025"`,
   `- "2025"`.
 - Flow lists and multi-line values are not supported; write lists one
   `- item` per line. A flow list such as `tags: [a, b]` is read as one string,
