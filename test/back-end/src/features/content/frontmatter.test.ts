@@ -353,6 +353,26 @@ Body
       ["---", "title: Real", "description: Notes", "", "  title: Hijack", "---", "Body"],
       "description has a line indented under its value: title: Hijack",
     ],
+    [
+      "a line indented with a tab (#1035)",
+      ["---", "description: Notes on X", "\tNote: this covers the 2025 rewrite", "---", "Body"],
+      "Frontmatter has a line indented with a tab: Note: this covers the 2025 rewrite",
+    ],
+    [
+      "a top-level key left of the first key",
+      ["---", "  title: T", "draft: true", "---", "Body"],
+      "Frontmatter has a line indented less than its first key: draft: true",
+    ],
+    [
+      "a list item deeper than the first, which YAML reads as part of it",
+      ["---", "tags:", "  - Linux", "    - Containers", "---", "Body"],
+      "tags has a `- item` indented differently from its first item: - Containers",
+    ],
+    [
+      "an object item's field out of line with its first field",
+      ["---", "links:", "  - type: repo", "      href: https://x", "---", "Body"],
+      "links has a field out of line with its item's first field: href: https://x",
+    ],
   ])("rejects %s instead of dropping or hoisting it", (_label, lines, reason) => {
     expect(readFrontmatter(lines.join("\n"))).toEqual({ ok: false, reason });
   });

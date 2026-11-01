@@ -162,6 +162,21 @@ written to. The row fails when:
 When a hand mutation run finds a survivor, write the test that kills it, then
 add the mutant as a row so a later change to that test can't quietly drop it.
 
+## Frontmatter parser against YAML
+
+`back-end/src/features/content/frontmatter.ts` reads a hand-written subset of
+YAML. `test/back-end/src/features/content/frontmatter-yaml.test.ts` checks it
+against `Bun.YAML`, which the pinned Bun runtime ships: for every frontmatter
+block in `content/`, and every block of up to three generated lines (each one
+of six line shapes at one of five space and tab indents), the parser must
+either reject the block or return the data YAML returns. Two allowances map
+YAML to the subset's terms: the subset has no null, so a key with nothing after
+its colon is an empty list at top level and an empty string in a list item;
+and a tab in a line's indent counts as a YAML error, as the YAML spec says,
+though `Bun.YAML` accepts it. When the test fails, it prints the first ten
+blocks the parser misreads: make the parser reject them or read them as YAML
+does.
+
 ## Run the E2E suite locally
 
 `scripts/e2e.sh` reproduces the `e2e` job in `.github/workflows/ci.yml` step for

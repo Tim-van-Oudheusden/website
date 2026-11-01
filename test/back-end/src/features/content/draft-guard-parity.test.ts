@@ -69,12 +69,13 @@ describe("nightly compliance draft leak guard", () => {
     "draft: TRUE",
     "draft: false # shipped",
     // frontmatter.ts matches keys on `line.trimStart()`, so an indented key is top level (#912)
-    // unless it sits under a key with a value, which makes the document invalid (#1033).
+    // when the other top-level keys share its indent, and invalid under a key with a value
+    // (#1033), left of the first key, or after a tab indent (#1035).
     " draft: true",
-    "\tdraft: true # wip",
     "  draft: false",
   ])("agrees with the real front-matter parser on %p", (line) => {
-    const content = `---\n${line}\ntitle: Parity\n---\n`;
+    const indent = /^ */.exec(line)?.[0] ?? "";
+    const content = `---\n${line}\n${indent}title: Parity\n---\n`;
     const parsed = readFrontmatter(content);
 
     if (!parsed.ok) {
