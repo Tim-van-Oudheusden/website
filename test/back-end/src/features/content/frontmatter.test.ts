@@ -314,11 +314,6 @@ Body
       ["---", "tags:", "  - Re:Zero", "  - https://example.com", "  - Anime", "---", "Body"],
       { data: { tags: ["Re:Zero", "https://example.com", "Anime"] }, content: "Body" },
     ],
-    [
-      "does not read key:value without a space as a field",
-      ["---", "title: T", "draft:true", "---", "Body"],
-      { data: { title: "T" }, content: "Body" },
-    ],
   ])("%s", (_label, lines, expected) => {
     const read = readFrontmatter(lines.join("\n"));
 
@@ -330,6 +325,36 @@ Body
 
     expect(read.ok).toBe(true);
     expect(read.ok ? read.result : null).toEqual(expected);
+  });
+
+  test.each([
+    [
+      "a top-level line that is not a field",
+      ["---", "title: T", "just a stray note", "date: 2026-01-01", "---", "Body"],
+      "Frontmatter has a line that is not a `key: value` field: just a stray note",
+    ],
+    [
+      "key:value without a space",
+      ["---", "title: T", "draft:true", "---", "Body"],
+      "Frontmatter has a line that is not a `key: value` field: draft:true",
+    ],
+    [
+      "a value wrapped onto an indented line",
+      ["---", "title: T", "description: A long summary that", "  wraps onto the next line", "---", "Body"],
+      "description has a line indented under its value: wraps onto the next line",
+    ],
+    [
+      "a field indented under a key that has a value",
+      ["---", "title: Real", "description: Notes", "  draft: true", "---", "Body"],
+      "description has a line indented under its value: draft: true",
+    ],
+    [
+      "a field indented under a key that has a value, after a blank line",
+      ["---", "title: Real", "description: Notes", "", "  title: Hijack", "---", "Body"],
+      "description has a line indented under its value: title: Hijack",
+    ],
+  ])("rejects %s instead of dropping or hoisting it", (_label, lines, reason) => {
+    expect(readFrontmatter(lines.join("\n"))).toEqual({ ok: false, reason });
   });
 
   describe("line endings and byte-order mark", () => {

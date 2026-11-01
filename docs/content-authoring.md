@@ -112,7 +112,7 @@ The parser reads a subset of YAML: `key: value` lines, block lists
   the list, so `# - Windows` between two tags just leaves that tag out.
 - A key needs a space after its colon (`draft: true`). Without one the line is
   plain text: `- Re:Zero` and `- https://example.com` are string list items,
-  and a `draft:true` line is not a field.
+  and a top-level `draft:true` line makes the document invalid.
 - An unquoted whole number or `true`/`false` is read as a number or boolean,
   not as text. In a text field (`title`, `description`, `slug`, `socialImage`,
   and on projects `coverImage`, `coverImageAlt`, `role`, `info`) or as a `tags`
@@ -127,7 +127,10 @@ The parser reads a subset of YAML: `key: value` lines, block lists
   line continuing an item or one of its fields, or a nested mapping such as an
   Obsidian property `cover:` with `  image: x.png` under it. The exception is
   an object item's own `key: value` fields indented under its `- `, as in
-  `links`.
+  `links`. A line indented under a key that has a value on its line also
+  makes the document invalid, such as a `description` wrapped onto a second
+  line or a `draft: true` indented under `description: Notes`, and so does a
+  top-level line that is not `key: value`.
 
 **A document that breaks a rule is silently left out of the site.** No error is
 shown: it disappears from every listing and its URL returns "not found". Run

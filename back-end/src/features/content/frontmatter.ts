@@ -25,10 +25,11 @@
  * multi-line scalars, and other YAML forms are not part of the subset.
  *
  * `readFrontmatter` returns the parsed data object plus the body after the
- * closing `---`, or the reason no valid leading frontmatter block exists. A
- * line under a block key that is not a `- ` item (or a field of an object
- * item) is such a reason, so a value written without its marker is reported
- * instead of dropped.
+ * closing `---`, or the reason no valid leading frontmatter block exists. Every
+ * line the subset does not recognise is such a reason, so it is reported
+ * instead of dropped: a line under a block key that is not a `- ` item (or a
+ * field of an object item), a top-level line that is not `key: value`, and a
+ * line indented under a key that has a value on its own line.
  *
  * A leading UTF-8 byte-order mark is ignored and frontmatter lines may end in
  * CRLF; the body keeps its original line endings.
@@ -248,6 +249,9 @@ export function readFrontmatter(raw: string): FrontmatterRead {
 
   const content = lines.slice(index).join("\n");
   const data: FrontmatterMap = {};
+  // The last key read with a value on its line. A deeper line after it would
+  // continue that value (or nest under it), which the subset does not support.
+  let valueKey: { key: string; indent: number } | null = null;
 
   let i = 0;
 
@@ -266,13 +270,22 @@ export function readFrontmatter(raw: string): FrontmatterRead {
       continue;
     }
 
-    const indent = indentOf(line);
-    const field = FIELD_RE.exec(line.trimStart());
-
-    if (field === null) {
+    if (COMMENT_LINE_RE.test(line)) {
       i += 1;
 
       continue;
+    }
+
+    const indent = indentOf(line);
+
+    if (valueKey !== null && indent > valueKey.indent) {
+      return { ok: false, reason: `${valueKey.key} has a line indented under its value: ${line.trim()}` };
+    }
+
+    const field = FIELD_RE.exec(line.trimStart());
+
+    if (field === null) {
+      return { ok: false, reason: `Frontmatter has a line that is not a \`key: value\` field: ${line.trim()}` };
     }
 
     const key = field[1];
@@ -289,10 +302,13 @@ export function readFrontmatter(raw: string): FrontmatterRead {
     // parent key; a quoted value always keeps its opening quote here.
     if (value.replace(COMMENT_RE, "").trim() !== "") {
       data[key] = parseScalarValue(value);
+      valueKey = { key, indent };
       i += 1;
 
       continue;
     }
+
+    valueKey = null;
 
     // A parent key (`tags:`, `links:`) consumes its indented block children.
     // Blank and whole-line comment lines never end the block; only another
