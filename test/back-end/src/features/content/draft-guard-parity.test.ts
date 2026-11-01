@@ -67,6 +67,9 @@ describe("nightly compliance draft leak guard", () => {
     "draft: 'true'",
     'draft: "true"',
     "draft: TRUE",
+    "draft: True",
+    "draft: True # wip",
+    "draft: tRue",
     "draft: false # shipped",
     // frontmatter.ts matches keys on `line.trimStart()`, so an indented key is top level (#912)
     // unless it sits under a key with a value, which makes the document invalid (#1033).

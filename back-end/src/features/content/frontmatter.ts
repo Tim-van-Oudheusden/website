@@ -9,7 +9,7 @@
  * advisories (quadratic-CPU DoS via merge keys / `!!omap`, CVE-2026-59870).
  *
  * Supported subset:
- *   key: value                     scalar (string, boolean, number)
+ *   key: value                     scalar (string, boolean, number, null)
  *   tags:                          block list of strings; the items may
  *     - One                        also sit at the key's own indent
  *     - Two
@@ -20,9 +20,12 @@
  *
  * A scalar may be wrapped in "double" or 'single' quotes; the quotes are
  * removed and the value stays a string (`"true"` is not a boolean). Inside
- * double quotes `\"` and `\\` are decoded; inside single quotes `''` is. An
- * unquoted value loses a trailing ` # comment`. Flow lists (`[a, b]`),
- * multi-line scalars, and other YAML forms are not part of the subset.
+ * double quotes YAML's escapes (`\"`, `\\`, `\n`, `\u00e9`, ...) are decoded;
+ * inside single quotes `''` is. An unquoted value loses a trailing
+ * ` # comment` and is typed as YAML 1.2's core schema types it: `true`, `True`
+ * and `TRUE` are booleans, `null` and `~` are null, and `1.5`, `+5`, `0x1F` or
+ * `.inf` are numbers. Flow lists (`[a, b]`), multi-line scalars, and other
+ * YAML forms are not part of the subset.
  *
  * `readFrontmatter` returns the parsed data object plus the body after the
  * closing `---`, or the reason no valid leading frontmatter block exists. Every
@@ -35,7 +38,7 @@
  * CRLF; the body keeps its original line endings.
  */
 
-type Scalar = string | number | boolean;
+type Scalar = string | number | boolean | null;
 
 interface FrontmatterMap {
   [key: string]: Scalar | FrontmatterValue[] | FrontmatterMap;
@@ -43,25 +46,79 @@ interface FrontmatterMap {
 
 type FrontmatterValue = Scalar | FrontmatterValue[] | FrontmatterMap;
 
-const NUMERIC_RE = /^-?\d+$/;
+// YAML 1.2 core schema: unquoted values that are not strings.
+const BOOLEAN_TRUE_RE = /^(?:true|True|TRUE)$/;
+const BOOLEAN_FALSE_RE = /^(?:false|False|FALSE)$/;
+const NULL_RE = /^(?:null|Null|NULL|~)$/;
+// Decimal, `0o` octal and `0x` hex numbers, all of which `Number` reads.
+const NUMERIC_RE = /^(?:[-+]?(?:\.\d+|\d+(?:\.\d*)?)(?:[eE][-+]?\d+)?|0o[0-7]+|0x[\dA-Fa-f]+)$/;
+const INFINITY_RE = /^([-+]?)\.(?:inf|Inf|INF)$/;
+const NAN_RE = /^\.(?:nan|NaN|NAN)$/;
 // YAML starts a comment at a `#` that opens the value or follows whitespace.
 const COMMENT_RE = /(?:^|\s)#.*$/;
 // A double- or single-quoted scalar, optionally followed by a comment. Inside
-// double quotes `\"` and `\\` are escapes; inside single quotes `''` is.
+// double quotes a backslash starts an escape; inside single quotes `''` is one.
 const DOUBLE_QUOTED_RE = /^"((?:[^"\\]|\\.)*)"\s*(?:#.*)?$/;
-const DOUBLE_QUOTED_ESCAPE_RE = /\\(["\\])/g;
 const SINGLE_QUOTED_RE = /^'((?:[^']|'')*)'\s*(?:#.*)?$/;
+const DOUBLE_QUOTED_ESCAPE_RE = /\\(?:x([\dA-Fa-f]{2})|u([\dA-Fa-f]{4})|U([\dA-Fa-f]{8})|(.))/g;
+// YAML's one-character escapes (YAML 1.2 §5.7). A backslash before a literal
+// tab is a tab too.
+const DOUBLE_QUOTED_ESCAPES: Record<string, string> = {
+  "0": "\0",
+  "a": "\x07",
+  "b": "\b",
+  "t": "\t",
+  "\t": "\t",
+  "n": "\n",
+  "v": "\v",
+  "f": "\f",
+  "r": "\r",
+  "e": "\x1B",
+  " ": " ",
+  "\"": "\"",
+  "/": "/",
+  "\\": "\\",
+  "N": "\u0085",
+  "_": "\u00A0",
+  "L": "\u2028",
+  "P": "\u2029",
+};
+const MAX_CODE_POINT = 0x10FFFF;
+
+/**
+ * Decode the escapes in a double-quoted scalar's text. One YAML does not
+ * define is kept as written.
+ */
+function decodeDoubleQuoted(text: string): string {
+  return text.replace(DOUBLE_QUOTED_ESCAPE_RE, (
+    escape: string,
+    x: string | undefined,
+    u: string | undefined,
+    bigU: string | undefined,
+    char: string | undefined,
+  ) => {
+    const hex = x ?? u ?? bigU;
+
+    if (hex !== undefined) {
+      const codePoint = Number.parseInt(hex, 16);
+
+      return codePoint <= MAX_CODE_POINT ? String.fromCodePoint(codePoint) : escape;
+    }
+
+    return DOUBLE_QUOTED_ESCAPES[char ?? ""] ?? escape;
+  });
+}
 
 /**
  * One scalar: a quoted value stays a string with its quotes removed; an
- * unquoted value loses any trailing comment and may read as a boolean or
- * integer.
+ * unquoted value loses any trailing comment and may read as a boolean, null or
+ * number.
  */
 function parseScalarValue(value: string): Scalar {
   const doubleQuoted = DOUBLE_QUOTED_RE.exec(value.trim());
 
   if (doubleQuoted !== null) {
-    return (doubleQuoted[1] ?? "").replace(DOUBLE_QUOTED_ESCAPE_RE, "$1");
+    return decodeDoubleQuoted(doubleQuoted[1] ?? "");
   }
 
   const singleQuoted = SINGLE_QUOTED_RE.exec(value.trim());
@@ -72,16 +129,30 @@ function parseScalarValue(value: string): Scalar {
 
   const trimmed = value.replace(COMMENT_RE, "").trim();
 
-  if (trimmed === "true") {
+  if (BOOLEAN_TRUE_RE.test(trimmed)) {
     return true;
   }
 
-  if (trimmed === "false") {
+  if (BOOLEAN_FALSE_RE.test(trimmed)) {
     return false;
   }
 
-  if (NUMERIC_RE.exec(trimmed) !== null) {
+  if (NULL_RE.test(trimmed)) {
+    return null;
+  }
+
+  if (NUMERIC_RE.test(trimmed)) {
     return Number(trimmed);
+  }
+
+  const infinity = INFINITY_RE.exec(trimmed);
+
+  if (infinity !== null) {
+    return infinity[1] === "-" ? -Infinity : Infinity;
+  }
+
+  if (NAN_RE.test(trimmed)) {
+    return Number.NaN;
   }
 
   return trimmed;
