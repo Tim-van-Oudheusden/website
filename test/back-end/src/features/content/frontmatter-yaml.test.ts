@@ -114,7 +114,9 @@ function generatedBlocks(): string[] {
 // Values YAML types as other than text, each next to near misses that stay
 // text (#1036). Bun's reader also takes a number followed by signs, dots or an
 // `e` (`2025-01`, `1e3.5`, `+-1`) as the number alone, where the YAML spec
-// keeps text, so those are left out.
+// keeps text, so those are left out. So are the spelled-out nulls (`null`,
+// `~`): withSubsetEmpties maps every YAML null to an empty value, so this
+// column cannot tell `k: null` from `k:` (#1042).
 const SCALARS = [
   "true",
   "True",
@@ -125,11 +127,7 @@ const SCALARS = [
   "FALSE",
   "yes",
   "off",
-  "null",
-  "Null",
-  "NULL",
   "nUll",
-  "~",
   "0",
   "-0",
   "017",

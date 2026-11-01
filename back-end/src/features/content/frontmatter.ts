@@ -9,7 +9,7 @@
  * advisories (quadratic-CPU DoS via merge keys / `!!omap`, CVE-2026-59870).
  *
  * Supported subset:
- *   key: value                     scalar (string, boolean, number)
+ *   key: value                     scalar (string, boolean, number, null)
  *   tags:                          block list of strings; the items may
  *     - One                        also sit at the key's own indent
  *     - Two
@@ -20,15 +20,14 @@
  *
  * A scalar may be wrapped in "double" or 'single' quotes; the quotes are
  * removed and the value stays a string (`"true"` is not a boolean). Inside
- * double quotes YAML's escapes are decoded (`\n`, `\"`, `\u00e9`); inside
- * single quotes `''` is. An unquoted value loses a trailing ` # comment` and
- * reads as YAML types it: `true`, `True` and `TRUE` (and the same for false)
- * are booleans, and decimal numbers such as `2026`, `+5`, `1.5` and `1e3` are
- * numbers. The subset has no null, so a value YAML reads as null (`null`, `~`)
- * is reported, and so is a number it does not read (`.inf`, `.nan`, `0x1F`,
- * `0o17`, `-.5`) and a double-quoted escape YAML rejects. Flow lists
- * (`[a, b]`), multi-line scalars, and other YAML forms are not part of the
- * subset.
+ * double quotes YAML's escapes (`\"`, `\\`, `\n`, `\u00e9`, ...) are decoded,
+ * and one YAML rejects (`\q`, a lone surrogate such as `\uD83D`) is a reason;
+ * inside single quotes `''` is. An unquoted value loses a trailing
+ * ` # comment` and is typed as YAML 1.2's core schema types it: `true`, `True`
+ * and `TRUE` are booleans, `null` and `~` are null, and `1.5`, `+5`, `0x1F` or
+ * `.inf` are numbers; a signed number YAML readers disagree on (`-.5`,
+ * `-0x1F`) is a reason. Flow lists (`[a, b]`), multi-line scalars, and other
+ * YAML forms are not part of the subset.
  *
  * `readFrontmatter` returns the parsed data object plus the body after the
  * closing `---`, or the reason no valid leading frontmatter block exists. Every
@@ -45,7 +44,7 @@
  * CRLF; the body keeps its original line endings.
  */
 
-type Scalar = string | number | boolean;
+type Scalar = string | number | boolean | null;
 
 interface FrontmatterMap {
   [key: string]: Scalar | FrontmatterValue[] | FrontmatterMap;
@@ -53,24 +52,29 @@ interface FrontmatterMap {
 
 type FrontmatterValue = Scalar | FrontmatterValue[] | FrontmatterMap;
 
-// The YAML 1.2 core schema's booleans and decimal numbers, which the subset
-// reads as YAML does.
-const BOOLEAN_RE = /^(?:true|True|TRUE|false|False|FALSE)$/;
-const NUMBER_RE = /^(?:[-+]?\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$/;
-// What YAML reads as null, and the numbers the subset does not read: infinity,
-// NaN, hex, octal, and a sign before a leading `.`, which the spec reads as a
-// number (`-.5`) but Bun's reader keeps as text.
+// YAML 1.2 core schema: unquoted values that are not strings.
+const BOOLEAN_TRUE_RE = /^(?:true|True|TRUE)$/;
+const BOOLEAN_FALSE_RE = /^(?:false|False|FALSE)$/;
 const NULL_RE = /^(?:null|Null|NULL|~)$/;
-const UNREAD_NUMBER_RE = /^(?:[-+]?\.(?:inf|Inf|INF|nan|NaN|NAN)|[-+]?0(?:x[0-9a-fA-F]+|o[0-7]+)|[-+]\.\d+(?:[eE][-+]?\d+)?)$/;
+// Decimal, `0o` octal and `0x` hex numbers, all of which `Number` reads.
+const NUMERIC_RE = /^(?:[-+]?(?:\.\d+|\d+(?:\.\d*)?)(?:[eE][-+]?\d+)?|0o[0-7]+|0x[\dA-Fa-f]+)$/;
+const INFINITY_RE = /^([-+]?)\.(?:inf|Inf|INF)$/;
+const NAN_RE = /^\.(?:nan|NaN|NAN)$/;
+// Signed `0x`/`0o` numbers, which the spec keeps as text but Bun's reader reads
+// as numbers, and a sign before a leading `.` (`-.5`), which the spec reads as
+// a number but Bun's reader keeps as text. Either reading would differ from
+// some YAML tool, so the subset reads neither.
+const DISPUTED_NUMBER_RE = /^[-+](?:0x[\dA-Fa-f]+|0o[0-7]+|\.\d+(?:[eE][-+]?\d+)?)$/;
 // YAML starts a comment at a `#` that opens the value or follows whitespace.
 const COMMENT_RE = /(?:^|\s)#.*$/;
 // A double- or single-quoted scalar, optionally followed by a comment. Inside
-// single quotes `''` is the only escape.
+// double quotes a backslash starts an escape; inside single quotes `''` is one.
 const DOUBLE_QUOTED_RE = /^"((?:[^"\\]|\\.)*)"\s*(?:#.*)?$/;
 const SINGLE_QUOTED_RE = /^'((?:[^']|'')*)'\s*(?:#.*)?$/;
-// A double-quoted escape: `\x`, `\u` and `\U` take 2, 4 and 8 hex digits.
-const ESCAPE_RE = /\\(?:x([0-9a-fA-F]{2})|u([0-9a-fA-F]{4})|U([0-9a-fA-F]{8})|(.))/g;
-const NAMED_ESCAPES: Readonly<Record<string, string>> = {
+const DOUBLE_QUOTED_ESCAPE_RE = /\\(?:x([\dA-Fa-f]{2})|u([\dA-Fa-f]{4})|U([\dA-Fa-f]{8})|(.))/g;
+// YAML's one-character escapes (YAML 1.2 §5.7). A backslash before a literal
+// tab is a tab too.
+const DOUBLE_QUOTED_ESCAPES: Record<string, string> = {
   "0": "\0",
   "a": "\x07",
   "b": "\b",
@@ -80,46 +84,50 @@ const NAMED_ESCAPES: Readonly<Record<string, string>> = {
   "v": "\v",
   "f": "\f",
   "r": "\r",
-  "e": "\x1b",
+  "e": "\x1B",
   " ": " ",
   "\"": "\"",
   "/": "/",
   "\\": "\\",
   "N": "\u0085",
-  "_": "\u00a0",
+  "_": "\u00A0",
   "L": "\u2028",
   "P": "\u2029",
 };
-const MAX_CODE_POINT = 0x10ffff;
-const SURROGATES = { first: 0xd800, last: 0xdfff };
+const MAX_CODE_POINT = 0x10FFFF;
+const SURROGATES = { first: 0xD800, last: 0xDFFF };
+
+type ScalarRead
+  = | { ok: true; value: Scalar }
+    | { ok: false; problem: string; value: string };
 
 /** The character `match` escapes, or null when YAML rejects the escape. */
 function escapedCharacter(match: RegExpExecArray): string | null {
   const hex = match[1] ?? match[2] ?? match[3];
 
   if (hex === undefined) {
-    return NAMED_ESCAPES[match[4] ?? ""] ?? null;
+    return DOUBLE_QUOTED_ESCAPES[match[4] ?? ""] ?? null;
   }
 
-  const code = Number.parseInt(hex, 16);
+  const codePoint = Number.parseInt(hex, 16);
 
-  if (code > MAX_CODE_POINT || (code >= SURROGATES.first && code <= SURROGATES.last)) {
+  if (codePoint > MAX_CODE_POINT || (codePoint >= SURROGATES.first && codePoint <= SURROGATES.last)) {
     return null;
   }
 
-  return String.fromCodePoint(code);
+  return String.fromCodePoint(codePoint);
 }
 
-type ScalarRead
-  = | { ok: true; value: Scalar }
-    | { ok: false; problem: string; value: string };
-
-/** The text between double quotes with its escapes decoded, as YAML does. */
+/**
+ * Decode the escapes in a double-quoted scalar's text. An escape YAML does not
+ * define, a code point past U+10FFFF, or a surrogate is a problem, as YAML
+ * rejects it.
+ */
 function decodeDoubleQuoted(text: string): ScalarRead {
   let decoded = "";
   let from = 0;
 
-  for (const match of text.matchAll(ESCAPE_RE)) {
+  for (const match of text.matchAll(DOUBLE_QUOTED_ESCAPE_RE)) {
     const character = escapedCharacter(match);
 
     if (character === null) {
@@ -135,9 +143,9 @@ function decodeDoubleQuoted(text: string): ScalarRead {
 
 /**
  * One scalar: a quoted value stays a string with its quotes removed; an
- * unquoted value loses any trailing comment and reads as a boolean or number
- * where YAML does. A value YAML reads as null or as a number the subset does
- * not read is returned as a problem rather than kept as text.
+ * unquoted value loses any trailing comment and may read as a boolean, null or
+ * number. A double-quoted escape YAML rejects, or a number YAML readers
+ * disagree on, is returned as a problem.
  */
 function parseScalarValue(value: string): ScalarRead {
   const doubleQuoted = DOUBLE_QUOTED_RE.exec(value.trim());
@@ -154,23 +162,42 @@ function parseScalarValue(value: string): ScalarRead {
 
   const trimmed = value.replace(COMMENT_RE, "").trim();
 
-  if (BOOLEAN_RE.test(trimmed)) {
-    return { ok: true, value: trimmed.toLowerCase() === "true" };
-  }
-
-  if (NUMBER_RE.test(trimmed)) {
-    return { ok: true, value: Number(trimmed) };
-  }
-
-  if (NULL_RE.test(trimmed)) {
-    return { ok: false, problem: "has a value YAML reads as null", value: trimmed };
-  }
-
-  if (UNREAD_NUMBER_RE.test(trimmed)) {
+  if (DISPUTED_NUMBER_RE.test(trimmed)) {
     return { ok: false, problem: "has a number the subset does not read", value: trimmed };
   }
 
-  return { ok: true, value: trimmed };
+  return { ok: true, value: parseUnquoted(trimmed) };
+}
+
+/** An unquoted scalar, typed as YAML 1.2's core schema types it. */
+function parseUnquoted(trimmed: string): Scalar {
+  if (BOOLEAN_TRUE_RE.test(trimmed)) {
+    return true;
+  }
+
+  if (BOOLEAN_FALSE_RE.test(trimmed)) {
+    return false;
+  }
+
+  if (NULL_RE.test(trimmed)) {
+    return null;
+  }
+
+  if (NUMERIC_RE.test(trimmed)) {
+    return Number(trimmed);
+  }
+
+  const infinity = INFINITY_RE.exec(trimmed);
+
+  if (infinity !== null) {
+    return infinity[1] === "-" ? -Infinity : Infinity;
+  }
+
+  if (NAN_RE.test(trimmed)) {
+    return Number.NaN;
+  }
+
+  return trimmed;
 }
 
 // As in YAML, a key ends at `: ` or a colon closing the line, so `Re:Zero`

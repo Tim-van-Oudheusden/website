@@ -42,10 +42,10 @@ change:
   release upstream are listed in `AUDIT_IGNORE` in the script, each with the
   reason it can't be fixed; remove an entry once a fix ships.
 - **Draft leak guard** — `scripts/draft-leak-guard.sh` fails if any file in
-  `content/` has `draft: true` front matter, indented or not, with or without a
-  trailing `# comment`. It also fails (exit 2) when it cannot read `content/` or
-  a file in it, such as a dangling symlink. The `release` job in `ci.yml` runs
-  the same script.
+  `content/` has `draft: true` (or `True`, `TRUE`) front matter, indented or
+  not, with or without a trailing `# comment`. It also fails (exit 2) when it
+  cannot read `content/` or a file in it, such as a dangling symlink. The
+  `release` job in `ci.yml` runs the same script.
 
 `scripts/nightly-compliance.sh` writes the report, published as the run's job
 summary and as the `nightly-compliance` artifact. Every check runs even if an
@@ -169,18 +169,19 @@ YAML. `test/back-end/src/features/content/frontmatter-yaml.test.ts` checks it
 against `Bun.YAML`, which the pinned Bun runtime ships: for every frontmatter
 block in `content/`, every block of up to three generated lines (each one of
 six line shapes at one of five space and tab indents), and every listed scalar
-(booleans, numbers, null, infinity and NaN, double-quoted escapes, and near
-misses of each that stay text) as a key's value, a list item, and an object
-item's first and later field, the parser must either reject the block or
-return the data YAML returns. Two allowances map YAML to the subset's terms:
-the subset has no null, so a key with nothing after its colon is an empty list
-at top level and an empty string in a list item; and a tab in a line's indent
-counts as a YAML error, as the YAML spec says, though `Bun.YAML` accepts it.
-The scalar list leaves out numbers followed by signs, dots or an `e`
-(`2025-01`, `1e3.5`, `+-1`): `Bun.YAML` reads them as the number alone, where
-the YAML spec and the parser keep text. When the test fails, it prints the
-first ten blocks the parser misreads: make the parser reject them or read them
-as YAML does.
+(booleans, numbers, infinity and NaN, double-quoted escapes, and near misses of
+each that stay text) as a key's value, a list item, and an object item's first
+and later field, the parser must either reject the block or return the data
+YAML returns. Two allowances map YAML to the subset's terms: the subset has no
+null, so a key with nothing after its colon is an empty list at top level and
+an empty string in a list item; and a tab in a line's indent counts as a YAML
+error, as the YAML spec says, though `Bun.YAML` accepts it. The scalar list
+leaves out numbers followed by signs, dots or an `e` (`2025-01`, `1e3.5`,
+`+-1`): `Bun.YAML` reads them as the number alone, where the YAML spec and the
+parser keep text. It also leaves out the spelled-out nulls (`null`, `~`), which
+the first allowance cannot tell from an empty value. When the test fails, it
+prints the first ten blocks the parser misreads: make the parser reject them or
+read them as YAML does.
 
 ## Run the E2E suite locally
 

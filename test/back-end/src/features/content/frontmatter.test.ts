@@ -408,19 +408,6 @@ Body
   });
 
   test.each([
-    ["null", ["---", "title: T", "v: null", "---", "Body"], "v has a value YAML reads as null: null"],
-    ["~", ["---", "title: T", "v: ~ # unset", "---", "Body"], "v has a value YAML reads as null: ~"],
-    ["NULL in a list", ["---", "tags:", "  - NULL", "---", "Body"], "tags has a value YAML reads as null: NULL"],
-    [
-      "Null in an object item",
-      ["---", "links:", "  - type: repo", "    href: Null", "---", "Body"],
-      "links has a value YAML reads as null: Null",
-    ],
-    [".inf", ["---", "v: .inf", "---", "Body"], "v has a number the subset does not read: .inf"],
-    [".NaN", ["---", "v: .NaN", "---", "Body"], "v has a number the subset does not read: .NaN"],
-    ["0x1F", ["---", "v: 0x1F", "---", "Body"], "v has a number the subset does not read: 0x1F"],
-    ["-0o17", ["---", "v: -0o17", "---", "Body"], "v has a number the subset does not read: -0o17"],
-    ["-.5", ["---", "v: -.5", "---", "Body"], "v has a number the subset does not read: -.5"],
     [
       String.raw`a double-quoted \q`,
       ["---", String.raw`v: "a\qb"`, "---", "Body"],
@@ -431,8 +418,51 @@ Body
       ["---", "tags:", String.raw`  - "\uD83D"`, "---", "Body"],
       String.raw`tags has a double-quoted escape YAML does not accept: \uD83D`,
     ],
-  ])("rejects %s instead of reading it as text (#1036)", (_label, lines, reason) => {
+    [
+      "a double-quoted code point past U+10FFFF",
+      ["---", "links:", "  - type: repo", String.raw`    label: "\U00110000"`, "---", "Body"],
+      String.raw`links has a double-quoted escape YAML does not accept: \U00110000`,
+    ],
+  ])("rejects %s, as YAML does (#1036)", (_label, lines, reason) => {
     expect(readFrontmatter(lines.join("\n"))).toEqual({ ok: false, reason });
+  });
+
+  // The spec reads -.5 as a number and keeps -0x1F as text; Bun's reader does
+  // the opposite, so either reading would differ from some YAML tool.
+  test.each([
+    ["a signed leading-dot number", ["---", "v: -.5 # half", "---", "Body"], "v has a number the subset does not read: -.5"],
+    ["a signed hex number", ["---", "tags:", "  - -0x1F", "---", "Body"], "tags has a number the subset does not read: -0x1F"],
+    ["a signed octal number", ["---", "v: +0o17", "---", "Body"], "v has a number the subset does not read: +0o17"],
+  ])("rejects %s, which YAML readers disagree on (#1036)", (_label, lines, reason) => {
+    expect(readFrontmatter(lines.join("\n"))).toEqual({ ok: false, reason });
+  });
+
+  // Each value as a top-level field, a `- ` item and an object item's field
+  // (the three places a scalar is read) must read as YAML reads it (#1036).
+  // `Bun.YAML` ships with the pinned Bun, so it is the reference.
+  describe("types a scalar as YAML does", () => {
+    const values = [
+      "true", "True", "TRUE", "tRue", "false", "False", "FALSE", "yes",
+      "null", "Null", "NULL", "~", "nUll",
+      "0", "-5", "+5", "05", "-0", "1.5", "+1.5", ".5", "5.", "1e3", "1.5E-3", "0o17", "0x1F",
+      ".inf", "-.Inf", "+.INF", ".nan", ".NaN", "1_000", "1,000", "2026-01-01", "+",
+      String.raw`"x\ny"`, String.raw`"\t\"\\\/\ \0\a\b\v\f\r\e\N\_\L\P"`,
+      String.raw`"\x41\u00e9\U0001F600"`, "\"tab\\\tescaped\"", "\"true\"", "'True'", "'it''s'",
+      "True # draft until reviewed",
+    ];
+
+    test.each(values)("%s", (value) => {
+      const raw = `title: ${value}\ntags:\n  - ${value}\nlinks:\n  - type: ${value}\n    label: ${value}\n`;
+      const read = readFrontmatter(`---\n${raw}---\nBody`);
+
+      const actual: unknown = read.ok ? read.result.data : read.reason;
+
+      expect(actual).toEqual(Bun.YAML.parse(raw));
+    });
+
+    test("reads draft: True as a draft, not as the text True", () => {
+      expect(parsed("---\ntitle: T\ndraft: True\n---\nBody").data["draft"]).toBe(true);
+    });
   });
 
   describe("line endings and byte-order mark", () => {
