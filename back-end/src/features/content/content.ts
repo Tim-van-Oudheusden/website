@@ -259,16 +259,20 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
     };
   }
 
-  const nonTextTag = (rawTags ?? []).find((tag) => typeof tag === "number" || typeof tag === "boolean");
+  const tagItems: unknown[] = rawTags ?? [];
+  const tags = tagItems.filter((tag): tag is string => typeof tag === "string");
 
-  if (nonTextTag !== undefined) {
-    return {
-      ok: false,
-      error: { file, field: "tags", message: `Tag must be text; put it in quotes, e.g. - "${String(nonTextTag)}"`, value: nonTextTag },
-    };
+  if (tags.length !== tagItems.length) {
+    const nonTextTag = tagItems.find((tag) => typeof tag !== "string");
+    // A `- key: value` item parses as an object; numbers and booleans are
+    // unquoted scalars.
+    const message = typeof nonTextTag === "number" || typeof nonTextTag === "boolean"
+      ? `Tag must be text; put it in quotes, e.g. - "${String(nonTextTag)}"`
+      : "Tag must be text; quote a tag that contains ': ', e.g. - \"Accessibility: WCAG\"";
+
+    return { ok: false, error: { file, field: "tags", message, value: nonTextTag } };
   }
 
-  const tags = (rawTags ?? []).filter((tag): tag is string => typeof tag === "string");
   const type: ContentType = CONTENT_TYPES.find((candidate) => candidate === raw["type"]) ?? "article";
   const draft = normalizeBoolean(raw["draft"], false);
   const socialImage = normalizeString(raw["socialImage"]);

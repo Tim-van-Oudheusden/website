@@ -474,6 +474,64 @@ describe("validateContentDir", () => {
     }
   });
 
+  test("reports a `- key: value` tag item instead of dropping it", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, "object-tag.md"), [
+        "---",
+        "title: Object Tag",
+        "date: 2026-01-01",
+        "type: article",
+        "category: Linux",
+        "tags:",
+        "  - Accessibility: WCAG",
+        "  - Linux",
+        "---",
+        "# Object Tag",
+      ].join("\n"));
+
+      expect(await validateContentDir(dir)).toMatchObject([
+        {
+          file: "object-tag.md",
+          field: "tags",
+          message: expect.stringMatching(/quote a tag that contains ': '/),
+          value: { Accessibility: "WCAG" },
+        },
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  test.each([
+    ["tags", ["tags:", "  Linux"], "Linux"],
+    ["tags", ["tags:", "  - Linux", "    Containers"], "Containers"],
+    ["links", ["type: project", "links:", "  - type: repo", "  href: https://example.com"], "href: https://example.com"],
+    ["links", ["type: project", "links:", "  - type: repo", "    href: https://example.com", "      more"], "more"],
+    ["cover", ["cover:", "  image: x.png"], "image: x.png"],
+  ])("reports a %s child line without a `- ` marker instead of dropping it", async (key, block, line) => {
+    const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
+
+    try {
+      await writeFile(join(dir, "bare-child.md"), [
+        "---",
+        "title: Bare Child",
+        "date: 2026-01-01",
+        "category: Linux",
+        ...block,
+        "---",
+        "# Bare Child",
+      ].join("\n"));
+
+      expect(await validateContentDir(dir)).toEqual([
+        { file: "bare-child.md", field: null, message: `${key} has a line that is not a \`- item\`: ${line}`, value: undefined },
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   // The front-end formats these dates with Intl, which throws on an invalid
   // date and blanks the page; a parseable non-ISO date shows the wrong day.
   test.each([
