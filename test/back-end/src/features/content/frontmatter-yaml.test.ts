@@ -131,6 +131,84 @@ function generatedBlocks(): string[] {
   return all;
 }
 
+// Values YAML types as other than text, each next to near misses that stay
+// text (#1036). Bun's reader also takes a number followed by signs, dots or an
+// `e` (`2025-01`, `1e3.5`, `+-1`) as the number alone, where the YAML spec
+// keeps text, so those are left out.
+const SCALARS = [
+  "true",
+  "True",
+  "TRUE",
+  "tRue",
+  "false",
+  "False",
+  "FALSE",
+  "yes",
+  "off",
+  "null",
+  "Null",
+  "NULL",
+  "nUll",
+  "~",
+  "0",
+  "-0",
+  "017",
+  "+5",
+  "-5",
+  "1.5",
+  "+1.5",
+  "-2.25",
+  "5.",
+  ".5",
+  "-.5",
+  "+.5",
+  "1e3",
+  "1E3",
+  "+1e-3",
+  ".5e1",
+  "-.5e1",
+  "0x1F",
+  "0X1F",
+  "-0x1F",
+  "0o17",
+  "+0o17",
+  "0b101",
+  "1_000",
+  "1.5.2",
+  "2025-01-01",
+  ".inf",
+  "-.inf",
+  ".Inf",
+  ".nan",
+  ".NaN",
+  "-.nan",
+  "\"true\"",
+  "'1.5'",
+  "\"null\"",
+  String.raw`"\0\a\b\t\n\v\f\r\e\ \"\/\\\N\_\L\P"`,
+  "\"\\\t\"",
+  String.raw`"\x41\u00e9\U0001F600"`,
+  String.raw`"\q"`,
+  String.raw`"\x4"`,
+  String.raw`"\uD83D"`,
+  String.raw`"\U00110000"`,
+];
+// Every place a value sits: a key, a list item, and an object item's first and
+// later fields.
+const VALUE_POSITIONS: ((value: string) => string)[] = [
+  (value) => `k: ${value}`,
+  (value) => `k:\n  - ${value}`,
+  (value) => `k:\n  - a: ${value}`,
+  (value) => `k:\n  - a: v\n    b: ${value}`,
+];
+
+/** Every scalar, with and without a trailing comment, in every value position. */
+function scalarBlocks(): string[] {
+  return SCALARS
+    .flatMap((scalar) => [scalar, `${scalar} # note`])
+    .flatMap((value) => VALUE_POSITIONS.map((position) => position(value)));
+}
+
 describe("readFrontmatter against Bun.YAML", () => {
   test.each(markdownFiles(CONTENT_DIR).map((file) => [relative(CONTENT_DIR, file), file]))(
     "reads %s as YAML does",
@@ -141,6 +219,12 @@ describe("readFrontmatter against Bun.YAML", () => {
 
   test(`rejects or reads as YAML does every block of up to ${String(MAX_LINES)} generated lines`, () => {
     const misreads = generatedBlocks().map(misreadOf).filter((misread) => misread !== null);
+
+    expect({ count: misreads.length, first: misreads.slice(0, 10) }).toEqual({ count: 0, first: [] });
+  });
+
+  test("rejects or reads as YAML does every scalar in every value position", () => {
+    const misreads = scalarBlocks().map(misreadOf).filter((misread) => misread !== null);
 
     expect({ count: misreads.length, first: misreads.slice(0, 10) }).toEqual({ count: 0, first: [] });
   });

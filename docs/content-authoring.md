@@ -103,9 +103,11 @@ The parser reads a subset of YAML: `key: value` lines, block lists
 - Quote a value that contains `: ` or starts with `#`, e.g.
   `title: "Flatpak: a field guide"`. Double or single quotes both work; the
   quotes are removed, and a quoted value is always a string. Inside double
-  quotes write `\"` for a quote and `\\` for a backslash, and YAML's other
-  escapes such as `\n` work too; inside single quotes write `''` for a quote
-  and a backslash is just a backslash.
+  quotes YAML's escapes apply: `\"` is a quote, `\\` a backslash, `\n` a line
+  break, `\u00e9` an `é`, and an escape YAML does not accept, such as `\q` or a
+  lone surrogate like `\uD83D`, makes the document invalid. Inside single
+  quotes write `''` for a quote; nothing else is an escape, so `'C:\temp'`
+  keeps its backslash.
 - A ` # comment` after an unquoted value is ignored: `draft: true # not ready`
   is the boolean `true`.
 - A whole line that starts with `#` is a comment at any indent, including
@@ -121,6 +123,9 @@ The parser reads a subset of YAML: `key: value` lines, block lists
   on projects `coverImage`, `coverImageAlt`, `role`, `info`) or as a `tags`
   entry makes the document invalid; quote it instead: `slug: "2025"`,
   `- "2025"`.
+- A signed number that YAML tools read differently, such as `-.5`, `+.5`,
+  `-0x1F` or `+0o17`, makes the document invalid in any field; quote it to
+  keep it as text.
 - Flow lists and multi-line values are not supported; write lists one
   `- item` per line. A flow list such as `tags: [a, b]` is read as one string,
   which breaks the `tags` rule below. The `- item` lines may be indented under

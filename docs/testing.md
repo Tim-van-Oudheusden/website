@@ -167,17 +167,22 @@ add the mutant as a row so a later change to that test can't quietly drop it.
 `back-end/src/features/content/frontmatter.ts` reads a hand-written subset of
 YAML. `test/back-end/src/features/content/frontmatter-yaml.test.ts` checks it
 against `Bun.YAML`, which the pinned Bun runtime ships: for every frontmatter
-block in `content/`, and every block of up to three generated lines (each one
-of eight line shapes at one of five space and tab indents), the parser must
-either reject the block or return the data YAML returns. Two allowances map
-YAML to the subset's terms. First, the subset reads `null`, `Null`, `NULL` and
-`~` as null, as YAML does, but a key with nothing after its colon is an empty
-list at top level and an empty string in a list item, where YAML reads null; so
-the test marks each spelled-out null before `Bun.YAML` reads the block, and
-maps only the unmarked nulls to the subset's empty values. Second, a tab in a
-line's indent counts as a YAML error, as the YAML spec says, though `Bun.YAML`
-accepts it. When the test fails, it prints the first ten blocks the parser
-misreads: make the parser reject them or read them as YAML does.
+block in `content/`, every block of up to three generated lines (each one of
+eight line shapes at one of five space and tab indents), and every listed scalar
+(booleans, null, numbers, infinity and NaN, double-quoted escapes, and near
+misses of each that stay text) as a key's value, a list item, and an object
+item's first and later field, the parser must either reject the block or return
+the data YAML returns. Two allowances map YAML to the subset's terms. First,
+the subset reads `null`, `Null`, `NULL` and `~` as null, as YAML does, but a
+key with nothing after its colon is an empty list at top level and an empty
+string in a list item, where YAML reads null; so the test marks each
+spelled-out null before `Bun.YAML` reads the block, and maps only the unmarked
+nulls to the subset's empty values. Second, a tab in a line's indent counts as
+a YAML error, as the YAML spec says, though `Bun.YAML` accepts it. The scalar
+list leaves out numbers followed by signs, dots or an `e` (`2025-01`, `1e3.5`,
+`+-1`): `Bun.YAML` reads them as the number alone, where the YAML spec and the
+parser keep text. When the test fails, it prints the first ten blocks the
+parser misreads: make the parser reject them or read them as YAML does.
 
 ## Run the E2E suite locally
 

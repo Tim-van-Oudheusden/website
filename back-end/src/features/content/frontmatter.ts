@@ -20,11 +20,13 @@
  *
  * A scalar may be wrapped in "double" or 'single' quotes; the quotes are
  * removed and the value stays a string (`"true"` is not a boolean). Inside
- * double quotes YAML's escapes (`\"`, `\\`, `\n`, `\u00e9`, ...) are decoded;
+ * double quotes YAML's escapes (`\"`, `\\`, `\n`, `\u00e9`, ...) are decoded,
+ * and one YAML rejects (`\q`, a lone surrogate such as `\uD83D`) is a reason;
  * inside single quotes `''` is. An unquoted value loses a trailing
  * ` # comment` and is typed as YAML 1.2's core schema types it: `true`, `True`
  * and `TRUE` are booleans, `null` and `~` are null, and `1.5`, `+5`, `0x1F` or
- * `.inf` are numbers. Flow lists (`[a, b]`), multi-line scalars, and other
+ * `.inf` are numbers; a signed number YAML readers disagree on (`-.5`,
+ * `-0x1F`) is a reason. Flow lists (`[a, b]`), multi-line scalars, and other
  * YAML forms are not part of the subset.
  *
  * `readFrontmatter` returns the parsed data object plus the body after the
@@ -58,6 +60,11 @@ const NULL_RE = /^(?:null|Null|NULL|~)$/;
 const NUMERIC_RE = /^(?:[-+]?(?:\.\d+|\d+(?:\.\d*)?)(?:[eE][-+]?\d+)?|0o[0-7]+|0x[\dA-Fa-f]+)$/;
 const INFINITY_RE = /^([-+]?)\.(?:inf|Inf|INF)$/;
 const NAN_RE = /^\.(?:nan|NaN|NAN)$/;
+// Signed `0x`/`0o` numbers, which the spec keeps as text but Bun's reader reads
+// as numbers, and a sign before a leading `.` (`-.5`), which the spec reads as
+// a number but Bun's reader keeps as text. Either reading would differ from
+// some YAML tool, so the subset reads neither.
+const DISPUTED_NUMBER_RE = /^[-+](?:0x[\dA-Fa-f]+|0o[0-7]+|\.\d+(?:[eE][-+]?\d+)?)$/;
 // YAML starts a comment at a `#` that opens the value or follows whitespace.
 const COMMENT_RE = /(?:^|\s)#.*$/;
 // A double- or single-quoted scalar, optionally followed by a comment. Inside
@@ -88,37 +95,59 @@ const DOUBLE_QUOTED_ESCAPES: Record<string, string> = {
   "P": "\u2029",
 };
 const MAX_CODE_POINT = 0x10FFFF;
+const SURROGATES = { first: 0xD800, last: 0xDFFF };
+
+type ScalarRead
+  = | { ok: true; value: Scalar }
+    | { ok: false; problem: string; value: string };
+
+/** The character `match` escapes, or null when YAML rejects the escape. */
+function escapedCharacter(match: RegExpExecArray): string | null {
+  const hex = match[1] ?? match[2] ?? match[3];
+
+  if (hex === undefined) {
+    return DOUBLE_QUOTED_ESCAPES[match[4] ?? ""] ?? null;
+  }
+
+  const codePoint = Number.parseInt(hex, 16);
+
+  if (codePoint > MAX_CODE_POINT || (codePoint >= SURROGATES.first && codePoint <= SURROGATES.last)) {
+    return null;
+  }
+
+  return String.fromCodePoint(codePoint);
+}
 
 /**
- * Decode the escapes in a double-quoted scalar's text. One YAML does not
- * define is kept as written.
+ * Decode the escapes in a double-quoted scalar's text. An escape YAML does not
+ * define, a code point past U+10FFFF, or a surrogate is a problem, as YAML
+ * rejects it.
  */
-function decodeDoubleQuoted(text: string): string {
-  return text.replace(DOUBLE_QUOTED_ESCAPE_RE, (
-    escape: string,
-    x: string | undefined,
-    u: string | undefined,
-    bigU: string | undefined,
-    char: string | undefined,
-  ) => {
-    const hex = x ?? u ?? bigU;
+function decodeDoubleQuoted(text: string): ScalarRead {
+  let decoded = "";
+  let from = 0;
 
-    if (hex !== undefined) {
-      const codePoint = Number.parseInt(hex, 16);
+  for (const match of text.matchAll(DOUBLE_QUOTED_ESCAPE_RE)) {
+    const character = escapedCharacter(match);
 
-      return codePoint <= MAX_CODE_POINT ? String.fromCodePoint(codePoint) : escape;
+    if (character === null) {
+      return { ok: false, problem: "has a double-quoted escape YAML does not accept", value: match[0] };
     }
 
-    return DOUBLE_QUOTED_ESCAPES[char ?? ""] ?? escape;
-  });
+    decoded += text.slice(from, match.index) + character;
+    from = match.index + match[0].length;
+  }
+
+  return { ok: true, value: decoded + text.slice(from) };
 }
 
 /**
  * One scalar: a quoted value stays a string with its quotes removed; an
  * unquoted value loses any trailing comment and may read as a boolean, null or
- * number.
+ * number. A double-quoted escape YAML rejects, or a number YAML readers
+ * disagree on, is returned as a problem.
  */
-function parseScalarValue(value: string): Scalar {
+function parseScalarValue(value: string): ScalarRead {
   const doubleQuoted = DOUBLE_QUOTED_RE.exec(value.trim());
 
   if (doubleQuoted !== null) {
@@ -128,11 +157,20 @@ function parseScalarValue(value: string): Scalar {
   const singleQuoted = SINGLE_QUOTED_RE.exec(value.trim());
 
   if (singleQuoted !== null) {
-    return (singleQuoted[1] ?? "").replaceAll("''", "'");
+    return { ok: true, value: (singleQuoted[1] ?? "").replaceAll("''", "'") };
   }
 
   const trimmed = value.replace(COMMENT_RE, "").trim();
 
+  if (DISPUTED_NUMBER_RE.test(trimmed)) {
+    return { ok: false, problem: "has a number the subset does not read", value: trimmed };
+  }
+
+  return { ok: true, value: parseUnquoted(trimmed) };
+}
+
+/** An unquoted scalar, typed as YAML 1.2's core schema types it. */
+function parseUnquoted(trimmed: string): Scalar {
   if (BOOLEAN_TRUE_RE.test(trimmed)) {
     return true;
   }
@@ -231,7 +269,13 @@ function parseBlockChildren(children: string[]): BlockRead {
     const inlineField = FIELD_RE.exec(rest);
 
     if (inlineField === null) {
-      items.push(parseScalarValue(rest));
+      const item = parseScalarValue(rest);
+
+      if (!item.ok) {
+        return { ok: false, problem: item.problem, line: item.value };
+      }
+
+      items.push(item.value);
       index += 1;
 
       continue;
@@ -246,9 +290,13 @@ function parseBlockChildren(children: string[]): BlockRead {
       continue;
     }
 
-    const obj: FrontmatterMap = {
-      [inlineKey]: parseScalarValue(inlineField[2] ?? ""),
-    };
+    const first = parseScalarValue(inlineField[2] ?? "");
+
+    if (!first.ok) {
+      return { ok: false, problem: first.problem, line: first.value };
+    }
+
+    const obj: FrontmatterMap = { [inlineKey]: first.value };
 
     // The column of `type` in `  - type: repo`.
     const fieldIndent = line.length - rest.length;
@@ -290,7 +338,13 @@ function parseBlockChildren(children: string[]): BlockRead {
       const subKey = subField[1];
 
       if (subKey !== undefined && subKey !== "") {
-        obj[subKey] = parseScalarValue(subField[2] ?? "");
+        const field = parseScalarValue(subField[2] ?? "");
+
+        if (!field.ok) {
+          return { ok: false, problem: field.problem, line: field.value };
+        }
+
+        obj[subKey] = field.value;
       }
 
       next += 1;
@@ -413,7 +467,13 @@ export function readFrontmatter(raw: string): FrontmatterRead {
     // A key with a value: `title: X`. A key followed only by a comment is a
     // parent key; a quoted value always keeps its opening quote here.
     if (value.replace(COMMENT_RE, "").trim() !== "") {
-      data[key] = parseScalarValue(value);
+      const scalar = parseScalarValue(value);
+
+      if (!scalar.ok) {
+        return { ok: false, reason: `${key} ${scalar.problem}: ${scalar.value}` };
+      }
+
+      data[key] = scalar.value;
       valueKey = { key, indent };
       i += 1;
 
