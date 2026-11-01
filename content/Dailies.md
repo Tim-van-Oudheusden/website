@@ -63,7 +63,7 @@ Dailies is a native GNOME app, built with GTK 4 and libadwaita. It follows the l
 
 ## Play right inside Dailies
 
-Games open in a built-in browser that remembers your logins and streaks between sessions. It has back, forward and reload buttons, and the header bar always shows the page title and the website it comes from. If you would rather play in your own browser, the Open games setting has three choices: the built-in browser, your default browser, or a command of your choice. Music games play their sound inside Dailies too.
+Games open in a built-in browser that remembers your logins and streaks between sessions. It has back, forward and reload buttons, and the header bar always shows the page title and the website it comes from. If you would rather play in your own browser, the Open games setting has three choices: the built-in browser, your default browser, or a command of your choice. A game's own menu can override that for just that game, and give it a session of its own so its logins stay apart from the others. Music games play their sound inside Dailies too.
 
 ![Absurdle being played in the built-in browser, with back, forward and reload buttons and the page title and website in the header bar](/content-assets/images/dailies/built-in-browser.png)
 
