@@ -122,9 +122,12 @@ The parser reads a subset of YAML: `key: value` lines, block lists
   `- item` per line. A flow list such as `tags: [a, b]` is read as one string,
   which breaks the `tags` rule below. The `- item` lines may be indented under
   their key or sit at the key's own indent; both read the same. Any other
-  line indented under `tags:` or `links:` (an item without its `- `, or a
-  second line continuing an item) makes the document invalid, except a link's
-  own `key: value` fields indented under its `- `.
+  line indented under a key with no value on its line, such as `tags:` or
+  `links:`, makes the document invalid: an item without its `- `, a second
+  line continuing an item or one of its fields, or a nested mapping such as an
+  Obsidian property `cover:` with `  image: x.png` under it. The exception is
+  an object item's own `key: value` fields indented under its `- `, as in
+  `links`.
 
 **A document that breaks a rule is silently left out of the site.** No error is
 shown: it disappears from every listing and its URL returns "not found". Run

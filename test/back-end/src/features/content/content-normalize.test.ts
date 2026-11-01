@@ -508,6 +508,8 @@ describe("validateContentDir", () => {
     ["tags", ["tags:", "  Linux"], "Linux"],
     ["tags", ["tags:", "  - Linux", "    Containers"], "Containers"],
     ["links", ["type: project", "links:", "  - type: repo", "  href: https://example.com"], "href: https://example.com"],
+    ["links", ["type: project", "links:", "  - type: repo", "    href: https://example.com", "      more"], "more"],
+    ["cover", ["cover:", "  image: x.png"], "image: x.png"],
   ])("reports a %s child line without a `- ` marker instead of dropping it", async (key, block, line) => {
     const dir = await mkdtemp(join(tmpdir(), "website-content-validate-"));
 

@@ -111,8 +111,8 @@ type BlockRead
 /**
  * Parse a block of indented child lines. Returns a string[] when every item is
  * a scalar, otherwise a list of objects. A line that neither starts a `- `
- * item nor belongs to an object item's fields is returned so the caller can
- * report it rather than drop it.
+ * item nor is a `key: value` field of an object item is returned so the caller
+ * can report it rather than drop it.
  */
 function parseBlockChildren(children: string[]): BlockRead {
   const items: FrontmatterValue[] = [];
@@ -184,12 +184,14 @@ function parseBlockChildren(children: string[]): BlockRead {
 
       const subField = FIELD_RE.exec(sub.trimStart());
 
-      if (subField !== null) {
-        const subKey = subField[1];
+      if (subField === null) {
+        return { ok: false, line: sub.trim() };
+      }
 
-        if (subKey !== undefined && subKey !== "") {
-          obj[subKey] = parseScalarValue(subField[2] ?? "");
-        }
+      const subKey = subField[1];
+
+      if (subKey !== undefined && subKey !== "") {
+        obj[subKey] = parseScalarValue(subField[2] ?? "");
       }
 
       next += 1;
