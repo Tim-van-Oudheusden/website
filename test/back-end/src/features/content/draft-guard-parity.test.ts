@@ -66,7 +66,10 @@ describe("nightly compliance draft leak guard", () => {
     "draft: true#wip",
     "draft: 'true'",
     'draft: "true"',
+    // YAML's core schema reads True and TRUE as true, but not tRue (#1036).
     "draft: TRUE",
+    "draft: True # wip",
+    "draft: tRue",
     "draft: false # shipped",
     // frontmatter.ts matches keys on `line.trimStart()`, so an indented key is top level (#912)
     // when the other top-level keys share its indent, and invalid under a key with a value

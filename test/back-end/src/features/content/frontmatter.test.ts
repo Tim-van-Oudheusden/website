@@ -314,6 +314,36 @@ Body
       ["---", "tags:", "  - Re:Zero", "  - https://example.com", "  - Anime", "---", "Body"],
       { data: { tags: ["Re:Zero", "https://example.com", "Anime"] }, content: "Body" },
     ],
+    [
+      "reads True, TRUE, False and FALSE as booleans, as YAML does (#1036)",
+      ["---", "draft: True", "featured: TRUE", "homeRecommended: False", "pinned: FALSE", "---", "Body"],
+      { data: { draft: true, featured: true, homeRecommended: false, pinned: false }, content: "Body" },
+    ],
+    [
+      "reads signed, decimal and exponent numbers as numbers, as YAML does (#1036)",
+      ["---", "a: 1.5", "b: +5", "c: -2.25", "d: 1e3", "e: 5.", "f: .5", "g: 017", "---", "Body"],
+      { data: { a: 1.5, b: 5, c: -2.25, d: 1000, e: 5, f: 0.5, g: 17 }, content: "Body" },
+    ],
+    [
+      "keeps values YAML reads as text a string",
+      ["---", "a: tRue", "b: yes", "c: 1.5.2", "d: 1_000", "e: 0X1F", "f: 2Easy", "---", "Body"],
+      { data: { a: "tRue", b: "yes", c: "1.5.2", d: "1_000", e: "0X1F", f: "2Easy" }, content: "Body" },
+    ],
+    [
+      "decodes every YAML escape inside double quotes (#1036)",
+      [
+        "---",
+        String.raw`a: "x\ny\tz\0\a\b\v\f\r\e\ \/\N\_\L\P"`,
+        String.raw`b: "\x41\u00e9\U0001F600"`,
+        "c: \"tab\\\tchar\"",
+        "---",
+        "Body",
+      ],
+      {
+        data: { a: "x\ny\tz\0\x07\b\v\f\r\x1b /\u0085\u00a0\u2028\u2029", b: "A\u00e9\u{1F600}", c: "tab\tchar" },
+        content: "Body",
+      },
+    ],
   ])("%s", (_label, lines, expected) => {
     const read = readFrontmatter(lines.join("\n"));
 
@@ -374,6 +404,34 @@ Body
       "links has a field out of line with its item's first field: href: https://x",
     ],
   ])("rejects %s instead of dropping or hoisting it", (_label, lines, reason) => {
+    expect(readFrontmatter(lines.join("\n"))).toEqual({ ok: false, reason });
+  });
+
+  test.each([
+    ["null", ["---", "title: T", "v: null", "---", "Body"], "v has a value YAML reads as null: null"],
+    ["~", ["---", "title: T", "v: ~ # unset", "---", "Body"], "v has a value YAML reads as null: ~"],
+    ["NULL in a list", ["---", "tags:", "  - NULL", "---", "Body"], "tags has a value YAML reads as null: NULL"],
+    [
+      "Null in an object item",
+      ["---", "links:", "  - type: repo", "    href: Null", "---", "Body"],
+      "links has a value YAML reads as null: Null",
+    ],
+    [".inf", ["---", "v: .inf", "---", "Body"], "v has a number the subset does not read: .inf"],
+    [".NaN", ["---", "v: .NaN", "---", "Body"], "v has a number the subset does not read: .NaN"],
+    ["0x1F", ["---", "v: 0x1F", "---", "Body"], "v has a number the subset does not read: 0x1F"],
+    ["-0o17", ["---", "v: -0o17", "---", "Body"], "v has a number the subset does not read: -0o17"],
+    ["-.5", ["---", "v: -.5", "---", "Body"], "v has a number the subset does not read: -.5"],
+    [
+      String.raw`a double-quoted \q`,
+      ["---", String.raw`v: "a\qb"`, "---", "Body"],
+      String.raw`v has a double-quoted escape YAML does not accept: \q`,
+    ],
+    [
+      "a double-quoted lone surrogate",
+      ["---", "tags:", String.raw`  - "\uD83D"`, "---", "Body"],
+      String.raw`tags has a double-quoted escape YAML does not accept: \uD83D`,
+    ],
+  ])("rejects %s instead of reading it as text (#1036)", (_label, lines, reason) => {
     expect(readFrontmatter(lines.join("\n"))).toEqual({ ok: false, reason });
   });
 

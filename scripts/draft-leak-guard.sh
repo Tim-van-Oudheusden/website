@@ -16,10 +16,11 @@ content_dir="${1:?usage: draft-leak-guard.sh <content-dir>}"
 
 # Like the parser, allow a ` # comment` after the value: `draft: true # wip`
 # is still a draft. `true#wip` (no space before #) is a string there, so not one here.
+# The parser reads `True` and `TRUE` as true too, as YAML does (#1036).
 # The parser also reads an indented ` draft: true` as the top-level key, so allow an indent.
 # GNU grep exits 2 on a read error even when it also found a match, so map its
 # three exit codes instead of treating every non-zero one as "no draft".
-grep -RIlE '^[[:space:]]*draft:[[:space:]]*true([[:space:]]+(#.*)?)?$' "$content_dir"
+grep -RIlE '^[[:space:]]*draft:[[:space:]]*(true|True|TRUE)([[:space:]]+(#.*)?)?$' "$content_dir"
 case $? in
   0) exit 1 ;; # a draft line was found
   1) exit 0 ;; # no draft line

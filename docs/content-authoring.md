@@ -103,8 +103,10 @@ The parser reads a subset of YAML: `key: value` lines, block lists
 - Quote a value that contains `: ` or starts with `#`, e.g.
   `title: "Flatpak: a field guide"`. Double or single quotes both work; the
   quotes are removed, and a quoted value is always a string. Inside double
-  quotes write `\"` for a quote and `\\` for a backslash; inside single quotes
-  write `''` for a quote.
+  quotes YAML's escapes apply: `\"` is a quote, `\\` a backslash, `\n` a line
+  break, `\u00e9` an `é`, and an escape YAML does not know, such as `\q`, makes
+  the document invalid. Inside single quotes write `''` for a quote; nothing
+  else is an escape, so `'C:\temp'` keeps its backslash.
 - A ` # comment` after an unquoted value is ignored: `draft: true # not ready`
   is the boolean `true`.
 - A whole line that starts with `#` is a comment at any indent, including
@@ -113,11 +115,16 @@ The parser reads a subset of YAML: `key: value` lines, block lists
 - A key needs a space after its colon (`draft: true`). Without one the line is
   plain text: `- Re:Zero` and `- https://example.com` are string list items,
   and a top-level `draft:true` line makes the document invalid.
-- An unquoted whole number or `true`/`false` is read as a number or boolean,
-  not as text. In a text field (`title`, `description`, `slug`, `socialImage`,
-  and on projects `coverImage`, `coverImageAlt`, `role`, `info`) or as a `tags`
-  entry it makes the document invalid; quote it instead: `slug: "2025"`,
-  `- "2025"`.
+- An unquoted value reads as YAML types it. `true`, `True` and `TRUE` are the
+  boolean `true` (so `draft: True` is a draft), and the same goes for `false`;
+  `yes`, `no` and `tRue` stay text. A decimal number such as `2025`, `+5`,
+  `1.5` or `1e3` is a number. In a text field (`title`, `description`, `slug`,
+  `socialImage`, and on projects `coverImage`, `coverImageAlt`, `role`, `info`)
+  or as a `tags` entry a number or boolean makes the document invalid; quote it
+  instead: `slug: "2025"`, `- "2025"`.
+- A value YAML reads as null (`null`, `Null`, `NULL`, `~`) or as a number the
+  parser does not read (`.inf`, `.nan`, `0x1F`, `0o17`, `-.5`) makes the
+  document invalid in any field; quote it to keep it as text.
 - Flow lists and multi-line values are not supported; write lists one
   `- item` per line. A flow list such as `tags: [a, b]` is read as one string,
   which breaks the `tags` rule below. The `- item` lines may be indented under
