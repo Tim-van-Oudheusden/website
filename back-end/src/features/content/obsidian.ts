@@ -32,7 +32,7 @@ function toContentAssetPath(rawPath: string): string | null {
     return normalizedPath;
   }
 
-  if (normalizedPath.startsWith("content-assets/images/")) {
+  if (normalizedPath.startsWith(ASSET_PATH_PREFIX.slice(1))) {
     return `/${normalizedPath}`;
   }
 
