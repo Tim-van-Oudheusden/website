@@ -4,6 +4,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 
+import { SITE_OWNER } from "shared";
 import { SOCIAL_LINKS } from "shared/social-links";
 
 import { HomeSection } from "../../../../../../front-end/src/features/home/components/home-section";
@@ -101,11 +102,11 @@ describe("HomeSection", () => {
     }
   });
 
-  test("renders a copyright line with the current year in the socials footer", () => {
+  test("renders a copyright line with the current year and the site owner in the socials footer", () => {
     const html = renderSection("socials");
+    const copyright = /<p>©.*?<\/p>/.exec(html)?.[0].replaceAll("<!-- -->", "");
 
-    expect(html).toMatch(/©/);
-    expect(html).toContain(String(new Date().getFullYear()));
+    expect(copyright).toBe(`<p>© ${String(new Date().getFullYear())} ${SITE_OWNER}</p>`);
   });
 
   test("links the experience section's full profile to the configured LinkedIn profile", () => {

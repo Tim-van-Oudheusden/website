@@ -1,6 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import type { ComponentType, JSX, SVGProps } from "react";
 
+import { SITE_OWNER } from "shared";
 import type { SocialNetwork } from "shared/social-links";
 
 import { GitHubIcon } from "@/shared/components/icons/github-icon";
@@ -18,7 +19,6 @@ const SOCIAL_ICONS: Record<SocialNetwork, ComponentType<SVGProps<SVGSVGElement>>
 
 /** The repository behind this site, kept as a secondary link (#585 D2). */
 const SITE_SOURCE_HREF = "https://github.com/Tim-van-Oudheusden/website";
-const SITE_AUTHOR = "Tim van Oudheusden";
 
 /** Outline pill in the site's neutral tokens, matching the project showcase's call to action. */
 const SOCIAL_LINK_CLASSES = "h-12 gap-3 rounded-full border-(--paper-3) bg-(--paper-2) px-5 text-base text-(--ink-5) shadow-none transition-colors duration-150 has-[>svg]:px-5 hover:border-(--ink-1) hover:bg-(--paper-1) hover:text-(--ink-5) dark:border-(--ink-2) dark:bg-(--popover) dark:text-(--paper-1) dark:hover:border-(--paper-3) dark:hover:bg-white/10 dark:hover:text-(--paper-1) motion-reduce:transition-none";
@@ -60,7 +60,7 @@ export function HomeSocials({ section }: HomeSocialsProps): JSX.Element {
             {" "}
             {currentYear}
             {" "}
-            {SITE_AUTHOR}
+            {SITE_OWNER}
           </p>
           <a
             href={SITE_SOURCE_HREF}
