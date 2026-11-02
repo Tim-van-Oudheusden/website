@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" font-family="'Source Sans 3', 'Segoe UI', Arial, sans-serif">
+  <title>Agentic tab: live Hive metrics section, desktop wireframe in the light theme</title>
+  <desc>Header with live status pill, four KPI tiles, PR throughput bars, who-merged share bars, queue and token sparklines. All numbers are illustrative.</desc>
+  <rect width="1000" height="690" fill="#F3EFE5"/>
+  <text x="30" y="22" font-size="11" letter-spacing="1" fill="#77767B">WIREFRAME · LIGHT THEME · ILLUSTRATIVE NUMBERS</text>
+
+  <!-- Header -->
+  <text x="30" y="60" font-size="28" font-weight="700" fill="#000">The hive, live</text>
+  <text x="30" y="86" font-size="14" fill="#5E5C64">Numbers from the Hive instance running on this server. Counts only: no repositories, costs or agent logs.</text>
+  <rect x="770" y="40" width="200" height="30" rx="15" fill="#FFF" stroke="#DEDDDA"/>
+  <circle cx="789" cy="55" r="5" fill="#66800B"/>
+  <text x="802" y="60" font-size="13" fill="#241F31">Live · updated 40 s ago</text>
+
+  <!-- KPI tiles -->
+  <g font-size="13" fill="#5E5C64">
+    <rect x="30" y="110" width="220" height="96" rx="12" fill="#FFF"/>
+    <text x="50" y="136">Agents running</text>
+    <text x="50" y="174" font-size="30" font-weight="700" fill="#000">5 / 7</text>
+    <text x="50" y="194" font-size="12">2 busy · 1 paused</text>
+
+    <rect x="270" y="110" width="220" height="96" rx="12" fill="#FFF"/>
+    <text x="290" y="136">Open work</text>
+    <text x="290" y="174" font-size="30" font-weight="700" fill="#000">23</text>
+    <text x="290" y="194" font-size="12">14 issues · 9 PRs · 4 held</text>
+
+    <rect x="510" y="110" width="220" height="96" rx="12" fill="#FFF"/>
+    <text x="530" y="136">Merged this week</text>
+    <text x="530" y="174" font-size="30" font-weight="700" fill="#000">41</text>
+    <text x="530" y="194" font-size="12">5.9 per day</text>
+
+    <rect x="750" y="110" width="220" height="96" rx="12" fill="#FFF"/>
+    <text x="770" y="136">Autonomy</text>
+    <text x="770" y="174" font-size="30" font-weight="700" fill="#000">L4 · busy</text>
+    <text x="770" y="194" font-size="12">Security-Aware · level 4 of 6</text>
+  </g>
+
+  <!-- PR throughput -->
+  <rect x="30" y="226" width="600" height="230" rx="12" fill="#FFF"/>
+  <text x="50" y="256" font-size="16" font-weight="700" fill="#000">PR throughput, last 7 days</text>
+  <g font-size="12" fill="#5E5C64">
+    <rect x="50" y="268" width="10" height="10" fill="#205EA6"/><text x="65" y="277">opened by Hive's agents</text>
+    <rect x="210" y="268" width="10" height="10" fill="#66800B"/><text x="225" y="277">merged</text>
+    <rect x="285" y="268" width="10" height="10" fill="#AF3029"/><text x="300" y="277">closed unmerged</text>
+  </g>
+  <line x1="50" y1="416" x2="480" y2="416" stroke="#DEDDDA"/>
+  <g>
+    <!-- day groups: opened, merged, closed; 13 px per PR -->
+    <g transform="translate(58,0)"><rect y="338" width="14" height="78" fill="#205EA6"/><rect x="16" y="351" width="14" height="65" fill="#66800B"/><rect x="32" y="403" width="14" height="13" fill="#AF3029"/></g>
+    <g transform="translate(118,0)"><rect y="312" width="14" height="104" fill="#205EA6"/><rect x="16" y="325" width="14" height="91" fill="#66800B"/></g>
+    <g transform="translate(178,0)"><rect y="351" width="14" height="65" fill="#205EA6"/><rect x="16" y="338" width="14" height="78" fill="#66800B"/><rect x="32" y="390" width="14" height="26" fill="#AF3029"/></g>
+    <g transform="translate(238,0)"><rect y="299" width="14" height="117" fill="#205EA6"/><rect x="16" y="312" width="14" height="104" fill="#66800B"/><rect x="32" y="403" width="14" height="13" fill="#AF3029"/></g>
+    <g transform="translate(298,0)"><rect y="325" width="14" height="91" fill="#205EA6"/><rect x="16" y="338" width="14" height="78" fill="#66800B"/><rect x="32" y="403" width="14" height="13" fill="#AF3029"/></g>
+    <g transform="translate(358,0)"><rect y="364" width="14" height="52" fill="#205EA6"/><rect x="16" y="377" width="14" height="39" fill="#66800B"/></g>
+    <g transform="translate(418,0)"><rect y="338" width="14" height="78" fill="#205EA6"/><rect x="16" y="338" width="14" height="78" fill="#66800B"/><rect x="32" y="403" width="14" height="13" fill="#AF3029"/></g>
+  </g>
+  <g font-size="12" fill="#5E5C64" text-anchor="middle">
+    <text x="81" y="434">Mon</text><text x="141" y="434">Tue</text><text x="201" y="434">Wed</text><text x="261" y="434">Thu</text>
+    <text x="321" y="434">Fri</text><text x="381" y="434">Sat</text><text x="441" y="434">Sun</text>
+  </g>
+  <g font-size="12" fill="#5E5C64">
+    <text x="505" y="310">Median time to merge</text><text x="505" y="332" font-size="20" font-weight="700" fill="#000">3.2 h</text>
+    <text x="505" y="360">p90 time to merge</text><text x="505" y="382" font-size="20" font-weight="700" fill="#000">19 h</text>
+    <text x="505" y="410">Merge ratio</text><text x="505" y="432" font-size="20" font-weight="700" fill="#000">87 %</text>
+  </g>
+
+  <!-- Who merged the work -->
+  <rect x="650" y="226" width="320" height="230" rx="12" fill="#FFF"/>
+  <text x="670" y="256" font-size="16" font-weight="700" fill="#000">Who merged the work</text>
+  <text x="670" y="290" font-size="26" font-weight="700" fill="#000">63 %</text>
+  <text x="735" y="290" font-size="12" fill="#5E5C64">by Hive, last 7 days</text>
+  <g>
+    <!-- 100 px tall, Hive (honey) bottom, person middle, other top -->
+    <g transform="translate(675,316)"><rect width="24" height="10" fill="#B7B5AC"/><rect y="10" width="24" height="30" fill="#205EA6"/><rect y="40" width="24" height="60" fill="#AD8301"/></g>
+    <g transform="translate(713,316)"><rect width="24" height="5" fill="#B7B5AC"/><rect y="5" width="24" height="25" fill="#205EA6"/><rect y="30" width="24" height="70" fill="#AD8301"/></g>
+    <g transform="translate(751,316)"><rect width="24" height="5" fill="#B7B5AC"/><rect y="5" width="24" height="40" fill="#205EA6"/><rect y="45" width="24" height="55" fill="#AD8301"/></g>
+    <g transform="translate(789,316)"><rect width="24" height="5" fill="#B7B5AC"/><rect y="5" width="24" height="30" fill="#205EA6"/><rect y="35" width="24" height="65" fill="#AD8301"/></g>
+    <g transform="translate(827,316)"><rect width="24" height="5" fill="#B7B5AC"/><rect y="5" width="24" height="45" fill="#205EA6"/><rect y="50" width="24" height="50" fill="#AD8301"/></g>
+    <g transform="translate(865,316)"><rect width="24" height="5" fill="#B7B5AC"/><rect y="5" width="24" height="20" fill="#205EA6"/><rect y="25" width="24" height="75" fill="#AD8301"/></g>
+    <g transform="translate(903,316)"><rect width="24" height="5" fill="#B7B5AC"/><rect y="5" width="24" height="35" fill="#205EA6"/><rect y="40" width="24" height="60" fill="#AD8301"/></g>
+  </g>
+  <g font-size="11" fill="#5E5C64" text-anchor="middle">
+    <text x="687" y="430">M</text><text x="725" y="430">T</text><text x="763" y="430">W</text><text x="801" y="430">T</text><text x="839" y="430">F</text><text x="877" y="430">S</text><text x="915" y="430">S</text>
+  </g>
+  <g font-size="11" fill="#5E5C64">
+    <rect x="670" y="440" width="9" height="9" fill="#AD8301"/><text x="683" y="448">Hive</text>
+    <rect x="720" y="440" width="9" height="9" fill="#205EA6"/><text x="733" y="448">a person</text>
+    <rect x="790" y="440" width="9" height="9" fill="#B7B5AC"/><text x="803" y="448">other automation</text>
+  </g>
+
+  <!-- Sparklines -->
+  <rect x="30" y="476" width="460" height="150" rx="12" fill="#FFF"/>
+  <text x="50" y="504" font-size="16" font-weight="700" fill="#000">Queue, last 7 days</text>
+  <text x="470" y="504" font-size="12" fill="#5E5C64" text-anchor="end">now 23 · min 12 · max 31</text>
+  <line x1="80" y1="600" x2="460" y2="600" stroke="#DEDDDA"/>
+  <polyline points="80,570 107,558 134,564 161,549 189,537 216,546 243,555 270,564 297,576 324,585 351,594 379,582 406,573 433,567 460,561" fill="none" stroke="#0461BE" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="460" cy="561" r="4" fill="#0461BE"/>
+  <text x="50" y="616" font-size="11" fill="#77767B">issues + PRs waiting, hourly</text>
+
+  <rect x="510" y="476" width="460" height="150" rx="12" fill="#FFF"/>
+  <text x="530" y="504" font-size="16" font-weight="700" fill="#000">Tokens, last 24 h</text>
+  <text x="950" y="504" font-size="12" fill="#5E5C64" text-anchor="end">2.1 M total · 74 % cache reads</text>
+  <line x1="560" y1="600" x2="940" y2="600" stroke="#DEDDDA"/>
+  <path d="M560,600 L560,586.5 587,577.5 614,564 641,573 669,559.5 696,546 723,555 750,568.5 777,582 804,586.5 831,573 859,550.5 886,537 913,559.5 940,573 L940,600 Z" fill="#0461BE" fill-opacity="0.12"/>
+  <polyline points="560,586.5 587,577.5 614,564 641,573 669,559.5 696,546 723,555 750,568.5 777,582 804,586.5 831,573 859,550.5 886,537 913,559.5 940,573" fill="none" stroke="#0461BE" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="940" cy="573" r="4" fill="#0461BE"/>
+  <text x="530" y="616" font-size="11" fill="#77767B">all agents, 5-minute points</text>
+
+  <text x="30" y="660" font-size="12" fill="#5E5C64">Hive is an open-source agent orchestrator (github.com/hivecommons/hive). How it works on this repo: docs/multi-agent.md.</text>
+  <text x="30" y="678" font-size="12" fill="#5E5C64">Cost, repository and agent detail are deliberately not published. Each chart has a "Show data" table below it.</text>
+</svg>
