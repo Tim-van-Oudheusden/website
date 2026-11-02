@@ -3,9 +3,11 @@ import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bu
 import { act, createElement } from "react";
 import { MemoryRouter } from "react-router";
 
+import type { HiveMetricsResponse } from "shared";
+
 import { AgenticPage } from "../../../../../../front-end/src/features/agentic/pages/agentic-page";
 import type { FakeMount } from "../../../../src/test/dom-harness";
-import { initFakeDomHarness, jsonResponse, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import { initFakeDomHarness, jsonResponse, mountIntoBody, routeFetch, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import type { FakeElement } from "../../../../src/test/fake-dom";
 import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
@@ -34,12 +36,14 @@ function byName(root: FakeElement, nodeName: string): FakeElement[] {
   return queryFakeElements(root, (el) => el.nodeName === nodeName);
 }
 
+/** The strata: every section headed by one h2, except the live metrics section that follows them. */
 function strataSections(page: FakeMount): FakeElement[] {
-  return byName(page.container, "SECTION").filter((section) => byName(section, "H2").length === 1);
+  return byName(page.container, "SECTION")
+    .filter((section) => byName(section, "H2").length === 1 && section.getAttribute("id") !== "metrics");
 }
 
 describe("AgenticPage strata", () => {
-  test("lists the six strata as h2 headings in rim-to-bedrock order", () => {
+  test("lists the six strata as h2 headings in rim-to-bedrock order, then the metrics heading", () => {
     const page = mountPage();
 
     try {
@@ -50,6 +54,7 @@ describe("AgenticPage strata", () => {
         "Quality",
         "Delivery",
         "Agents · Hive",
+        "The hive, live",
       ]);
     } finally {
       unmountFakeDomRoot(page);
@@ -130,6 +135,31 @@ describe("AgenticPage strata", () => {
 
       expect(byName(page.container, "A")[0]?.getAttribute("href")).toBe("/projects/minimal-android-launcher");
       expect(text.indexOf("Minimal Android Launcher")).toBeLessThan(text.indexOf("Content"));
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("ends with the live Hive metrics section, polled from the metrics route, after the strata", async () => {
+    const requested = routeFetch({
+      "/api/hive/metrics": () => Promise.resolve(jsonResponse({
+        state: "unavailable",
+        fetchedAt: null,
+        metrics: null,
+      } satisfies HiveMetricsResponse)),
+    });
+    const page = mountIntoBody(createElement(MemoryRouter, null, createElement(AgenticPage)));
+
+    try {
+      await act(async () => {
+        await settleMicrotasks();
+      });
+
+      const metrics = byName(page.container, "SECTION").find((section) => section.getAttribute("id") === "metrics");
+
+      expect(requested).toContain("/api/hive/metrics");
+      expect(byName(page.container, "H2").map((h2) => h2.textContent).at(-1)).toBe("The hive, live");
+      expect(metrics?.textContent).toContain("The live numbers are not available right now");
     } finally {
       unmountFakeDomRoot(page);
     }
