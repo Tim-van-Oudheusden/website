@@ -61,11 +61,12 @@ Colour tokens live in [`front-end/src/index.css`](front-end/src/index.css). Comp
 - the neutral ramp, lightest to darkest: `--paper-1` … `--paper-5`, then `--ink-1` … `--ink-5`. Dark mode swaps in the
   Flexoki ramp at matching lightness, so `dark:text-(--paper-1)` stays the lightest step;
 - site roles with one job each: `--site-page-bg`, `--site-section-well-bg`, `--site-accent` (accent text, rings and
-  indicators), `--site-toc-inactive` and `--site-chart-*` (chart series on the Agentic page: the accent, two neutral
-  steps and the Flexoki accents, 600 in light mode and 400 in dark mode, each at least 3:1 on the well).
-  `--site-chart-hive` is the canyon's honey bedrock carried into the live metrics: the "Agents running" tile and the
-  contributor bars. Dark mode uses the bedrock itself (Flexoki yellow-500, `#be9207`, 5.2:1 on the well); light mode
-  uses yellow-600 (`#ad8301`, 3.5:1), because yellow-500 is 2.9:1 on white. It is a graphics colour, not a text colour.
+  indicators) and `--site-toc-inactive`.
+
+The Agentic page (`front-end/src/features/agentic/`) draws on the full Flexoki palette, `--flexoki-*` in `flexoki.css`,
+with Flexoki yellow (honey) as its one strong accent for borders, charts and glow; glow tints are derived from the
+accent's lighter steps. Its stale status uses orange so it never reads as the accent. The top bar is transparent on this
+page so the page's backdrop runs to the top of the window.
 
 Every design change is checked in both light and dark mode, and every text and UI pair must meet WCAG 2.2 AA: 4.5:1 for
 body text, 3:1 for large text, UI boundaries and focus rings.

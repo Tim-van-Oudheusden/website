@@ -17,20 +17,6 @@ export function formatClock(iso: string, timeZone: string | null): string {
   return new Intl.DateTimeFormat("en-GB", { ...options, timeZone: timeZone ?? undefined }).format(Date.parse(iso));
 }
 
-/** "2 Nov 2026, 14:05 UTC": the absolute time behind a relative one. */
-export function formatDateTime(iso: string, timeZone: string | null): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-    timeZoneName: "short",
-    timeZone: timeZone ?? undefined,
-  }).format(Date.parse(iso));
-}
-
 /** "40 s ago", "3 min ago", "2 h ago", "4 d ago"; never negative. */
 export function formatAgo(iso: string, now: number): string {
   const elapsed = Math.max(0, now - Date.parse(iso));
@@ -62,6 +48,20 @@ export function formatHour(epochMs: number, timeZone: string | null): string {
   const options: Intl.DateTimeFormatOptions = { weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" };
 
   return new Intl.DateTimeFormat("en-GB", { ...options, timeZone: timeZone ?? undefined }).format(epochMs).replace(",", "");
+}
+
+/** "Sun 1 Nov" for the day an hourly bucket falls on. */
+export function formatDay(epochMs: number, timeZone: string | null): string {
+  const options: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeric", month: "short" };
+
+  return new Intl.DateTimeFormat("en-GB", { ...options, timeZone: timeZone ?? undefined }).format(epochMs).replace(",", "");
+}
+
+/** The hour of day, 0 to 23, an instant falls in. */
+export function hourOfDay(epochMs: number, timeZone: string | null): number {
+  const options: Intl.DateTimeFormatOptions = { hour: "numeric", hourCycle: "h23" };
+
+  return Number(new Intl.DateTimeFormat("en-GB", { ...options, timeZone: timeZone ?? undefined }).format(epochMs));
 }
 
 /** A run time: "90 s", "6 min", "1.5 h". */
