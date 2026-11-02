@@ -15,9 +15,9 @@ export function CanyonRim({ projects }: { projects: readonly ProjectFrontmatter[
   }
 
   return (
-    <div className="rounded-xl border bg-card p-6 text-card-foreground shadow-sm sm:p-8">
+    <div className="rounded-xl border bg-card p-4 text-card-foreground shadow-sm sm:p-8">
       <p className="text-lg font-semibold tracking-tight">{SITE_NAME}</p>
-      <ul aria-label="Projects" className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-base">
+      <ul aria-label="Projects" className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm sm:mt-3 sm:gap-y-2 sm:text-base">
         {projects.map((project) => (
           <li key={project.slug}>
             <Link to={`/projects/${project.slug}`} className="underline underline-offset-4 hover:text-(--site-accent)">

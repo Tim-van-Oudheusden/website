@@ -236,6 +236,35 @@ describe("AgenticPage canyon", () => {
     }
   });
 
+  test("marks the cards of strata the water has passed, so phones can clear them from above the scene", async () => {
+    const page = mountPage();
+
+    try {
+      const track = byName(page.container, "SECTION").find((section) => section.getAttribute("aria-label") === "How this site is built");
+
+      if (track === undefined) {
+        throw new Error("No canyon track on the page");
+      }
+
+      // 60 % of the way down a 5,600 px track: four strata revealed, Quality the latest.
+      const top = -0.6 * (5600 - window.innerHeight);
+
+      track.getBoundingClientRect = () => ({
+        left: 0, top, right: 1280, bottom: top + 5600, width: 1280, height: 5600, x: 0, y: top,
+      });
+
+      await settleScene();
+
+      const passed = queryFakeElements(track, (el) => el.getAttribute("data-passed") !== null)
+        .map((slot) => slot.getAttribute("data-passed"));
+
+      // Behind: the rim, Content, Interface, API. Current: Quality. Ahead: Delivery, Agents · Hive.
+      expect(passed).toEqual(["true", "true", "true", "true", "false", "false", "false"]);
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
   test("jumps to a deep-linked stratum once the page has rendered", () => {
     window.location.hash = "#quality";
 
