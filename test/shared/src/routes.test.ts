@@ -34,6 +34,16 @@ describe("shared route constants", () => {
   test("ROUTES.ROOT is /", () => {
     expect(ROUTES.ROOT).toBe("/");
   });
+
+  test("ROUTES lists the Hive metrics route", () => {
+    expect(Object.values(ROUTES)).toContain("/hive/metrics");
+  });
+
+  test("ROUTES values are unique", () => {
+    const paths = Object.values(ROUTES);
+
+    expect(new Set(paths).size).toBe(paths.length);
+  });
 });
 
 describe("shared network constants", () => {
