@@ -28,21 +28,28 @@ Voice rules from `BRANDING.md` §5 apply to every label: name real tools and fil
 
 ## The scene
 
-A cartoon Grand Canyon seen head-on, with the sun sitting in the V of the gorge.
+A Grand Canyon seen head-on and built like a layered paper-cut diorama, with the sun sitting in the V of the gorge.
+The final frames are in [`docs/assets/agentic/round-2/`](../../assets/agentic/round-2/README.md) (see "Fidelity and
+design rounds").
 
 | Element | Look | Changes with scroll progress `p` (0 → 1) |
 | --- | --- | --- |
-| Sky | Flat vertical gradient | Golden hour (`p = 0`) → sunset (`≈ 0.45`) → dusk (`≈ 0.75`) → night (`1`) |
-| Sun | Flat disc, 3 px ink outline, soft round glow, short rays at golden hour only | Sinks from mid-sky into the gorge and below the floor by `p ≈ 0.8`; yellow → orange → red; glow shrinks |
-| Stars, moon | Small paper-white dots, crescent moon | Fade in from `p ≈ 0.6`; moon from `p ≈ 0.8` |
-| Canyon walls | Two mirrored stepped walls, one terrace ledge per stratum, thick ink outline, flat bands with a lighter streak per band | Static shape; a night tint overlay fades in with `p` |
-| Strata | One horizontal band per pillar layer (see below), rim to bedrock | Each is "revealed" when the water drops below it |
-| Water | Flooded gorge, wavy ink-outlined surface, slightly translucent so submerged strata show faintly | Surface drops from the rim (`p = 0`) to just above the floor (`p = 1`); colour darkens with the sky |
-| Tablets | One paper tablet per stratum carrying the layer name | Slides/fades in when its stratum is revealed |
-| Bedrock | Honey-coloured band with an outlined hexagon pattern | Last to appear: the Hive layer |
+| Sky | Stepped bands of cut paper with gently wavy edges, one Flexoki step per band | Golden hour (`p = 0`) → sunset (`≈ 0.45`) → dusk (`≈ 0.75`) → night (`1`) |
+| Sun | Stacked paper discs (glow rings, disc, highlight), paper ray wedges at golden hour only | Sinks from mid-sky into the gorge and behind the far gorge floor by `p ≈ 0.7`; yellow → orange → red; glow shrinks |
+| Stars, moon | Small paper-white dots and four-point sparkles, a paper crescent on two halo discs | Fade in from `p ≈ 0.6`; moon from `p ≈ 0.8` |
+| Depth planes | Three far ridgelines, mid buttes, two receding inner gorges, foreground outcrops | Each moves at its own rate with `p` (parallax) |
+| Rim cap | A pale caprock band above stratum 1, carrying a rope bridge with the site name and the project flags | Never under water, so it is visible from `p = 0` |
+| Canyon walls | Two stepped walls, one ledge per stratum; each stratum a paper strip with an overhanging lighter lip, a darker bedding strip, arched alcoves and fissures | Static shape; sunset and night tint overlays fade in with `p` |
+| Strata | One horizontal band per pillar layer (see below), rim to bedrock; one hoodoo pillar per pillar item on its ledge | Each is "revealed" when the water drops below it |
+| Water | Stacked translucent vellum strips with wavy edges, a torn foam edge at the walls; the drowned strata edges show through | Surface drops from the foot of the rim cap (`p = 0`) to just above the floor (`p = 1`); colour darkens with the sky; the sun's or moon's reflection is a broken column of paper slips |
+| Tablets | One pinned paper tag per stratum carrying the layer name | Slides/fades in when its stratum is revealed |
+| Bedrock | Honey-coloured band of cut hexagon tiles with a lit corner each | Last to appear: the Hive layer |
 
-Cartoon style means: flat fills, no gradients on solid objects, a constant 3 px ink outline (`#100F0F`, Flexoki
-`black`) with round joins, and one highlight streak per shape. No textures, no blur filters, no photographs.
+Paper-cut style means: every shape is a flat sheet with a slightly irregular, hand-cut edge and its own offset
+shadow (a copy of the shape in `#100F0F`, Flexoki `black`, at 12–40 % opacity, shifted a few pixels; no `filter`).
+Depth comes from stacked sheets and their shadows, not from outlines: there are no ink outlines. No gradients on solid
+objects, no textures, no blur filters, no photographs. Round 2 (#1052) replaced the earlier "cartoon style" (3 px
+ink outline) after Tim picked this direction in round 1 (#1051).
 
 Ambient, time-based loops (all `motion-safe:` only): the water surface drifts sideways (one wave length per ~6 s), the
 sun glow breathes (~4 s), stars twinkle at staggered delays. Nothing loops faster than once per 2 s and nothing flashes
@@ -56,20 +63,27 @@ The scene uses Flexoki's accent ramps, which the site does not use for surfaces 
 
 | Role | Flexoki token | Hex |
 | --- | --- | --- |
-| Golden sky top → horizon | blue-300 → blue-150 → yellow-150 | `#66A0C8` → `#ABCFE2` → `#F1D67E` |
-| Sunset sky | purple-600 → magenta-400 → orange-300 | `#5E409D` → `#CE5D97` → `#EC8B49` |
-| Night sky | black → blue-900 → blue-850 | `#100F0F` → `#12253B` → `#133051` |
+| Golden sky bands, top → horizon | blue-300 → blue-200 → blue-150 → blue-100 → yellow-50 → yellow-100 → yellow-150 | `#66A0C8` → `#92BFDB` → `#ABCFE2` → `#C6DDE8` → `#FAEEC6` → `#F6E2A0` → `#F1D67E` |
+| Sunset sky bands | purple-600 → purple-500 → magenta-500 → magenta-400 → red-300 → orange-300 → orange-200 | `#5E409D` → `#735EB5` → `#B74583` → `#CE5D97` → `#E8705F` → `#EC8B49` → `#F9AE77` |
+| Night sky bands | black → blue-950 → blue-900 → blue-850 | `#100F0F` → `#101A24` → `#12253B` → `#133051` |
 | Sun (golden → set) | yellow-200 → orange-300 → red-400 | `#ECCB60` → `#EC8B49` → `#D14D41` |
-| Strata, rim → deep | orange-300, orange-500, red-400, red-600, magenta-700 | `#EC8B49`, `#CB6120`, `#D14D41`, `#AF3029`, `#87285E` |
-| Bedrock (Hive) | yellow-500, hexagons yellow-700 | `#BE9207`, `#8E6B01` |
-| Water (day → night) | blue-400 → blue-500 → blue-800 | `#4385BE` → `#3171B2` → `#163B66` |
-| Ink outline, stars, tablets | black, paper | `#100F0F`, `#FFFCF0` |
+| Rim cap | orange-150, layer orange-200, lit edge orange-100 | `#FCC192`, `#F9AE77`, `#FED3AF` |
+| Strata, rim → deep | orange-300, orange-500, red-400, red-600, magenta-700; each with a lighter lip (one step lighter) and darker recesses | `#EC8B49`, `#CB6120`, `#D14D41`, `#AF3029`, `#87285E` |
+| Bedrock (Hive) | yellow-500, tiles yellow-400, lit corners yellow-200 | `#BE9207`, `#D0A215`, `#ECCB60` |
+| Water strips (golden, surface → deep) | blue-150 → blue-300 → blue-400 → blue-500 → blue-600 | `#ABCFE2` → `#66A0C8` → `#4385BE` → `#3171B2` → `#205EA6` |
+| Water strips (sunset) | magenta-300 → blue-600 → purple-700 → purple-800 | `#E47DA8` → `#205EA6` → `#4F3685` → `#3C2A62` |
+| Water strips (night) | blue-800 → blue-900 → blue-950 | `#163B66` → `#12253B` → `#101A24` |
+| Project flags (paper text) | blue-600, green-700, purple-600 | `#205EA6`, `#536907`, `#5E409D` |
+| Paper shadows, site-name sign | black | `#100F0F` |
+| Stars, tablets, sign lettering | paper | `#FFFCF0` |
 
 The scene is the same in light and dark mode: it carries its own sky. Everything that is not the scene (top bar, text
 cards, the fade into the next section) uses the existing theme tokens, so both themes still apply around it.
 
-Tablet text is `#100F0F` on `#FFFCF0` (well above 4.5:1). Any copy placed over the scene sits on a solid
-`--card` / `--card-foreground` surface, never directly on the sky, so contrast does not depend on `p`.
+Tablet text is `#100F0F` on `#FFFCF0` (18.6:1), and the site-name sign is the reverse. Flag text is paper on blue-600
+(6.4:1), green-700 (6.0:1) and purple-600 (7.6:1); green-600 would only reach 4.4:1. The sign and flags sit above
+the sunset and night tints, so their contrast does not depend on `p`. Any other copy placed over the scene sits on a
+solid `--card` / `--card-foreground` surface, never directly on the sky.
 
 ### Fidelity and design rounds
 
@@ -83,6 +97,23 @@ story only**. The final scene must be visibly richer, so its art is settled in d
 | 1. Art direction | 2–3 distinct directions, each drawn as golden hour, sunset and night frames at desktop size (inline SVG + CSS, the same constraints as production) | Which direction to develop |
 | 2. Refinement | The chosen direction at desktop and phone sizes, with all six strata, pillars, tablets and the rim projects; light and dark page chrome around it | Final art, sign-off of the frames |
 | 3. Motion study | A throwaway scroll prototype of the chosen art (not merged into the app) with the real `--p` mechanics, ambient loops and the reduced-motion frame | Timing, easing and whether it holds 60 fps on a phone |
+
+**Round 1 result (#1051, frames in [`docs/assets/agentic/round-1/`](../../assets/agentic/round-1/README.md)):** Tim
+picked direction B, the paper-cut diorama.
+
+**Round 2 result (#1052, frames in [`docs/assets/agentic/round-2/`](../../assets/agentic/round-2/README.md)):** B at
+desktop (1440×900) and phone (390×844) sizes for golden hour, sunset and night, plus the desktop sunset frame inside
+the light and dark page chrome. The README there lists the layer ids, the parallax rate per layer, the `--p`
+crossfade and transform map and the node counts (about 410–425 per frame; about 670 estimated for the production
+scene with every time-of-day variant). Decisions recorded there:
+
+- **Golden hour and the waterline:** the rim is a separate rim cap above stratum 1 that is never part of the reveal.
+  At `p = 0` the water sits at the cap's foot (the top of stratum 1), so the rim, the site name, the flags and
+  Content's hoodoos are visible from the first frame; the calm water mirrors the rim skyline until `p ≈ 0.3`. The
+  waterline stays `top of stratum 1 + 6 × band height × p` and the reveal rule `(i + 0.5) / 6` is unchanged.
+- **Layout:** on desktop the gorge axis sits at x = 880 of 1440 and every tablet is on the right wall, so nothing
+  carrying meaning sits under the `max-w-md` card column; on phone the strata, tablets and rim fit above the
+  bottom third, where the cards sit.
 
 What "richer" should explore, within the performance rules in "Scroll mechanics":
 
@@ -153,7 +184,9 @@ flowchart LR
 - **Reveal rule:** stratum `i` (0-based, rim first) is revealed when `p ≥ (i + 0.5) / 6`, i.e. once the waterline
   has passed the middle of that band. The water's position is `p` itself, so text, tablet and waterline stay in sync.
 - **Compositor-only per-frame work.** Colour changes are done as opacity crossfades between pre-painted layers
-  (four sky layers, two sun discs, a night-tint overlay on the walls, two water layers), and movement as `transform`.
+  (four sky layers, the sun discs, colour variants of the ridges, inner gorges and water, sunset and night tint
+  overlays on the walls), and movement as `transform`. The full layer map is in
+  `docs/assets/agentic/round-2/README.md`.
   No per-frame change to `fill`, `background`, `filter`, layout or SVG geometry. Ambient loops also animate only
   `transform` and `opacity`.
 - **Why not CSS scroll-driven animations (`animation-timeline: scroll()`):** MDN marks the feature as not Baseline
