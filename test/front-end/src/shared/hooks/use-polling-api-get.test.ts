@@ -1,4 +1,5 @@
-import { afterAll, afterEach, beforeAll, describe, expect, jest, test } from "bun:test";
+import type { Mock } from "bun:test";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, spyOn, test } from "bun:test";
 
 import { act, createElement } from "react";
 
@@ -18,12 +19,89 @@ interface Metrics {
 const ORIGINAL_FETCH = globalThis.fetch;
 const MINUTE = 60_000;
 
+interface ScheduledTimer {
+  at: number;
+  callback: () => void;
+}
+
+interface TimerWindow {
+  setTimeout: (callback: () => void, ms: number) => number;
+  clearTimeout: (id: number) => void;
+}
+
+/**
+ * A hand-driven clock behind the fake window's `setTimeout`/`clearTimeout` and
+ * `Date.now`. Bun's own fake timers are avoided here: in CI their pending
+ * minute-long timers stalled the test's awaits until each test timed out.
+ */
+interface ManualClock {
+  advance: (ms: number) => void;
+  restore: () => void;
+}
+
+function installManualClock(): ManualClock {
+  const timerWindow = window as unknown as TimerWindow;
+  const original: TimerWindow = { setTimeout: timerWindow.setTimeout, clearTimeout: timerWindow.clearTimeout };
+  const timers = new Map<number, ScheduledTimer>();
+  let now = Date.now();
+  let nextId = 0;
+  const nowSpy: Mock<() => number> = spyOn(Date, "now").mockImplementation(() => now);
+
+  timerWindow.setTimeout = (callback, ms) => {
+    nextId += 1;
+    timers.set(nextId, { at: now + ms, callback });
+
+    return nextId;
+  };
+
+  timerWindow.clearTimeout = (id) => {
+    timers.delete(id);
+  };
+
+  return {
+    advance: (ms) => {
+      const end = now + ms;
+
+      for (;;) {
+        let due: [number, ScheduledTimer] | null = null;
+
+        for (const entry of timers) {
+          if (entry[1].at <= end && (due === null || entry[1].at < due[1].at)) {
+            due = entry;
+          }
+        }
+
+        if (due === null) {
+          break;
+        }
+
+        timers.delete(due[0]);
+        now = due[1].at;
+        due[1].callback();
+      }
+
+      now = end;
+    },
+    restore: () => {
+      timerWindow.setTimeout = original.setTimeout;
+      timerWindow.clearTimeout = original.clearTimeout;
+      nowSpy.mockRestore();
+    },
+  };
+}
+
+let clock: ManualClock;
+
 beforeAll(async () => {
   await initFakeDomHarness();
 });
 
+beforeEach(() => {
+  clock = installManualClock();
+});
+
 afterEach(() => {
-  jest.useRealTimers();
+  clock.restore();
   setFakeDocumentVisibility("visible");
   globalThis.fetch = ORIGINAL_FETCH;
 });
@@ -63,10 +141,10 @@ async function settle(): Promise<void> {
   });
 }
 
-/** Advance the fake clock and let any fetch it started settle. */
+/** Advance the manual clock and let any fetch it started settle. */
 async function advance(ms: number): Promise<void> {
   act(() => {
-    jest.advanceTimersByTime(ms);
+    clock.advance(ms);
   });
 
   await settle();
@@ -113,7 +191,6 @@ describe("usePollingApiGet polling", () => {
   test("fetches on mount, then again every 60 s while the tab is visible", async () => {
     const requested = countingFetch();
 
-    jest.useFakeTimers();
     const probe = mountProbe();
 
     try {
@@ -146,7 +223,6 @@ describe("usePollingApiGet polling", () => {
       ),
     });
 
-    jest.useFakeTimers();
     const probe = mountProbe();
 
     try {
@@ -163,7 +239,6 @@ describe("usePollingApiGet polling", () => {
   test("does not poll while the tab is hidden", async () => {
     const requested = countingFetch();
 
-    jest.useFakeTimers();
     const probe = mountProbe();
 
     try {
@@ -183,7 +258,6 @@ describe("usePollingApiGet polling", () => {
   test("fetches at once when the tab comes back after more than 60 s, then resumes polling", async () => {
     const requested = countingFetch();
 
-    jest.useFakeTimers();
     const probe = mountProbe();
 
     try {
@@ -213,7 +287,6 @@ describe("usePollingApiGet polling", () => {
   test("a tab hidden only briefly does not fetch at once and keeps the 60 s cadence", async () => {
     const requested = countingFetch();
 
-    jest.useFakeTimers();
     const probe = mountProbe();
 
     try {
@@ -243,7 +316,6 @@ describe("usePollingApiGet polling", () => {
   test("stops polling and listening for visibility on unmount", async () => {
     const requested = countingFetch();
 
-    jest.useFakeTimers();
     const probe = mountProbe();
 
     await settle();
@@ -274,7 +346,6 @@ describe("usePollingApiGet polling", () => {
       },
     });
 
-    jest.useFakeTimers();
     const probe = mountProbe();
 
     try {
