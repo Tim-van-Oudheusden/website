@@ -61,8 +61,8 @@ const MUTANTS: readonly ShellMutant[] = [
   {
     name: "a failed replay only rolls back images that had a local :latest before the pull",
     file: UPDATE_SCRIPT,
-    from: `  if [[ -n "\${before[$name]}" ]]; then\n    restore_rollback "$name"\n    reject "$name"`,
-    to: `  if true; then\n    restore_rollback "$name"\n    reject "$name"`,
+    from: `    if [[ -n "\${before[$name]}" ]]; then\n      restore_rollback "$name"\n      reject "$name"`,
+    to: `    if true; then\n      restore_rollback "$name"\n      reject "$name"`,
     killedBy: UPDATE_TEST,
   },
   {

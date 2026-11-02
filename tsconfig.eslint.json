@@ -9,6 +9,6 @@
     "allowJs": true,
     "checkJs": true
   },
-  "include": ["playwright.config.ts", "scripts/**/*.ts", "stryker/*.mjs"],
+  "include": ["playwright.config.ts", "scripts/**/*.ts", "deploy/**/*.ts", "stryker/*.mjs"],
   "exclude": []
 }

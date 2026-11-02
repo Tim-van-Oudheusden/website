@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 const rootPath = resolve(import.meta.dirname, "../../..");
 const scriptPath = resolve(rootPath, "deploy/systemd/website-update.sh");
@@ -15,7 +15,13 @@ const BACK_HEALTH = "http://127.0.0.1:8301/health";
 let stubDir: string;
 let imageDir: string;
 let registryDir: string;
+let imageFsDir: string;
+let repoDir: string;
+let configDir: string;
 let callLog: string;
+let replayLog: string;
+
+const prodYaml = readFileSync(resolve(rootPath, "deploy/kube/prod.yaml"), "utf8");
 
 function writeStub(name: string, body: string): void {
   const stubPath = join(stubDir, name);
@@ -45,6 +51,25 @@ function localDigest(ref: string): string | null {
   return existsSync(file) ? readFileSync(file, "utf8") : null;
 }
 
+/** A file inside the image with `digest`, as `podman create` + `podman cp` would see it. */
+function setImageFile(digest: string, path: string, content: string): void {
+  const file = join(imageFsDir, digest.replaceAll(":", "_"), path);
+
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, content);
+}
+
+function installedManifest(): string {
+  return readFileSync(join(repoDir, "deploy/kube/prod.yaml"), "utf8");
+}
+
+/** The manifest the pod was replayed on, once per `systemctl restart`. */
+function replayedManifests(): string[] {
+  return existsSync(replayLog) ? readFileSync(replayLog, "utf8").split("\0").filter((entry) => entry !== "") : [];
+}
+
+const IMAGE_MANIFEST = "/opt/website/deploy/kube/prod.yaml";
+
 interface ScriptRun {
   status: number | null;
   calls: string[];
@@ -69,6 +94,8 @@ function runScript(healthy: readonly string[], unstartable: readonly string[] = 
       STUB_HEALTHY: healthy.join(" "),
       STUB_UNSTARTABLE: unstartable.join(" "),
       XDG_STATE_HOME: join(stubDir, "state"),
+      XDG_CONFIG_HOME: configDir,
+      WEBSITE_REPO: repoDir,
     },
   });
   const calls = readFileSync(callLog, "utf8").trim().split("\n").filter((call) => call !== "");
@@ -84,11 +111,23 @@ beforeEach(() => {
   stubDir = mkdtempSync(join(tmpdir(), "website-update-script-"));
   imageDir = join(stubDir, "images");
   registryDir = join(stubDir, "registry");
+  imageFsDir = join(stubDir, "imagefs");
+  repoDir = join(stubDir, "repo");
+  configDir = join(stubDir, "config");
   callLog = join(stubDir, "calls.log");
+  replayLog = join(stubDir, "replays.log");
   mkdirSync(imageDir);
   mkdirSync(registryDir);
+  mkdirSync(imageFsDir);
+  mkdirSync(join(repoDir, "deploy/kube"), { recursive: true });
+  mkdirSync(join(repoDir, "deploy/systemd"), { recursive: true });
+  mkdirSync(join(configDir, "systemd/user"), { recursive: true });
+  // The host's copies, as an operator installed them from main.
+  writeFileSync(join(repoDir, "deploy/kube/prod.yaml"), prodYaml);
+  copyFileSync(resolve(rootPath, "deploy/systemd/validate-manifest.ts"), join(repoDir, "deploy/systemd/validate-manifest.ts"));
 
-  // A local image store (imageDir) and a registry (registryDir), one digest per ref.
+  // A local image store (imageDir), a registry (registryDir), one digest per ref, and each
+  // digest's files (imageFsDir). `podman run` executes the checker the way the script mounts it.
   writeStub(
     "podman",
     [
@@ -97,6 +136,10 @@ beforeEach(() => {
       `  image) f="$(ref_file "${imageDir}" "$5")"; [ -f "$f" ] && cat "$f" && exit 0; exit 125;;`,
       `  tag) cp "$(ref_file "${imageDir}" "$2")" "$(ref_file "${imageDir}" "$3")";;`,
       `  pull) cp "$(ref_file "${registryDir}" "$2")" "$(ref_file "${imageDir}" "$2")";;`,
+      `  create) f="$(ref_file "${imageDir}" "\${@: -1}")"; [ -f "$f" ] || exit 125; d="$(cat "$f")"; echo "cid_\${d//:/_}";;`,
+      `  cp) src="${imageFsDir}/\${2#cid_}"; src="\${src/:\\//\\/}"; [ -f "$src" ] || exit 125; cp "$src" "$3";;`,
+      `  rm) exit 0;;`,
+      `  run) for a in "$@"; do case "$a" in *:/check:*) dir="\${a%%:/check:*}";; esac; done; "${process.execPath}" "$dir/validate-manifest.ts" "$dir/prod.yaml";;`,
       `  *) exit 2;;`,
       `esac`,
     ].join("\n"),
@@ -105,10 +148,14 @@ beforeEach(() => {
   // Answers 200 only for URLs listed in STUB_HEALTHY; anything else fails like `curl -f` on a refused port.
   writeStub("curl", `for url in $STUB_HEALTHY; do [ "$url" = "\${@: -1}" ] && exit 0; done; exit 7`);
 
-  // Fails the replay while an unstartable digest is on :latest, as `kube play` does when a container won't start.
+  // Records the manifest each replay used, then fails the replay while an unstartable digest is
+  // on :latest, as `kube play` does when a container won't start.
   writeStub(
     "systemctl",
-    `for digest in $STUB_UNSTARTABLE; do grep -qxF "$digest" "${imageDir}"/*_latest && exit 1; done; exit 0`,
+    [
+      `if [ "$2" = "restart" ]; then cat "${repoDir}/deploy/kube/prod.yaml" >> "${replayLog}"; printf '\\0' >> "${replayLog}"; fi`,
+      `for digest in $STUB_UNSTARTABLE; do grep -qxF "$digest" "${imageDir}"/*_latest && exit 1; done; exit 0`,
+    ].join("\n"),
   );
 
   writeStub("sleep", "exit 0");
@@ -418,6 +465,96 @@ describe("deploy/systemd/website-update.sh", () => {
       expect(stderr).toContain("still rejected: front-end:latest sha256:front-bad");
       expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-a");
       expect(localDigest(`${BACK}:latest`)).toBe("sha256:back-b");
+    });
+  });
+
+  describe("installs the manifest the back-end image carries (#1088)", () => {
+    const newManifest = `${prodYaml}# from the new image\n`;
+
+    beforeEach(() => {
+      setLocal(`${FRONT}:latest`, "sha256:front-a");
+      setLocal(`${BACK}:latest`, "sha256:back-a");
+      setRegistry(`${FRONT}:latest`, "sha256:front-a");
+      setRegistry(`${BACK}:latest`, "sha256:back-b");
+    });
+
+    test("checks it with the previous back-end image and replays the pod on it", () => {
+      setImageFile("sha256:back-b", IMAGE_MANIFEST, newManifest);
+
+      const { status, calls } = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+      expect(status).toBe(0);
+      expect(installedManifest()).toBe(newManifest);
+      expect(replayedManifests()).toEqual([newManifest]);
+
+      const check = calls.find((call) => call.startsWith("podman run "));
+
+      expect(check).toContain("--network none");
+      expect(check?.endsWith(`${BACK}:rollback /check/validate-manifest.ts /check/prod.yaml`)).toBe(true);
+    });
+
+    test("refuses a manifest that fails the checks: no replay, the new images are rolled back and rejected", () => {
+      const pod = Bun.YAML.parse(prodYaml) as { spec: Record<string, unknown> };
+
+      pod.spec["hostNetwork"] = true;
+      setImageFile("sha256:back-b", IMAGE_MANIFEST, JSON.stringify(pod));
+
+      const { status, calls, stderr } = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+      expect(status).toBe(1);
+      expect(restarts(calls)).toBe(0);
+      expect(stderr).toContain("manifest REJECTED");
+      expect(stderr).toContain("hostNetwork");
+      expect(installedManifest()).toBe(prodYaml);
+      expect(localDigest(`${BACK}:latest`)).toBe("sha256:back-a");
+      expect(readFileSync(join(stubDir, "state", "website-update", "rejected-back-end"), "utf8")).toBe("sha256:back-b\n");
+    });
+
+    test("puts the previous manifest back when the pod is unhealthy on the new one", () => {
+      setImageFile("sha256:back-b", IMAGE_MANIFEST, newManifest);
+
+      const { status, calls } = runScript([FRONT_HEALTH]);
+
+      expect(status).toBe(1);
+      expect(restarts(calls)).toBe(2);
+      expect(replayedManifests()).toEqual([newManifest, prodYaml]);
+      expect(installedManifest()).toBe(prodYaml);
+    });
+
+    test("keeps the installed manifest when the new back-end image carries none", () => {
+      const { status, calls, stdout } = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+      expect(status).toBe(0);
+      expect(stdout).toContain("keeping the installed manifest");
+      expect(restarts(calls)).toBe(1);
+      expect(installedManifest()).toBe(prodYaml);
+    });
+
+    test("keeps the installed manifest on a first deploy, with no previous image to check it with", () => {
+      rmSync(join(imageDir, `${BACK}:latest`.replaceAll(/[/:]/g, "_")));
+      setImageFile("sha256:back-b", IMAGE_MANIFEST, newManifest);
+
+      const { status, stderr } = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+      expect(status).toBe(0);
+      expect(stderr).toContain("no previous back-end image to check the new manifest with");
+      expect(installedManifest()).toBe(prodYaml);
+    });
+
+    test("warns, without failing, when the host's update script or units differ from the image's copies", () => {
+      writeFileSync(join(repoDir, "deploy/systemd/website-update.sh"), "# the host's copy\n");
+      writeFileSync(join(configDir, "systemd/user/podman-kube@.service"), "# the host's unit\n");
+      writeFileSync(join(configDir, "systemd/user/website-update.timer"), "# same as the image\n");
+      setImageFile("sha256:back-b", "/opt/website/deploy/systemd/website-update.sh", "# main's copy\n");
+      setImageFile("sha256:back-b", "/opt/website/deploy/systemd/podman-kube@.service", "# main's unit\n");
+      setImageFile("sha256:back-b", "/opt/website/deploy/systemd/website-update.timer", "# same as the image\n");
+
+      const { status, stderr } = runScript([FRONT_HEALTH, BACK_HEALTH]);
+
+      expect(status).toBe(0);
+      expect(stderr).toContain("drift: deploy/systemd/website-update.sh differs from main's copy in the image");
+      expect(stderr).toContain("drift: podman-kube@.service differs from main's copy in the image");
+      expect(stderr).not.toContain("website-update.timer");
     });
   });
 });
