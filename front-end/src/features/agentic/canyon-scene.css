@@ -235,6 +235,15 @@
   opacity: clamp(0, (var(--p) - 0.5) / 0.35, 1);
 }
 
+/*
+ * Night stars: with a count from the metrics (agentic-page.tsx), the counted stars replace the default star field;
+ * each counted star is pre-placed and only shown or hidden, so a new count never re-lays out the sky.
+ */
+.canyon-composition[data-stars="counted"] .canyon-layer:is([data-layer="stars-1"], [data-layer="stars-2"], [data-layer="stars-3"]),
+.canyon-composition[data-stars="default"] .canyon-layer[data-layer^="stars-counted-"] {
+  display: none;
+}
+
 /* Sky objects. */
 .canyon-layer[data-layer^="stars-"] {
   opacity: clamp(0, (var(--p) - 0.6) / 0.3, 1);
@@ -346,12 +355,12 @@
     will-change: opacity;
   }
 
-  .canyon-layer[data-layer="stars-2"] > svg {
+  .canyon-layer:is([data-layer="stars-2"], [data-layer="stars-counted-2"]) > svg {
     animation-duration: 3.8s;
     animation-delay: -1.3s;
   }
 
-  .canyon-layer[data-layer="stars-3"] > svg {
+  .canyon-layer:is([data-layer="stars-3"], [data-layer="stars-counted-3"]) > svg {
     animation-duration: 4.6s;
     animation-delay: -2.2s;
   }

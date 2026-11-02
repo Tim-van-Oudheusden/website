@@ -1,10 +1,12 @@
 import type { CSSProperties, JSX, ReactNode } from "react";
 import { lazy, Suspense, useEffect, useRef } from "react";
 
-import type { ProjectFrontmatter } from "shared";
+import type { HiveMetricsResponse, ProjectFrontmatter } from "shared";
+import { ROUTES } from "shared";
 
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
+import { usePollingApiGet } from "@/shared/hooks/use-polling-api-get";
 import { httpContentLoader } from "@/shared/lib/content-loader";
 
 import { CanyonRim } from "../components/canyon-rim";
@@ -12,6 +14,7 @@ import { CanyonStratumCard } from "../components/canyon-stratum-card";
 import { HiveMetricsSection } from "../components/hive-metrics-section";
 import { CANYON_STRATA } from "../config/canyon-strata";
 import { useCanyonMotion, useCanyonProgress } from "../hooks/use-canyon-progress";
+import { nightStarCount } from "../lib/night-stars";
 
 /* The scene's drawing is large and purely decorative, so it loads in its own chunk after the text. */
 const CanyonScene = lazy(async () => {
@@ -81,7 +84,10 @@ function TrackSlot({ place, passed, children }: {
  * stratum cards scroll past it. It owns the scroll state, so a reveal
  * re-renders the track (scene and cards), not the page around it.
  */
-function CanyonTrack({ projects }: { projects: readonly ProjectFrontmatter[] | null }): JSX.Element {
+function CanyonTrack({ projects, stars }: {
+  projects: readonly ProjectFrontmatter[] | null;
+  stars: number | null;
+}): JSX.Element {
   const trackRef = useRef<HTMLElement>(null);
   const revealed = useCanyonProgress(trackRef, CANYON_STRATA.length, true);
 
@@ -93,7 +99,7 @@ function CanyonTrack({ projects }: { projects: readonly ProjectFrontmatter[] | n
     >
       <div className="sticky top-[4.2rem] h-[calc(100svh-4.2rem)] overflow-hidden [--p:inherit]">
         <Suspense fallback={null}>
-          <CanyonScene revealed={revealed} projects={projects ?? NO_PROJECTS} />
+          <CanyonScene revealed={revealed} projects={projects ?? NO_PROJECTS} stars={stars} />
         </Suspense>
       </div>
       <div className="relative mx-auto -mt-[calc(100svh-4.2rem)] max-w-screen-xl px-4 sm:px-6 lg:px-8">
@@ -115,9 +121,10 @@ function CanyonTrack({ projects }: { projects: readonly ProjectFrontmatter[] | n
 }
 
 /** Reduced motion: the scene once, as a still sunset frame with every stratum revealed, then the cards as a list. */
-function CanyonStill({ projects, progress }: {
+function CanyonStill({ projects, progress, stars }: {
   projects: readonly ProjectFrontmatter[] | null;
   progress: number;
+  stars: number | null;
 }): JSX.Element {
   const frame: ProgressStyle = { "--p": progress };
 
@@ -126,7 +133,7 @@ function CanyonStill({ projects, progress }: {
       {/* The still frame keeps the scene's fade into the page on, as a static edge. */}
       <div className="relative aspect-[390/844] overflow-hidden rounded-xl [--canyon-still-fade:1] [--p:inherit] sm:aspect-[16/10]">
         <Suspense fallback={null}>
-          <CanyonScene revealed={CANYON_STRATA.length} projects={projects ?? NO_PROJECTS} />
+          <CanyonScene revealed={CANYON_STRATA.length} projects={projects ?? NO_PROJECTS} stars={stars} />
         </Suspense>
       </div>
       <div className="mt-8 flex flex-col gap-6">
@@ -141,6 +148,9 @@ function CanyonStill({ projects, progress }: {
 export function AgenticPage(): JSX.Element {
   const { data: projects } = useLoadOnMount(loadProjects, "Failed to load projects");
   const motion = useCanyonMotion();
+  // One poll feeds both the metrics section and the night sky's star count.
+  const metrics = usePollingApiGet<HiveMetricsResponse>(ROUTES.HIVE_METRICS);
+  const stars = nightStarCount(metrics.data);
 
   // The cards render with the page, after the browser's own jump to the URL's fragment: jump again once they exist.
   useEffect(() => {
@@ -161,15 +171,15 @@ export function AgenticPage(): JSX.Element {
         </p>
       </div>
       {motion.staticProgress === null
-        ? <CanyonTrack projects={projects} />
-        : <CanyonStill projects={projects} progress={motion.staticProgress} />}
+        ? <CanyonTrack projects={projects} stars={stars} />
+        : <CanyonStill projects={projects} progress={motion.staticProgress} stars={stars} />}
       {/* After the track, the section starts inside the night fade's solid end (desktop has no cards there). */}
       <div
         className={`relative mx-auto w-full max-w-screen-xl px-4 sm:px-6 lg:px-8 ${
           motion.staticProgress === null ? "mt-4 sm:-mt-[12svh]" : "mt-12"
         }`}
       >
-        <HiveMetricsSection />
+        <HiveMetricsSection poll={metrics} />
       </div>
     </main>
   );
