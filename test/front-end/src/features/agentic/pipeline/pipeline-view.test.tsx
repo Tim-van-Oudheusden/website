@@ -32,6 +32,22 @@ describe("PipelineView", () => {
     expect(headings(html, 3)).toEqual(["Queue", "Agents", "Runs", "Pull requests", "Merged"]);
   });
 
+  test("puts each live number under the flow step it measures", () => {
+    const html = render(liveModel());
+    const units = Object.fromEntries([...html.matchAll(/<li class="pl-stop"[\s\S]*?<\/li>/g)].map(([stop]) => [
+      /class="pl-stop-step">([^<]*)</.exec(stop)?.[1],
+      /class="pl-readout-unit">([^<]*)</.exec(stop)?.[1],
+    ]));
+
+    expect(units).toEqual({
+      "Issue": "issues open now",
+      "Agent": "agents running",
+      "Pull request": "PRs opened in 7 days",
+      "Checks": "ready to merge now",
+      "Merge &amp; deploy": "merged in 7 days",
+    });
+  });
+
   test("announces only the status word, and dates the update it describes", () => {
     const html = render(liveModel());
 

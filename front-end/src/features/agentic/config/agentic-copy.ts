@@ -11,13 +11,13 @@ export const AGENTIC_COPY = {
   title: "Agentic",
   intro: "I build this site with AI agents: they pick up GitHub issues and open pull requests, which go through the same "
     + "checks and review as mine. This page shows how that works.",
-  /** How a change gets from an issue to the live site, in order. */
+  /** How a change gets from an issue to the live site, in order; a design pairs its live numbers by `id`. */
   flow: [
-    { step: "Issue", text: "Work starts as a GitHub issue; its labels and assignee say who is working on it." },
-    { step: "Agent", text: "A Hive agent, Claude Code in CI or I claim the issue and work on a branch." },
-    { step: "Pull request", text: "Every code change starts with a failing test and lands as a pull request." },
-    { step: "Checks", text: "The same checks run on every pull request, whoever wrote it." },
-    { step: "Merge & deploy", text: "The merge queue merges it, and my server picks up the new images within five minutes." },
+    { id: "issue", step: "Issue", text: "Work starts as a GitHub issue; its labels and assignee say who is working on it." },
+    { id: "agent", step: "Agent", text: "A Hive agent, Claude Code in CI or I claim the issue and work on a branch." },
+    { id: "pullRequest", step: "Pull request", text: "Every code change starts with a failing test and lands as a pull request." },
+    { id: "checks", step: "Checks", text: "The same checks run on every pull request, whoever wrote it." },
+    { id: "merge", step: "Merge & deploy", text: "The merge queue merges it, and my server picks up the new images within five minutes." },
   ],
   hiveHeading: "The hive, live",
   hiveIntro: "Hive is the agent system that files, claims and lands work in this repo. These numbers come from the "
@@ -40,6 +40,9 @@ export const AGENTIC_COPY = {
   },
   privacy: "Repository names, agent names, cost and logs are deliberately not published.",
 } as const;
+
+/** One step of `AGENTIC_COPY.flow`; a record keyed by it must cover every step, so adding one fails `tsc`. */
+export type FlowStepId = (typeof AGENTIC_COPY.flow)[number]["id"];
 
 export const AGENTIC_LINKS = {
   hive: { label: "hivecommons/hive", href: "https://github.com/hivecommons/hive" },

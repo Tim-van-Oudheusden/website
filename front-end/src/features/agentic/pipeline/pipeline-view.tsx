@@ -2,6 +2,7 @@ import "./pipeline.css";
 
 import type { CSSProperties, JSX } from "react";
 
+import type { FlowStepId } from "../config/agentic-copy";
 import { AGENTIC_COPY, AGENTIC_LINKS } from "../config/agentic-copy";
 import type { HiveStatusView, HiveViewModel } from "../lib/hive-view-model";
 
@@ -13,18 +14,18 @@ interface Readout {
 }
 
 /** The live number shown under each flow step, or null when its part is missing. */
-function readouts(model: HiveViewModel): (Readout | null)[] {
+function readouts(model: HiveViewModel): Record<FlowStepId, Readout | null> {
   const { hive, repo } = model;
 
-  return [
-    hive === null ? null : { value: String(hive.work.issues), unit: "issues open now" },
-    hive === null
+  return {
+    issue: hive === null ? null : { value: String(hive.work.issues), unit: "issues open now" },
+    agent: hive === null
       ? null
       : { value: `${String(hive.agents.running)}/${String(hive.agents.total)}`, unit: "agents running" },
-    repo === null ? null : { value: String(repo.totals.opened), unit: "PRs opened in 7 days" },
-    hive === null ? null : { value: String(hive.work.mergeable), unit: "ready to merge now" },
-    repo === null ? null : { value: String(repo.totals.merged), unit: "merged in 7 days" },
-  ];
+    pullRequest: repo === null ? null : { value: String(repo.totals.opened), unit: "PRs opened in 7 days" },
+    checks: hive === null ? null : { value: String(hive.work.mergeable), unit: "ready to merge now" },
+    merge: repo === null ? null : { value: String(repo.totals.merged), unit: "merged in 7 days" },
+  };
 }
 
 const INLETS = [40, 95, 150, 205, 260];
@@ -51,7 +52,7 @@ function Route({ model }: { model: HiveViewModel }): JSX.Element {
   return (
     <ol className="pl-route" aria-label="How a change goes from issue to live">
       {AGENTIC_COPY.flow.map((entry, index) => {
-        const readout = values[index] ?? null;
+        const readout = values[entry.id];
 
         return (
           <li key={entry.step} className="pl-stop" style={{ "--pl-i": index } as CSSProperties}>
