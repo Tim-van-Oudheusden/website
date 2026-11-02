@@ -221,6 +221,30 @@ describe("HiveMetricsView KPI tiles", () => {
       missing.unmount();
     }
   });
+
+  test("accents only the agents tile in the hive tone, the colour of the canyon's bedrock", () => {
+    const { root, unmount } = render();
+
+    try {
+      // Each tile's colours: those of its decorative (aria-hidden) parts, like a chart legend's swatches.
+      const accents = queryFakeElements(root, (el) => el.getAttribute("aria-label") === "Hive right now")
+        .flatMap((list) => byName(list, "LI"))
+        .map((li) => [
+          byName(li, "P")[0]?.textContent,
+          queryFakeElements(li, (el) => el.getAttribute("aria-hidden") === "true")
+            .map((part) => part.style.getPropertyValue("backgroundColor")),
+        ]);
+
+      expect(accents).toEqual([
+        ["Agents running", ["var(--site-chart-hive)"]],
+        ["Open work", []],
+        ["Ready to merge", []],
+        ["Governor mode", []],
+      ]);
+    } finally {
+      unmount();
+    }
+  });
 });
 
 describe("HiveMetricsView footnote", () => {
@@ -270,6 +294,23 @@ describe("HiveMetricsView charts", () => {
       } finally {
         unmount();
       }
+    }
+  });
+
+  test("draws the contributor bars and their legend in the hive tone, the colour of the canyon's bedrock", () => {
+    const { root, unmount } = render();
+
+    try {
+      const contributors = card(root, "Contributor agents, last 7 days");
+      const bars = byName(contributors, "RECT").map((rect) => rect.style.getPropertyValue("fill"));
+      const swatches = byName(contributors, "LI").flatMap((li) => byName(li, "SPAN"))
+        .map((swatch) => [swatch.parentElement?.textContent, swatch.style.getPropertyValue("backgroundColor")]);
+
+      expect(bars).toHaveLength(4);
+      expect(new Set(bars)).toEqual(new Set(["var(--site-chart-hive)"]));
+      expect(swatches).toEqual([["tasks", "var(--site-chart-hive)"]]);
+    } finally {
+      unmount();
     }
   });
 

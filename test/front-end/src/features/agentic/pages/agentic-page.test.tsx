@@ -109,7 +109,8 @@ describe("AgenticPage strata", () => {
       expect(sections).toHaveLength(6);
 
       for (const section of sections) {
-        const hrefs = byName(section, "A").map((a) => a.getAttribute("href"));
+        const sources = queryFakeElements(section, (el) => el.getAttribute("aria-label")?.startsWith("Sources for ") === true);
+        const hrefs = sources.flatMap((list) => byName(list, "A")).map((a) => a.getAttribute("href"));
 
         expect(hrefs.length).toBeGreaterThan(0);
 
@@ -117,6 +118,20 @@ describe("AgenticPage strata", () => {
           expect(href).toStartWith("https://github.com/Tim-van-Oudheusden/website/");
         }
       }
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("hands off from the Agents · Hive card to the live metrics, and only from that card", () => {
+    const page = mountPage();
+
+    try {
+      const handOffs = strataSections(page).flatMap((section) => byName(section, "A")
+        .filter((a) => a.getAttribute("href")?.startsWith("#") === true)
+        .map((a) => [section.getAttribute("id"), a.getAttribute("href"), a.textContent]));
+
+      expect(handOffs).toEqual([["agents-hive", "#metrics", "This layer is live ↓"]]);
     } finally {
       unmountFakeDomRoot(page);
     }

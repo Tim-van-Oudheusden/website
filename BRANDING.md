@@ -63,6 +63,9 @@ Colour tokens live in [`front-end/src/index.css`](front-end/src/index.css). Comp
 - site roles with one job each: `--site-page-bg`, `--site-section-well-bg`, `--site-accent` (accent text, rings and
   indicators), `--site-toc-inactive` and `--site-chart-*` (chart series on the Agentic page: the accent, two neutral
   steps and the Flexoki accents, 600 in light mode and 400 in dark mode, each at least 3:1 on the well).
+  `--site-chart-hive` is the canyon's honey bedrock carried into the live metrics: the "Agents running" tile and the
+  contributor bars. Dark mode uses the bedrock itself (Flexoki yellow-500, `#be9207`, 5.2:1 on the well); light mode
+  uses yellow-600 (`#ad8301`, 3.5:1), because yellow-500 is 2.9:1 on white. It is a graphics colour, not a text colour.
 
 Every design change is checked in both light and dark mode, and every text and UI pair must meet WCAG 2.2 AA: 4.5:1 for
 body text, 3:1 for large text, UI boundaries and focus rings.

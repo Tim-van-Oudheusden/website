@@ -118,7 +118,7 @@ export function ContributorsCard(
               caption="Tasks completed per hour"
               xHeader="Hour"
               xLabels={hourLabels}
-              series={[{ name: "tasks", tone: "accent", values: tasksPerHour }]}
+              series={[{ name: "tasks", tone: "hive", values: tasksPerHour }]}
               layout="grouped"
             />
           )

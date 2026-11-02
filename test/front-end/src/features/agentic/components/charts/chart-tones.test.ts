@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { CHART_TONES, toneColor } from "../../../../../../../front-end/src/features/agentic/components/charts/chart-tones";
 
 const INDEX_CSS_PATH = resolve(import.meta.dir, "../../../../../../../front-end/src/index.css");
+const CANYON_CSS_PATH = resolve(import.meta.dir, "../../../../../../../front-end/src/features/agentic/canyon-scene.css");
 
 function declarations(css: string, selector: string): Map<string, string> {
   const block = new RegExp(`^${selector.replace(".", "\\.")} \\{([\\s\\S]*?)^\\}`, "m").exec(css);
@@ -82,6 +83,19 @@ describe("chart tones", () => {
       const dark = resolveColor(toneColor(tone), themes.dark);
 
       expect({ tone, differs: light !== dark }).toEqual({ tone, differs: true });
+    }
+  });
+
+  test("the hive tone is a shade of the canyon's honey bedrock ramp in both themes", () => {
+    const canyonYellows = new Set([...readFileSync(CANYON_CSS_PATH, "utf8").matchAll(/--canyon-yellow-\d+:\s*(#[0-9a-f]{6});/gi)]
+      .map((match) => match[1]!.toLowerCase()));
+
+    expect(canyonYellows.size).toBeGreaterThan(0);
+
+    for (const [theme, tokens] of Object.entries(themes)) {
+      const hive = resolveColor(toneColor("hive"), tokens).toLowerCase();
+
+      expect({ theme, hive, onTheRamp: canyonYellows.has(hive) }).toEqual({ theme, hive, onTheRamp: true });
     }
   });
 });
