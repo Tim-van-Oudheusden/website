@@ -2,10 +2,8 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 
 import type { HiveMetricsResponse } from "shared";
-import { ROUTES } from "shared";
 
 import type { PollingApiGetState } from "@/shared/hooks/use-polling-api-get";
-import { usePollingApiGet } from "@/shared/hooks/use-polling-api-get";
 
 import { HiveKpiTiles } from "./hive-kpi-tiles";
 import { ContributorsCard, MergedWorkCard, ModeCard, QueueCard, RepoPullRequestsCard, RunsCard } from "./hive-metrics-cards";
@@ -126,9 +124,11 @@ export function HiveMetricsView({ poll, now, timeZone }: HiveMetricsViewProps): 
 /** How often "updated 40 s ago" re-reads the clock between polls. */
 const AGE_TICK_MS = 10_000;
 
-/** The section wired to `GET /api/hive/metrics`, polled once a minute while the tab is visible. */
-export function HiveMetricsSection(): JSX.Element {
-  const poll = usePollingApiGet<HiveMetricsResponse>(ROUTES.HIVE_METRICS);
+/**
+ * The section, drawn from the page's poll of `GET /api/hive/metrics` (once a
+ * minute while the tab is visible; the canyon reads the same response).
+ */
+export function HiveMetricsSection({ poll }: { poll: PollingApiGetState<HiveMetricsResponse> }): JSX.Element {
   const [now, setNow] = useState(Date.now);
 
   useEffect(() => {

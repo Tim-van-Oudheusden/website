@@ -1,5 +1,7 @@
 import type { Page } from "@playwright/test";
 
+import { DEV_HIVE_METRICS } from "../back-end/src/features/hive/hive-metrics-dev-fixture";
+
 import { expect, test } from "./fixtures";
 
 const TRACK = "section[aria-label='How this site is built']";
@@ -80,6 +82,17 @@ test.describe("Agentic canyon", () => {
 
     // The section's first row sits inside the fade's solid end, not after a hard edge.
     expect(overlap).toBeGreaterThan(0);
+  });
+
+  test("lights one night star per task contributor agents completed in the last day", async ({ page }) => {
+    // The dev pod serves DEV_HIVE_METRICS: its last 24 hourly buckets, capped at the 60 pre-placed stars.
+    const tasks = (DEV_HIVE_METRICS.contributors?.tasksPerHour ?? []).slice(-24).reduce((sum, count) => sum + count, 0);
+
+    await page.goto("/agentic", { waitUntil: "domcontentloaded" });
+    await sceneReady(page);
+    await scrollTrackTo(page, 1);
+
+    await expect.poll(() => page.locator("[data-star][visibility='visible']").count()).toBe(Math.min(tasks, 60));
   });
 
   test("lands a deep link on its stratum, already revealed", async ({ page }) => {

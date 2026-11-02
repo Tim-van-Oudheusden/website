@@ -28,6 +28,35 @@ export interface CanyonSceneProps {
   revealed: number;
   /** Published projects, newest first; one flag each. */
   projects: readonly CanyonSceneProject[];
+  /**
+   * How many of the night sky's pre-placed counted stars to light (one per task contributor agents completed in the
+   * last day); `null` keeps the default star field.
+   */
+  stars: number | null;
+}
+
+/** Counted star layers hold every third star: `stars-counted-1` has stars 0, 3, 6, …, so twinkles stay staggered. */
+const COUNTED_STARS = "stars-counted-";
+
+/** Counted star `index`, shown while it is among the first `lit`. */
+function countedStar(node: CanyonNode, index: number, lit: number): JSX.Element {
+  return (
+    <path
+      d={node.d}
+      style={{ fill: colour("paper") }}
+      opacity={node.opacity}
+      data-star={index}
+      visibility={index < lit ? "visible" : "hidden"}
+    />
+  );
+}
+
+/** The counted stars of one twinkle layer, each shown or hidden by its place in the count; never re-laid out. */
+function countedStars(layerId: string, nodes: readonly CanyonNode[], lit: number): JSX.Element {
+  const offset = Number(layerId.slice(COUNTED_STARS.length)) - 1;
+
+  // Static children, passed as arguments: they need no keys.
+  return createElement(Fragment, null, ...nodes.map((node, position) => countedStar(node, position * 3 + offset, lit)));
 }
 
 type CompositionName = "desktop" | "phone";
@@ -412,18 +441,20 @@ function Tablet({ art, id, stratum, index, revealed }: {
 }
 
 /** One layer of a composition. */
-function CompositionLayer({ layer, art, labels, shown }: {
+function CompositionLayer({ layer, art, labels, shown, lit }: {
   layer: CanyonLayer;
   art: CanyonComposition;
   labels: RimLabels;
   /** Whether this layer's stratum is revealed; `null` for layers that belong to no stratum. */
   shown: boolean | null;
+  /** For counted star layers, how many counted stars are lit; `null` for every other layer. */
+  lit: number | null;
 }): JSX.Element | null {
   switch (layer.kind) {
     case "art":
       return (
         <LayerBox id={layer.id} box={layer.box} revealed={shown}>
-          {drawNodes(layer.nodes)}
+          {lit === null ? drawNodes(layer.nodes) : countedStars(layer.id, layer.nodes, lit)}
         </LayerBox>
       );
     case "stage":
@@ -454,21 +485,32 @@ function layerShown(layer: CanyonLayer, revealed: number): boolean | null {
   return layer.kind === "art" && layer.stratum !== null ? layer.stratum < revealed : null;
 }
 
-function Composition({ art, name, revealed, projects }: CanyonSceneProps & {
+function Composition({ art, name, revealed, projects, stars }: CanyonSceneProps & {
   art: CanyonComposition;
   name: CompositionName;
 }): JSX.Element {
   const labels = useMemo(() => rimLabels(art, projects), [art, projects]);
 
   return (
-    <div data-composition={name} className={name === "phone" ? "canyon-composition sm:hidden" : "canyon-composition hidden sm:block"}>
+    <div
+      data-composition={name}
+      data-stars={stars === null ? "default" : "counted"}
+      className={name === "phone" ? "canyon-composition sm:hidden" : "canyon-composition hidden sm:block"}
+    >
       {art.layers.filter((layer) => layer.kind !== "tablet").map((layer) => (
-        <Layer key={layer.id} layer={layer} art={art} labels={labels} shown={layerShown(layer, revealed)} />
+        <Layer
+          key={layer.id}
+          layer={layer}
+          art={art}
+          labels={labels}
+          shown={layerShown(layer, revealed)}
+          lit={layer.id.startsWith(COUNTED_STARS) ? stars ?? 0 : null}
+        />
       ))}
       {/* The end of the scene: the land fades into the page as the track ends; the tablets stay on top of it. */}
       <div className="canyon-night-fade" data-night-fade="" />
       {art.layers.filter((layer) => layer.kind === "tablet").map((layer) => (
-        <Layer key={layer.id} layer={layer} art={art} labels={labels} shown={layerShown(layer, revealed)} />
+        <Layer key={layer.id} layer={layer} art={art} labels={labels} shown={layerShown(layer, revealed)} lit={null} />
       ))}
     </div>
   );
@@ -482,7 +524,7 @@ function Composition({ art, name, revealed, projects }: CanyonSceneProps & {
  * composition that fits the viewport is built. The drawing is decorative: the
  * cards carry the same text.
  */
-export function CanyonScene({ revealed, projects }: CanyonSceneProps): JSX.Element {
+export function CanyonScene({ revealed, projects, stars }: CanyonSceneProps): JSX.Element {
   const composition = useSyncExternalStore<CompositionName | null>(
     subscribeToViewport,
     viewportComposition,
@@ -493,10 +535,10 @@ export function CanyonScene({ revealed, projects }: CanyonSceneProps): JSX.Eleme
     <div className="canyon-scene" aria-hidden="true">
       {composition === "phone"
         ? null
-        : <Composition art={CANYON_DESKTOP} name="desktop" revealed={revealed} projects={projects} />}
+        : <Composition art={CANYON_DESKTOP} name="desktop" revealed={revealed} projects={projects} stars={stars} />}
       {composition === "desktop"
         ? null
-        : <Composition art={CANYON_PHONE} name="phone" revealed={revealed} projects={projects} />}
+        : <Composition art={CANYON_PHONE} name="phone" revealed={revealed} projects={projects} stars={stars} />}
     </div>
   );
 }

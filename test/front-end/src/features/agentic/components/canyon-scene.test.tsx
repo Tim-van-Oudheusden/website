@@ -21,8 +21,8 @@ function decode(escaped: string): string {
   return escaped.replace(/&(?:amp|lt|gt|quot|#x27);/g, (entity) => ENTITIES[entity] ?? entity);
 }
 
-function render(revealed = 0, projects: readonly CanyonSceneProject[] = PROJECTS): string {
-  return renderToStaticMarkup(<CanyonScene revealed={revealed} projects={projects} />);
+function render(revealed = 0, projects: readonly CanyonSceneProject[] = PROJECTS, stars: number | null = null): string {
+  return renderToStaticMarkup(<CanyonScene revealed={revealed} projects={projects} stars={stars} />);
 }
 
 /** Each composition (desktop, phone) is its own stack of layer boxes; the scene must hold up in every one. */
@@ -94,6 +94,18 @@ describe("CanyonScene", () => {
     }
   });
 
+  test("lights one counted star per task, or keeps the default sky without a count", () => {
+    for (const [stars, sky, lit] of [[5, "counted", 5], [60, "counted", 60], [0, "counted", 0], [null, "default", 0]] as const) {
+      for (const svg of compositions(render(0, PROJECTS, stars))) {
+        const counted = [...svg.matchAll(/<path[^>]*\sdata-star="[^"]*"[^>]*>/g)].map((match) => match[0]);
+
+        expect(attributeValues(svg, "data-stars")).toEqual([sky]);
+        expect(counted).toHaveLength(60);
+        expect(counted.filter((star) => star.includes('visibility="visible"'))).toHaveLength(lit);
+      }
+    }
+  });
+
   describe("in the browser", () => {
     beforeAll(async () => {
       await initFakeDomHarness();
@@ -104,7 +116,7 @@ describe("CanyonScene", () => {
     });
 
     test("builds only the composition that fits the viewport, phone below the sm breakpoint", () => {
-      const mount = mountIntoBody(createElement(CanyonScene, { revealed: 0, projects: PROJECTS }));
+      const mount = mountIntoBody(createElement(CanyonScene, { revealed: 0, projects: PROJECTS, stars: null }));
 
       try {
         const shown = queryFakeElements(mount.container, (el) => el.getAttribute("data-composition") !== null)

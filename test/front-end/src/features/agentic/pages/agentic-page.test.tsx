@@ -265,6 +265,40 @@ describe("AgenticPage canyon", () => {
     }
   });
 
+  test("polls the metrics once and lights a night star per task contributor agents completed in the last day", async () => {
+    const tasksPerHour = [...Array<number>(144).fill(5), ...Array<number>(21).fill(0), 3, 2, 2];
+    const requested = routeFetch({
+      "/api/hive/metrics": () => Promise.resolve(jsonResponse({
+        state: "live",
+        fetchedAt: "2026-11-02T12:00:00Z",
+        metrics: {
+          online: true,
+          hive: null,
+          contributors: {
+            collectedAt: "2026-11-02T12:00:00Z",
+            tasksPerHour,
+            fleetSize: tasksPerHour.map(() => 2),
+            runs7d: { total: 0, backends: [] },
+          },
+          repo: null,
+        },
+      } satisfies HiveMetricsResponse)),
+    });
+    const page = mountIntoBody(createElement(MemoryRouter, null, createElement(AgenticPage)));
+
+    try {
+      await settleScene();
+
+      const lit = queryFakeElements(page.container, (el) => el.getAttribute("data-star") !== null)
+        .filter((star) => star.getAttribute("visibility") === "visible");
+
+      expect(requested.filter((url) => url === "/api/hive/metrics")).toHaveLength(1);
+      expect(lit).toHaveLength(7);
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
   test("jumps to a deep-linked stratum once the page has rendered", () => {
     window.location.hash = "#quality";
 
