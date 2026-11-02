@@ -155,19 +155,29 @@ export function validateManifest(text: string): string[] {
   return problems;
 }
 
-if (import.meta.main) {
-  const path = process.argv[2];
+/**
+ * The command line website-update.sh relies on: exit 0 when the manifest at
+ * args[0] may be installed, 1 with one reported line per problem when not, and
+ * 2 when no path was given.
+ */
+export async function runCli(args: readonly string[], report: (line: string) => void): Promise<number> {
+  const path = args[0];
 
   if (path === undefined) {
-    console.error("usage: bun validate-manifest.ts <prod.yaml>");
-    process.exit(2);
+    report("usage: bun validate-manifest.ts <prod.yaml>");
+
+    return 2;
   }
 
   const problems = validateManifest(await Bun.file(path).text());
 
   for (const problem of problems) {
-    console.error(problem);
+    report(problem);
   }
 
-  process.exit(problems.length === 0 ? 0 : 1);
+  return problems.length === 0 ? 0 : 1;
+}
+
+if (import.meta.main) {
+  process.exit(await runCli(process.argv.slice(2), console.error));
 }

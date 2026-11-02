@@ -1,8 +1,9 @@
-import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
-import { validateManifest } from "../../../deploy/systemd/validate-manifest";
+import { runCli, validateManifest } from "../../../deploy/systemd/validate-manifest";
 
 const rootPath = resolve(import.meta.dirname, "../../..");
 const prodYaml = readFileSync(resolve(rootPath, "deploy/kube/prod.yaml"), "utf8");
@@ -64,6 +65,21 @@ describe("deploy/systemd/validate-manifest.ts", () => {
     ["an added capability", (pod: Pod) => {
       backEnd(pod).securityContext = { capabilities: { add: ["SYS_ADMIN"] } };
     }],
+    ["privilege escalation", (pod: Pod) => {
+      backEnd(pod).securityContext = { allowPrivilegeEscalation: true };
+    }],
+    ["annotations, which podman reads as security switches", (pod: Pod) => {
+      Object.assign(pod.metadata, { annotations: { "io.podman.annotations.label/back-end": "disable" } });
+    }],
+    ["a pod without containers", (pod: Pod) => {
+      pod.spec.containers = [];
+    }],
+    ["a container that is not an object", (pod: Pod) => {
+      (pod.spec.containers as unknown[]).push("back-end");
+    }],
+    ["a volume that is not an object", (pod: Pod) => {
+      (pod.spec.volumes as unknown[]).push("website-data");
+    }],
     ["a host port on every interface", (pod: Pod) => {
       backEnd(pod).ports = [{ containerPort: 3001, hostPort: 8301 }];
     }],
@@ -83,5 +99,57 @@ describe("deploy/systemd/validate-manifest.ts", () => {
   test("rejects text that is not a pod manifest", () => {
     expect(validateManifest("just: [unbalanced")).not.toEqual([]);
     expect(validateManifest("kind: Deployment\nmetadata:\n  name: website\n")).not.toEqual([]);
+  });
+
+  test("accepts an emptyDir volume, which grants nothing on the host", () => {
+    expect(validateManifest(mutated((pod) => {
+      pod.spec.volumes.push(Object.assign({ name: "scratch" }, { emptyDir: {} }));
+    }))).toEqual([]);
+  });
+});
+
+describe("validate-manifest.ts as website-update.sh runs it", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "validate-manifest-"));
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  /** Exit code and reported lines for the CLI run on a manifest with `content`. */
+  async function runOn(content: string): Promise<{ status: number; lines: string[] }> {
+    const lines: string[] = [];
+    const path = join(dir, "prod.yaml");
+
+    writeFileSync(path, content);
+
+    const status = await runCli([path], (line) => lines.push(line));
+
+    return { status, lines };
+  }
+
+  test("exits 0 and reports nothing for main's manifest", async () => {
+    expect(await runOn(prodYaml)).toEqual({ status: 0, lines: [] });
+  });
+
+  test("exits 1 and reports each reason for a manifest it refuses", async () => {
+    const { status, lines } = await runOn(mutated((pod) => {
+      pod.spec.hostNetwork = true;
+      pod.metadata.name = "other";
+    }));
+
+    expect(status).toBe(1);
+    expect(lines).toHaveLength(2);
+    expect(lines.join("\n")).toContain("hostNetwork");
+  });
+
+  test("exits 2 with usage when no manifest is given", async () => {
+    const lines: string[] = [];
+
+    expect(await runCli([], (line) => lines.push(line))).toBe(2);
+    expect(lines[0]).toContain("usage");
   });
 });
