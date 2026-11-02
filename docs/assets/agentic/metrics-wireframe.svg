@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 940" font-family="'Source Sans 3', 'Segoe UI', Arial, sans-serif">
+  <title>Agentic tab: live Hive metrics section, desktop wireframe in the light theme</title>
+  <desc>Header with live status pill, four KPI tiles from Hive's widget summary, queue lines and governor mode band, contributor tasks per hour, runs by backend, and this repo's pull requests from public GitHub data. All numbers are illustrative.</desc>
+  <rect width="1000" height="940" fill="#F3EFE5"/>
+  <text x="30" y="22" font-size="11" letter-spacing="1" fill="#77767B">WIREFRAME · LIGHT THEME · ILLUSTRATIVE NUMBERS</text>
+
+  <!-- Header -->
+  <text x="30" y="60" font-size="28" font-weight="700" fill="#000">The hive, live</text>
+  <text x="30" y="86" font-size="14" fill="#5E5C64">Hive files, claims and lands work in this repo. These numbers come from the instance running on this server.</text>
+  <rect x="770" y="40" width="200" height="30" rx="15" fill="#FFF" stroke="#DEDDDA"/>
+  <circle cx="789" cy="55" r="5" fill="#66800B"/>
+  <text x="802" y="60" font-size="13" fill="#241F31">Live · updated 40 s ago</text>
+
+  <!-- KPI tiles: latest widget history point -->
+  <g font-size="13" fill="#5E5C64">
+    <rect x="30" y="110" width="220" height="96" rx="12" fill="#FFF"/>
+    <text x="50" y="136">Agents running</text>
+    <text x="50" y="174" font-size="30" font-weight="700" fill="#000">5 / 7</text>
+    <text x="50" y="194" font-size="12">of the agents configured</text>
+
+    <rect x="270" y="110" width="220" height="96" rx="12" fill="#FFF"/>
+    <text x="290" y="136">Open work</text>
+    <text x="290" y="174" font-size="30" font-weight="700" fill="#000">23</text>
+    <text x="290" y="194" font-size="12">14 issues · 9 PRs · 4 held</text>
+
+    <rect x="510" y="110" width="220" height="96" rx="12" fill="#FFF"/>
+    <text x="530" y="136">Ready to merge</text>
+    <text x="530" y="174" font-size="30" font-weight="700" fill="#000">6</text>
+    <text x="530" y="194" font-size="12">11 actionable</text>
+
+    <rect x="750" y="110" width="220" height="96" rx="12" fill="#FFF"/>
+    <text x="770" y="136">Governor mode</text>
+    <text x="770" y="174" font-size="30" font-weight="700" fill="#000">busy</text>
+    <text x="770" y="194" font-size="12">how hard Hive works the queue</text>
+  </g>
+
+  <!-- Queue lines -->
+  <rect x="30" y="226" width="600" height="230" rx="12" fill="#FFF"/>
+  <text x="50" y="256" font-size="16" font-weight="700" fill="#000">Queue, last 17 hours</text>
+  <g font-size="12" fill="#5E5C64">
+    <rect x="50" y="268" width="10" height="10" fill="#205EA6"/><text x="65" y="277">issues</text>
+    <rect x="115" y="268" width="10" height="10" fill="#66800B"/><text x="130" y="277">PRs</text>
+    <rect x="170" y="268" width="10" height="10" fill="#AF3029"/><text x="185" y="277">held</text>
+  </g>
+  <line x1="60" y1="410" x2="600" y2="410" stroke="#DEDDDA"/>
+  <g fill="none" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <polyline points="60.0,338 91.8,332 123.5,326 155.3,326 187.1,320 218.8,314 250.6,320 282.4,326 314.1,326 345.9,332 377.6,338 409.4,338 441.2,332 472.9,326 504.7,326 536.5,320 568.2,326 600.0,326" stroke="#205EA6"/>
+    <polyline points="60.0,368 91.8,362 123.5,362 155.3,356 187.1,356 218.8,362 250.6,362 282.4,368 314.1,368 345.9,374 377.6,374 409.4,368 441.2,362 472.9,356 504.7,356 536.5,356 568.2,356 600.0,356" stroke="#66800B"/>
+    <polyline points="60.0,392 91.8,392 123.5,392 155.3,386 187.1,386 218.8,386 250.6,386 282.4,386 314.1,392 345.9,392 377.6,392 409.4,386 441.2,386 472.9,386 504.7,386 536.5,386 568.2,386 600.0,386" stroke="#AF3029"/>
+  </g>
+  <g font-size="12" fill="#5E5C64">
+    <text x="60" y="430">17 h ago</text><text x="600" y="430" text-anchor="end">now</text>
+    <text x="50" y="446" font-size="11" fill="#77767B">one point per governor evaluation (about every 5 minutes)</text>
+  </g>
+
+  <!-- Governor mode band -->
+  <rect x="650" y="226" width="320" height="230" rx="12" fill="#FFF"/>
+  <text x="670" y="256" font-size="16" font-weight="700" fill="#000">Governor mode</text>
+  <g>
+    <rect x="670" y="292" width="60" height="40" fill="#205EA6"/>
+    <rect x="730" y="292" width="110" height="40" fill="#BC5215"/>
+    <rect x="840" y="292" width="30" height="40" fill="#AF3029"/>
+    <rect x="870" y="292" width="80" height="40" fill="#BC5215"/>
+  </g>
+  <g font-size="12" font-weight="600" fill="#FFF" text-anchor="middle">
+    <text x="700" y="317">quiet</text><text x="785" y="317">busy</text><text x="910" y="317">busy</text>
+  </g>
+  <g font-size="12" fill="#5E5C64">
+    <text x="670" y="352">17 h ago</text><text x="950" y="352" text-anchor="end">now</text>
+    <rect x="670" y="372" width="10" height="10" fill="#9A9996"/><text x="685" y="381">idle</text>
+    <rect x="725" y="372" width="10" height="10" fill="#205EA6"/><text x="740" y="381">quiet</text>
+    <rect x="785" y="372" width="10" height="10" fill="#BC5215"/><text x="800" y="381">busy</text>
+    <rect x="840" y="372" width="10" height="10" fill="#AF3029"/><text x="855" y="381">surge</text>
+    <text x="670" y="418">Busy for the last 2 hours; 3 mode changes.</text>
+    <text x="670" y="436" font-size="11" fill="#77767B">Rises with queue size: idle → quiet → busy → surge.</text>
+  </g>
+
+  <!-- Contributor agents -->
+  <rect x="30" y="476" width="600" height="150" rx="12" fill="#FFF"/>
+  <text x="50" y="504" font-size="16" font-weight="700" fill="#000">Contributor agents, last 7 days</text>
+  <text x="610" y="504" font-size="12" fill="#5E5C64" text-anchor="end">181 tasks · 1 agent connected</text>
+  <line x1="60" y1="600" x2="600" y2="600" stroke="#DEDDDA"/>
+  <g fill="#0461BE"><rect x="63.2" y="582" width="2.6" height="18"/><rect x="66.4" y="564" width="2.6" height="36"/><rect x="69.6" y="564" width="2.6" height="36"/><rect x="82.5" y="564" width="2.6" height="36"/><rect x="85.7" y="546" width="2.6" height="54"/><rect x="88.9" y="582" width="2.6" height="18"/><rect x="92.1" y="582" width="2.6" height="18"/><rect x="95.4" y="546" width="2.6" height="54"/><rect x="98.6" y="564" width="2.6" height="36"/><rect x="101.8" y="582" width="2.6" height="18"/><rect x="105.0" y="582" width="2.6" height="18"/><rect x="111.4" y="582" width="2.6" height="18"/><rect x="114.6" y="564" width="2.6" height="36"/><rect x="117.9" y="564" width="2.6" height="36"/><rect x="124.3" y="582" width="2.6" height="18"/><rect x="133.9" y="582" width="2.6" height="18"/><rect x="143.6" y="582" width="2.6" height="18"/><rect x="146.8" y="582" width="2.6" height="18"/><rect x="153.2" y="582" width="2.6" height="18"/><rect x="159.6" y="564" width="2.6" height="36"/><rect x="162.9" y="582" width="2.6" height="18"/><rect x="166.1" y="546" width="2.6" height="54"/><rect x="169.3" y="582" width="2.6" height="18"/><rect x="172.5" y="546" width="2.6" height="54"/><rect x="175.7" y="582" width="2.6" height="18"/><rect x="182.1" y="582" width="2.6" height="18"/><rect x="188.6" y="546" width="2.6" height="54"/><rect x="191.8" y="564" width="2.6" height="36"/><rect x="195.0" y="546" width="2.6" height="54"/><rect x="198.2" y="546" width="2.6" height="54"/><rect x="201.4" y="546" width="2.6" height="54"/><rect x="204.6" y="582" width="2.6" height="18"/><rect x="207.9" y="546" width="2.6" height="54"/><rect x="211.1" y="582" width="2.6" height="18"/><rect x="214.3" y="582" width="2.6" height="18"/><rect x="220.7" y="582" width="2.6" height="18"/><rect x="227.1" y="582" width="2.6" height="18"/><rect x="240.0" y="564" width="2.6" height="36"/><rect x="246.4" y="582" width="2.6" height="18"/><rect x="249.6" y="564" width="2.6" height="36"/><rect x="252.9" y="546" width="2.6" height="54"/><rect x="256.1" y="582" width="2.6" height="18"/><rect x="262.5" y="546" width="2.6" height="54"/><rect x="265.7" y="564" width="2.6" height="36"/><rect x="272.1" y="582" width="2.6" height="18"/><rect x="278.6" y="582" width="2.6" height="18"/><rect x="281.8" y="582" width="2.6" height="18"/><rect x="285.0" y="564" width="2.6" height="36"/><rect x="288.2" y="582" width="2.6" height="18"/><rect x="301.1" y="582" width="2.6" height="18"/><rect x="313.9" y="564" width="2.6" height="36"/><rect x="317.1" y="546" width="2.6" height="54"/><rect x="320.4" y="582" width="2.6" height="18"/><rect x="323.6" y="582" width="2.6" height="18"/><rect x="330.0" y="564" width="2.6" height="36"/><rect x="333.2" y="564" width="2.6" height="36"/><rect x="336.4" y="582" width="2.6" height="18"/><rect x="339.6" y="582" width="2.6" height="18"/><rect x="342.9" y="582" width="2.6" height="18"/><rect x="346.1" y="564" width="2.6" height="36"/><rect x="352.5" y="582" width="2.6" height="18"/><rect x="365.4" y="582" width="2.6" height="18"/><rect x="375.0" y="564" width="2.6" height="36"/><rect x="394.3" y="564" width="2.6" height="36"/><rect x="397.5" y="546" width="2.6" height="54"/><rect x="400.7" y="582" width="2.6" height="18"/><rect x="403.9" y="546" width="2.6" height="54"/><rect x="407.1" y="582" width="2.6" height="18"/><rect x="413.6" y="546" width="2.6" height="54"/><rect x="416.8" y="564" width="2.6" height="36"/><rect x="420.0" y="582" width="2.6" height="18"/><rect x="423.2" y="564" width="2.6" height="36"/><rect x="426.4" y="582" width="2.6" height="18"/><rect x="429.6" y="564" width="2.6" height="36"/><rect x="432.9" y="582" width="2.6" height="18"/><rect x="436.1" y="582" width="2.6" height="18"/><rect x="439.3" y="582" width="2.6" height="18"/><rect x="442.5" y="582" width="2.6" height="18"/><rect x="452.1" y="582" width="2.6" height="18"/><rect x="461.8" y="564" width="2.6" height="36"/><rect x="468.2" y="582" width="2.6" height="18"/><rect x="471.4" y="582" width="2.6" height="18"/><rect x="474.6" y="582" width="2.6" height="18"/><rect x="477.9" y="582" width="2.6" height="18"/><rect x="484.3" y="546" width="2.6" height="54"/><rect x="487.5" y="564" width="2.6" height="36"/><rect x="490.7" y="546" width="2.6" height="54"/><rect x="497.1" y="546" width="2.6" height="54"/><rect x="500.4" y="564" width="2.6" height="36"/><rect x="503.6" y="582" width="2.6" height="18"/><rect x="506.8" y="582" width="2.6" height="18"/><rect x="510.0" y="546" width="2.6" height="54"/><rect x="513.2" y="582" width="2.6" height="18"/><rect x="516.4" y="564" width="2.6" height="36"/><rect x="519.6" y="546" width="2.6" height="54"/><rect x="522.9" y="564" width="2.6" height="36"/><rect x="538.9" y="582" width="2.6" height="18"/><rect x="545.4" y="582" width="2.6" height="18"/><rect x="555.0" y="582" width="2.6" height="18"/><rect x="558.2" y="546" width="2.6" height="54"/><rect x="561.4" y="582" width="2.6" height="18"/><rect x="567.9" y="582" width="2.6" height="18"/><rect x="574.3" y="582" width="2.6" height="18"/><rect x="577.5" y="546" width="2.6" height="54"/><rect x="580.7" y="582" width="2.6" height="18"/><rect x="583.9" y="582" width="2.6" height="18"/><rect x="590.4" y="582" width="2.6" height="18"/><rect x="593.6" y="564" width="2.6" height="36"/><rect x="596.8" y="564" width="2.6" height="36"/></g>
+  <text x="50" y="616" font-size="11" fill="#77767B">tasks completed per hour by contributor agents connected to this hive</text>
+
+  <!-- Runs by backend -->
+  <rect x="650" y="476" width="320" height="150" rx="12" fill="#FFF"/>
+  <text x="670" y="504" font-size="16" font-weight="700" fill="#000">Runs by backend, last 7 days</text>
+  <text x="670" y="532" font-size="13" font-weight="600" fill="#000">omp · 75 runs</text>
+  <g>
+    <rect x="670" y="542" width="231.5" height="18" fill="#66800B"/>
+    <rect x="901.5" y="542" width="33.6" height="18" fill="#AF3029"/>
+    <rect x="935.1" y="542" width="14.9" height="18" fill="#B7B5AC"/>
+  </g>
+  <g font-size="12" fill="#5E5C64">
+    <text x="670" y="580">62 completed · 9 failed · 4 abandoned</text>
+    <text x="670" y="598">run time p50 6 min · p95 21 min</text>
+    <text x="670" y="616" font-size="11" fill="#77767B">percentiles per backend, never combined</text>
+  </g>
+
+  <!-- This repo's pull requests (public GitHub data) -->
+  <rect x="30" y="646" width="600" height="230" rx="12" fill="#FFF"/>
+  <text x="50" y="676" font-size="16" font-weight="700" fill="#000">Pull requests on this repo, last 7 days</text>
+  <g font-size="12" fill="#5E5C64">
+    <rect x="50" y="688" width="10" height="10" fill="#205EA6"/><text x="65" y="697">opened</text>
+    <rect x="125" y="688" width="10" height="10" fill="#66800B"/><text x="140" y="697">merged</text>
+    <rect x="200" y="688" width="10" height="10" fill="#AF3029"/><text x="215" y="697">closed unmerged</text>
+  </g>
+  <line x1="50" y1="836" x2="480" y2="836" stroke="#DEDDDA"/>
+  <g>
+    <g transform="translate(58,0)"><rect x="0" y="758" width="14" height="78" fill="#205EA6"/><rect x="16" y="771" width="14" height="65" fill="#66800B"/><rect x="32" y="823" width="14" height="13" fill="#AF3029"/></g>
+    <g transform="translate(118,0)"><rect x="0" y="732" width="14" height="104" fill="#205EA6"/><rect x="16" y="745" width="14" height="91" fill="#66800B"/></g>
+    <g transform="translate(178,0)"><rect x="0" y="771" width="14" height="65" fill="#205EA6"/><rect x="16" y="758" width="14" height="78" fill="#66800B"/><rect x="32" y="810" width="14" height="26" fill="#AF3029"/></g>
+    <g transform="translate(238,0)"><rect x="0" y="719" width="14" height="117" fill="#205EA6"/><rect x="16" y="732" width="14" height="104" fill="#66800B"/><rect x="32" y="823" width="14" height="13" fill="#AF3029"/></g>
+    <g transform="translate(298,0)"><rect x="0" y="745" width="14" height="91" fill="#205EA6"/><rect x="16" y="758" width="14" height="78" fill="#66800B"/><rect x="32" y="823" width="14" height="13" fill="#AF3029"/></g>
+    <g transform="translate(358,0)"><rect x="0" y="784" width="14" height="52" fill="#205EA6"/><rect x="16" y="797" width="14" height="39" fill="#66800B"/></g>
+    <g transform="translate(418,0)"><rect x="0" y="758" width="14" height="78" fill="#205EA6"/><rect x="16" y="758" width="14" height="78" fill="#66800B"/><rect x="32" y="823" width="14" height="13" fill="#AF3029"/></g>
+    </g>
+  <g font-size="12" fill="#5E5C64" text-anchor="middle"><text x="81" y="854">Mon</text><text x="141" y="854">Tue</text><text x="201" y="854">Wed</text><text x="261" y="854">Thu</text><text x="321" y="854">Fri</text><text x="381" y="854">Sat</text><text x="441" y="854">Sun</text></g>
+  <g font-size="12" fill="#5E5C64">
+    <text x="505" y="750">Median time to merge</text><text x="505" y="772" font-size="20" font-weight="700" fill="#000">1.4 h</text>
+    <text x="505" y="800">p90 time to merge</text><text x="505" y="822" font-size="20" font-weight="700" fill="#000">9 h</text>
+    <text x="50" y="868" font-size="11" fill="#77767B">from public GitHub data for Tim-van-Oudheusden/website</text>
+  </g>
+
+  <!-- Who wrote the merged work -->
+  <rect x="650" y="646" width="320" height="230" rx="12" fill="#FFF"/>
+  <text x="670" y="676" font-size="16" font-weight="700" fill="#000">Who wrote the merged work</text>
+  <text x="670" y="710" font-size="26" font-weight="700" fill="#000">41 of 55</text>
+  <text x="782" y="710" font-size="12" fill="#5E5C64">merged PRs by Hive</text>
+  <g>
+    <g transform="translate(675,736)"><rect y="0" width="24" height="10" fill="#B7B5AC"/><rect y="10" width="24" height="10" fill="#24837B"/><rect y="20" width="24" height="10" fill="#5E409D"/><rect y="30" width="24" height="70" fill="#AD8301"/></g>
+    <g transform="translate(713,736)"><rect y="0" width="24" height="10" fill="#B7B5AC"/><rect y="10" width="24" height="5" fill="#24837B"/><rect y="15" width="24" height="10" fill="#5E409D"/><rect y="25" width="24" height="75" fill="#AD8301"/></g>
+    <g transform="translate(751,736)"><rect y="0" width="24" height="10" fill="#B7B5AC"/><rect y="10" width="24" height="10" fill="#24837B"/><rect y="20" width="24" height="20" fill="#5E409D"/><rect y="40" width="24" height="60" fill="#AD8301"/></g>
+    <g transform="translate(789,736)"><rect y="0" width="24" height="10" fill="#B7B5AC"/><rect y="10" width="24" height="5" fill="#24837B"/><rect y="15" width="24" height="5" fill="#5E409D"/><rect y="20" width="24" height="80" fill="#AD8301"/></g>
+    <g transform="translate(827,736)"><rect y="0" width="24" height="10" fill="#B7B5AC"/><rect y="10" width="24" height="5" fill="#24837B"/><rect y="15" width="24" height="15" fill="#5E409D"/><rect y="30" width="24" height="70" fill="#AD8301"/></g>
+    <g transform="translate(865,736)"><rect y="0" width="24" height="10" fill="#B7B5AC"/><rect y="10" width="24" height="5" fill="#24837B"/><rect y="15" width="24" height="85" fill="#AD8301"/></g>
+    <g transform="translate(903,736)"><rect y="0" width="24" height="10" fill="#B7B5AC"/><rect y="10" width="24" height="5" fill="#24837B"/><rect y="15" width="24" height="10" fill="#5E409D"/><rect y="25" width="24" height="75" fill="#AD8301"/></g>
+    </g>
+  <g font-size="11" fill="#5E5C64" text-anchor="middle"><text x="687" y="850">M</text><text x="725" y="850">T</text><text x="763" y="850">W</text><text x="801" y="850">T</text><text x="839" y="850">F</text><text x="877" y="850">S</text><text x="915" y="850">S</text></g>
+  <g font-size="11" fill="#5E5C64">
+    <rect x="670" y="860" width="9" height="9" fill="#AD8301"/><text x="683" y="868">Hive</text>
+    <rect x="715" y="860" width="9" height="9" fill="#5E409D"/><text x="728" y="868">Claude Code</text>
+    <rect x="800" y="860" width="9" height="9" fill="#24837B"/><text x="813" y="868">Dependabot</text>
+    <rect x="885" y="860" width="9" height="9" fill="#B7B5AC"/><text x="898" y="868">other</text>
+  </g>
+
+  <text x="30" y="910" font-size="12" fill="#5E5C64">Hive is an open-source agent orchestrator (github.com/hivecommons/hive). How it works on this repo: docs/multi-agent.md.</text>
+  <text x="30" y="928" font-size="12" fill="#5E5C64">Repository names, agent names, cost and logs are deliberately not published. Each chart has a "Show data" table below it.</text>
+</svg>
