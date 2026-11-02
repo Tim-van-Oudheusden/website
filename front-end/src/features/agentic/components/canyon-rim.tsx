@@ -1,21 +1,15 @@
 import type { JSX } from "react";
-import { useCallback } from "react";
 import { Link } from "react-router";
 
+import type { ProjectFrontmatter } from "shared";
 import { SITE_NAME } from "shared";
-
-import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
-import type { ContentLoader } from "@/shared/lib/content-loader";
 
 /**
  * The canyon's rim: the site itself and one flag per published project. The
- * flags are a bonus, so a failed or empty project list renders nothing rather
- * than an error box.
+ * flags are a bonus, so a project list that is still loading, failed (`null`)
+ * or is empty renders nothing rather than an error box.
  */
-export function CanyonRim({ loader }: { loader: ContentLoader }): JSX.Element | null {
-  const load = useCallback(() => loader.listProjects(), [loader]);
-  const { data: projects } = useLoadOnMount(load, "Failed to load projects");
-
+export function CanyonRim({ projects }: { projects: readonly ProjectFrontmatter[] | null }): JSX.Element | null {
   if (projects === null || projects.length === 0) {
     return null;
   }

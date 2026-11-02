@@ -1,0 +1,329 @@
+/*
+ * The Agentic canyon scene (components/canyon-scene.tsx).
+ *
+ * One number drives it: `--p`, the descent from 0 (golden hour, water at the
+ * rim) to 1 (night, water at the floor), set on an ancestor. Every moving part
+ * is a `transform` or `opacity` derived from `--p` with calc() and clamp();
+ * colour changes are crossfades between pre-painted variants. The layer map
+ * (rates and fade windows) is docs/assets/agentic/round-2/README.md.
+ */
+
+.canyon-scene {
+  /* Flexoki colours only the scene uses (accent ramps, ink and paper). */
+  --canyon-blue-50: #e1eceb;
+  --canyon-blue-100: #c6dde8;
+  --canyon-blue-150: #abcfe2;
+  --canyon-blue-200: #92bfdb;
+  --canyon-blue-300: #66a0c8;
+  --canyon-blue-400: #4385be;
+  --canyon-blue-500: #3171b2;
+  --canyon-blue-600: #205ea6;
+  --canyon-blue-700: #1a4f8c;
+  --canyon-blue-800: #163b66;
+  --canyon-blue-850: #133051;
+  --canyon-blue-900: #12253b;
+  --canyon-blue-950: #101a24;
+  --canyon-green-600: #66800b;
+  --canyon-green-700: #536907;
+  --canyon-green-800: #3d4c07;
+  --canyon-green-950: #1a1e0c;
+  --canyon-ink: #100f0f;
+  --canyon-magenta-100: #fccfda;
+  --canyon-magenta-150: #f9b9cf;
+  --canyon-magenta-200: #f4a4c2;
+  --canyon-magenta-300: #e47da8;
+  --canyon-magenta-400: #ce5d97;
+  --canyon-magenta-500: #b74583;
+  --canyon-magenta-600: #a02f6f;
+  --canyon-magenta-700: #87285e;
+  --canyon-magenta-800: #641f46;
+  --canyon-magenta-900: #39172b;
+  --canyon-orange-100: #fed3af;
+  --canyon-orange-150: #fcc192;
+  --canyon-orange-200: #f9ae77;
+  --canyon-orange-300: #ec8b49;
+  --canyon-orange-400: #da702c;
+  --canyon-orange-500: #cb6120;
+  --canyon-orange-600: #bc5215;
+  --canyon-orange-700: #9d4310;
+  --canyon-orange-800: #71320d;
+  --canyon-orange-900: #40200d;
+  --canyon-paper: #fffcf0;
+  --canyon-purple-100: #e2d9e9;
+  --canyon-purple-150: #d3cae6;
+  --canyon-purple-300: #a699d0;
+  --canyon-purple-400: #8b7ec8;
+  --canyon-purple-500: #735eb5;
+  --canyon-purple-600: #5e409d;
+  --canyon-purple-700: #4f3685;
+  --canyon-purple-800: #3c2a62;
+  --canyon-purple-850: #31234e;
+  --canyon-purple-900: #261c39;
+  --canyon-purple-950: #1a1623;
+  --canyon-red-100: #ffcabb;
+  --canyon-red-150: #fdb2a2;
+  --canyon-red-200: #f89a8a;
+  --canyon-red-300: #e8705f;
+  --canyon-red-400: #d14d41;
+  --canyon-red-500: #c03e35;
+  --canyon-red-600: #af3029;
+  --canyon-red-800: #6c201c;
+  --canyon-red-900: #3e1715;
+  --canyon-yellow-50: #faeec6;
+  --canyon-yellow-100: #f6e2a0;
+  --canyon-yellow-150: #f1d67e;
+  --canyon-yellow-200: #eccb60;
+  --canyon-yellow-300: #dfb431;
+  --canyon-yellow-400: #d0a215;
+  --canyon-yellow-500: #be9207;
+  --canyon-yellow-600: #ad8301;
+  --canyon-yellow-800: #664d01;
+
+  /*
+   * Time-of-day weights. Each says how far a time of day has arrived (0 → 1).
+   * Three-variant layers go golden → sunset (0–0.45) → night (0.45–1); the sky
+   * has a dusk step between (0.45–0.75) and night arrives over 0.75–1.
+   */
+  --canyon-sunset: clamp(0, var(--p, 0) / 0.45, 1);
+  --canyon-night: clamp(0, (var(--p, 0) - 0.45) / 0.55, 1);
+  --canyon-sky-dusk: clamp(0, (var(--p, 0) - 0.45) / 0.3, 1);
+  --canyon-sky-night: clamp(0, (var(--p, 0) - 0.75) / 0.25, 1);
+
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.canyon-scene > svg {
+  /* Parallax distances are desktop pixels at p = 1; the phone composition is drawn at 0.6×. */
+  --canyon-scale: 1;
+  /* The waterline drops six bands (6 · 72) and the sun sinks from y 190 to 522 by p = 0.5. */
+  --canyon-water-travel: 432;
+  --canyon-sun-travel: 664;
+
+  /* Which composition shows is up to the markup's breakpoint utilities (phone below `sm`). */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-sans);
+}
+
+.canyon-scene > svg[data-composition="phone"] {
+  --canyon-scale: 0.6;
+  --canyon-water-travel: 276;
+  --canyon-sun-travel: 452;
+}
+
+/* Pre-painted colour variants. `tone` sheets are opaque and stack; `only` sheets fade out again. */
+.canyon-scene [data-tone="sunset"] {
+  opacity: var(--canyon-sunset);
+}
+
+.canyon-scene [data-tone="night"] {
+  opacity: var(--canyon-night);
+}
+
+.canyon-scene [data-tone="sky-dusk"] {
+  opacity: var(--canyon-sky-dusk);
+}
+
+.canyon-scene [data-tone="sky-night"] {
+  opacity: var(--canyon-sky-night);
+}
+
+.canyon-scene [data-only="golden"] {
+  opacity: calc(1 - var(--canyon-sunset));
+}
+
+.canyon-scene [data-only="sunset"] {
+  opacity: calc(var(--canyon-sunset) - var(--canyon-night));
+}
+
+.canyon-scene [data-only="night"] {
+  opacity: var(--canyon-night);
+}
+
+/* Parallax: each depth plane slides down at its own rate (desktop px at p = 1). The walls are the stage and stay. */
+.canyon-scene [data-layer="stars"] { --canyon-rate: 40; }
+.canyon-scene [data-layer="clouds-back"] { --canyon-rate: 34; }
+.canyon-scene [data-layer="ridge-far"] { --canyon-rate: 36; }
+.canyon-scene [data-layer="ridge-far-2"] { --canyon-rate: 26; }
+.canyon-scene [data-layer="ridge-far-3"] { --canyon-rate: 20; }
+.canyon-scene [data-layer="clouds-front"] { --canyon-rate: 26; }
+.canyon-scene [data-layer="buttes"] { --canyon-rate: 14; }
+.canyon-scene [data-layer="gorge-far"] { --canyon-rate: 10; }
+.canyon-scene [data-layer="gorge-near"] { --canyon-rate: 5; }
+.canyon-scene [data-layer="foreground"] { --canyon-rate: -14; }
+
+.canyon-scene :is(
+  [data-layer="stars"],
+  [data-layer="clouds-back"],
+  [data-layer^="ridge-far"],
+  [data-layer="clouds-front"],
+  [data-layer="buttes"],
+  [data-layer^="gorge-"],
+  [data-layer="foreground"]
+) {
+  transform: translateY(calc(var(--p, 0) * var(--canyon-rate) * var(--canyon-scale) * 1px));
+}
+
+/* Sky objects. */
+.canyon-scene [data-layer="stars"] {
+  opacity: clamp(0, (var(--p, 0) - 0.6) / 0.3, 1);
+}
+
+.canyon-scene :is([data-layer="moon"], [data-layer="moon-column"]) {
+  opacity: clamp(0, (var(--p, 0) - 0.8) / 0.2, 1);
+}
+
+.canyon-scene [data-layer="sun"] {
+  /* Sinks into the gorge; the far ridges and gorge floors cover it by p ≈ 0.7. */
+  transform: translateY(calc(var(--p, 0) * var(--canyon-sun-travel) * 1px));
+}
+
+.canyon-scene [data-layer="sun-rays"] {
+  opacity: clamp(0, 1 - var(--p, 0) / 0.3, 1);
+}
+
+.canyon-scene [data-layer="sun-glow"] {
+  transform: scale(calc(1 - 0.2 * var(--p, 0)));
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.canyon-scene [data-layer="sun-red"] {
+  opacity: clamp(0, (var(--p, 0) - 0.45) / 0.25, 1);
+}
+
+.canyon-scene [data-layer="birds"] {
+  opacity: clamp(0, 1 - var(--p, 0) / 0.3, 1);
+}
+
+/* Light on the walls: cast shadows lengthen towards sunset and go at night; the tints darken the land. */
+.canyon-scene [data-layer="shadows-short"] {
+  opacity: clamp(0, 1 - var(--p, 0) / 0.4, 1);
+}
+
+.canyon-scene [data-layer="shadows-long"] {
+  opacity: min(clamp(0, (var(--p, 0) - 0.1) / 0.4, 1), clamp(0, (0.85 - var(--p, 0)) / 0.35, 1));
+}
+
+.canyon-scene [data-layer="tint-sunset"] {
+  opacity: calc(0.14 * min(clamp(0, var(--p, 0) / 0.5, 1), clamp(0, (0.8 - var(--p, 0)) / 0.3, 1)));
+}
+
+.canyon-scene [data-layer="tint-night"] {
+  opacity: calc(0.5 * clamp(0, (var(--p, 0) - 0.55) / 0.45, 1));
+}
+
+.canyon-scene [data-layer="moonlit-edges"] {
+  opacity: calc(0.45 * clamp(0, (var(--p, 0) - 0.7) / 0.3, 1));
+}
+
+.canyon-scene [data-layer="mist"] {
+  /* The sheets are painted at 0.4: this peaks at 0.4 for p = 0.5 and settles at 0.25. */
+  opacity: calc(clamp(0, var(--p, 0) / 0.5, 1) * (1 - 0.375 * clamp(0, (var(--p, 0) - 0.5) / 0.5, 1)));
+}
+
+/* Water: the surface drops from the foot of the rim cap (p = 0) to just above the floor (p = 1). */
+.canyon-scene [data-layer="water"] {
+  transform: translateY(calc(var(--p, 0) * var(--canyon-water-travel) * 1px));
+}
+
+.canyon-scene [data-layer="rim-reflection"] {
+  /* A mirror image moves twice as fast as its axis, so it gets the water's travel once more. */
+  opacity: clamp(0, 1 - var(--p, 0) / 0.3, 1);
+  transform: translateY(calc(var(--p, 0) * var(--canyon-water-travel) * 1px));
+}
+
+.canyon-scene [data-layer="sun-column"] {
+  /* Follows the sun's visibility: full while it is above the gorge floor, gone once it sets behind it (p ≈ 0.7). */
+  opacity: clamp(0, (0.7 - var(--p, 0)) / 0.25, 1);
+}
+
+/* Strata: shown by data-revealed, which changes only when the water passes the middle of a band. */
+.canyon-scene [data-layer="tide-lines"] > [data-revealed] {
+  opacity: 0;
+}
+
+.canyon-scene [data-layer="tide-lines"] > [data-revealed="true"] {
+  opacity: 1;
+}
+
+.canyon-scene [data-layer="drowned-edges"] > [data-revealed="true"] {
+  opacity: 0;
+}
+
+.canyon-scene [data-tablet] {
+  opacity: 0;
+  transform: translateX(calc(12px * var(--canyon-scale)));
+}
+
+.canyon-scene [data-tablet][data-revealed="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Ambient loops: transform and opacity only, nothing faster than once per 2 s, nothing flashing. */
+@media (prefers-reduced-motion: no-preference) {
+  .canyon-scene [data-tablet] {
+    transition: opacity 400ms ease-out, transform 400ms ease-out;
+  }
+
+  .canyon-scene [data-ambient="water"] {
+    animation: canyon-water-drift 6s ease-in-out infinite alternate;
+  }
+
+  .canyon-scene [data-ambient="mist"] {
+    animation: canyon-mist-drift 14s ease-in-out infinite alternate;
+  }
+
+  .canyon-scene [data-ambient="birds"] {
+    animation: canyon-birds-drift 9s ease-in-out infinite alternate;
+  }
+
+  .canyon-scene [data-layer="sun-glow"] > g {
+    animation: canyon-sun-breathe 4s ease-in-out infinite alternate;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .canyon-scene [data-twinkle] {
+    animation: canyon-twinkle 3.6s ease-in-out infinite alternate;
+  }
+
+  .canyon-scene [data-twinkle="2"] {
+    animation-delay: -1.2s;
+  }
+
+  .canyon-scene [data-twinkle="3"] {
+    animation-delay: -2.4s;
+  }
+}
+
+@keyframes canyon-water-drift {
+  from { transform: translateX(-8px); }
+  to { transform: translateX(8px); }
+}
+
+@keyframes canyon-mist-drift {
+  from { transform: translateX(-16px); }
+  to { transform: translateX(16px); }
+}
+
+@keyframes canyon-birds-drift {
+  from { transform: translate(0, 0); }
+  to { transform: translate(-24px, -6px); }
+}
+
+@keyframes canyon-sun-breathe {
+  from { transform: scale(1); }
+  to { transform: scale(1.04); }
+}
+
+@keyframes canyon-twinkle {
+  from { opacity: 1; }
+  to { opacity: 0.45; }
+}
