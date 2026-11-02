@@ -2,7 +2,7 @@
 // PR acceptance metric, as a Markdown table: of the PRs closed in a window, how
 // many were merged and how many closed without merging, per source (a Hive
 // agent, Claude Code in CI, Dependabot, or other; the AI audit trail's rule in
-// scripts/pr-source.ts).
+// shared/src/pr-source.ts).
 //
 // Usage:
 //   bun scripts/pr-metrics.ts <since YYYY-MM-DD> <prs.json>
@@ -12,7 +12,7 @@
 // the input can't be read, 2 on bad usage.
 import { readFileSync } from "node:fs";
 
-import { attribute, SOURCES } from "./pr-source";
+import { attribute, SOURCES } from "../shared/src/pr-source";
 
 interface PullRequest {
   headRefName: string;

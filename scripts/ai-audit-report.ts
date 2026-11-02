@@ -13,8 +13,8 @@
 // usage.
 import { readFileSync } from "node:fs";
 
-import type { Attribution } from "./pr-source";
-import { attribute, SOURCES } from "./pr-source";
+import type { Attribution } from "../shared/src/pr-source";
+import { attribute, SOURCES } from "../shared/src/pr-source";
 
 interface PullRequest {
   number: number;
