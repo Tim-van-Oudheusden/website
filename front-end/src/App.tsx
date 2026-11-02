@@ -1,8 +1,9 @@
 import type { JSX } from "react";
 import { BrowserRouter, Route, Routes } from "react-router";
 
-import { STANDALONE_PAGE_SLUGS } from "shared";
+import { AGENTIC_PAGE_PATH, STANDALONE_PAGE_SLUGS } from "shared";
 
+import { AgenticPage } from "@/features/agentic/pages/agentic-page";
 import { ArticlesPage } from "@/features/articles/pages/articles-page";
 import { TagPage } from "@/features/articles/pages/tag-page";
 import { HomePage } from "@/features/home/pages/home-page";
@@ -20,6 +21,7 @@ export function AppRoutes(): JSX.Element {
       <Route path="/" element={<HomePage />} />
       <Route path="/projects" element={<ProjectsPage />} />
       <Route path="/projects/:slug" element={<ProjectPage />} />
+      <Route path={AGENTIC_PAGE_PATH} element={<AgenticPage />} />
       <Route path="/articles" element={<ArticlesPage />} />
       <Route path="/articles/:slug" element={<ArticlesPage />} />
       <Route path="/tags/:tag" element={<TagPage />} />

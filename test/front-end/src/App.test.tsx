@@ -68,6 +68,12 @@ describe("AppRoutes", () => {
     expect(renderRoute("/uses")).toContain("Loading page...");
   });
 
+  test("resolves /agentic to the Agentic page", () => {
+    const html = renderRoute("/agentic");
+
+    expect(html).toMatch(/<h1[^>]*>Agentic<\/h1>/);
+  });
+
   test("renders a not-found page linking back into the site for a path no route matches", () => {
     const html = renderRoute("/blog/foo");
 
@@ -83,6 +89,7 @@ describe("AppRoutes main landmark", () => {
     "/projects/some-project",
     "/articles",
     "/articles/introduction",
+    "/agentic",
     "/tags/docker",
     "/now",
     "/uses",

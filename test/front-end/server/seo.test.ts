@@ -45,6 +45,7 @@ describe("renderSitemap", () => {
     expect(xml).toContain("<loc>https://buildwithtim.dev/</loc>");
     expect(xml).toContain("<loc>https://buildwithtim.dev/articles</loc>");
     expect(xml).toContain("<loc>https://buildwithtim.dev/projects</loc>");
+    expect(xml).toContain("<loc>https://buildwithtim.dev/agentic</loc>");
 
     for (const slug of STANDALONE_PAGE_SLUGS) {
       expect(xml).toContain(`<loc>https://buildwithtim.dev/${slug}</loc>`);

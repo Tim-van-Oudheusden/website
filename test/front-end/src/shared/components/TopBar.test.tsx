@@ -83,6 +83,17 @@ describe("TopBar", () => {
     expect(html).toContain('data-active-nav-text="true"');
     expect(html).toContain('data-active-nav="false"');
   });
+
+  test.each(["/agentic", "/agentic#metrics"])("lists Agentic after Projects and marks only it active on %s", (pathname) => {
+    const html = renderTopBar(pathname);
+    const navHrefs = [...html.matchAll(/<a [^>]*data-active-nav="[^"]*"[^>]*>/g)].map((match) => /href="([^"]*)"/.exec(match[0])?.[1]);
+    const activeLinks = html.match(/<a [^>]*data-active-nav="true"[^>]*>[\s\S]*?<\/a>/g) ?? [];
+
+    expect(navHrefs).toEqual(["/", "/articles", "/projects", "/agentic"]);
+    expect(activeLinks).toHaveLength(1);
+    expect(activeLinks[0]).toContain('href="/agentic"');
+    expect(activeLinks[0]).toContain(">Agentic</span>");
+  });
 });
 
 describe("TopBar scroll state", () => {
@@ -145,7 +156,7 @@ describe("TopBar mobile menu", () => {
       const menu = findBySlot(fakeDocument.body, "sheet-content");
       const menuLinks = queryFakeElements(menu, (el) => el.nodeName === "A");
 
-      expect(menuLinks.map((link) => link.getAttribute("href"))).toEqual(["/", "/articles", "/projects"]);
+      expect(menuLinks.map((link) => link.getAttribute("href"))).toEqual(["/", "/articles", "/projects", "/agentic"]);
 
       const articlesLink = menuLinks[1];
 
@@ -159,6 +170,33 @@ describe("TopBar mobile menu", () => {
       const activeLinks = queryFakeElements(mount.container, (el) => el.getAttribute("data-active-nav") === "true");
 
       expect(activeLinks.map((link) => link.getAttribute("href"))).toEqual(["/articles"]);
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("marks the current page in the menu, so Agentic is current on /agentic", () => {
+    const fakeDocument = document as unknown as FakeDocument;
+    const mount = mountIntoBody(
+      createElement(MemoryRouter, { initialEntries: ["/agentic#metrics"] }, createElement(TopBar)),
+    );
+
+    try {
+      const [menuButton] = queryFakeElements(
+        mount.container,
+        (el) => el.nodeName === "BUTTON" && el.textContent.includes("Open menu"),
+      );
+
+      if (menuButton === undefined) {
+        throw new Error("Expected the mobile menu button");
+      }
+
+      fireFakePointer(menuButton, "click");
+
+      const menu = findBySlot(fakeDocument.body, "sheet-content");
+      const currentLinks = queryFakeElements(menu, (el) => el.nodeName === "A" && el.getAttribute("aria-current") === "page");
+
+      expect(currentLinks.map((link) => [link.getAttribute("href"), link.textContent])).toEqual([["/agentic", "Agentic"]]);
     } finally {
       unmountFakeDomRoot(mount);
     }

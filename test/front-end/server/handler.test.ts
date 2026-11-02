@@ -215,6 +215,19 @@ describe("front-end request handler", () => {
     expect(await mixedCase.text()).toContain('<link rel="canonical" href="https://buildwithtim.dev/articles/yoga-nidra" />');
   });
 
+  test("serves the Agentic page, with or without a trailing slash, as the indexable app shell", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
+
+    for (const path of ["/agentic", "/agentic/"]) {
+      const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+
+      expect({ path, status: response.status }).toEqual({ path, status: 200 });
+      expect(await response.text()).toBe(INDEX_HTML);
+    }
+
+    expect((await handle(new Request("https://buildwithtim.dev/agentic/extra"))).status).toBe(404);
+  });
+
   test("serves every route App.tsx declares as an indexable 200, so the server's route list cannot fall behind it", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
     const paths = createRoutesFromChildren(AppRoutes().props.children)
@@ -351,6 +364,7 @@ describe("front-end request handler", () => {
     expect(text.startsWith("# Build with Tim\n")).toBe(true);
     expect(text).toContain("- [Articles](https://buildwithtim.dev/articles)");
     expect(text).toContain("- [Projects](https://buildwithtim.dev/projects)");
+    expect(text).toContain("- [Agentic](https://buildwithtim.dev/agentic)");
     expect(text).toContain("- [Yoga Nidra, a way to be at peace in chaos](https://buildwithtim.dev/articles/yoga-nidra): How I discovered Yoga Nidra.");
     expect(text).toContain("- [Pi Sandbox Automation](https://buildwithtim.dev/projects/pi-sandbox-automation)");
   });
@@ -383,6 +397,7 @@ describe("front-end request handler", () => {
       "https://buildwithtim.dev/",
       "https://buildwithtim.dev/articles",
       "https://buildwithtim.dev/projects",
+      "https://buildwithtim.dev/agentic",
       "https://buildwithtim.dev/now",
       "https://buildwithtim.dev/uses",
       "https://buildwithtim.dev/articles/yoga-nidra",
@@ -406,6 +421,7 @@ describe("front-end request handler", () => {
       "https://buildwithtim.dev/",
       "https://buildwithtim.dev/articles",
       "https://buildwithtim.dev/projects",
+      "https://buildwithtim.dev/agentic",
       "https://buildwithtim.dev/now",
       "https://buildwithtim.dev/uses",
     ]);

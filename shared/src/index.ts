@@ -87,6 +87,13 @@ export const ASSET_PATH_PREFIX = "/content-assets/images/";
 export const STANDALONE_PAGE_SLUGS = ["now", "uses"] as const;
 
 /**
+ * Path of the Agentic page, which shows how Tim builds with AI agents. Used by
+ * the front-end router and nav, and by the front-end server (to answer the
+ * path with the app shell, and to list it in the sitemap and llms.txt).
+ */
+export const AGENTIC_PAGE_PATH = "/agentic";
+
+/**
  * The mark's blue (see `BRANDING.md`). Hand-copied into `front-end/index.html`'s
  * `theme-color` meta tag, `public/manifest.webmanifest`, `public/favicon.svg`'s
  * fill, and `front-end/src/index.css`'s `--primary`/`--chart-1` tokens — those
