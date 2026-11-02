@@ -1,0 +1,158 @@
+{
+  "hiveId": "CANARY-HIVE-ID",
+  "agents": [
+    {
+      "name": "CANARY-AGENT-1",
+      "state": "paused"
+    },
+    {
+      "name": "CANARY-AGENT-2",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-3",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-4",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-5",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-6",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-7",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-8",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-9",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-10",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-11",
+      "state": "stopped"
+    },
+    {
+      "name": "CANARY-AGENT-12",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-13",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-14",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-15",
+      "state": "running"
+    },
+    {
+      "name": "CANARY-AGENT-16",
+      "state": "running"
+    }
+  ],
+  "history": [
+    {
+      "t": 1793627748679,
+      "govMode": "IDLE",
+      "govIssues": 3,
+      "govPrs": 2,
+      "govTotal": 10,
+      "govHold": 5,
+      "govActive": 5,
+      "sla_violations": 3,
+      "actionableCount": 3,
+      "openPrCount": 2,
+      "mergeableCount": 0,
+      "beadsWorkers": 0,
+      "beadsSupervisor": 0,
+      "repos": {
+        "CANARY-OWNER/CANARY-REPO": {
+          "issues": 1,
+          "prs": 2
+        }
+      },
+      "agentStats": {
+        "CANARY-AGENT-STAT": {
+          "kicks": 1
+        }
+      },
+      "agents_kicked": [
+        "CANARY-AGENT-KICKED"
+      ]
+    },
+    {
+      "t": 1793628304808,
+      "govMode": "IDLE",
+      "govIssues": 2,
+      "govPrs": 3,
+      "govTotal": 31,
+      "govHold": 26,
+      "govActive": 5,
+      "sla_violations": 2,
+      "agents_kicked": [
+        "CANARY-AGENT-KICKED"
+      ],
+      "actionableCount": 2,
+      "openPrCount": 3,
+      "mergeableCount": 0,
+      "beadsWorkers": 0,
+      "beadsSupervisor": 0,
+      "repos": {
+        "CANARY-OWNER/CANARY-REPO": {
+          "issues": 1,
+          "prs": 2
+        }
+      },
+      "agentStats": {
+        "CANARY-AGENT-STAT": {
+          "kicks": 1
+        }
+      }
+    },
+    {
+      "t": 1793628805040,
+      "govMode": "QUIET",
+      "govIssues": 2,
+      "govPrs": 6,
+      "govTotal": 34,
+      "govHold": 26,
+      "govActive": 8,
+      "sla_violations": 2,
+      "agents_kicked": [
+        "CANARY-AGENT-KICKED"
+      ],
+      "actionableCount": 2,
+      "openPrCount": 6,
+      "mergeableCount": 0,
+      "beadsWorkers": 0,
+      "beadsSupervisor": 0,
+      "repos": {
+        "CANARY-OWNER/CANARY-REPO": {
+          "issues": 1,
+          "prs": 2
+        }
+      },
+      "agentStats": {
+        "CANARY-AGENT-STAT": {
+          "kicks": 1
+        }
+      }
+    }
+  ]
+}

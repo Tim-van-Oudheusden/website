@@ -1,0 +1,44 @@
+{
+  "bucket": "hour",
+  "collected_at": "2026-11-02T13:00:00Z",
+  "queue_depth": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "tasks_done": [
+    1,
+    1,
+    1,
+    0,
+    1,
+    0
+  ],
+  "fleet_size": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "per_user_done": {
+    "CANARY-LOGIN": [
+      0,
+      1,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  "per_user_pr": {
+    "CANARY-LOGIN": [
+      0,
+      1
+    ]
+  }
+}

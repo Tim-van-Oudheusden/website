@@ -28,7 +28,7 @@ Three Bun workspaces hold the application code; unit tests live in a separate to
 
 ```text
 back-end/src/
-  features/<name>/     one folder per route group (content, health, hello, pages, root, views)
+  features/<name>/     one folder per route group (content, health, hello, hive, pages, root, views)
   core/                cross-cutting server code: metrics, rate limit, security headers, server config
   scripts/             CLI entry points, e.g. validate-content.ts
   app.ts, index.ts     app assembly and process entry
