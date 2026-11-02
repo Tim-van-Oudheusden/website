@@ -215,6 +215,11 @@ Body
       { data: { title: "T", links: [{ type: "repo", url: "https://x" }] }, content: "Body" },
     ],
     [
+      "ignores a whitespace-only line that holds a tab, which YAML allows",
+      ["---", "title: T", "\t", "  \t", "draft: true", "---", "Body"],
+      { data: { title: "T", draft: true }, content: "Body" },
+    ],
+    [
       "reads a list written at the same indent as its key",
       ["---", "title: T", "tags:", "- Linux", "- Containers", "slug: t", "---", "Body"],
       { data: { title: "T", tags: ["Linux", "Containers"], slug: "t" }, content: "Body" },
