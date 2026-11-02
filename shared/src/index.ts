@@ -264,7 +264,10 @@ export interface HivePublicMetrics {
   /** From /api/contribute/*; null when unavailable. */
   contributors: {
     collectedAt: string;
-    /** 168 hourly buckets, oldest first, aligned with `fleetSize`. */
+    /**
+     * Hourly buckets, oldest first, as many as Hive sends (168 today). Same length as `fleetSize`; both are empty
+     * when either series is missing or malformed, or their lengths differ.
+     */
     tasksPerHour: number[];
     fleetSize: number[];
     runs7d: {
