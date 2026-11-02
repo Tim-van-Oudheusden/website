@@ -214,6 +214,48 @@ Scrape it on the host:
 curl -s http://127.0.0.1:8301/metrics
 ```
 
+### Hive metrics
+
+`GET /api/hive/metrics` feeds the Agentic tab. The back-end fetches, caches and
+trims these sources; the browser never calls them:
+
+- Hive's gateway on the host, at `HIVE_BASE_URL`
+  (`http://host.containers.internal:3001`): `/api/health`,
+  `/api/contribute/metrics` and `/api/contribute/run-stats` (no auth), and
+  `/api/widget/summary` with the `X-Hive-Widget-Token` header. The pod reaches
+  the host's `*:3001` outbound; no port is published for it.
+- GitHub's public REST API: this repository's pull requests, unauthenticated.
+
+`HIVE_WIDGET_TOKEN` is Hive's read-only widget token. `prod.yaml` reads it from
+the podman secret `hive-widget-token` (key `token`) with `optional: true`, so
+the pod still starts without it; the route then skips the widget call and
+answers `hive: null`. The secret was created on the host on 2026-11-02 as a
+Kubernetes Secret YAML piped straight into podman, so the token is never in
+the repo or on disk (paste the token at the prompt):
+
+```bash
+read -rs HIVE_TOKEN
+printf 'apiVersion: v1\nkind: Secret\nmetadata:\n  name: hive-widget-token\nstringData:\n  token: %s\n' "$HIVE_TOKEN" \
+  | podman secret create hive-widget-token -
+unset HIVE_TOKEN
+```
+
+To rotate it, revoke the old token in Hive (`DELETE /api/widget/token`), mint
+a new one, then replace the secret and replay the pod:
+
+```bash
+podman secret rm hive-widget-token
+# create it again as above, with the new token
+systemctl --user restart podman-kube@website.service
+```
+
+Check it end to end. Expect `"live"`; `"stale"` means a cached answer is over
+10 minutes old, and `"unavailable"` means no source has answered yet:
+
+```bash
+curl -s https://buildwithtim.dev/api/hive/metrics | jq .state
+```
+
 ---
 
 ## 2. Cloudflare Tunnel
@@ -377,5 +419,7 @@ automatic rollback above fired or a manual rollback was needed.
   it is never inlined, never committed, and never baked into an image.
 - The GHCR pull token (classic PAT, `read:packages` only) lives exclusively in
   `~/.config/containers/auth.json` (`0600`, host-only).
+- The Hive widget token (read-only) lives exclusively in the podman secret
+  `hive-widget-token`; see [Hive metrics](#hive-metrics).
 - `deploy/cloudflared/config.yml` is checked in and contains no secret material
   (the `deploy-config.test.ts` test enforces this).

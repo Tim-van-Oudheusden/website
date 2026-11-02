@@ -298,3 +298,60 @@ describe("dev pod manifest", () => {
     }
   });
 });
+
+describe("prod pod Hive metrics config", () => {
+  interface EnvVar {
+    name: string;
+    value?: string;
+    valueFrom?: { secretKeyRef?: { name: string; key: string; optional?: boolean } };
+  }
+
+  interface Container {
+    name: string;
+    env?: EnvVar[];
+    ports?: { containerPort: number; hostPort?: number }[];
+  }
+
+  function containers(): Container[] {
+    const pod = Bun.YAML.parse(readDeploy("deploy/kube/prod.yaml")) as { spec: { containers: Container[] } };
+
+    return pod.spec.containers;
+  }
+
+  // Why: the widget token is read-only but still a credential; only the
+  // back-end calls Hive, so no other container gets it (#1062).
+  test("only the back-end references the hive-widget-token secret", () => {
+    const referencing = containers()
+      .filter((c) => c.env?.some((e) => e.valueFrom?.secretKeyRef?.name === "hive-widget-token"))
+      .map((c) => c.name);
+
+    expect(referencing).toEqual(["back-end"]);
+  });
+
+  // Why: a missing podman secret must not stop the site; the back-end then
+  // just serves the metrics without the widget summary.
+  test("the back-end reads HIVE_WIDGET_TOKEN from the secret's token key, optionally", () => {
+    const backEnd = containers().find((c) => c.name === "back-end");
+    const token = backEnd?.env?.find((e) => e.name === "HIVE_WIDGET_TOKEN");
+
+    expect(token?.value).toBeUndefined();
+    expect(token?.valueFrom?.secretKeyRef).toEqual({ name: "hive-widget-token", key: "token", optional: true });
+  });
+
+  test("the back-end reaches Hive's gateway on the host at host.containers.internal:3001", () => {
+    const backEnd = containers().find((c) => c.name === "back-end");
+
+    expect(backEnd?.env?.find((e) => e.name === "HIVE_BASE_URL")?.value).toBe(
+      "http://host.containers.internal:3001",
+    );
+  });
+
+  // Why: Hive is reached outbound from the pod; nothing about it is published.
+  test("publishes only the front-end and back-end ports", () => {
+    const published = containers().flatMap((c) =>
+      (c.ports ?? []).filter((p) => p.hostPort !== undefined).map((p) => `${c.name}:${p.hostPort}`),
+    );
+
+    expect(published).toEqual(["front-end:8300", "back-end:8301"]);
+  });
+});

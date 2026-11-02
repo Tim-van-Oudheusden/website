@@ -57,6 +57,21 @@ spec:
         # pod replays and image updates.
         - name: VIEWS_DB_PATH
           value: /data/views.sqlite
+        # Hive's gateway on the host, for GET /api/hive/metrics (#1062). The
+        # pod reaches the host's *:3001 through pasta; nothing is published.
+        - name: HIVE_BASE_URL
+          value: http://host.containers.internal:3001
+        # Hive's read-only widget token, held only in the host's podman secret
+        # hive-widget-token (a Kubernetes Secret with stringData.token; see
+        # docs/deploy.md). optional: the pod still starts without the secret;
+        # the route then skips /api/widget/summary and answers `hive: null`.
+        # Resolved by kube play via secretKeyRef, verified 2026-11-02.
+        - name: HIVE_WIDGET_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hive-widget-token
+              key: token
+              optional: true
       ports:
         - containerPort: 3001
           hostPort: 8301
