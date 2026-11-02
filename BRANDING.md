@@ -61,7 +61,8 @@ Colour tokens live in [`front-end/src/index.css`](front-end/src/index.css). Comp
 - the neutral ramp, lightest to darkest: `--paper-1` … `--paper-5`, then `--ink-1` … `--ink-5`. Dark mode swaps in the
   Flexoki ramp at matching lightness, so `dark:text-(--paper-1)` stays the lightest step;
 - site roles with one job each: `--site-page-bg`, `--site-section-well-bg`, `--site-accent` (accent text, rings and
-  indicators) and `--site-toc-inactive`.
+  indicators), `--site-toc-inactive` and `--site-chart-*` (chart series on the Agentic page: the accent, two neutral
+  steps and the Flexoki accents, 600 in light mode and 400 in dark mode, each at least 3:1 on the well).
 
 Every design change is checked in both light and dark mode, and every text and UI pair must meet WCAG 2.2 AA: 4.5:1 for
 body text, 3:1 for large text, UI boundaries and focus rings.
