@@ -302,6 +302,25 @@
   opacity: 0;
 }
 
+/*
+ * The end of the scene: the bottom quarter of the composition fades into the page background (either theme) as the
+ * track ends, over about its last 30svh of scrolling, so the night sky meets the metrics section without a hard edge.
+ * The tablets are drawn above it. A still frame sets --canyon-still-fade to keep it on as a static edge.
+ */
+.canyon-night-fade {
+  --p: inherit;
+
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 25cqh;
+  background: linear-gradient(to bottom, transparent, var(--site-page-bg) 70%);
+  pointer-events: none;
+  opacity: max(var(--canyon-still-fade, 0), clamp(0, (var(--p) - 0.92) / 0.08, 1));
+  will-change: opacity;
+}
+
 /* Reveal fades and ambient loops are time-based, so they run only with motion allowed; none loops faster than 2 s. */
 @media (prefers-reduced-motion: no-preference) {
   .canyon-layer:is([data-layer^="tablet-"], [data-layer^="tide-"]) {
