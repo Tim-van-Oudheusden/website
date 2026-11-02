@@ -14,12 +14,14 @@ interface Container {
   env?: { name: string; valueFrom?: { secretKeyRef?: { name: string } } }[];
   envFrom?: unknown[];
   securityContext?: Record<string, unknown>;
+  volumeMounts?: { name: string; mountPath: string; mountPropagation?: string }[];
 }
 
 interface Pod {
   metadata: { name: string };
   spec: {
     hostNetwork?: boolean;
+    securityContext?: Record<string, unknown>;
     containers: Container[];
     volumes: { name: string; hostPath?: { path: string } }[];
   };
@@ -68,6 +70,24 @@ describe("deploy/systemd/validate-manifest.ts", () => {
     ["privilege escalation", (pod: Pod) => {
       backEnd(pod).securityContext = { allowPrivilegeEscalation: true };
     }],
+    ["an SELinux type that turns off confinement", (pod: Pod) => {
+      backEnd(pod).securityContext = { seLinuxOptions: { type: "spc_t" } };
+    }],
+    ["running as root", (pod: Pod) => {
+      backEnd(pod).securityContext = { runAsUser: 0 };
+    }],
+    ["an unmasked /proc", (pod: Pod) => {
+      backEnd(pod).securityContext = { procMount: "Unmasked" };
+    }],
+    ["no seccomp filter", (pod: Pod) => {
+      backEnd(pod).securityContext = { seccompProfile: { type: "Unconfined" } };
+    }],
+    ["a pod-level securityContext", (pod: Pod) => {
+      pod.spec.securityContext = { seLinuxOptions: { type: "spc_t" } };
+    }],
+    ["mount propagation from the container to the host", (pod: Pod) => {
+      backEnd(pod).volumeMounts = [{ name: "views-data", mountPath: "/data", mountPropagation: "Bidirectional" }];
+    }],
     ["annotations, which podman reads as security switches", (pod: Pod) => {
       Object.assign(pod.metadata, { annotations: { "io.podman.annotations.label/back-end": "disable" } });
     }],
@@ -104,6 +124,18 @@ describe("deploy/systemd/validate-manifest.ts", () => {
   test("accepts an emptyDir volume, which grants nothing on the host", () => {
     expect(validateManifest(mutated((pod) => {
       pod.spec.volumes.push(Object.assign({ name: "scratch" }, { emptyDir: {} }));
+    }))).toEqual([]);
+  });
+
+  test("accepts a container securityContext that only takes privileges away", () => {
+    expect(validateManifest(mutated((pod) => {
+      backEnd(pod).securityContext = {
+        privileged: false,
+        allowPrivilegeEscalation: false,
+        capabilities: { drop: ["ALL"] },
+        readOnlyRootFilesystem: true,
+        runAsNonRoot: true,
+      };
     }))).toEqual([]);
   });
 });

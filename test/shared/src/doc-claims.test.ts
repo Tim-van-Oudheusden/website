@@ -160,3 +160,12 @@ describe("docs/testing.md E2E tuning table", () => {
     expect(sorted(firstColumnNames(tuning))).toEqual(sorted(read));
   });
 });
+
+describe("docs/deploy.md manifest check", () => {
+  test("names every container securityContext key validate-manifest.ts allows, and no other", () => {
+    const bullet = /container `securityContext` key other\s+than ([^(]+)\(/.exec(readRootFile("docs/deploy.md"))?.[1] ?? "";
+    const keys = /SECURITY_KEYS[^=]*= \[([^\]]*)\]/.exec(readRootFile("deploy/systemd/validate-manifest.ts"))?.[1] ?? "";
+
+    expect(sorted(matchAll(bullet, /`(\w+)`/g))).toEqual(sorted(matchAll(keys, /"(\w+)"/g)));
+  });
+});
