@@ -61,7 +61,14 @@ export const ROUTES = {
   CONTENT_BY_SLUG: "/content/:slug",
   PAGE_BY_SLUG: "/pages/:slug",
   VIEW_BY_SLUG: "/views/:slug",
+  HIVE_METRICS: "/hive/metrics",
 } as const;
+
+/**
+ * Age after which a part of the Hive metrics counts as stale (10 minutes).
+ * The back-end reports `state: "stale"` once any part is older than this.
+ */
+export const HIVE_METRICS_STALE_AFTER_MS = 600_000;
 
 /**
  * URL path under which the back-end serves content images (content/images/*).
@@ -224,3 +231,64 @@ export interface HealthCheckResponse {
  * - "error"    — service is experiencing failures
  */
 export type ServiceStatus = "ok" | "degraded" | "error";
+
+/* ── Hive metrics (GET /hive/metrics) ── */
+
+/** Hive governor mode; Hive sends IDLE/QUIET/BUSY/SURGE, lower-cased here. */
+export type GovernorMode = "idle" | "quiet" | "busy" | "surge";
+
+/**
+ * Public, allowlisted Hive metrics: only counts, durations, modes and
+ * timestamps. `hive`, `contributors` and `repo` fail independently and are
+ * null when their upstream is unavailable.
+ */
+export interface HivePublicMetrics {
+  /** From Hive's /api/health. */
+  online: boolean;
+  /** From /api/widget/summary; null without a working widget token. */
+  hive: {
+    /** Mode of the latest history point. */
+    mode: GovernorMode;
+    agents: { total: number; running: number };
+    /** Work counts of the latest history point. */
+    work: { issues: number; prs: number; held: number; actionable: number; mergeable: number };
+    history: { t: string; mode: GovernorMode; issues: number; prs: number; held: number }[];
+  } | null;
+  /** From /api/contribute/*; null when unavailable. */
+  contributors: {
+    collectedAt: string;
+    /** 168 hourly buckets, oldest first, aligned with `fleetSize`. */
+    tasksPerHour: number[];
+    fleetSize: number[];
+    runs7d: {
+      total: number;
+      backends: {
+        backend: string;
+        completed: number;
+        failed: number;
+        abandoned: number;
+        p50Seconds: number | null;
+        p95Seconds: number | null;
+      }[];
+    };
+  } | null;
+  /** This repo's public GitHub PRs over the last 7 days; null when unavailable. */
+  repo: {
+    from: string;
+    to: string;
+    /** 7 UTC days, oldest first. */
+    days: { t: string; opened: number; merged: number; closedUnmerged: number }[];
+    mergedBySource: { t: string; hive: number; claudeCode: number; dependabot: number; other: number }[];
+    /** PRs merged in the window, created → merged. */
+    medianHoursToMerge: number | null;
+    p90HoursToMerge: number | null;
+  } | null;
+}
+
+/** Response returned by the GET /hive/metrics endpoint. */
+export interface HiveMetricsResponse {
+  state: "live" | "stale" | "unavailable";
+  /** When the back-end last got a good upstream answer; null if never. */
+  fetchedAt: string | null;
+  metrics: HivePublicMetrics | null;
+}
