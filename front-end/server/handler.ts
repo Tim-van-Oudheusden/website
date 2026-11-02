@@ -2,7 +2,7 @@ import { stat } from "node:fs/promises";
 import { join } from "node:path";
 
 import type { ContentFrontmatter, HealthCheckResponse } from "shared";
-import { API_BASE, APP_NAME, CF_CONNECTING_IP_HEADER, ROUTES, STANDALONE_PAGE_SLUGS } from "shared";
+import { AGENTIC_PAGE_PATH, API_BASE, APP_NAME, CF_CONNECTING_IP_HEADER, ROUTES, STANDALONE_PAGE_SLUGS } from "shared";
 
 import { renderFeed, renderLlmsTxt, renderRobotsTxt, renderSitemap } from "./seo";
 import { CONTENT_PAGE_PREFIX, renderHomeMeta, renderNotFoundMeta, renderSocialMeta } from "./social-meta";
@@ -40,7 +40,10 @@ const CONTENT_PATH = /^(\/(?:articles|projects)\/)([^/]+)\/?$/i;
  * Every other route in App.tsx's AppRoutes, matched the same way. Any path
  * outside these and CONTENT_PATH renders the client's not-found page.
  */
-const APP_ROUTE = new RegExp(`^/(?:articles|projects|tags/[^/]+|${STANDALONE_PAGE_SLUGS.join("|")})?/?$`, "i");
+const APP_ROUTE = new RegExp(
+  `^/(?:articles|projects|${AGENTIC_PAGE_PATH.slice(1)}|tags/[^/]+|${STANDALONE_PAGE_SLUGS.join("|")})?/?$`,
+  "i",
+);
 
 /**
  * The same baseline @fastify/helmet gives the back-end (security-headers.ts):

@@ -1,5 +1,5 @@
 import type { ArticleFrontmatter, ContentFrontmatter } from "shared";
-import { HERO_LINE, SITE_NAME, SITE_OWNER, STANDALONE_PAGE_SLUGS } from "shared";
+import { AGENTIC_PAGE_PATH, HERO_LINE, SITE_NAME, SITE_OWNER, STANDALONE_PAGE_SLUGS } from "shared";
 
 import { contentPagePath } from "./social-meta";
 
@@ -8,7 +8,13 @@ import { contentPagePath } from "./social-meta";
  * standalone pages come from `STANDALONE_PAGE_SLUGS` so this list can never
  * drift from the routes App.tsx actually registers for them.
  */
-const STATIC_PAGE_PATHS = ["/", "/articles", "/projects", ...STANDALONE_PAGE_SLUGS.map((slug) => `/${slug}`)] as const;
+const STATIC_PAGE_PATHS = [
+  "/",
+  "/articles",
+  "/projects",
+  AGENTIC_PAGE_PATH,
+  ...STANDALONE_PAGE_SLUGS.map((slug) => `/${slug}`),
+] as const;
 
 /** Allow every crawler everywhere and point it at the sitemap. */
 export function renderRobotsTxt(origin: string): string {
@@ -41,6 +47,7 @@ export function renderLlmsTxt(origin: string, items: readonly ContentFrontmatter
     `- [Home](${origin}/)`,
     `- [Articles](${origin}/articles)`,
     `- [Projects](${origin}/projects)`,
+    `- [Agentic](${origin}${AGENTIC_PAGE_PATH})`,
     "",
     ...section("Articles", "article"),
     ...section("Projects", "project"),

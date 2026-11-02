@@ -4,6 +4,8 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
 
+import { AGENTIC_PAGE_PATH } from "shared";
+
 import { SiteLogo } from "@/shared/components/site-logo";
 import { ThemeToggle } from "@/shared/components/theme-toggle";
 import { Button } from "@/shared/components/ui/button";
@@ -19,6 +21,7 @@ const navLinks = [
   { label: "Home", href: "/" },
   { label: "Articles", href: "/articles" },
   { label: "Projects", href: "/projects" },
+  { label: "Agentic", href: AGENTIC_PAGE_PATH },
 ];
 
 function isActiveNavPath(pathname: string, href: string): boolean {
@@ -114,7 +117,9 @@ export function TopBar(): JSX.Element {
                       setOpen(false);
                     }}
                   >
-                    <Link to={link.href}>{link.label}</Link>
+                    <Link to={link.href} aria-current={isActiveNavPath(location.pathname, link.href) ? "page" : undefined}>
+                      {link.label}
+                    </Link>
                   </Button>
                 ))}
               </nav>
