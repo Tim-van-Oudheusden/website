@@ -13,6 +13,8 @@ import {
 } from "./features/content/content-routes";
 import { registerHealthRoute } from "./features/health/register-health-route";
 import { registerHelloRoute } from "./features/hello/register-hello-route";
+import type { HiveMetricsRouteOptions } from "./features/hive/register-hive-metrics-route";
+import { registerHiveMetricsRoute } from "./features/hive/register-hive-metrics-route";
 import { registerPageRoutes } from "./features/pages/page-routes";
 import { registerRootRoute } from "./features/root/register-root-route";
 import { registerViewBeaconRoute, registerViewStatsRoute } from "./features/views/register-views-routes";
@@ -25,13 +27,22 @@ interface BuildAppOptions {
   logger: boolean | Record<string, unknown>;
 }
 
+/** No Hive configured, outside production: the metrics route serves its development fixture. */
+const DEVELOPMENT_HIVE: HiveMetricsRouteOptions = {
+  config: { baseUrl: null, widgetToken: null, production: false },
+  fetch,
+  now: () => new Date(),
+};
+
 /**
  * @param viewStore Per-slug (article and project) view counts; defaults to an in-memory store
  *   (not persisted). The app closes it on shutdown.
+ * @param hive Hive metrics upstream settings, network and clock; defaults to no Hive, outside production.
  */
 export async function buildApp(
   options: BuildAppOptions,
   viewStore: ViewStore = createViewStore(":memory:"),
+  hive: HiveMetricsRouteOptions = DEVELOPMENT_HIVE,
 ): Promise<FastifyInstance> {
   const app = Fastify({
     logger: options.logger,
@@ -66,6 +77,7 @@ export async function buildApp(
     registerContentRoutes(api, contentDir);
     registerPageRoutes(api, contentDir);
     registerViewBeaconRoute(api, contentDir, viewStore);
+    registerHiveMetricsRoute(api, hive);
   }, { prefix: API_BASE });
 
   // Static content images are an asset path, not an API call — stay at root.
