@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./articles": "./src/articles.ts",
+    "./pr-source": "./src/pr-source.ts",
     "./social-image": "./src/social-image.ts",
     "./social-links": "./src/social-links.ts",
     "./tags": "./src/tags.ts"

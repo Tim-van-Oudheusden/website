@@ -3,7 +3,7 @@ name: PR metrics
 # PR acceptance metric: of the pull requests closed in the reporting window,
 # how many were merged vs. closed without merging. Split by source (a Hive
 # agent, Claude Code in CI, Dependabot, or other) with the same rule as the AI
-# audit trail (scripts/pr-source.ts), so agent work has its own feedback loop.
+# audit trail (shared/src/pr-source.ts), so agent work has its own feedback loop.
 # Computed by scripts/pr-metrics.ts. Results land in the run's job summary.
 
 on:

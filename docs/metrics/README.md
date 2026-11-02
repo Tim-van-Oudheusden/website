@@ -62,7 +62,7 @@ bun scripts/auto-qa-tuner.ts --report quality-report.md
 
 Of the PRs closed in the reporting window (default 28 days), how many were
 merged vs. closed without merging, per source. The source is decided by the
-same rule as the [AI audit trail](#ai-audit-trail) (`scripts/pr-source.ts`):
+same rule as the [AI audit trail](#ai-audit-trail) (`shared/src/pr-source.ts`):
 Hive's signature line in the PR body first, then a `claude/*` or
 `dependabot/*` head branch, else other. A falling acceptance rate for an agent
 source is the signal to revisit that agent's instructions or skills.
