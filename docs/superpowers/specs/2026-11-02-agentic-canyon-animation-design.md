@@ -115,6 +115,25 @@ scene with every time-of-day variant). Decisions recorded there:
   carrying meaning sits under the `max-w-md` card column; on phone the strata, tablets and rim fit above the
   bottom third, where the cards sit.
 
+**Round 3 result (#1053, prototype and measurements in
+[`docs/assets/agentic/round-3/`](../../assets/agentic/round-3/README.md)):** the round-2 art holds 60 fps with no
+long frames and no per-frame layout or paint. I measured this in headless Chromium with CPU throttled 4×, on a phone
+profile (390×844 at DPR 3) and on desktop (1440×900). Getting there took three structural rules, which the scene in
+T4 follows:
+
+- **One composited box per layer.** Each layer is its own `<svg>` in an absolutely positioned box cropped to the rows
+  its art uses. CSS transforms on `<g>` elements inside one SVG ran layout and paint on every frame and dropped to
+  53 fps.
+- **`--p` does not inherit.** `--p` is registered with `@property … { inherits: false }` and written on each driven
+  layer box. Style recalc dropped from 7.1 to 2.2 ms per frame on the throttled phone.
+- **Drowned strata fade per stratum.** Each stratum's drowned edges fade out on `data-revealed`. A clip at the
+  moving waterline repainted about 8 times a frame.
+
+The README there lists the timing, easing and rate of every layer. The art needs no redrawing. The three far
+ridgelines now move as one plane, as do the two inner gorges. The remaining risk is texture memory on phones, about
+170 MB at DPR 3. It needs a trace on a real device in T5, and the README lists the optional art cuts if that trace
+shows pressure.
+
 What "richer" should explore, within the performance rules in "Scroll mechanics":
 
 - **Depth:** three or more parallax ridgelines (far mesas in haze, mid buttes, near walls) instead of one wall pair,
