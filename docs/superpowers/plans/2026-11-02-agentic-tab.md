@@ -215,15 +215,17 @@ spec under "Fidelity and design rounds". Each round is one PR of static frames, 
 - Create: `front-end/src/features/agentic/hooks/use-canyon-progress.ts` (passive scroll/resize listener, one rAF per frame, writes `--p` on the track, updates the revealed count only when it changes)
 - Modify: `agentic-page.tsx` (track layout: `100svh + strata × 70svh`, 60svh on phones; sticky scene under the top bar; cards in the track)
 - Create: `e2e/agentic-canyon.e2e.ts`
+- Unit: `test/front-end/src/features/agentic/hooks/use-canyon-progress.test.tsx` and the page tests (static
+  reduced-motion frame, nothing revealed at the top, deep-link jump). The e2e runs in CI.
 
-- [ ] **Step 1:** Failing e2e: at the top of the track no stratum is revealed; scrolled to the track's end all six are;
+- [x] **Step 1:** Failing e2e: at the top of the track no stratum is revealed; scrolled to the track's end all six are;
   `/agentic#quality` lands with Quality revealed.
-- [ ] **Step 2:** Implement the hook and layout. Pass.
-- [ ] **Step 3:** Failing e2e with `reducedMotion: "reduce"`: all strata revealed on load and the scene is not sticky
+- [x] **Step 2:** Implement the hook and layout. Pass.
+- [x] **Step 3:** Failing e2e with `reducedMotion: "reduce"`: all strata revealed on load and the scene is not sticky
   (its top moves with the page). Implement through `resolveCanyonMotion`. Pass.
-- [ ] **Step 4:** Light and dark screenshots of golden hour, sunset and night for the PR; performance trace on a
+- [x] **Step 4:** Light and dark screenshots of golden hour, sunset and night for the PR; performance trace on a
   throttled mobile profile shows no layout or paint in the scene per scroll frame.
-- [ ] **Step 5:** Full suite, gates, commit.
+- [x] **Step 5:** Full suite, gates, commit.
 
 ---
 
