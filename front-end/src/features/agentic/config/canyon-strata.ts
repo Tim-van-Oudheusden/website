@@ -13,6 +13,8 @@ export interface CanyonStratum {
   /** The concrete tools or files the layer reveals. */
   pillars: readonly string[];
   sourceLinks: readonly CanyonSourceLink[];
+  /** An in-page link onward from the card (the bedrock hands off to the live metrics below the canyon), or null. */
+  handOff: CanyonSourceLink | null;
 }
 
 const REPO_URL = "https://github.com/Tim-van-Oudheusden/website";
@@ -33,6 +35,7 @@ export const CANYON_STRATA: readonly CanyonStratum[] = [
     sentence: "I write the articles and project pages as Markdown in Obsidian, and the back-end serves them from the content/ folder.",
     pillars: ["Markdown written in Obsidian", "The content/ folder", "The Obsidian content pipeline"],
     sourceLinks: [repoFolder("content"), repoFile("docs/content-authoring.md")],
+    handOff: null,
   },
   {
     id: "interface",
@@ -40,6 +43,7 @@ export const CANYON_STRATA: readonly CanyonStratum[] = [
     sentence: "The pages you see are React components, built with Vite and styled with Tailwind CSS and shadcn components.",
     pillars: ["React 19", "Vite", "Tailwind CSS v4", "shadcn components on Radix"],
     sourceLinks: [repoFile("front-end/package.json")],
+    handOff: null,
   },
   {
     id: "api",
@@ -51,6 +55,7 @@ export const CANYON_STRATA: readonly CanyonStratum[] = [
       repoFile("shared/src/index.ts"),
       repoFile("back-end/src/features/views/view-store.ts"),
     ],
+    handOff: null,
   },
   {
     id: "quality",
@@ -63,6 +68,7 @@ export const CANYON_STRATA: readonly CanyonStratum[] = [
       "Coverage floors that only ratchet up",
     ],
     sourceLinks: [repoFile("docs/testing.md"), repoFile("docs/metrics/README.md")],
+    handOff: null,
   },
   {
     id: "delivery",
@@ -76,6 +82,7 @@ export const CANYON_STRATA: readonly CanyonStratum[] = [
       "Cloudflare Tunnel",
     ],
     sourceLinks: [repoFolder(".github/workflows"), repoFile("docs/deploy.md"), repoFolder("deploy")],
+    handOff: null,
   },
   {
     id: "agents-hive",
@@ -88,5 +95,6 @@ export const CANYON_STRATA: readonly CanyonStratum[] = [
       "Coordinated through GitHub issues",
     ],
     sourceLinks: [repoFile("docs/multi-agent.md"), repoFile(".github/workflows/claude.yml")],
+    handOff: { label: "This layer is live", href: "#metrics" },
   },
 ];

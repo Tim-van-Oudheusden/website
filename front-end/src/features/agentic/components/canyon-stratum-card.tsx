@@ -34,6 +34,18 @@ export function CanyonStratumCard({ stratum }: { stratum: CanyonStratum }): JSX.
           </li>
         ))}
       </ul>
+      {stratum.handOff !== null && (
+        <p className="mt-3 sm:mt-6">
+          <a
+            href={stratum.handOff.href}
+            className="rounded-sm font-semibold text-(--site-accent) underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--site-accent)"
+          >
+            {stratum.handOff.label}
+            {" "}
+            <span aria-hidden="true">↓</span>
+          </a>
+        </p>
+      )}
     </section>
   );
 }

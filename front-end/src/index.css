@@ -117,8 +117,9 @@
  *       text, rings and indicators on page and well surfaces; not
  *       shadcn's --accent, which is a neutral hover fill),
  *       --site-toc-inactive and --site-chart-* (Agentic chart series:
- *       accent, two neutral steps and the Flexoki accents, 600 in light
- *       and 400 in dark; each at least 3:1 on the well, checked by
+ *       accent, two neutral steps, the Flexoki accents, 600 in light
+ *       and 400 in dark, and hive, the canyon's honey bedrock; each at
+ *       least 3:1 on the well, checked by
  *       test/front-end/src/features/agentic/components/charts/chart-tones.test.ts).
  *   Everything else is a shadcn semantic token (list above).
  * The tokens .dark leaves out alias another token (var(--foreground),
@@ -170,6 +171,8 @@
   --site-chart-blue: #205ea6;
   --site-chart-purple: #5e409d;
   --site-chart-magenta: #a02f6f;
+  /* The canyon's honey bedrock (yellow-500, #be9207) is 2.9:1 on white; yellow-600, one shade darker, is 3.5:1. */
+  --site-chart-hive: #ad8301;
   --site-toc-inactive: #8a8376;
   --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   /* The fixed TOC's footprint (its xl:w-[…] plus xl:right-8), so the article centres between sidebar and TOC. */
@@ -246,6 +249,8 @@
   --site-chart-blue: #4385be;
   --site-chart-purple: #8b7ec8;
   --site-chart-magenta: #ce5d97;
+  /* The canyon's honey bedrock itself, yellow-500: 5.2:1 on the well. */
+  --site-chart-hive: #be9207;
   --site-toc-inactive: var(--paper-4);
   --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   --articles-content-toc-gap: calc(clamp(12rem, 17vw, 15.5rem) + 2rem);
