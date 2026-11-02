@@ -1,10 +1,13 @@
-import { describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import type { CanyonSceneProject } from "../../../../../../front-end/src/features/agentic/components/canyon-scene";
 import { CanyonScene } from "../../../../../../front-end/src/features/agentic/components/canyon-scene";
 import { CANYON_STRATA } from "../../../../../../front-end/src/features/agentic/config/canyon-strata";
+import { initFakeDomHarness, mountIntoBody, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 const PROJECTS: readonly CanyonSceneProject[] = [
   { slug: "dailies", title: "Dailies" },
@@ -22,13 +25,13 @@ function render(revealed = 0, projects: readonly CanyonSceneProject[] = PROJECTS
   return renderToStaticMarkup(<CanyonScene revealed={revealed} projects={projects} />);
 }
 
-/** Each composition (desktop, phone) is its own `<svg>`; the scene must hold up in every one. */
+/** Each composition (desktop, phone) is its own stack of layer boxes; the scene must hold up in every one. */
 function compositions(html: string): string[] {
-  const svgs = [...html.matchAll(/<svg[\s\S]*?<\/svg>/g)].map((match) => match[0]);
+  const stacks = html.split(/(?=<[a-z]+[^>]*\sdata-composition=")/).slice(1);
 
-  expect(svgs.length).toBeGreaterThan(0);
+  expect(stacks.length).toBeGreaterThan(0);
 
-  return svgs;
+  return stacks;
 }
 
 /** The `data-*` value of every element carrying `attribute`, in document order. */
@@ -89,5 +92,28 @@ describe("CanyonScene", () => {
         expect(strata).toEqual(CANYON_STRATA.map((stratum, index) => [stratum.id, String(index < revealed)]));
       }
     }
+  });
+
+  describe("in the browser", () => {
+    beforeAll(async () => {
+      await initFakeDomHarness();
+    });
+
+    afterAll(() => {
+      uninstallFakeDom();
+    });
+
+    test("builds only the composition that fits the viewport, phone below the sm breakpoint", () => {
+      const mount = mountIntoBody(createElement(CanyonScene, { revealed: 0, projects: PROJECTS }));
+
+      try {
+        const shown = queryFakeElements(mount.container, (el) => el.getAttribute("data-composition") !== null)
+          .map((el) => el.getAttribute("data-composition"));
+
+        expect(shown).toEqual(["phone"]);
+      } finally {
+        unmountFakeDomRoot(mount);
+      }
+    });
   });
 });
