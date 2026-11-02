@@ -1,0 +1,28 @@
+{
+  "backends": [
+    {
+      "backend": "omp",
+      "total": 76,
+      "completed": 74,
+      "failed": 0,
+      "abandoned": 2,
+      "scenarios": {
+        "abandoned_disconnect": 2,
+        "verdict_complete": 74
+      },
+      "chrome_idle_share": 0,
+      "duration_p50_s": 328.967422074,
+      "duration_p95_s": 1092.427634524
+    }
+  ],
+  "models": [
+    {
+      "model": "CANARY-MODEL",
+      "runs": 76,
+      "verified_pr_share": 0.868421052631579,
+      "failure_rate": 0
+    }
+  ],
+  "total": 76,
+  "window_days": 7
+}

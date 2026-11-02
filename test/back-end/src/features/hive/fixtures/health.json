@@ -1,0 +1,15 @@
+{
+  "runtime": {
+    "heap_inuse_bytes": 247327752,
+    "heap_live_bytes": 163568472,
+    "heap_objects": 583403,
+    "next_gc_bytes": 327920210,
+    "total_sys_bytes": 532482424,
+    "gc_cycles": 14057,
+    "goroutines": 95,
+    "threads": 28,
+    "gomemlimit_bytes": 9223372036854775807,
+    "CANARY-RUNTIME": "CANARY-RUNTIME-VALUE"
+  },
+  "status": "ok"
+}
