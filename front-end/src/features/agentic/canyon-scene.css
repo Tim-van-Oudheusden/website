@@ -336,6 +336,11 @@
     animation-duration: 4.6s;
     animation-delay: -2.2s;
   }
+
+  /* The scroll hook marks the track paused while it is off-screen: no loops run where nobody sees them. */
+  [data-paused] .canyon-layer > svg {
+    animation-play-state: paused;
+  }
 }
 
 @keyframes canyon-water-drift {

@@ -165,3 +165,121 @@ describe("AgenticPage strata", () => {
     }
   });
 });
+
+/** Lets the lazily loaded scene module arrive and render. */
+async function settleScene(): Promise<void> {
+  await act(async () => {
+    await settleMicrotasks();
+
+    const { promise, resolve } = Promise.withResolvers<undefined>();
+
+    setTimeout(resolve, 50);
+    await promise;
+    await settleMicrotasks();
+  });
+}
+
+/** `data-revealed` of each tablet the scene drew, rim first. */
+function tabletStates(page: FakeMount): (string | null)[] {
+  return queryFakeElements(page.container, (el) => el.getAttribute("data-tablet") !== null)
+    .map((tablet) => tablet.getAttribute("data-revealed"));
+}
+
+interface MediaWindow {
+  matchMedia: (query: string) => unknown;
+}
+
+describe("AgenticPage canyon", () => {
+  test("starts with no stratum revealed: the scene follows scrolling from the top of the track", async () => {
+    const page = mountPage();
+
+    try {
+      const track = byName(page.container, "SECTION").find((section) => section.getAttribute("aria-label") === "How this site is built");
+
+      if (track === undefined) {
+        throw new Error("No canyon track on the page");
+      }
+
+      // A track taller than the viewport, its top at the viewport top: nothing scrolled yet.
+      track.rect = { width: 1280, height: 5600 };
+      await settleScene();
+
+      expect(tabletStates(page)).toEqual(["false", "false", "false", "false", "false", "false"]);
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("with reduced motion, shows one static frame with every stratum revealed", async () => {
+    const mediaWindow = window as unknown as MediaWindow;
+    const original = mediaWindow.matchMedia;
+
+    mediaWindow.matchMedia = (query) => ({
+      ...(original(query) as object),
+      matches: query === "(prefers-reduced-motion: reduce)",
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    });
+
+    try {
+      const page = mountPage();
+
+      try {
+        await settleScene();
+
+        expect(tabletStates(page)).toEqual(["true", "true", "true", "true", "true", "true"]);
+      } finally {
+        unmountFakeDomRoot(page);
+      }
+    } finally {
+      mediaWindow.matchMedia = original;
+    }
+  });
+
+  test("marks the cards of strata the water has passed, so phones can clear them from above the scene", async () => {
+    const page = mountPage();
+
+    try {
+      const track = byName(page.container, "SECTION").find((section) => section.getAttribute("aria-label") === "How this site is built");
+
+      if (track === undefined) {
+        throw new Error("No canyon track on the page");
+      }
+
+      // 60 % of the way down a 5,600 px track: four strata revealed, Quality the latest.
+      const top = -0.6 * (5600 - window.innerHeight);
+
+      track.getBoundingClientRect = () => ({
+        left: 0, top, right: 1280, bottom: top + 5600, width: 1280, height: 5600, x: 0, y: top,
+      });
+
+      await settleScene();
+
+      const passed = queryFakeElements(track, (el) => el.getAttribute("data-passed") !== null)
+        .map((slot) => slot.getAttribute("data-passed"));
+
+      // Behind: the rim, Content, Interface, API. Current: Quality. Ahead: Delivery, Agents · Hive.
+      expect(passed).toEqual(["true", "true", "true", "true", "false", "false", "false"]);
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("jumps to a deep-linked stratum once the page has rendered", () => {
+    window.location.hash = "#quality";
+
+    try {
+      const page = mountPage();
+
+      try {
+        const quality = strataSections(page).find((section) => section.getAttribute("id") === "quality");
+
+        expect(quality?.scrollIntoViewCalls).toHaveLength(1);
+      } finally {
+        unmountFakeDomRoot(page);
+      }
+    } finally {
+      window.location.hash = "";
+    }
+  });
+});

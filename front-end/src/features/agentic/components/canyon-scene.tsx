@@ -1,5 +1,5 @@
 import type { CSSProperties, JSX, ReactNode } from "react";
-import { createElement, Fragment, useId, useSyncExternalStore } from "react";
+import { createElement, Fragment, memo, useId, useMemo, useSyncExternalStore } from "react";
 
 import { SITE_NAME } from "shared";
 
@@ -411,16 +411,18 @@ function Tablet({ art, id, stratum, index, revealed }: {
   );
 }
 
-function Layer({ layer, art, labels, revealed }: {
+/** One layer of a composition. */
+function CompositionLayer({ layer, art, labels, shown }: {
   layer: CanyonLayer;
   art: CanyonComposition;
   labels: RimLabels;
-  revealed: number;
+  /** Whether this layer's stratum is revealed; `null` for layers that belong to no stratum. */
+  shown: boolean | null;
 }): JSX.Element | null {
   switch (layer.kind) {
     case "art":
       return (
-        <LayerBox id={layer.id} box={layer.box} revealed={layer.stratum === null ? null : layer.stratum < revealed}>
+        <LayerBox id={layer.id} box={layer.box} revealed={shown}>
           {drawNodes(layer.nodes)}
         </LayerBox>
       );
@@ -433,25 +435,35 @@ function Layer({ layer, art, labels, revealed }: {
     case "tablet": {
       const stratum = CANYON_STRATA[layer.stratum];
 
-      const shown = layer.stratum < revealed;
-
       return stratum === undefined
         ? null
-        : <Tablet art={art} id={layer.id} stratum={stratum} index={layer.stratum} revealed={shown} />;
+        : <Tablet art={art} id={layer.id} stratum={stratum} index={layer.stratum} revealed={shown === true} />;
     }
   }
+}
+
+/** Memoised: a reveal changes `shown` on its stratum's three layers only, so the rest of the drawing stays put. */
+const Layer = memo(CompositionLayer);
+
+/** Whether `layer` belongs to a stratum, and if so whether that stratum is among the first `revealed`. */
+function layerShown(layer: CanyonLayer, revealed: number): boolean | null {
+  if (layer.kind === "tablet") {
+    return layer.stratum < revealed;
+  }
+
+  return layer.kind === "art" && layer.stratum !== null ? layer.stratum < revealed : null;
 }
 
 function Composition({ art, name, revealed, projects }: CanyonSceneProps & {
   art: CanyonComposition;
   name: CompositionName;
 }): JSX.Element {
-  const labels = rimLabels(art, projects);
+  const labels = useMemo(() => rimLabels(art, projects), [art, projects]);
 
   return (
     <div data-composition={name} className={name === "phone" ? "canyon-composition sm:hidden" : "canyon-composition hidden sm:block"}>
       {art.layers.map((layer) => (
-        <Layer key={layer.id} layer={layer} art={art} labels={labels} revealed={revealed} />
+        <Layer key={layer.id} layer={layer} art={art} labels={labels} shown={layerShown(layer, revealed)} />
       ))}
     </div>
   );
