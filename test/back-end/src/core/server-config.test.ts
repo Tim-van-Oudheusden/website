@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { BACKEND_PORT } from "shared";
 
-import { getServerConfig } from "../../../../back-end/src/core/server-config";
+import { getHiveConfig, getServerConfig } from "../../../../back-end/src/core/server-config";
 
 describe("server config", () => {
   test("defaults to loopback host and shared back-end port", () => {
@@ -47,5 +47,22 @@ describe("server config", () => {
 
   test("applies HOST and PORT together", () => {
     expect(getServerConfig({ HOST: "0.0.0.0", PORT: "8080" })).toEqual({ host: "0.0.0.0", port: 8080 });
+  });
+});
+
+describe("Hive config", () => {
+  test("reads the Hive base URL, widget token and production switch", () => {
+    expect(getHiveConfig({
+      HIVE_BASE_URL: "http://host.containers.internal:3001",
+      HIVE_WIDGET_TOKEN: "secret",
+      NODE_ENV: "production",
+    })).toEqual({ baseUrl: "http://host.containers.internal:3001", widgetToken: "secret", production: true });
+  });
+
+  test("treats unset or empty values as not configured, outside production", () => {
+    expect(getHiveConfig({})).toEqual({ baseUrl: null, widgetToken: null, production: false });
+
+    expect(getHiveConfig({ HIVE_BASE_URL: "", HIVE_WIDGET_TOKEN: "", NODE_ENV: "development" }))
+      .toEqual({ baseUrl: null, widgetToken: null, production: false });
   });
 });

@@ -13,3 +13,26 @@ export function getServerConfig(env: Env): { host: string; port: number } {
 
   return { host, port };
 }
+
+/** Where the Hive metrics come from; `null` when unset. */
+export interface HiveConfig {
+  /** Hive gateway origin, e.g. `http://host.containers.internal:3001`. */
+  baseUrl: string | null;
+  /** Read-only token for Hive's `/api/widget/summary`. */
+  widgetToken: string | null;
+  /** Without a base URL, production answers unavailable and development serves a fixture. */
+  production: boolean;
+}
+
+/** The value of a set, non-empty variable, else null. */
+function nonEmpty(value: string | undefined): string | null {
+  return value === undefined || value === "" ? null : value;
+}
+
+export function getHiveConfig(env: Env): HiveConfig {
+  return {
+    baseUrl: nonEmpty(env["HIVE_BASE_URL"]),
+    widgetToken: nonEmpty(env["HIVE_WIDGET_TOKEN"]),
+    production: env["NODE_ENV"] === "production",
+  };
+}

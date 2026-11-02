@@ -3,7 +3,7 @@ import { resolve } from "path";
 import { APP_NAME } from "shared";
 
 import { buildApp } from "./app";
-import { getServerConfig } from "./core/server-config";
+import { getHiveConfig, getServerConfig } from "./core/server-config";
 import { createViewStore } from "./features/views/view-store";
 
 const { host: HOST, port: PORT } = getServerConfig(process.env);
@@ -14,7 +14,11 @@ async function start(): Promise<void> {
     logger: {
       level: process.env["LOG_LEVEL"] ?? "info",
     },
-  }, createViewStore(process.env["VIEWS_DB_PATH"] ?? ":memory:"));
+  }, createViewStore(process.env["VIEWS_DB_PATH"] ?? ":memory:"), {
+    config: getHiveConfig(process.env),
+    fetch,
+    now: () => new Date(),
+  });
 
   // In the container this process is PID 1, where the kernel ignores signals we
   // don't handle: `podman stop` would wait 10 s and SIGKILL (#482). Close
