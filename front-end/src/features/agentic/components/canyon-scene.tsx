@@ -462,7 +462,12 @@ function Composition({ art, name, revealed, projects }: CanyonSceneProps & {
 
   return (
     <div data-composition={name} className={name === "phone" ? "canyon-composition sm:hidden" : "canyon-composition hidden sm:block"}>
-      {art.layers.map((layer) => (
+      {art.layers.filter((layer) => layer.kind !== "tablet").map((layer) => (
+        <Layer key={layer.id} layer={layer} art={art} labels={labels} shown={layerShown(layer, revealed)} />
+      ))}
+      {/* The end of the scene: the land fades into the page as the track ends; the tablets stay on top of it. */}
+      <div className="canyon-night-fade" data-night-fade="" />
+      {art.layers.filter((layer) => layer.kind === "tablet").map((layer) => (
         <Layer key={layer.id} layer={layer} art={art} labels={labels} shown={layerShown(layer, revealed)} />
       ))}
     </div>

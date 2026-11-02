@@ -57,6 +57,31 @@ test.describe("Agentic canyon", () => {
     await expect.poll(() => tabletStates(page)).toEqual(Array<string>(STRATA).fill("true"));
   });
 
+  test("fades the night sky into the page at the end of the track, where the metrics section begins", async ({ page }) => {
+    await page.goto("/agentic", { waitUntil: "domcontentloaded" });
+    await sceneReady(page);
+
+    async function fadeOpacity(): Promise<number> {
+      return page.locator("[data-night-fade]").evaluate((fade) => Number(getComputedStyle(fade).opacity));
+    }
+
+    await expect.poll(fadeOpacity).toBe(0);
+
+    await scrollTrackTo(page, 1);
+
+    await expect.poll(fadeOpacity).toBe(1);
+
+    const overlap = await page.evaluate(() => {
+      const track = document.querySelector("section[aria-label='How this site is built']")?.getBoundingClientRect();
+      const metrics = document.getElementById("metrics")?.getBoundingClientRect();
+
+      return track === undefined || metrics === undefined ? null : track.bottom - metrics.top;
+    });
+
+    // The section's first row sits inside the fade's solid end, not after a hard edge.
+    expect(overlap).toBeGreaterThan(0);
+  });
+
   test("lands a deep link on its stratum, already revealed", async ({ page }) => {
     await page.goto("/agentic#quality", { waitUntil: "domcontentloaded" });
     await sceneReady(page);

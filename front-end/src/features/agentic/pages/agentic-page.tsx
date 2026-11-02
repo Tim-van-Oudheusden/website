@@ -123,7 +123,8 @@ function CanyonStill({ projects, progress }: {
 
   return (
     <section aria-label={TRACK_LABEL} className="mx-auto mt-8 w-full max-w-screen-xl px-4 sm:px-6 lg:px-8" style={frame}>
-      <div className="relative aspect-[390/844] overflow-hidden rounded-xl [--p:inherit] sm:aspect-[16/10]">
+      {/* The still frame keeps the scene's fade into the page on, as a static edge. */}
+      <div className="relative aspect-[390/844] overflow-hidden rounded-xl [--canyon-still-fade:1] [--p:inherit] sm:aspect-[16/10]">
         <Suspense fallback={null}>
           <CanyonScene revealed={CANYON_STRATA.length} projects={projects ?? NO_PROJECTS} />
         </Suspense>
@@ -162,7 +163,12 @@ export function AgenticPage(): JSX.Element {
       {motion.staticProgress === null
         ? <CanyonTrack projects={projects} />
         : <CanyonStill projects={projects} progress={motion.staticProgress} />}
-      <div className="mx-auto mt-12 w-full max-w-screen-xl px-4 sm:px-6 lg:px-8">
+      {/* After the track, the section starts inside the night fade's solid end (desktop has no cards there). */}
+      <div
+        className={`relative mx-auto w-full max-w-screen-xl px-4 sm:px-6 lg:px-8 ${
+          motion.staticProgress === null ? "mt-4 sm:-mt-[12svh]" : "mt-12"
+        }`}
+      >
         <HiveMetricsSection />
       </div>
     </main>
