@@ -8,7 +8,7 @@
 
 I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.
 
-[Live site](https://buildwithtim.dev) · [Articles](https://buildwithtim.dev/articles) · [Projects](https://buildwithtim.dev/projects)
+[Live site](https://buildwithtim.dev) · [Articles](https://buildwithtim.dev/articles) · [Projects](https://buildwithtim.dev/projects) · [Agentic](https://buildwithtim.dev/agentic)
 
 [![CI](https://github.com/Tim-van-Oudheusden/website/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Tim-van-Oudheusden/website/actions/workflows/ci.yml)
 [![Coverage gate](https://github.com/Tim-van-Oudheusden/website/actions/workflows/coverage-gate.yml/badge.svg?branch=main)](https://github.com/Tim-van-Oudheusden/website/actions/workflows/coverage-gate.yml)
@@ -29,6 +29,9 @@ Build with Tim is Tim van Oudheusden's site for the things he builds and the wri
 projects, Linux on the desktop, the tools that make his work easier, and the occasional personal reflection. This
 repository is the whole site: the React front-end, the Fastify API that serves the Markdown in `content/`, and the
 Podman deployment that runs it on a single self-hosted machine.
+
+The Agentic tab (`/agentic`) shows how AI agents help build this site, with live metrics from the Hive instance on the
+server and this repo's pull requests ([`docs/metrics/README.md`](docs/metrics/README.md#agentic-tab-metrics)).
 
 ## Tech stack
 
@@ -139,7 +142,7 @@ The Obsidian settings, image syntax, frontmatter reference and link previews are
 | [`docs/postmortems/README.md`](docs/postmortems/README.md) | Writing up a production incident or rollback |
 | [`docs/risk-tiers.md`](docs/risk-tiers.md) | How pull requests are classified by risk |
 | [`docs/agent-tasks/README.md`](docs/agent-tasks/README.md) | Tracing agent changes back to their issues, and issues forward to their changes |
-| [`docs/metrics/README.md`](docs/metrics/README.md) | Quality, coverage, compliance and strategy metrics |
+| [`docs/metrics/README.md`](docs/metrics/README.md) | Quality, coverage, compliance and strategy metrics, and the live Agentic tab metrics |
 | [`docs/multi-agent.md`](docs/multi-agent.md) | How Hive, Claude Code and local agents share issues and PRs |
 | [`docs/ai-ops-runbook.md`](docs/ai-ops-runbook.md) | Monitoring agent work and debugging stuck or misbehaving agents |
 | [`docs/security/SECURITY-AI.md`](docs/security/SECURITY-AI.md) | Security model for AI agents in this repo |

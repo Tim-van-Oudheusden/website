@@ -3,11 +3,13 @@
 The repository's public metrics: what is measured about the codebase and the
 work landing in it (agent-authored and otherwise), where each number is
 published, and how to reproduce it locally. Every metric here comes from a
-script or workflow already in the repo — nothing is collected from site
-visitors.
+script, workflow or back-end route already in the repo — nothing is collected
+from site visitors.
 
 Results are published as GitHub Actions **job summaries** (open the workflow
 run on the Actions tab) and, where noted, as a downloadable **run artifact**.
+The [Agentic tab metrics](#agentic-tab-metrics) are the exception: the site
+serves them live.
 Thresholds that gate merges live in version control so changes to them are
 reviewed like code.
 
@@ -24,6 +26,7 @@ reviewed like code.
 | [Mutation score](#mutation-score) | Share of mutants the unit tests kill, per workspace | StrykerJS (`stryker/<workspace>.conf.mjs`) and `scripts/mutation-summary.ts` via `mutation-testing.yml` | Nightly (02:47 UTC), manual | Job summary + `mutation-<workspace>` artifact |
 | [Strategy report](#strategy-report) | Issue and PR flow, open backlog per pipeline stage, ACMM gaps per level | `scripts/strategy-report.ts` via `strategy-report.yml` | Weekly (Mon 06:17 UTC), manual | Job summary |
 | [AI audit trail](#ai-audit-trail) | Every PR merged into `main`: source (Hive agent and model, Claude Code in CI, Dependabot, other), author, merger | `scripts/ai-audit-report.ts` via `ai-audit.yml` | Weekly (Mon 06:17 UTC, past 7 days), manual | Job summary + `ai-audit` artifact (report and raw PR data, kept 90 days) |
+| [Agentic tab metrics](#agentic-tab-metrics) | Live Hive queue, governor mode and agents; contributor-agent tasks and runs; this repo's PR flow and who wrote the merged work | `GET /api/hive/metrics` (`back-end/src/features/hive/`) from Hive's widget summary and contribute endpoints and this repo's public GitHub PRs | Back-end caches 60 s / 180 s, browser polls every 60 s | The `/agentic` page on the live site |
 
 ## Quality gates
 
@@ -169,6 +172,62 @@ since="$(date -u -d '7 days ago' +%Y-%m-%d)"
 gh pr list --state merged --limit 1000 --search "merged:>=${since}" \
   --json number,title,author,headRefName,mergedAt,mergedBy,body > ai-audit-prs.json
 bun scripts/ai-audit-report.ts "$since" ai-audit-prs.json
+```
+
+## Agentic tab metrics
+
+The live section of the [Agentic tab](https://buildwithtim.dev/agentic): what
+Hive is doing on this server right now and how pull requests flow through this
+repo. The back-end fetches, caches and trims the data; the browser never talks
+to Hive or GitHub. Design:
+[`2026-11-02-agentic-hive-metrics-design.md`](../superpowers/specs/2026-11-02-agentic-hive-metrics-design.md);
+the research behind it, with every Hive claim cited:
+[`research/hive_metrics_api.md`](../../research/hive_metrics_api.md).
+
+Sources, all GET requests to fixed URLs with no visitor input:
+
+- **Hive widget summary** (`/api/widget/summary`) — the queue (issues, PRs,
+  held, actionable, mergeable), governor mode and its history, and how many
+  agents exist and are running. Read with Hive's read-only widget token
+  (`HIVE_WIDGET_TOKEN`), which authenticates that one route and nothing else.
+- **Anonymous Hive endpoints** — `/api/health` (online or not),
+  `/api/contribute/metrics` (contributor-agent tasks done per hour and fleet
+  size, 7 days) and `/api/contribute/run-stats` (runs per backend: completed,
+  failed, abandoned, p50 and p95 run time, 7 days).
+- **This repo's public GitHub PR list** — PRs opened, merged and closed
+  unmerged per day over 7 days, median and p90 time to merge, and merged PRs
+  per source. The source is decided by the same rule as the
+  [AI audit trail](#ai-audit-trail) (`shared/src/pr-source.ts`), so the split is
+  by who wrote the PR, not who merged it.
+
+Refresh: the back-end caches health and the widget summary for 60 s and the
+contributor endpoints and GitHub for 180 s; the response carries
+`Cache-Control: public, max-age=30`; the page polls every 60 s while the
+browser tab is visible. A change in Hive or GitHub reaches a visitor within
+150 s (widget data) or 270 s (contributor and GitHub data), always under 5
+minutes. Upstream load does not depend on visitor count.
+
+The response `state` is:
+
+- **live** — every part shown was fetched within the last 10 minutes;
+- **stale** — some part is older than 10 minutes (a failed upstream call keeps
+  its last good value, and the page says when it was measured);
+- **unavailable** — nothing has been fetched yet; the page explains instead of
+  drawing empty charts.
+
+Each part (Hive, contributor agents, repo PRs) fails on its own: without the
+widget token only the Hive part is blank.
+
+Deliberately excluded: the builder copies allowlisted counts, durations, modes
+and timestamps into fresh objects, so the response never contains repository
+names, agent names, Hive's `hiveId`, GitHub logins (including Hive's
+`per_user_*` series), PR titles, bodies or branch names, cost, model ids, or
+logs. Endpoints that need Hive's owner token are not called at all.
+
+Check the live response:
+
+```bash
+curl -s https://buildwithtim.dev/api/hive/metrics
 ```
 
 ## Adding a metric
