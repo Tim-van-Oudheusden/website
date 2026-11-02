@@ -12,14 +12,30 @@ import { readFrontmatter } from "../../../../../back-end/src/features/content/fr
 
 const CONTENT_DIR = resolve(import.meta.dir, "../../../../../content");
 
+// YAML's core schema and the subset both read `null`, `Null`, `NULL` and `~` as
+// null. YAML also reads a key with nothing after its colon as null, where the
+// subset has an empty value. So that the two nulls stay apart in YAML's reading,
+// each null spelled out after `key: ` or `- ` is wrapped in U+E000, a
+// private-use character, before Bun.YAML reads the block, and comes back as a
+// string.
+const SPELLED_NULL_RE = /(?<=[:-][ \t]+)(?:null|Null|NULL|~)(?=[ \t]+#|[ \t]*$)/gm;
+const MARKED_NULL_RE = /\uE000(null|Null|NULL|~)\uE000/g;
+const WHOLE_MARKED_NULL_RE = /^\uE000(?:null|Null|NULL|~)\uE000$/;
+
 /**
- * YAML's reading in the subset's terms. The subset has no null: a key with
- * nothing after its colon is an empty list at top level (so Obsidian's empty
- * `tags:` stays a list) and an empty string inside a list item.
+ * YAML's reading of a block with marked nulls, in the subset's terms. A marked
+ * null is null, as the subset reads it; a mark inside a longer string is
+ * dropped. Any other null came from a key with nothing after its colon, which
+ * the subset reads as an empty list at top level (so Obsidian's empty `tags:`
+ * stays a list) and as an empty string inside a list item.
  */
 function withSubsetEmpties(value: unknown, depth: number): unknown {
   if (value === null) {
     return depth === 1 ? [] : "";
+  }
+
+  if (typeof value === "string") {
+    return WHOLE_MARKED_NULL_RE.test(value) ? null : value.replace(MARKED_NULL_RE, "$1");
   }
 
   if (Array.isArray(value)) {
@@ -55,7 +71,9 @@ function misreadOf(yaml: string): Misread | null {
   let bunYaml: unknown;
 
   try {
-    bunYaml = TAB_INDENTED_RE.test(yaml) ? "YAML error: tab in indentation" : withSubsetEmpties(Bun.YAML.parse(yaml), 0);
+    bunYaml = TAB_INDENTED_RE.test(yaml)
+      ? "YAML error: tab in indentation"
+      : withSubsetEmpties(Bun.YAML.parse(yaml.replace(SPELLED_NULL_RE, "\uE000$&\uE000")), 0);
   } catch (error) {
     bunYaml = `YAML error: ${String(error)}`;
   }
@@ -88,9 +106,11 @@ function frontmatterBlock(raw: string): string {
 const LINE_KINDS: ((position: number) => string)[] = [
   (position) => `k${position}: v${position}`,
   (position) => `k${position}:`,
+  (position) => `k${position}: ~`,
   (position) => `- v${position}`,
   (position) => `- k${position}: v${position}`,
   (position) => `-  k${position}: v${position}`,
+  (position) => `- k${position}: null`,
   (position) => `wrapped words ${position}`,
   () => "# note",
 ];
@@ -112,6 +132,84 @@ function generatedBlocks(): string[] {
   return all;
 }
 
+// Values YAML types as other than text, each next to near misses that stay
+// text (#1036). Bun's reader also takes a number followed by signs, dots or an
+// `e` (`2025-01`, `1e3.5`, `+-1`) as the number alone, where the YAML spec
+// keeps text, so those are left out.
+const SCALARS = [
+  "true",
+  "True",
+  "TRUE",
+  "tRue",
+  "false",
+  "False",
+  "FALSE",
+  "yes",
+  "off",
+  "null",
+  "Null",
+  "NULL",
+  "nUll",
+  "~",
+  "0",
+  "-0",
+  "017",
+  "+5",
+  "-5",
+  "1.5",
+  "+1.5",
+  "-2.25",
+  "5.",
+  ".5",
+  "-.5",
+  "+.5",
+  "1e3",
+  "1E3",
+  "+1e-3",
+  ".5e1",
+  "-.5e1",
+  "0x1F",
+  "0X1F",
+  "-0x1F",
+  "0o17",
+  "+0o17",
+  "0b101",
+  "1_000",
+  "1.5.2",
+  "2025-01-01",
+  ".inf",
+  "-.inf",
+  ".Inf",
+  ".nan",
+  ".NaN",
+  "-.nan",
+  "\"true\"",
+  "'1.5'",
+  "\"null\"",
+  String.raw`"\0\a\b\t\n\v\f\r\e\ \"\/\\\N\_\L\P"`,
+  "\"\\\t\"",
+  String.raw`"\x41\u00e9\U0001F600"`,
+  String.raw`"\q"`,
+  String.raw`"\x4"`,
+  String.raw`"\uD83D"`,
+  String.raw`"\U00110000"`,
+];
+// Every place a value sits: a key, a list item, and an object item's first and
+// later fields.
+const VALUE_POSITIONS: ((value: string) => string)[] = [
+  (value) => `k: ${value}`,
+  (value) => `k:\n  - ${value}`,
+  (value) => `k:\n  - a: ${value}`,
+  (value) => `k:\n  - a: v\n    b: ${value}`,
+];
+
+/** Every scalar, with and without a trailing comment, in every value position. */
+function scalarBlocks(): string[] {
+  return SCALARS
+    .flatMap((scalar) => [scalar, `${scalar} # note`])
+    .flatMap((value) => VALUE_POSITIONS.map((position) => position(value)));
+}
+
 describe("readFrontmatter against Bun.YAML", () => {
   test.each(markdownFiles(CONTENT_DIR).map((file) => [relative(CONTENT_DIR, file), file]))(
     "reads %s as YAML does",
@@ -122,6 +220,12 @@ describe("readFrontmatter against Bun.YAML", () => {
 
   test(`rejects or reads as YAML does every block of up to ${String(MAX_LINES)} generated lines`, () => {
     const misreads = generatedBlocks().map(misreadOf).filter((misread) => misread !== null);
+
+    expect({ count: misreads.length, first: misreads.slice(0, 10) }).toEqual({ count: 0, first: [] });
+  });
+
+  test("rejects or reads as YAML does every scalar in every value position", () => {
+    const misreads = scalarBlocks().map(misreadOf).filter((misread) => misread !== null);
 
     expect({ count: misreads.length, first: misreads.slice(0, 10) }).toEqual({ count: 0, first: [] });
   });

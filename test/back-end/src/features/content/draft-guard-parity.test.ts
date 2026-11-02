@@ -66,6 +66,7 @@ describe("nightly compliance draft leak guard", () => {
     "draft: true#wip",
     "draft: 'true'",
     'draft: "true"',
+    // YAML's core schema reads True and TRUE as true, but not tRue (#1036).
     "draft: TRUE",
     "draft: True",
     "draft: True # wip",
