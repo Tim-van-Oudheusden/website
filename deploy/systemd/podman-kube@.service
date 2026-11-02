@@ -9,11 +9,13 @@
 # WEBSITE_REPO is the repository root on the host (only deploy/kube/prod.yaml
 # and deploy/systemd/website-update.sh are read from it). The default below
 # assumes ~/Git/website. website-update.service shares the same default; if the
-# files live elsewhere, override BOTH units with identical drop-ins
-# (docs/deploy.md §1), e.g. ~/.config/systemd/user/<unit>.d/override.conf:
+# files live elsewhere, override BOTH units with identical drop-ins, and give
+# this unit the matching WorkingDirectory (docs/deploy.md §1), e.g.
+# ~/.config/systemd/user/<unit>.d/override.conf:
 #
 #   [Service]
 #   Environment=WEBSITE_REPO=%E/website
+#   WorkingDirectory=%E/website/deploy/kube    # podman-kube@ only
 #
 # website-update.service/.timer restart this unit (podman-kube@website) so a
 # newly-pulled :latest image takes effect with no SSH/push from CI. The one-shot
@@ -31,6 +33,10 @@ After=podman-user-wait-network-online.service
 Type=oneshot
 RemainAfterExit=yes
 Environment=WEBSITE_REPO=%h/Git/website
+# kube play resolves prod.yaml's relative hostPath (website-data) against its
+# working directory, so run it next to the manifest. systemd does not expand
+# ${WEBSITE_REPO} here: a drop-in that moves WEBSITE_REPO must move this too (#1087).
+WorkingDirectory=%h/Git/website/deploy/kube
 # pasta --host-lo-to-ns-lo makes the back-end see cloudflared as 127.0.0.1,
 # the only peer it trusts for CF-Connecting-IP. See docs/deploy.md §1 (#479).
 ExecStart=/usr/bin/podman kube play --replace --network pasta:--host-lo-to-ns-lo ${WEBSITE_REPO}/deploy/kube/prod.yaml

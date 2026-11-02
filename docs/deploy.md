@@ -62,7 +62,10 @@ cp deploy/systemd/podman-kube@.service ~/.config/systemd/user/
 The unit locates the manifest via `WEBSITE_REPO` (default `%h/Git/website` —
 the repository at `~/Git/website`). `website-update.service` reads its helper
 from the same variable, so if the files live elsewhere override **both** units
-with identical drop-ins:
+with identical drop-ins. `podman-kube@` also needs the matching
+`WorkingDirectory`. `kube play` resolves the manifest's relative
+`hostPath: website-data` against its working directory, not the manifest's, and
+systemd does not expand `${WEBSITE_REPO}` in `WorkingDirectory` (#1087):
 
 ```bash
 for unit in podman-kube@.service website-update.service; do
@@ -70,6 +73,8 @@ for unit in podman-kube@.service website-update.service; do
   printf '[Service]\nEnvironment=WEBSITE_REPO=%%E/website\n' \
     > ~/.config/systemd/user/$unit.d/override.conf
 done
+printf 'WorkingDirectory=%%E/website/deploy/kube\n' \
+  >> ~/.config/systemd/user/podman-kube@.service.d/override.conf
 ```
 
 Before the first start, create the back-end's data directory and give it to
@@ -80,7 +85,8 @@ uid maps to a subordinate host uid, and a directory `kube play` creates for a
 missing `hostPath` belongs to your own user with mode `0755`. The back-end
 then cannot create its database and exits at startup. `podman unshare` runs
 `chown` inside the pod's user namespace, where uid 1000 is the container's
-`bun` (adjust the path if `WEBSITE_REPO` points elsewhere):
+`bun` (adjust the path if `WEBSITE_REPO` points elsewhere; it must be the
+`website-data/` inside the unit's `WorkingDirectory`):
 
 ```bash
 mkdir -p ~/Git/website/deploy/kube/website-data

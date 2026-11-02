@@ -190,6 +190,18 @@ describe("podman-kube@ prod pod template", () => {
     expect(template).toContain("${WEBSITE_REPO}/deploy/kube/prod.yaml");
   });
 
+  test("runs kube play from the manifest's directory, so prod.yaml's relative hostPath lands next to it", () => {
+    // Why: kube play resolves a relative hostPath (website-data) against its working
+    // directory; from the user's home it made ~/website-data, which the back-end's
+    // uid could not write (#1087).
+    const template = readDeploy("deploy/systemd/podman-kube@.service");
+    const repo = /^Environment=WEBSITE_REPO=(\S+)$/m.exec(template)?.[1];
+    const workingDirectory = /^WorkingDirectory=(\S+)$/m.exec(template)?.[1];
+
+    expect(repo).toBeDefined();
+    expect(workingDirectory).toBe(`${repo}/deploy/kube`);
+  });
+
   test("plays on pasta with host loopback spliced in, so the back-end sees cloudflared as loopback", () => {
     // Why: docs/deploy.md §1 (#479).
     const execStart = /^ExecStart=(.+)$/m.exec(readDeploy("deploy/systemd/podman-kube@.service"))?.[1] ?? "";
