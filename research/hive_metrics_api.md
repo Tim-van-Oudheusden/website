@@ -17,15 +17,23 @@ does the website pod reach it? Which integration should we build?
   `git -C hive remote -v` → `origin https://github.com/hivecommons/hive`.
   Paths below are relative to `hive/` unless they start with `deploy/`,
   `docs/`, `back-end/` or `shared/`. Those four are paths in this repo.
-- [INFERENCE] The server may run a different Hive build than this clone.
-  Re-check the route list against the deployed version before building.
+- That clone is 19 days older than Hive at
+  [`e60f06f`](https://github.com/hivecommons/hive/tree/e60f06f268d875ff68435658614f5a571fe561b8)
+  (2026-11-02), and it predates the read-only widget token (#12147 upstream).
+  Widget-token claims below cite `e60f06f`. The server runs
+  `ghcr.io/hivecommons/hive:stable`, and its `/api/openapi.json` lists
+  `/api/widget/summary` and `/api/widget/token` (Q6).
 - Podman docs: [podman-run(1)](https://docs.podman.io/en/latest/markdown/podman-run.1.html)
   (the `--network` section is the same text in
   [podman-kube-play(1)](https://docs.podman.io/en/latest/markdown/podman-kube-play.1.html)),
   [pasta(1)](https://passt.top/builds/latest/web/passt.1.html), and the
   [kube play support matrix](https://github.com/containers/podman/blob/main/docs/kubernetes_support.md).
-- Live checks were run on the workstation (hostname `bazzite`, podman 5.8.9,
-  pasta `0^20261002.gcba3570`). That machine is **not** the server; see Q6.
+- Podman behaviour was tested on the workstation (hostname `bazzite`,
+  podman 5.8.9, pasta `0^20261002.gcba3570`). The read-only server checks
+  were run on the Hive and website host (`homeserver`, 192.168.2.7); see Q6.
+  The PR #1047 review comment raised the widget token, the anonymous
+  endpoints and the server facts. Each was re-checked against the source or
+  the live host before it went into this note.
 
 ## Architecture in one paragraph
 
@@ -77,9 +85,24 @@ Which of these answers on the server's 3001 is unverified; see Q6.
   GETs are forwarded with no trust material
   (`src/proxy/server.js:688-694,983-999,1006-1023`). `?token=` query auth is
   rejected (`src/pkg/dashboard/server.go:1684-1687`).
-- **No read-only API token exists.** The only scoped credential is
+- **One read-only token exists: the widget token** (added after the analysed
+  clone, present at `e60f06f`). The owner mints it with
+  `POST /api/widget/token` and revokes it with `DELETE`. It is `hwt_` plus
+  hex, and Hive stores only its SHA-256 (`src/pkg/dashboard/widget_token.go:35-37,103,139`
+  at `e60f06f`). It is sent as `X-Hive-Widget-Token`. It authenticates
+  exactly `GET`/`HEAD /api/widget/summary` and nothing else
+  (`widget_token.go:166-175`, admitted in `authenticate` at
+  `server.go:2213-2216`). The Node proxy strips only `X-Hive-User`,
+  `X-Hive-Role` and `X-Hive-Internal` (`src/proxy/server.js:1028-1041,1273-1275`),
+  so the widget header reaches Go through the gateway.
+  `/api/widget/summary` returns `{hiveId, history, agents[{name,state}]}`
+  (`widget_token.go:185-213`). `history` is `historyPayload()`: the governor
+  eval ring of 200 `EvalSnapshot`s, plus an optional seed file
+  (`api.go:908-928`, `src/pkg/governor/governor.go:41-58,227`).
+- Apart from the widget token, the only scoped credential is
   `HIVE_METRICS_TOKEN`, and it is valid for `/metrics` only
-  (`src/pkg/dashboard/metrics_prometheus.go:26-34,69-85`).
+  (`src/pkg/dashboard/metrics_prometheus.go:26-34,69-85`). Every other
+  metric route needs the owner-equivalent dashboard token.
 - Read-only identities exist only as device-flow login sessions for
   `authorized_users` entries with a `:read` role (`src/hive.yaml.example:800`).
   [INFERENCE] Sessions last about 30 days ("a 30-day session",
@@ -255,8 +278,10 @@ contributors, not hive throughput.
 | `hold.items`, `planning.issues`, `planning.waiting_on_human`, `advisoryDigest`, `hiveAdvice`, `fleetReport`, `hiddenAgents` | Issue references, plan titles, internal findings | `server.go:961-1030,1081-1086` |
 | `/api/config*`, `/api/audit`, `/api/prompt-history`, `/api/agents/{name}/log`, `/api/pane/{agent}` | Raw config, audit trail, prompts, terminal output | `api.go:42-57,107-110` |
 
-Proposed **public allowlist**. The website back-end builds this DTO. Nothing
-else is forwarded:
+Proposed **public allowlist** for the owner-token routes. This was the first
+draft. The Recommendation now uses only the widget and anonymous routes, and
+the metrics spec holds the current contract. The website back-end would build
+this DTO, and nothing else would be forwarded:
 
 ```ts
 interface HivePublicMetrics {
@@ -448,26 +473,69 @@ http://127.0.0.1:13002/ -> 200
 
 ## Q6. Live check
 
-Run on `bazzite`, which is the workstation and not the server:
+The first run was on `bazzite`, the workstation. Nothing listens on 3001
+there (`curl` was refused, `ss` showed nothing, and there are no `hive*`
+units).
 
-```
-$ curl -sS -m 5 -i http://127.0.0.1:3001/
-curl: (7) Failed to connect to 127.0.0.1 port 3001 after 0 ms: Could not connect to server
-$ ss -ltnp | grep -E ':(3001|3002|8080|7681)\b'      # (no output)
-$ systemctl list-units --all 'hive*' --no-pager
-0 loaded units listed.
-```
+### On the server (`homeserver`, 192.168.2.7, 2026-11-02)
 
-Nothing listens on 3001 here, so no metrics endpoint was probed. Run these
-read-only checks on the server. They also tell the three deployment paths
-apart:
+Read-only GETs only, with no credentials sent. Nothing was minted or changed.
+
+- **Deployment is path 2, v2 Quadlets** (Q5). These rootless user units are
+  active: `hive.service`, `hive-gateway.service`, `hive-network.service` and
+  `hive-data-volume.service`, next to `podman-kube@website.service`,
+  `website-update.timer` and `cloudflared.service`. The containers are `hive`
+  (`ghcr.io/hivecommons/hive:stable`), `hive-gateway` (nginx),
+  `hive-contributor-omp-…`, `website-front-end` and `website-back-end`.
+- **Bind:** `ss -ltnp` shows `*:3001` held by `rootlessport`, so the gateway
+  listens on all interfaces. The website listens on `127.0.0.1:8300` and
+  `127.0.0.1:8301` (pasta).
+- **HTTP status from the host to `http://127.0.0.1:3001`:**
+
+  | Path | Status |
+  |---|---|
+  | `/api/health` | 200 |
+  | `/api/status` | 401, so auth is on and the hardening step is already done |
+  | `/api/widget/summary` without a token | 401 |
+  | `/api/widget/summary` with a well-formed but wrong `X-Hive-Widget-Token` | 401 |
+  | `/api/contribute/metrics`, `/api/contribute/run-stats`, `/api/contribute/effective-models`, `/api/leaderboard` | 200, anonymous |
+  | `/api/snapshot` | 404 |
+  | `/api/version` | `{"error":"unauthorized"}` |
+
+- `/api/openapi.json` lists `/api/widget`, `/api/widget/summary` and
+  `/api/widget/token`. The running `stable` image therefore has the widget
+  token.
+- **From inside the production website pod** (`podman exec website-back-end`,
+  pod played with `--network pasta:--host-lo-to-ns-lo`, per the unit's
+  `ExecStart`):
+  - `host.containers.internal` resolves to `169.254.1.2`.
+  - `fetch("http://host.containers.internal:3001/api/health")` returns 200.
+  - `/api/widget/summary` without a token returns 401.
+
+  This settles Q5: the pod reaches Hive with **no network change**.
+
+Anonymous payload shapes. Only the keys were inspected:
+
+- `/api/contribute/metrics`:
+  - `{bucket:"hour", collected_at, queue_depth[168], tasks_done[168], fleet_size[168], per_user_done{login: [...]}}`.
+    The arrays are hourly integers over 7 days.
+  - The series count work done by the contributor agents ("clankers")
+    connected to this hive (`src/pkg/dashboard/contribute_metrics.go:13-25`
+    at `e60f06f`).
+  - `per_user_done` is keyed by GitHub login, so it must be dropped.
+- `/api/contribute/run-stats`: `{total, window_days, backends[{backend,total,completed,failed,abandoned,duration_p50_s,duration_p95_s,scenarios,chrome_idle_share}], models[{model,runs,failure_rate,verified_pr_share}]}`.
+  Percentiles are per backend and cannot be summed across backends.
+- `/api/contribute/effective-models`: `{window, filter, min_merged_prs, ranked[{model, backend, runs, prs, merged_prs, first_pass_merge_rate, …}], insufficient, coverage}`.
+- `/api/leaderboard`:
+  - `agents[]` (all `is_agent: true` here) with `github_username`,
+    `avatar_url`, `tasks_completed`, `tasks_failed`, `trust_tier`, …
+  - `leaderboard[]`: the human contributors.
+
+The original commands for telling the three deployment paths apart:
 
 ```bash
 ss -ltnp 'sport = :3001'                                   # process + bind address
 curl -sS -m 5 -i http://127.0.0.1:3001/api/health          # public; {"status":"ok"}
-#  nginx gateway adds Permissions-Policy (src/deploy/nginx.conf:92);
-#  Node proxy adds Pragma: no-cache (src/proxy/server.js:978);
-#  Go served directly adds X-XSS-Protection (src/pkg/dashboard/server.go:1503) without Pragma. [INFERENCE: header fingerprint from code]
 curl -sS -m 5 -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3001/api/status   # 401 ⇒ auth on; 200 ⇒ OPEN spoke (owner for anyone)
 curl -sS -m 5 -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3001/api/snapshot # 404 ⇒ auto_snapshot off
 ```
@@ -478,64 +546,79 @@ curl -sS -m 5 -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3001/api/snapsho
 |---|---|---|---|---|
 | Feasibility evidence | JSON endpoints exist (Q1). No CORS, so a server-side fetch is the only way anyway. Reachable via `host.containers.internal` or `-T` (Q5, tested). cloudflared already exposes `/api/*` | Only `/snapshot` is frameable, and only with `snapshot_frame_ancestors` plus `hub.auto_snapshot`. Needs `/opt/hive` container paths (Q2). Hive is not on the internet: needs a new cloudflared ingress to 3001 | No Hive support. Needs headless Chromium on the server with an owner session. `/snapshot` HTML is the closest built-in | `build-snapshot.mjs` and `publish-snapshot*.sh` exist but push full dashboard HTML to the `kubestellar/docs` repo every 15 min (`systemd/hive-snapshot.timer`) |
 | Effort | Medium: one back-end route with an allowlist DTO and cache, one network/env change, front-end charts | Low in code, medium in ops: Hive config, a public tunnel route, plus auth hardening on a now-public Hive | High: browser runtime, image pipeline, auth | Medium–high: a new exporter or changes in Hive (out of repo) |
-| Security | Best. Hive stays private. Only allowlisted aggregates leave. **But** without a read-only token the back-end holds the owner-equivalent `HIVE_DASHBOARD_TOKEN` (Q1). Mitigate: podman secret, fixed GET allowlist, no client input forwarded | Worst. `/snapshot` bakes status, config, audit, contributors and knowledge into public HTML (Q2/Q3). It also puts Hive's port 3001 (and `/api/snapshot`, the full status, unauthenticated) on the internet | Pixels can still leak repo names and titles. Bot holds an owner session | Same leak as (b) unless a custom allowlisted exporter is written |
+| Security | Best. Hive stays private. Only allowlisted aggregates leave. The read-only widget token covers `/api/widget/summary`; other non-public routes would need the owner-equivalent `HIVE_DASHBOARD_TOKEN` (Q1), so the recommendation stays within the widget and anonymous routes | Worst. `/snapshot` bakes status, config, audit, contributors and knowledge into public HTML (Q2/Q3). It also puts Hive's port 3001 (and `/api/snapshot`, the full status, unauthenticated) on the internet | Pixels can still leak repo names and titles. Bot holds an owner session | Same leak as (b) unless a custom allowlisted exporter is written |
 | Visual control | Full: site styling, theming, accessibility | None: Hive's theme in a frame | Static image | Depends on exporter |
 | Freshness | Configurable: 60 s live, 5 min history | Rebuild ≥5 min (values <5 become 15) plus 60 s cache | Capture interval | ≥15 min as shipped. Fails the "≤5 min" requirement unless changed |
 
 ## Recommendation
 
-Build **(a)**: the website back-end proxies Hive, caches it, and serves an
-allowlisted DTO. The front-end renders its own charts.
+This section was revised after the PR #1047 review and the server checks in
+Q6. The earlier version had the back-end hold the owner-equivalent dashboard
+token. That is no longer needed.
 
-**Upstream endpoints.** Server-side only, GET only, via the Node proxy on 3001:
+Build **(a)**: the website back-end fetches Hive server-side, caches it and
+serves an allowlisted DTO. The front-end renders its own charts.
 
-| Endpoint | Fields to keep | Cache TTL |
-|---|---|---|
-| `GET /api/health` | online badge (public, no token) | 60 s |
-| `GET /api/status?fields=timestamp,governor,agents,overviewTotals,acmmLevel,tokens` (send `Accept-Encoding: gzip`) | mode, agent counts, work totals, 24 h token totals | 60 s |
-| `GET /api/pr-throughput?hours=168` | totals, `metrics`, `buckets`, `series`. Drop `top_repos`, `merged_by_agent`, `repo` | 300 s; this one scans the audit log |
-| `GET /api/timeseries?series=token` | `t` and total tokens only. Drop `tokens{}`/`tokenModels{}` unless approved | 300 s |
-| `GET /api/trend/history` | `t`, `govIssues`, `govPrs`, thinned to ≤96 points. Drop `repos`/`system` | 300 s |
+**Credential: the read-only widget token, nothing else.**
 
-Not consumed:
+- Tim mints it once in Hive (`POST /api/widget/token`, an owner action).
+  It authenticates only `GET /api/widget/summary` (Q1), so the
+  internet-facing back-end can hold it directly. No sidecar is needed.
+- Deliver it as `HIVE_WIDGET_TOKEN` through `env.valueFrom.secretKeyRef` with
+  `optional: true`. Podman skips an optional reference whose secret is missing
+  ([`pkg/specgen/generate/kube/kube.go:1195-1208` at `ced99ac`](https://github.com/podman-container-tools/podman/blob/ced99ac5c929edcd146e80be45f690605b4aa2b4/pkg/specgen/generate/kube/kube.go#L1195-L1208)),
+  so the pod still starts without the secret. The widget part then reports
+  unavailable.
+- The owner `HIVE_DASHBOARD_TOKEN` is not used anywhere.
 
-- `/api/snapshot`: it is the full payload, and enabling it publishes that
-  payload to anyone who can reach port 3001.
-- `/api/events` (SSE): its frames are full status payloads.
-- `/metrics`: cost-centric, cumulative-only, and on 3002 in containers.
-- All cost endpoints, unless the owner opts in.
+**Upstream endpoints.** Server-side only, GET only, no visitor input forwarded:
 
-**Website endpoint.** Add `GET /api/hive/metrics` to the Fastify back-end. It
-returns `HivePublicMetrics` (Q3). Put a single-flight in-memory cache in
-front, with the TTLs above. On upstream failure, serve the last good value with
-its `generatedAt` and `online: false`, so the page shows staleness instead of
-an error. Upstream load is then independent of visitor count: about 1 status
-call per minute plus 4 history calls per 5 minutes.
+| Endpoint | Auth | Fields to keep | Cache TTL |
+|---|---|---|---|
+| `GET /api/health` | none | `status === "ok"` | 60 s |
+| `GET /api/widget/summary` | `X-Hive-Widget-Token` | `history[]`: `t`, `govMode`, `govIssues`, `govPrs`, `govTotal`, `govHold`, `govActive`, `actionableCount`, `openPrCount`, `mergeableCount`. `agents[]`: counts per `state`. Drop `hiveId`, `history[].repos`, `agentStats`, `agents_kicked`, agent names | 60 s |
+| `GET /api/contribute/metrics` | none | `collected_at`, `tasks_done[]`, `fleet_size[]`, `queue_depth[]`. Drop `per_user_done` (GitHub logins) and any `per_user_*` | 180 s |
+| `GET /api/contribute/run-stats` | none | `window_days`, `total`, per backend `{backend, total, completed, failed, abandoned, duration_p50_s, duration_p95_s}`. Show percentiles per backend only | 180 s |
 
-**Network change:**
+Optional, needs an owner decision:
 
-- Read the base URL from an env var, e.g. `HIVE_BASE_URL`.
-- If `ss` shows Hive on `0.0.0.0:3001` / `*:3001` (gateway or source run): set
-  `HIVE_BASE_URL=http://host.containers.internal:3001` in
-  `deploy/kube/prod.yaml`. **No network flag change.**
-- If Hive binds `127.0.0.1:3001`: change `deploy/systemd/podman-kube@.service:36`
-  to `--network pasta:--host-lo-to-ns-lo,-T,13001:3001`, and set
-  `HIVE_BASE_URL=http://127.0.0.1:13001`.
-- Do not use `hostNetwork`, `--map-gw`, or `hive.network`.
+- `/api/contribute/effective-models` (per-model runs, PRs, merged PRs,
+  first-pass merge rate). It reveals which providers are paid for.
+- `/api/leaderboard` `agents[]` (agent account usernames and avatars, tasks
+  completed).
 
-**Credential:**
+Dropped from the earlier recommendation because they need the owner token:
 
-- If the server's Hive is an open spoke (`/api/status` returns 200 without a
-  token), no token is needed. But then anything on the host or LAN is already
-  owner on Hive. Setting `auth_token` there is a separate, recommended hardening
-  step.
-- Otherwise, give the back-end `HIVE_DASHBOARD_TOKEN` as a podman secret, sent
-  as `Authorization: Bearer …`. Accept that it is owner-equivalent; Hive has no
-  read-only API token today (Q1).
+- `/api/status`
+- `/api/pr-throughput`: PR throughput, who merged, time to merge
+- `/api/timeseries`: tokens
+- `/api/trend/history`
+- the ACMM level
 
-**Poll interval:**
+Getting them would need either an owner-token sidecar or Hive widening the
+widget scope upstream.
 
-- Front-end: poll `/api/hive/metrics` every **60 s** while the tab is visible
-  (Page Visibility). That is well under the 5-minute requirement.
-- Back-end: **60 s** TTL for health and status; **300 s** for pr-throughput,
-  token series and trend history.
+Still not consumed: `/api/snapshot`, `/api/events`, `/metrics`, cost
+endpoints.
+
+**Website endpoint.**
+
+- Add `GET /api/hive/metrics` to the Fastify back-end. A single-flight
+  in-memory cache with the TTLs above sits in front.
+- On an upstream failure it serves the last good value, marked stale.
+- Upstream load is independent of visitor count: 2 calls per minute, plus 2
+  calls every 3 minutes.
+
+**Network: no change** (verified from inside the production pod, Q6).
+
+- Set `HIVE_BASE_URL=http://host.containers.internal:3001` in
+  `deploy/kube/prod.yaml`.
+- Do not use `-T`, `hostNetwork`, `--map-gw` or `hive.network`.
+
+**Poll interval.**
+
+- Front-end: every **60 s** while the tab is visible.
+- Worst case from Hive to screen: about 150 s for the widget data and about
+  270 s for the hourly contributor series. Both are under 5 minutes.
+- `history` itself gains one point per governor eval (300 s by default, Q4).
+  Hourly series gain one point per hour.

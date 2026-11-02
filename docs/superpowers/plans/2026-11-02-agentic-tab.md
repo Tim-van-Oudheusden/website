@@ -6,10 +6,10 @@
 that reveals the pillars holding up the site, and a live, auto-refreshing panel of Hive metrics.
 
 **Architecture:** One new front-end feature folder (`front-end/src/features/agentic/`). The canyon is inline SVG plus
-CSS driven by a single `--p` custom property that a scroll hook writes. The metrics come from a sidecar container in
-the existing pod that holds the Hive token, polls a fixed allowlist of Hive endpoints and writes an allowlisted JSON
-file; the back-end serves that file at `GET /api/hive/metrics`; the front-end polls it every 60 s and draws its own
-SVG charts.
+CSS driven by a single `--p` custom property that a scroll hook writes. For the metrics, the back-end fetches Hive's
+read-only widget summary (with the widget token) and its anonymous contributor endpoints. It caches them in memory
+and serves an allowlisted summary at `GET /api/hive/metrics`. The front-end polls that every 60 s and draws its own SVG
+charts. No owner token, no sidecar, no network change (research Q6).
 
 **Tech Stack:** Bun workspace, React 19, react-router, Tailwind CSS v4, Fastify, `bun:test` with
 `renderToStaticMarkup`, Playwright e2e, rootless `podman kube play`.
@@ -36,44 +36,41 @@ SVG charts.
 
 ```mermaid
 flowchart TD
-    T0["T0 server facts + token decision (Tim)"]
+    T0["T0 mint widget token + decisions (Tim)"]
     T1["T1 /agentic route + nav"]
     T2["T2 canyon progress lib"] --> T4["T4 canyon scene"]
     T3["T3 strata config + cards"] --> T4
     T4 --> T5["T5 scroll wiring + reduced motion + e2e"]
     T1 --> T3
-    T6["T6 shared metrics contract"] --> T7["T7 allowlist DTO builder"]
-    T7 --> T8["T8 exporter loop"]
-    T6 --> T9["T9 GET /api/hive/metrics"]
-    T8 --> T10["T10 deploy sidecar"]
-    T0 --> T10
-    T9 --> T10
-    T6 --> T11["T11 polling hook"]
-    T6 --> T12["T12 SVG chart primitives"]
-    T1 --> T13["T13 metrics section"]
-    T11 --> T13
-    T12 --> T13
-    T9 --> T13
+    T6["T6 shared metrics contract"] --> T7["T7 allowlist builder"]
+    T7 --> T8["T8 GET /api/hive/metrics + cache"]
+    T8 --> T9["T9 deploy env + optional secret"]
+    T0 --> T9
+    T6 --> T10["T10 polling hook"]
+    T6 --> T11["T11 SVG chart primitives"]
+    T1 --> T12["T12 metrics section"]
+    T10 --> T12
+    T11 --> T12
+    T8 --> T12
     T5 --> P["Pairings P1-P3 (optional)"]
-    T13 --> P
+    T12 --> P
 ```
 
-The canyon track (T2-T5) and the metrics track (T6-T13) are independent after T1 and can run in parallel.
+The canyon track (T2-T5) and the metrics track (T6-T12) are independent after T1 and can run in parallel.
 
 ---
 
-### T0: Server facts and token decision (Tim, no code)
+### T0: Mint the widget token and settle decisions (Tim, no code)
 
-- [ ] **Step 1:** On the server, run the read-only checks in `research/hive_metrics_api.md` §Q6 and record in the
-  issue: Hive's bind address on 3001 (`ss -ltnp 'sport = :3001'`), whether `/api/status` answers 401 (auth on) or 200
-  (open spoke), and which layer answers (gateway, Node proxy, or Go).
-- [ ] **Step 2:** If `/api/status` answers 200 without a token, set Hive's `auth_token` first (Hive config, outside
-  this repo).
-- [ ] **Step 3:** Decide token placement (metrics spec, Open decisions 1) and the optional public fields (Open
-  decisions 2). The rest of this plan assumes the recommended sidecar and no optional fields.
+Already done: the server facts (research Q6, checked 2026-11-02). Hive's auth is on, the gateway listens on `*:3001`,
+and the production pod reaches `host.containers.internal:3001`.
 
-**Acceptance:** the issue states `HIVE_BASE_URL` (`host.containers.internal:3001` or `127.0.0.1:13001`), whether a
-token is needed, and the token decision.
+- [ ] **Step 1:** Mint the widget token in Hive (`POST /api/widget/token` or the dashboard) and create the podman
+  secret on the host. The runbook for the secret comes in T9. The token is never in the repo.
+- [ ] **Step 2:** Decide metrics spec Open decisions 2 (PR throughput source) and 3 (optional anonymous extras). The
+  rest of this plan assumes the defaults: no throughput, no extras.
+
+**Acceptance:** the issue records that the secret exists (not its value) and the two decisions.
 
 ---
 
@@ -193,82 +190,92 @@ export function resolveCanyonMotion(env: { prefersReducedMotion: boolean }): Can
 
 ---
 
-### T7: Allowlist DTO builder (pure)
+### T7: Allowlist builder (pure)
 
 **Files:**
 - Create: `back-end/src/features/hive/hive-public-metrics.ts`
-- Create: `test/back-end/src/features/hive/fixtures/` (recorded or hand-built Hive responses for the five endpoints, shaped from Hive's Go structs cited in the research; each fixture includes canary values: a repo `owner/secret-repo`, an issue title, a session id, a login URL, a USD cost)
+- Create: `test/back-end/src/features/hive/fixtures/`
+  - Responses for `/api/health`, `/api/widget/summary`, `/api/contribute/metrics` and `/api/contribute/run-stats`.
+  - Shaped from the live server's key sets (research Q6) and Hive's Go structs (`EvalSnapshot`,
+    `widgetSummaryAgent`).
+  - Canaries: `hiveId`, a repo name in `history[].repos`, agent names in `agents[].name` and `agents_kicked`, a
+    login in `per_user_done`, and a model id in `run-stats.models[]`.
 - Test: `test/back-end/src/features/hive/hive-public-metrics.test.ts`
 
 **Interfaces:**
 ```ts
-export interface HiveUpstream { health: unknown; status: unknown; throughput: unknown; tokens: unknown; trend: unknown }
-export function buildHivePublicMetrics(upstream: HiveUpstream, now: Date): HivePublicMetrics;
+export interface HiveUpstream { health: unknown; widget: unknown | null; contributeMetrics: unknown | null; runStats: unknown | null }
+export function buildHivePublicMetrics(upstream: HiveUpstream): HivePublicMetrics;
 ```
 
 - [ ] **Step 1:** Failing test: built from the fixtures, the serialised output contains none of the canaries and
   has exactly the contract's keys.
 - [ ] **Step 2:** Implement by picking fields into fresh objects. Pass.
-- [ ] **Step 3:** Failing tests, one at a time: governor mode is lower-cased and unknown modes are rejected; agent
-  counts come from states, not names; hourly buckets are summed into UTC days (`bucket_seconds`); trend history is cut
-  to 7 days and at most one point per hour; token series keeps `t` and the summed total only.
+- [ ] **Step 3:** Failing tests, one at a time:
+  - Governor modes are lower-cased, and unknown modes are rejected.
+  - `running` counts only `state === "running"`. Pin the vocabulary from Hive's agent state source first.
+  - Tiles come from the latest history point.
+  - `widget: null` → `hive: null` while `contributors` is still built.
+  - Run stats keep per-backend percentiles and never combine them.
 - [ ] **Step 4:** Failing test: a non-number where a number is expected makes that part `null`/empty, never `NaN`,
   and never throws for the whole object. Implement. Pass.
 - [ ] **Step 5:** Full suite, gates, commit.
 
 ---
 
-### T8: Exporter loop
+### T8: `GET /api/hive/metrics` with upstream client and cache
 
 **Files:**
-- Create: `back-end/src/scripts/hive-metrics-exporter.ts` (entry: reads `HIVE_BASE_URL`, optional `HIVE_DASHBOARD_TOKEN`, `HIVE_METRICS_PATH`)
-- Create: `back-end/src/features/hive/hive-exporter.ts` (testable core: injected `fetch`, clock and writer)
-- Test: `test/back-end/src/features/hive/hive-exporter.test.ts`
+- Create: `back-end/src/features/hive/hive-upstream.ts`
+  - Fixed URLs and GET only. Each call has a 5 s timeout.
+  - Sends `X-Hive-Widget-Token` only to `/api/widget/summary`.
+  - Single-flight cache: 60 s for health and the widget summary, 180 s for the contributor endpoints.
+  - Takes injected `fetch` and clock.
+- Create: `back-end/src/features/hive/register-hive-metrics-route.ts`
+- Modify: `back-end/src/app.ts`: register inside the `API_BASE` plugin, reading `HIVE_BASE_URL` and the optional
+  `HIVE_WIDGET_TOKEN` (`back-end/src/core/server-config.ts`).
+- Test: `test/back-end/src/features/hive/register-hive-metrics-route.test.ts` (Fastify `inject`, fake fetch and clock)
 
-- [ ] **Step 1:** Failing test with fake clock and fetch: health and status are requested every 60 s, the three
-  history endpoints every 180 s, all with GET, a 5 s timeout and the bearer header only when a token is set; the
-  request URLs are exactly the spec's list.
+- [ ] **Step 1:** Failing test: `HIVE_BASE_URL` unset in production → 200 `{ state: "unavailable", metrics: null }`.
+  In development it serves the checked-in fixture instead.
 - [ ] **Step 2:** Implement. Pass.
-- [ ] **Step 3:** Failing test: one failing endpoint keeps the previous value for its part; a failing health check
-  sets `online: false`; the file is written via temp file + rename.
+- [ ] **Step 3:** Failing tests, one at a time:
+  - The four URLs requested are exactly the spec's list, as GET.
+  - The widget header is sent only to the widget route, and only when the token is set.
+  - Within a TTL there is no second upstream call. Concurrent requests share one in-flight call.
+  - One failing upstream keeps its last value.
+  - Every part older than 10 minutes → `stale`.
+  - Never 500.
+  - `Cache-Control: public, max-age=30`.
 - [ ] **Step 4:** Implement. Pass. Full suite, gates, commit.
 
 ---
 
-### T9: `GET /api/hive/metrics`
+### T9: Deploy config (high risk, maintainer merges)
 
 **Files:**
-- Create: `back-end/src/features/hive/register-hive-metrics-route.ts`
-- Modify: `back-end/src/app.ts` (register inside the `API_BASE` plugin; path from `HIVE_METRICS_PATH`, default unset → `unavailable`)
-- Test: `test/back-end/src/features/hive/register-hive-metrics-route.test.ts` (Fastify `inject`)
-
-- [ ] **Step 1:** Failing test: no file → 200 `{ state: "unavailable", metrics: null }`.
-- [ ] **Step 2:** Implement. Pass.
-- [ ] **Step 3:** Failing tests: fresh file → `live`; file older than 10 minutes → `stale`; corrupt file after a good
-  one → last good value; corrupt file first → `unavailable`; never 500; `Cache-Control: public, max-age=30`.
-- [ ] **Step 4:** Implement (re-read only on mtime change). Pass. Full suite, gates, commit.
-
----
-
-### T10: Deploy the sidecar (high risk, maintainer merges)
-
-**Files:**
-- Modify: `deploy/kube/prod.yaml` (container `hive-metrics`: back-end image, `command: ["bun", "run", "src/scripts/hive-metrics-exporter.ts"]`, no `ports`, env `HIVE_BASE_URL` from T0, `HIVE_METRICS_PATH=/data/hive-metrics.json`, `HIVE_DASHBOARD_TOKEN` via `valueFrom.secretKeyRef`, `views-data` mounted at `/data`; back-end gets `HIVE_METRICS_PATH`)
-- Modify (only if T0 found Hive on loopback): `deploy/systemd/podman-kube@.service` `--network pasta:--host-lo-to-ns-lo,-T,13001:3001`
-- Modify: `deploy/kube/dev.yaml` (back-end `HIVE_METRICS_PATH` pointing at a checked-in fixture; no exporter)
-- Modify: `docs/deploy.md` (create the Kubernetes Secret on the host, never in the repo; how to check the export)
+- Modify: `deploy/kube/prod.yaml`, back-end container only:
+  - `HIVE_BASE_URL=http://host.containers.internal:3001`.
+  - `HIVE_WIDGET_TOKEN` via `valueFrom.secretKeyRef` with `optional: true`.
+  - No new container, no new port.
+- Unchanged: `deploy/systemd/podman-kube@.service`. The network was already verified (research Q6).
+- Modify: `docs/deploy.md`:
+  - Create the podman secret on the host from the minted widget token. It is never in the repo.
+  - Rotate it with `DELETE /api/widget/token` and mint again.
+  - Check the route with `curl`.
 - Test: `test/shared/src/deploy-config.test.ts`
 
-- [ ] **Step 1:** Failing test: in `prod.yaml` the `hive-metrics` container publishes no ports, reads the token only
-  through `secretKeyRef`, and no other container references the secret.
-- [ ] **Step 2:** Implement manifests and runbook. Pass.
-- [ ] **Step 3:** On the server: create the secret, replay the pod, then `curl -s https://buildwithtim.dev/api/hive/metrics`
-  shows `state: "live"`, and grepping the response for the repo owner, `usd` and `session` finds nothing.
+- [ ] **Step 1:** Failing test: in `prod.yaml` only the back-end container references the widget secret, it is
+  `optional: true`, and no Hive-related port is published.
+- [ ] **Step 2:** Implement manifest and runbook. Pass.
+- [ ] **Step 3:** On the server: create the secret and replay the pod. Then
+  `curl -s https://buildwithtim.dev/api/hive/metrics` shows `state: "live"`. Grepping the response for a repository
+  name, `hiveId`, `github_username` and `usd` finds nothing.
 - [ ] **Step 4:** Full suite, gates, commit; PR labelled for maintainer merge.
 
 ---
 
-### T11: Polling hook
+### T10: Polling hook
 
 **Files:**
 - Create: `front-end/src/shared/hooks/use-polling-api-get.ts` (separate from `useApiGet`, whose `start` clears data on purpose)
@@ -277,21 +284,26 @@ export function buildHivePublicMetrics(upstream: HiveUpstream, now: Date): HiveP
 - [ ] **Step 1:** Failing test on the pure reducer: an error after a success keeps the data and marks it stale; a
   success clears stale.
 - [ ] **Step 2:** Implement. Pass.
-- [ ] **Step 3:** Failing test with fake timers and a fake `document.visibilityState`: polls every 60 s while
-  visible, none while hidden, fetches at once on becoming visible when the last fetch is over 60 s old, stops on unmount.
+- [ ] **Step 3:** Failing test with fake timers and a fake `document.visibilityState`:
+  - Polls every 60 s while visible and not at all while hidden.
+  - On becoming visible, fetches at once if the last fetch is over 60 s old.
+  - Stops on unmount.
 - [ ] **Step 4:** Implement. Pass. Full suite, gates, commit.
 
 ---
 
-### T12: SVG chart primitives
+### T11: SVG chart primitives
 
 **Files:**
-- Create: `front-end/src/features/agentic/lib/chart-scale.ts` (pure: linear scale, nice min/max, path points)
-- Create: `front-end/src/features/agentic/components/charts/{sparkline,bar-series,share-bar}.tsx`
+- Create: `front-end/src/features/agentic/lib/chart-scale.ts` (pure: linear scale, nice min/max, path points, mode segments from a history)
+- Create: `front-end/src/features/agentic/components/charts/{line-series,mode-band,bar-series,stacked-row}.tsx`
 - Tests: `test/front-end/src/features/agentic/lib/chart-scale.test.ts`, `.../components/charts/*.test.tsx`
 
-- [ ] **Step 1:** Failing tests for the scale: empty and single-point series, all-zero series (flat line, no
-  division by zero), negative values rejected.
+- [ ] **Step 1:** Failing tests for the scale:
+  - Empty and single-point series.
+  - An all-zero series gives a flat line with no division by zero.
+  - Negative values are rejected.
+  - Mode segments merge consecutive equal modes and span first-to-last `t`.
 - [ ] **Step 2:** Implement. Pass.
 - [ ] **Step 3:** Failing tests per chart: renders a `<figure>` with caption, `role="img"` and a summary
   `aria-label` computed from the data, and a "Show data" table with every value.
@@ -300,24 +312,27 @@ export function buildHivePublicMetrics(upstream: HiveUpstream, now: Date): HiveP
 
 ---
 
-### T13: Metrics section
+### T12: Metrics section
 
 **Files:**
 - Create: `front-end/src/features/agentic/components/hive-metrics-section.tsx`, `hive-status-pill.tsx`, `hive-kpi-tiles.tsx`
 - Modify: `agentic-page.tsx` (section after the canyon track)
 - Create: `e2e/agentic-metrics.e2e.ts`
 
-- [ ] **Step 1:** Failing tests: the section renders the live, stale, offline (`online: false`) and unavailable
-  states; the status pill text and `aria-live="polite"`; labels say "opened by Hive's agents" and "merged PRs and
-  completed issues" (metrics spec, Layout 3-4); ACMM level shows its name.
+- [ ] **Step 1:** Failing tests:
+  - The section renders the live, stale, offline (`online: false`), widget-missing (`hive: null`) and unavailable
+    states.
+  - The status pill has the right text and `aria-live="polite"`.
+  - The queue title states the measured span from the data.
+  - Run times appear per backend only.
 - [ ] **Step 2:** Implement following `docs/assets/agentic/metrics-wireframe.svg`. Pass.
-- [ ] **Step 3:** Failing e2e against the dev fixture: four tiles and four figures; with the route stubbed to
+- [ ] **Step 3:** Failing e2e against the dev fixture: four tiles and four figures appear. With the route stubbed to
   `unavailable`, the explanation shows and no empty chart does. Implement. Pass.
 - [ ] **Step 4:** Light and dark screenshots for the PR. Full suite, gates, commit.
 
 ---
 
-### T14: Docs
+### T13: Docs
 
 - [ ] Add the public Hive metrics to `docs/metrics/README.md` (what is published, from where, cadence, what is
   deliberately excluded).
@@ -325,11 +340,12 @@ export function buildHivePublicMetrics(upstream: HiveUpstream, now: Date): HiveP
 
 ---
 
-### Pairings (optional, after T5 and T13)
+### Pairings (optional, after T5 and T12)
 
 One issue each, from [`2026-11-02-agentic-tab-pairings.md`](../specs/2026-11-02-agentic-tab-pairings.md):
 
-- **P1 Bedrock hand-off:** "This layer is live ↓" link on the Agents · Hive card; honey bedrock colour as the Hive
-  series colour.
+- **P1 Bedrock hand-off:** "This layer is live ↓" link on the Agents · Hive card; the honey bedrock colour as the
+  accent of the agent tile and contributor bars.
 - **P2 Night-to-page fade:** metrics section starts inside the canyon's final fade.
-- **P3 Stars are merges:** star count from `throughput7d.merged`, capped, default stars when metrics are unavailable.
+- **P3 Stars are tasks:** star count from the last 24 contributor `tasksPerHour` buckets, capped, default stars when
+  metrics are unavailable.
