@@ -376,6 +376,11 @@ under `/opt/website/deploy`. When the back-end digest changes, the service:
    - host network, PID or IPC;
    - images outside `ghcr.io/tim-van-oudheusden/website/`;
    - privileged containers, privilege escalation or added capabilities;
+   - a pod-level `securityContext`, or a container `securityContext` key other
+     than `privileged`, `allowPrivilegeEscalation`, `capabilities`,
+     `readOnlyRootFilesystem` and `runAsNonRoot` (so no `seLinuxOptions`,
+     `runAsUser`, `procMount` or `seccompProfile`);
+   - a volume mount with `mountPropagation`;
    - host ports not bound to `127.0.0.1`;
    - volumes other than the `website-data` hostPath or an `emptyDir`;
    - secrets other than `hive-widget-token`;

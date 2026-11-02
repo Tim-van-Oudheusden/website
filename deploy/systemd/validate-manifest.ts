@@ -3,13 +3,16 @@
 // The manifest now ships inside the back-end image, so a bad or compromised
 // image could ask the host for more than the pod gets today. This file is the
 // host's own copy (copied by hand like website-update.sh, never taken from an
-// image), and it refuses anything outside the shape the pod has on main:
+// image), and it refuses any manifest that breaks one of these rules:
 //
 //   - one Pod named "website", no annotations (podman reads some as security
 //     switches, e.g. disabling SELinux labels);
 //   - no host network, PID or IPC namespace;
 //   - images only from ghcr.io/tim-van-oudheusden/website/;
-//   - no privileged container, privilege escalation or added capability;
+//   - no pod-level securityContext; a container securityContext only with
+//     the keys in SECURITY_KEYS, which can only take privileges away, and no
+//     privileged container, privilege escalation or added capability;
+//   - no volume mount with mountPropagation;
 //   - host ports only on 127.0.0.1;
 //   - volumes only the relative hostPath "website-data" or an emptyDir;
 //   - secrets only by name from ALLOWED_SECRETS, one key at a time.
@@ -22,6 +25,16 @@ const POD_NAME = "website";
 const IMAGE_PREFIX = "ghcr.io/tim-van-oudheusden/website/";
 const DATA_HOST_PATH = "website-data";
 const ALLOWED_SECRETS: readonly string[] = ["hive-widget-token"];
+// Container securityContext keys that take privileges away, or are checked
+// below. Any other key (seLinuxOptions, runAsUser, procMount, seccompProfile,
+// ...) can hand the container more than the pod on main gets.
+const SECURITY_KEYS: readonly string[] = [
+  "privileged",
+  "allowPrivilegeEscalation",
+  "capabilities",
+  "readOnlyRootFilesystem",
+  "runAsNonRoot",
+];
 
 type Fields = Record<string, unknown>;
 
@@ -50,6 +63,10 @@ function checkContainer(container: unknown, problems: string[]): void {
   const security = container["securityContext"];
 
   if (isFields(security)) {
+    for (const key of Object.keys(security).filter((name) => !SECURITY_KEYS.includes(name))) {
+      problems.push(`${label}: securityContext.${key} is not allowed`);
+    }
+
     if (security["privileged"] === true) {
       problems.push(`${label}: privileged`);
     }
@@ -68,6 +85,12 @@ function checkContainer(container: unknown, problems: string[]): void {
   for (const port of list(container["ports"])) {
     if (isFields(port) && port["hostPort"] !== undefined && port["hostIP"] !== "127.0.0.1") {
       problems.push(`${label}: host port ${JSON.stringify(port["hostPort"])} is not bound to 127.0.0.1`);
+    }
+  }
+
+  for (const mount of list(container["volumeMounts"])) {
+    if (isFields(mount) && mount["mountPropagation"] !== undefined) {
+      problems.push(`${label}: volume mount ${String(mount["name"])} sets mountPropagation`);
     }
   }
 
@@ -130,6 +153,10 @@ export function validateManifest(text: string): string[] {
 
   if (metadata["annotations"] !== undefined) {
     problems.push("annotations are not allowed");
+  }
+
+  if (spec["securityContext"] !== undefined) {
+    problems.push("a pod-level securityContext is not allowed");
   }
 
   for (const namespace of ["hostNetwork", "hostPID", "hostIPC"]) {
