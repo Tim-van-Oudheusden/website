@@ -32,6 +32,11 @@ COPY shared/ shared/
 COPY back-end/ back-end/
 COPY content/ content/
 COPY package.json tsconfig.json ./
+# The host's update timer installs the pod manifest from here and reports drift
+# in its own copies of the systemd files (deploy/systemd/website-update.sh, #1088).
+# The server never runs these; only the manifest is installed, after a check.
+COPY deploy/kube/prod.yaml /opt/website/deploy/kube/prod.yaml
+COPY deploy/systemd/ /opt/website/deploy/systemd/
 WORKDIR /app/back-end
 ENV HOST=0.0.0.0
 EXPOSE 3001

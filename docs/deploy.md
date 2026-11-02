@@ -24,10 +24,15 @@ Prerequisites: Podman 5.x with a `pasta` build that supports
 commands run as the service user (not root). The `cloudflared` binary is
 optional — §2 shows how to run it from the image on immutable hosts.
 
-The host needs no clone of this repo: only `deploy/kube/prod.yaml` and
-`deploy/systemd/website-update.sh` are read at run time, from `WEBSITE_REPO`
-(default `~/Git/website`). A minimal host keeps just those two files at the
-same relative paths, e.g. under `~/.config/website`.
+The host needs no clone of this repo. At run time it reads three files from
+`WEBSITE_REPO` (default `~/Git/website`), at their repo paths, e.g. under
+`~/.config/website`:
+
+| File | How it gets to the host |
+| --- | --- |
+| `deploy/kube/prod.yaml` | Copied once by hand for the first play. After that the update timer installs main's copy from the back-end image (§3). |
+| `deploy/systemd/website-update.sh` | Copied by hand. The timer reports when it differs from main's (§3). |
+| `deploy/systemd/validate-manifest.ts` | Copied by hand, same as the script. |
 
 ---
 
@@ -358,6 +363,35 @@ replay logs `image changed: <image>:latest <old digest> -> <new digest>`, and
 CI pushes every image under its `:<git-sha>` tag too, so the journal shows which
 commit went live.
 
+**The manifest comes with the back-end image (#1088).** CI builds both images
+from one commit, and the back-end image carries that commit's `deploy/` files
+under `/opt/website/deploy`. When the back-end digest changes, the service:
+
+1. copies `prod.yaml` out of the new image. An image built before #1088 has
+   none, and the installed manifest stays;
+2. checks it with the host's `validate-manifest.ts`, run by `bun` from the
+   *previously running* back-end image with no network, so the new image
+   supplies the manifest but none of the code that judges it. The check refuses:
+   - another pod name, or any annotations;
+   - host network, PID or IPC;
+   - images outside `ghcr.io/tim-van-oudheusden/website/`;
+   - privileged containers, privilege escalation or added capabilities;
+   - host ports not bound to `127.0.0.1`;
+   - volumes other than the `website-data` hostPath or an `emptyDir`;
+   - secrets other than `hive-widget-token`;
+3. installs it over `${WEBSITE_REPO}/deploy/kube/prod.yaml` and replays.
+
+A manifest that fails the check logs `manifest REJECTED` and the reasons, and
+rejects the new images like a failed health check (§4), without replaying. On a
+first deploy, with no previous back-end image to run the check with, or without
+a host copy of `validate-manifest.ts`, the installed manifest stays.
+
+The service never installs its own script, the checker or the units from an
+image: a broken updater could not roll itself back. When a host copy differs
+from main's copy in the image, the journal says
+`drift: <file> differs from main's copy in the image`. Copy that file from
+the repo by hand (and `systemctl --user daemon-reload` for a unit).
+
 ---
 
 ## 4. Rollback
@@ -367,8 +401,11 @@ case. Before pulling, it tags whatever image is currently running as a local
 `:rollback` reference; after replaying the pod on a digest change, it polls
 both containers' `/health` endpoints for ~20s. If the replay itself fails
 (`podman kube play` could not start a container) or either container never
-comes up healthy, it re-tags `:rollback` onto `:latest`, replays the pod again, and
-exits non-zero — check `systemctl --user status website-update.service` /
+comes up healthy, it re-tags `:rollback` onto `:latest`, puts back the manifest
+it replaced (if it installed one this run, from
+`${XDG_STATE_HOME:-~/.local/state}/website-update/prod.yaml.previous`), replays
+the pod again, and exits non-zero — check
+`systemctl --user status website-update.service` /
 `journalctl --user -u website-update.service` after an incident to see
 whether this already happened. Each image rolled back is logged as
 `rejected: <image>:latest <digest>`.
@@ -401,6 +438,10 @@ rolling back further than one release. Pull a known-good immutable tag and
 point the pod manifest at it, then replay:
 
 ```bash
+# Stop the timer first: a new back-end image would otherwise install main's
+# manifest over the pinned one.
+systemctl --user stop website-update.timer
+
 podman pull ghcr.io/tim-van-oudheusden/website/front-end:<git-sha>
 podman pull ghcr.io/tim-van-oudheusden/website/back-end:<git-sha>
 
@@ -409,8 +450,8 @@ podman pull ghcr.io/tim-van-oudheusden/website/back-end:<git-sha>
 systemctl --user restart podman-kube@website.service
 ```
 
-To return to tracking `:latest`, revert the two image refs in `prod.yaml` and
-restart again.
+To return to tracking `:latest`, revert the two image refs in `prod.yaml`,
+restart again, and `systemctl --user start website-update.timer`.
 
 Once the incident is over, consider writing it up — see
 [`docs/postmortems/README.md`](postmortems/README.md), especially if the

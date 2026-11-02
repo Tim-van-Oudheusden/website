@@ -31,6 +31,18 @@
 #
 # Every image listed in `images` below must be one the pod runs: its ref
 # "$registry/<name>:latest" must match deploy/kube/prod.yaml exactly.
+#
+# The pod manifest travels with the back-end image (#1088): CI builds both
+# images from one commit, and the back-end image carries that commit's deploy/
+# files under /opt/website/deploy. When the back-end digest changes, the new
+# image's prod.yaml is checked by the host's validate-manifest.ts (run with bun
+# from the previously running back-end image, no network) and installed over
+# $WEBSITE_REPO/deploy/kube/prod.yaml before the replay. A manifest that fails
+# the check rejects the new images like a failed health check; a failed replay
+# puts the previous manifest back along with the previous images. This script,
+# validate-manifest.ts and the systemd units are never taken from an image: a
+# host copy that differs from main's is only reported ("drift: ..."), for an
+# operator to copy by hand (docs/deploy.md).
 set -euo pipefail
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/website-update"
@@ -68,6 +80,65 @@ reject() {
 readonly registry=ghcr.io/tim-van-oudheusden/website
 readonly images=(front-end back-end)
 
+readonly repo_dir="${WEBSITE_REPO:-$HOME/Git/website}"
+readonly manifest="$repo_dir/deploy/kube/prod.yaml"
+readonly manifest_backup="$state_dir/prod.yaml.previous"
+readonly unit_dir="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+# Where back-end/Dockerfile puts main's deploy/ files in the image.
+readonly image_deploy=/opt/website/deploy
+
+# Copies main's deploy files out of the new back-end :latest into $1, keeping
+# their deploy/ layout. A file the image lacks (an image built before #1088)
+# is simply missing afterwards.
+extract_deploy_files() {
+  local into="$1"
+  local cid file
+  cid="$(podman create "$registry/back-end:latest")" || return 1
+  for file in kube/prod.yaml systemd/website-update.sh systemd/validate-manifest.ts \
+    systemd/podman-kube@.service systemd/website-update.service systemd/website-update.timer; do
+    mkdir -p "$into/$(dirname "$file")"
+    podman cp "$cid:$image_deploy/$file" "$into/$file" >/dev/null 2>&1 || true
+  done
+  podman rm "$cid" >/dev/null 2>&1 || true
+}
+
+# Reports each host copy that differs from main's copy in the image. These are
+# never installed automatically: a broken updater could not roll itself back.
+warn_drift() {
+  local from="$1"
+  local label host_copy image_copy
+  while IFS='|' read -r label host_copy image_copy; do
+    if [[ -f "$image_copy" ]] && ! cmp -s "$host_copy" "$image_copy"; then
+      echo "drift: $label differs from main's copy in the image; copy it by hand (docs/deploy.md)" >&2
+    fi
+  done <<EOF
+deploy/systemd/website-update.sh|$repo_dir/deploy/systemd/website-update.sh|$from/systemd/website-update.sh
+deploy/systemd/validate-manifest.ts|$repo_dir/deploy/systemd/validate-manifest.ts|$from/systemd/validate-manifest.ts
+podman-kube@.service|$unit_dir/podman-kube@.service|$from/systemd/podman-kube@.service
+website-update.service|$unit_dir/website-update.service|$from/systemd/website-update.service
+website-update.timer|$unit_dir/website-update.timer|$from/systemd/website-update.timer
+EOF
+}
+
+# Runs the host's validate-manifest.ts on $1 with bun from the previously
+# running back-end image, offline: the new image supplies the manifest but none
+# of the code that judges it. Succeeds only when the manifest passes.
+check_manifest() {
+  local check_dir passed=0
+  check_dir="$(mktemp -d)"
+  cp "$1" "$check_dir/prod.yaml"
+  cp "$repo_dir/deploy/systemd/validate-manifest.ts" "$check_dir/validate-manifest.ts"
+  # Readable by the image's unprivileged bun user, not just the host user.
+  chmod 755 "$check_dir"
+  chmod 644 "$check_dir"/*
+  if podman run --rm --network none -v "$check_dir:/check:ro,z" --entrypoint bun \
+    "$registry/back-end:rollback" /check/validate-manifest.ts /check/prod.yaml; then
+    passed=1
+  fi
+  rm -rf "$check_dir"
+  [[ "$passed" -eq 1 ]]
+}
+
 # Per image name: the :latest digest before and after the pull.
 declare -A before=() after=()
 # Image names whose new :latest the pod replay will pick up.
@@ -79,6 +150,19 @@ unheld=()
 # Puts the :rollback reference back onto :latest.
 restore_rollback() {
   podman tag "$registry/$1:rollback" "$registry/$1:latest"
+}
+
+# Puts every changed image that had a previous one back on :latest and
+# remembers its new digest as rejected.
+reject_changed() {
+  local name
+  for name in "${changed[@]}"; do
+    if [[ -n "${before[$name]}" ]]; then
+      restore_rollback "$name"
+      reject "$name" "${after[$name]}"
+      echo "rejected: $name:latest ${after[$name]}" >&2
+    fi
+  done
 }
 
 # Tags the running image as :rollback, pulls :latest, then either holds back a
@@ -133,6 +217,35 @@ if [[ "${#unheld[@]}" -gt 0 ]]; then
   exit 1
 fi
 
+installed_new_manifest=0
+if [[ " ${changed[*]} " == *" back-end "* ]]; then
+  incoming="$(mktemp -d)"
+  extract_deploy_files "$incoming" || true
+  warn_drift "$incoming"
+  if [[ ! -f "$incoming/kube/prod.yaml" ]]; then
+    echo "the new back-end image carries no manifest; keeping the installed manifest"
+  elif cmp -s "$incoming/kube/prod.yaml" "$manifest"; then
+    echo "manifest unchanged"
+  elif [[ -z "${before[back-end]}" ]]; then
+    echo "no previous back-end image to check the new manifest with; keeping the installed manifest" >&2
+  elif [[ ! -f "$repo_dir/deploy/systemd/validate-manifest.ts" ]]; then
+    echo "no host copy of deploy/systemd/validate-manifest.ts; keeping the installed manifest" >&2
+  elif check_manifest "$incoming/kube/prod.yaml"; then
+    mkdir -p "$state_dir"
+    cp "$manifest" "$manifest_backup"
+    cp "$incoming/kube/prod.yaml" "$manifest.new"
+    mv "$manifest.new" "$manifest"
+    installed_new_manifest=1
+    echo "manifest updated from the back-end image"
+  else
+    rm -rf "$incoming"
+    echo "manifest REJECTED: the new back-end image's prod.yaml fails validate-manifest.ts; not replaying" >&2
+    reject_changed
+    exit 1
+  fi
+  rm -rf "$incoming"
+fi
+
 echo "replaying podman-kube@website.service"
 
 # A replay that fails outright (kube play exits "failed to start N containers",
@@ -148,13 +261,12 @@ fi
 
 echo "update FAILED (pod replay or health check): rolling back to the previously running image(s)" >&2
 
-for name in "${changed[@]}"; do
-  if [[ -n "${before[$name]}" ]]; then
-    restore_rollback "$name"
-    reject "$name" "${after[$name]}"
-    echo "rejected: $name:latest ${after[$name]}" >&2
-  fi
-done
+reject_changed
+
+if [[ "$installed_new_manifest" -eq 1 ]]; then
+  cp "$manifest_backup" "$manifest"
+  echo "restored the previous manifest" >&2
+fi
 
 echo "replaying podman-kube@website.service with rolled-back image(s)" >&2
 systemctl --user restart podman-kube@website.service
