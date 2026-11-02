@@ -5,6 +5,7 @@ import { httpContentLoader } from "@/shared/lib/content-loader";
 
 import { CanyonRim } from "../components/canyon-rim";
 import { CanyonStratumCard } from "../components/canyon-stratum-card";
+import { HiveMetricsSection } from "../components/hive-metrics-section";
 import { CANYON_STRATA } from "../config/canyon-strata";
 
 /** The Agentic tab: how this site is built with AI agents. */
@@ -22,6 +23,9 @@ export function AgenticPage(): JSX.Element {
           {CANYON_STRATA.map((stratum) => (
             <CanyonStratumCard key={stratum.id} stratum={stratum} />
           ))}
+        </div>
+        <div className="mt-12">
+          <HiveMetricsSection />
         </div>
       </div>
     </main>
