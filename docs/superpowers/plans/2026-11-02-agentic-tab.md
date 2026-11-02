@@ -189,17 +189,23 @@ spec under "Fidelity and design rounds". Each round is one PR of static frames, 
   tablets.
 - Create: `front-end/src/features/agentic/canyon-scene.css` (`--canyon-*` colours from the spec's colour table, `calc()` rules on `--p`, ambient keyframes behind `prefers-reduced-motion: no-preference`)
 - Modify: `front-end/src/index.css` (`@import` the scene CSS)
+- Create: `front-end/src/features/agentic/config/canyon-art.ts` (types) and `canyon-art-desktop.ts`,
+  `canyon-art-phone.ts` (geometry generated from the round-2 scene model, not hand-copied SVG)
+- Modify: `components/canyon-rim.tsx` and `pages/agentic-page.tsx`: the page loads the project list once and hands it
+  to both the rim card and the scene's flags; the scene loads in its own chunk and holds a static `--p: 0.5` frame
+  until T5 wires scrolling
 - Tests: `test/front-end/src/features/agentic/components/canyon-scene.test.tsx`
 
-- [ ] **Step 1:** Failing test: the scene root is `aria-hidden="true"` and contains one tablet per stratum, labelled
-  from the same config as the cards (so art and text cannot drift).
-- [ ] **Step 2:** Implement the SVG from `docs/assets/agentic/canyon-storyboard.svg` (geometry and colours). Pass.
-- [ ] **Step 3:** Failing test: each stratum element carries `data-revealed` from a `revealed` prop count.
+- [x] **Step 1:** Failing test: the scene root is `aria-hidden="true"` and contains one tablet per stratum, labelled
+  from the same config as the cards (so art and text cannot drift). Same for one hoodoo per pillar item and one flag
+  per project.
+- [x] **Step 2:** Implement the SVG from the round-2 frames (`docs/assets/agentic/round-2/`). Pass.
+- [x] **Step 3:** Failing test: each stratum element carries `data-revealed` from a `revealed` prop count.
   Implement. Pass.
-- [ ] **Step 4:** Write the CSS: every moving part uses only `transform` and `opacity`; colour changes are opacity
+- [x] **Step 4:** Write the CSS: every moving part uses only `transform` and `opacity`; colour changes are opacity
   crossfades between pre-painted layers (spec, "Scroll mechanics").
-- [ ] **Step 5:** Visual check in the dev server at three fixed `--p` values (set in devtools) against the storyboard.
-  Full suite, gates, commit.
+- [x] **Step 5:** Visual check in the dev server at three fixed `--p` values against the round-2 frames, desktop and
+  phone. Full suite, gates, commit.
 
 ---
 
