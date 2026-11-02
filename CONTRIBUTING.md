@@ -33,7 +33,7 @@ back-end/src/
   scripts/             CLI entry points, e.g. validate-content.ts
   app.ts, index.ts     app assembly and process entry
 front-end/
-  src/features/<name>/ one folder per area (articles, home, projects, standalone-pages), split into components/ hooks/ lib/ pages/ as needed
+  src/features/<name>/ one folder per area (agentic, articles, home, projects, standalone-pages), split into components/ hooks/ lib/ pages/ as needed
   src/shared/          code used across features: components (shadcn primitives in components/ui/), config, hooks, lib
   server/              production server for the built app (link-preview tags)
 shared/src/            types, route constants and helpers imported by both apps
