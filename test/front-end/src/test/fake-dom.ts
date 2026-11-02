@@ -150,6 +150,8 @@ export interface FakeDocument {
   activeElement: FakeElement | null;
   /** The fake window once installed (`BrowserRouter` resolves history through it). */
   defaultView: object | null;
+  /** Page Visibility state; `setFakeDocumentVisibility` changes it and fires `visibilitychange`. */
+  visibilityState: "visible" | "hidden";
   createElement(tagName: string): FakeElement;
   createElementNS(namespaceURI: string, tagName: string): FakeElement;
   createTextNode(value: string): FakeNode;
@@ -635,6 +637,7 @@ function makeDocument(): FakeDocument {
     body: null as unknown as FakeElement,
     activeElement: null,
     defaultView: null,
+    visibilityState: "visible",
     createElement: (tagName) => new FakeElementImpl(tagName, document),
     createElementNS: (namespaceURI, tagName) => new FakeElementImpl(tagName, document, namespaceURI),
     createTextNode: (value) => new FakeTextImpl(value, document),
@@ -1146,4 +1149,12 @@ export function triggerWindowEvent(type: string): void {
   windowListeners.get(type)?.forEach((listener) => {
     listener(event);
   });
+}
+
+/** Set the installed fake document's `visibilityState` and fire `visibilitychange` (tab hidden or shown). */
+export function setFakeDocumentVisibility(state: "visible" | "hidden"): void {
+  const doc = globalThis.document as unknown as FakeDocument;
+
+  doc.visibilityState = state;
+  doc.dispatchEvent({ type: "visibilitychange" });
 }
