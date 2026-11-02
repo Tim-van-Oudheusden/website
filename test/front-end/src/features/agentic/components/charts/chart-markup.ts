@@ -7,8 +7,17 @@ export interface ChartFigureParts {
   tableRows: string[][];
 }
 
+/** The entities React's static renderer emits in text and attribute values. */
+const ENTITIES: Readonly<Record<string, string>> = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#x27;": "'" };
+
+/** Decodes every entity in one pass, so a decoded `&` is never read again as the start of another entity. */
+function decode(escaped: string): string {
+  return escaped.replace(/&(?:amp|lt|gt|quot|#x27);/g, (entity) => ENTITIES[entity] ?? entity);
+}
+
+/** The text content of an HTML fragment: its text nodes (the runs between tags), joined and decoded. */
 function text(html: string): string {
-  return html.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&#x27;/g, "'").replace(/&quot;/g, '"').trim();
+  return decode([...`>${html}<`.matchAll(/>([^<>]*)</g)].map((match) => match[1] ?? "").join("")).trim();
 }
 
 /** The first capture group of every match of `pattern` (which must be global). */
@@ -40,7 +49,7 @@ export function chartFigureParts(html: string): ChartFigureParts {
 
   return {
     caption: text(only(figure, /<figcaption[^>]*>([\s\S]*?)<\/figcaption>/g, "<figcaption>")),
-    imageLabel: only(svgTag, /aria-label="([^"]*)"/g, "aria-label on the <svg>").replace(/&#x27;/g, "'"),
+    imageLabel: decode(only(svgTag, /aria-label="([^"]*)"/g, "aria-label on the <svg>")),
     legend: captures(outsideTable, /<li(?:\s[^>]*)?>([\s\S]*?)<\/li>/g).map(text),
     dataSummary: text(only(details, /<summary[^>]*>([\s\S]*?)<\/summary>/g, "<summary>")),
     tableRows: captures(only(details, /<table[^>]*>([\s\S]*)<\/table>/g, "<table>"), /<tr[^>]*>([\s\S]*?)<\/tr>/g).map((row) =>
