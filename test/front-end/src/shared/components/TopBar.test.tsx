@@ -94,6 +94,11 @@ describe("TopBar", () => {
     expect(activeLinks[0]).toContain('href="/agentic"');
     expect(activeLinks[0]).toContain(">Agentic</span>");
   });
+
+  test("lets the Agentic page show through it, and keeps its own background everywhere else", () => {
+    expect(renderTopBar("/agentic")).toContain('data-transparent="true"');
+    expect(renderTopBar("/articles")).toContain('data-transparent="false"');
+  });
 });
 
 describe("TopBar scroll state", () => {

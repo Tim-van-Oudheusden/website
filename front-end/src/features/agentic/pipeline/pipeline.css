@@ -1,0 +1,1188 @@
+/*
+ * Pipeline: the Agentic page as one flow of work, issue to live. Stations are glowing nodes on a honey conduit;
+ * every colour is a Flexoki token, the glow derives from yellow-150/200/300. Light is the default, `.dark` the night line.
+ */
+
+.agx-pipeline {
+  /* Page roles */
+  --pl-bg: var(--flexoki-50);
+  --pl-surface: var(--flexoki-paper);
+  --pl-ink: var(--flexoki-black);
+  --pl-muted: var(--flexoki-600);
+  --pl-hair: var(--flexoki-150);
+  --pl-accent: var(--flexoki-yellow-600);
+  --pl-accent-ink: var(--flexoki-yellow-800);
+  --pl-accent-bright: var(--flexoki-yellow-500);
+  --pl-edge: color-mix(in oklch, var(--flexoki-yellow-600) 45%, var(--flexoki-150));
+  --pl-glow: color-mix(in oklch, var(--flexoki-yellow-300) 60%, transparent);
+  --pl-glow-soft: color-mix(in oklch, var(--flexoki-yellow-150) 45%, transparent);
+  --pl-pulse: color-mix(in oklch, var(--flexoki-yellow-50), white 40%);
+  --pl-dots: color-mix(in oklch, var(--flexoki-yellow-600) 16%, transparent);
+  --pl-mode-idle: var(--flexoki-yellow-150);
+  --pl-mode-quiet: var(--flexoki-yellow-300);
+  --pl-mode-busy: var(--flexoki-yellow-500);
+  --pl-mode-surge: var(--flexoki-yellow-800);
+  --pl-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  /* Chart tokens: each resolves to a hex literal for the canvas */
+  --pl-c-text: var(--flexoki-black);
+  --pl-c-ink: var(--flexoki-600);
+  --pl-c-axis: var(--flexoki-300);
+  --pl-c-grid: var(--flexoki-150);
+  --pl-c-panel: var(--flexoki-paper);
+  --pl-c-accent: var(--flexoki-yellow-600);
+  --pl-c-second: var(--flexoki-yellow-800);
+  --pl-c-muted: var(--flexoki-500);
+  --pl-c-glow: var(--flexoki-yellow-300);
+  --pl-c-fail: var(--flexoki-red-400);
+  --pl-c-abandon: var(--flexoki-300);
+  --pl-c-on-accent: var(--flexoki-black);
+  --pl-c-opened: var(--flexoki-yellow-150);
+  --pl-c-claude: var(--flexoki-purple-400);
+  --pl-c-dependabot: var(--flexoki-blue-400);
+  --pl-c-other: var(--flexoki-500);
+  --pl-c-heat-0: var(--flexoki-100);
+  --pl-c-heat-1: var(--flexoki-yellow-150);
+  --pl-c-heat-2: var(--flexoki-yellow-400);
+  --pl-c-heat-3: var(--flexoki-yellow-800);
+
+  position: relative;
+  overflow-x: clip;
+  color: var(--pl-ink);
+  background:
+    radial-gradient(ellipse 70% 40% at 15% -5%, var(--pl-glow-soft), transparent 70%),
+    radial-gradient(ellipse 50% 30% at 95% 30%, var(--pl-glow-soft), transparent 70%),
+    radial-gradient(circle at 1px 1px, var(--pl-dots) 1px, transparent 0) 0 0 / 22px 22px,
+    var(--pl-bg);
+
+  & .pl-shell {
+    max-width: 90rem;
+    margin-inline: auto;
+    /* `--agentic-top-inset` clears the transparent top bar the page runs under. */
+    padding:
+      calc(var(--agentic-top-inset, 0rem) + clamp(2rem, 5vw, 4.5rem)) clamp(1rem, 4vw, 3rem) 3rem;
+  }
+
+  & p {
+    margin: 0;
+  }
+
+  & .pl-link {
+    color: var(--pl-accent-ink);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklch, var(--pl-accent-ink) 50%, transparent);
+    text-underline-offset: 0.2em;
+    border-radius: 0.2rem;
+
+    &:hover {
+      text-decoration-color: currentcolor;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--pl-accent-ink);
+      outline-offset: 3px;
+    }
+  }
+
+  /* ── Hero ─────────────────────────────────────────────── */
+
+  & .pl-hero {
+    position: relative;
+  }
+
+  & .pl-hero > p,
+  & .pl-hero > h1 {
+    position: relative;
+    z-index: 1;
+  }
+
+  & .pl-manifold {
+    display: none;
+  }
+
+  @media (min-width: 64rem) {
+    & .pl-manifold {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      display: block;
+      width: min(30vw, 30rem);
+      height: auto;
+      overflow: visible;
+      translate: 0 -50%;
+      filter: drop-shadow(0 0 6px var(--pl-glow));
+    }
+
+    & .pl-intro {
+      max-width: min(42rem, 55vw);
+    }
+  }
+
+  & .pl-manifold-inlet {
+    fill: none;
+    stroke: var(--pl-accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    opacity: 0.55;
+  }
+
+  & .pl-manifold-main {
+    fill: none;
+    stroke: var(--pl-accent);
+    stroke-width: 7;
+    stroke-linecap: round;
+  }
+
+  & .pl-manifold-dot {
+    fill: var(--pl-surface);
+    stroke: var(--pl-accent);
+    stroke-width: 2;
+  }
+
+  & .pl-manifold-hub {
+    fill: var(--pl-surface);
+    stroke: var(--pl-accent);
+    stroke-width: 3;
+  }
+
+  & .pl-manifold-hub-core,
+  & .pl-manifold-end {
+    fill: var(--pl-accent);
+  }
+
+  & .pl-eyebrow {
+    display: inline-flex;
+    gap: 0.75rem;
+    align-items: center;
+    color: var(--pl-accent-ink);
+    font-family: var(--pl-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  & .pl-eyebrow-flow {
+    position: relative;
+    width: clamp(4rem, 12vw, 9rem);
+    height: 2px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--pl-accent);
+    box-shadow: 0 0 10px var(--pl-glow);
+
+    &::after {
+      position: absolute;
+      inset: 0;
+      width: 35%;
+      background: linear-gradient(90deg, transparent, var(--pl-pulse), transparent);
+      transform: translateX(-100%);
+      content: "";
+    }
+  }
+
+  & .pl-title {
+    margin: 0.6rem 0 0;
+    font-size: clamp(3.25rem, 10vw, 7.5rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+    text-shadow: 0 0 40px var(--pl-glow-soft);
+  }
+
+  & .pl-intro {
+    max-width: min(42rem, 100%);
+    margin-top: 1.25rem;
+    color: var(--pl-muted);
+    font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+    line-height: 1.55;
+  }
+
+  /* ── Route: the five flow steps on one conduit ─────────── */
+
+  & .pl-route {
+    display: grid;
+    margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & .pl-stop {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    align-content: start;
+    column-gap: 1rem;
+    padding-bottom: 1.75rem;
+  }
+
+  & .pl-stop-node,
+  & .pl-node {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    aspect-ratio: 1;
+    border: 2px solid var(--pl-accent);
+    border-radius: 50%;
+    background: var(--pl-surface);
+    box-shadow:
+      0 0 0 5px var(--pl-glow-soft),
+      0 0 22px var(--pl-glow);
+    color: var(--pl-accent-ink);
+    font-family: var(--pl-mono);
+    font-size: 0.95rem;
+    font-weight: 700;
+
+    &::before {
+      position: absolute;
+      inset: -9px;
+      border: 1px solid color-mix(in oklch, var(--pl-accent) 35%, transparent);
+      border-radius: 50%;
+      content: "";
+    }
+  }
+
+  & .pl-conduit {
+    position: absolute;
+    top: 3.85rem;
+    bottom: 0.35rem;
+    left: calc(1.75rem - 2px);
+    width: 4px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--pl-accent);
+    box-shadow: 0 0 12px var(--pl-glow);
+
+    &::after {
+      position: absolute;
+      inset: 0;
+      height: 40%;
+      background: linear-gradient(180deg, transparent, var(--pl-pulse), transparent);
+      transform: translateY(-100%);
+      content: "";
+    }
+  }
+
+  & .pl-stop-body {
+    display: flex;
+    flex-direction: column;
+    padding-top: 0.35rem;
+  }
+
+  & .pl-stop-step {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  & .pl-stop-text {
+    margin-top: 0.35rem;
+    color: var(--pl-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  & .pl-readout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    align-items: baseline;
+    margin-top: 0.75rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--pl-edge);
+  }
+
+  & .pl-readout-value {
+    color: var(--pl-accent-ink);
+    font-family: var(--pl-mono);
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 0 18px var(--pl-glow);
+  }
+
+  & .pl-readout-unit {
+    color: var(--pl-muted);
+    font-size: 0.85rem;
+  }
+
+  & .pl-terminal {
+    display: grid;
+    grid-template-columns: 3.5rem;
+  }
+
+  & .pl-terminal-node {
+    display: grid;
+    place-items: center;
+    height: 2rem;
+    border-radius: 999px;
+    background: var(--pl-accent);
+    box-shadow: 0 0 22px var(--pl-glow);
+    color: var(--flexoki-black);
+    font-family: var(--pl-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  @media (min-width: 64rem) {
+    & .pl-route {
+      grid-template-columns: repeat(5, minmax(0, 1fr)) 4.5rem;
+    }
+
+    & .pl-stop {
+      grid-template-rows: auto 1fr;
+      grid-template-columns: minmax(0, 1fr);
+      align-content: stretch;
+      row-gap: 1.1rem;
+      padding: 0 1.75rem 0 0;
+    }
+
+    & .pl-stop-node {
+      width: 4rem;
+    }
+
+    & .pl-conduit {
+      top: calc(2rem - 2px);
+      right: 0.4rem;
+      bottom: auto;
+      left: 4.4rem;
+      width: auto;
+      height: 4px;
+
+      &::after {
+        width: 40%;
+        height: auto;
+        background: linear-gradient(90deg, transparent, var(--pl-pulse), transparent);
+        transform: translateX(-100%);
+      }
+    }
+
+    & .pl-stop-body {
+      padding-top: 0;
+    }
+
+    & .pl-readout {
+      margin-top: auto;
+    }
+
+    & .pl-stop-text {
+      margin-bottom: 0.9rem;
+    }
+
+    & .pl-terminal {
+      grid-template-columns: 4.5rem;
+      align-self: start;
+      padding-top: 1rem;
+    }
+  }
+
+  /* ── The hive: heading and status ─────────────────────── */
+
+  & .pl-hive {
+    margin-top: clamp(3.5rem, 7vw, 6rem);
+  }
+
+  & .pl-hive-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem 2rem;
+    align-items: end;
+    justify-content: space-between;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--pl-hair);
+  }
+
+  & .pl-h2 {
+    margin: 0;
+    font-size: clamp(2rem, 4.5vw, 3.25rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  & .pl-hive-intro {
+    max-width: 46rem;
+    margin-top: 0.75rem;
+    color: var(--pl-muted);
+    font-size: 1.05rem;
+    line-height: 1.55;
+  }
+
+  & .pl-status {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.65rem;
+    align-items: center;
+    padding: 0.55rem 1rem;
+    border: 1.5px solid var(--pl-accent);
+    border-radius: 999px;
+    background: var(--pl-surface);
+    box-shadow: 0 0 22px var(--pl-glow-soft);
+    font-family: var(--pl-mono);
+    font-size: 0.9rem;
+  }
+
+  & .pl-status-light {
+    position: relative;
+    width: 0.75rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--pl-accent);
+    box-shadow: 0 0 10px var(--pl-glow);
+  }
+
+  & .pl-status-label {
+    color: var(--pl-accent-ink);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  & .pl-status-detail {
+    color: var(--pl-muted);
+  }
+
+  & .pl-status[data-kind="stale"] {
+    border-style: dashed;
+    border-color: var(--flexoki-orange-600);
+    box-shadow: none;
+
+    & .pl-status-light {
+      border: 2px solid var(--flexoki-orange-600);
+      background: transparent;
+      box-shadow: none;
+    }
+
+    & .pl-status-label {
+      color: var(--flexoki-orange-700);
+    }
+  }
+
+  & .pl-status[data-kind="offline"] {
+    border-color: var(--flexoki-red-600);
+    box-shadow: none;
+
+    & .pl-status-light {
+      border-radius: 2px;
+      background: var(--flexoki-red-600);
+      box-shadow: none;
+    }
+
+    & .pl-status-label {
+      color: var(--flexoki-red-600);
+    }
+  }
+
+  & .pl-status[data-kind="connecting"] {
+    border-style: dotted;
+    box-shadow: none;
+
+    & .pl-status-light {
+      border: 2px solid var(--pl-edge);
+      border-top-color: var(--pl-accent);
+      background: transparent;
+      box-shadow: none;
+    }
+  }
+
+  /* When the line is not live, the conduits dim: nothing is flowing. */
+  &:is([data-status="stale"], [data-status="offline"]) {
+    & .pl-conduit,
+    & .pl-rail,
+    & .pl-eyebrow-flow {
+      background: var(--pl-edge);
+      box-shadow: none;
+    }
+
+    & .pl-terminal-node,
+    & .pl-footer-node {
+      background: var(--pl-muted);
+      box-shadow: none;
+    }
+
+    & .pl-manifold-main,
+    & .pl-manifold-inlet {
+      stroke: var(--pl-edge);
+    }
+
+    & .pl-manifold-hub-core,
+    & .pl-manifold-end {
+      fill: var(--pl-muted);
+    }
+  }
+
+  & .pl-fallback,
+  & .pl-missing,
+  & .pl-empty {
+    padding: 1rem 1.25rem;
+    border: 1.5px dashed var(--pl-edge);
+    border-radius: 1rem;
+    background: color-mix(in oklch, var(--pl-surface) 70%, transparent);
+    color: var(--pl-muted);
+    font-family: var(--pl-mono);
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  & .pl-fallback {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    font-size: 1rem;
+  }
+
+  & .pl-missing {
+    margin-top: 1rem;
+  }
+
+  /* ── Stations on the line ─────────────────────────────── */
+
+  & .pl-line {
+    margin: 2.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & .pl-station {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    column-gap: clamp(0.85rem, 2.5vw, 2rem);
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  & .pl-rail {
+    position: absolute;
+    top: 3.4rem;
+    bottom: 0.65rem;
+    left: calc(1.375rem - 2px);
+    width: 4px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: linear-gradient(180deg, var(--pl-accent), var(--pl-accent-bright));
+    box-shadow: 0 0 14px var(--pl-glow);
+
+    &::after {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, var(--pl-pulse) 50%, transparent 60%);
+      transform: translateY(-50%);
+      content: "";
+    }
+  }
+
+  & .pl-node {
+    width: 2.75rem;
+    font-size: 0.8rem;
+  }
+
+  & .pl-station-body {
+    min-width: 0;
+  }
+
+  & .pl-kicker {
+    color: var(--pl-accent-ink);
+    font-family: var(--pl-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  & .pl-station-title {
+    margin: 0.2rem 0 0;
+    font-size: clamp(1.6rem, 3vw, 2.25rem);
+    font-weight: 750;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+
+  @media (min-width: 48rem) {
+    & .pl-station {
+      grid-template-columns: 4.5rem minmax(0, 1fr);
+    }
+
+    & .pl-node {
+      width: 4.5rem;
+      font-size: 1.05rem;
+    }
+
+    & .pl-rail {
+      top: 5.25rem;
+      left: calc(2.25rem - 2px);
+    }
+
+    & .pl-station-body {
+      padding-top: 0.6rem;
+    }
+  }
+
+  /* ── Gauges ───────────────────────────────────────────── */
+
+  & .pl-gauges {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+    gap: 0.85rem;
+    margin: 1.25rem 0 0;
+  }
+
+  & .pl-gauges:has(> :only-child) {
+    max-width: 24rem;
+  }
+
+  & .pl-gauge {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem 1.15rem 1.05rem;
+    border: 1px solid var(--pl-edge);
+    border-radius: 1rem;
+    background: var(--pl-surface);
+    box-shadow: 0 14px 30px -24px var(--pl-glow);
+
+    &::before {
+      position: absolute;
+      inset: 0 0 auto;
+      height: 3px;
+      background: linear-gradient(90deg, var(--pl-accent), var(--pl-glow), transparent);
+      content: "";
+    }
+
+    & dd {
+      margin: 0;
+    }
+  }
+
+  & .pl-gauge-label {
+    color: var(--pl-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  & .pl-gauge-value {
+    margin-top: 0.35rem;
+    color: var(--pl-accent-ink);
+    font-family: var(--pl-mono);
+    font-size: clamp(1.5rem, 1rem + 2.5vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.05;
+    text-shadow: 0 0 22px var(--pl-glow);
+    overflow-wrap: anywhere;
+  }
+
+  & .pl-gauge-of {
+    color: var(--pl-muted);
+    font-size: 0.55em;
+    text-shadow: none;
+  }
+
+  & .pl-mode {
+    text-transform: capitalize;
+  }
+
+  & .pl-gauge-detail {
+    margin-top: 0.35rem;
+    color: var(--pl-muted);
+    font-size: 0.9rem;
+  }
+
+  /* ── Chart panels ─────────────────────────────────────── */
+
+  & .pl-panels {
+    display: grid;
+    gap: 0.85rem;
+    margin-top: 0.85rem;
+  }
+
+  @media (min-width: 64rem) {
+    & .pl-panels--wide-first {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    }
+
+    & .pl-panels--halves {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    & .pl-panels--runs {
+      grid-template-columns: minmax(16rem, 2fr) minmax(0, 3fr);
+      align-items: start;
+    }
+  }
+
+  & .pl-panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin: 0;
+    padding: 1.1rem 1.2rem 1rem;
+    border: 1px solid var(--pl-edge);
+    border-radius: 1.25rem;
+    background: var(--pl-surface);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklch, var(--flexoki-yellow-150) 35%, transparent),
+      0 22px 44px -32px var(--pl-glow);
+  }
+
+  & .pl-panel-title {
+    display: flex;
+    gap: 0.55rem;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: 700;
+
+    &::before {
+      width: 0.6rem;
+      height: 0.6rem;
+      flex: none;
+      border-radius: 50%;
+      background: var(--pl-accent);
+      box-shadow: 0 0 10px var(--pl-glow);
+      content: "";
+    }
+  }
+
+  & .pl-chart {
+    width: 100%;
+    margin-top: 0.75rem;
+  }
+
+  & .pl-chart--short {
+    height: 8.5rem;
+  }
+
+  & .pl-chart--medium {
+    height: 12rem;
+  }
+
+  & .pl-chart--tall {
+    height: 14.5rem;
+  }
+
+  @media (min-width: 48rem) {
+    & .pl-chart--tall {
+      height: 17rem;
+    }
+  }
+
+  & .pl-panel-notes {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    color: var(--pl-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+
+    & p + p {
+      margin-top: 0.4rem;
+    }
+  }
+
+  & .pl-panel--empty .pl-empty {
+    margin-top: 0.85rem;
+  }
+
+  & .pl-note {
+    margin-top: 0.75rem;
+    color: var(--pl-muted);
+    font-size: 0.9rem;
+  }
+
+  /* ── Governor mode share ──────────────────────────────── */
+
+  & .pl-share {
+    margin-bottom: 0.6rem;
+  }
+
+  & .pl-share-bar {
+    display: flex;
+    gap: 2px;
+    height: 0.6rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--pl-hair);
+  }
+
+  & .pl-share-seg {
+    flex-basis: 0;
+    min-width: 0;
+  }
+
+  & .pl-share-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.1rem;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    color: var(--pl-ink);
+    font-size: 0.88rem;
+    list-style: none;
+
+    & li {
+      display: inline-flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+  }
+
+  & .pl-share-mode {
+    text-transform: capitalize;
+  }
+
+  & .pl-share-value {
+    font-family: var(--pl-mono);
+    font-weight: 700;
+  }
+
+  & .pl-swatch {
+    width: 0.7rem;
+    height: 0.7rem;
+    flex: none;
+    border-radius: 3px;
+    background: var(--pl-swatch, var(--pl-accent));
+  }
+
+  & [data-mode="idle"] {
+    --pl-swatch: var(--pl-mode-idle);
+  }
+
+  & [data-mode="quiet"] {
+    --pl-swatch: var(--pl-mode-quiet);
+  }
+
+  & [data-mode="busy"] {
+    --pl-swatch: var(--pl-mode-busy);
+  }
+
+  & [data-mode="surge"] {
+    --pl-swatch: var(--pl-mode-surge);
+  }
+
+  & .pl-share-seg {
+    background: var(--pl-swatch);
+  }
+
+  /* ── Runs ─────────────────────────────────────────────── */
+
+  & .pl-lede {
+    max-width: 52rem;
+    margin-top: 0.85rem;
+    color: var(--pl-muted);
+    font-size: 1.05rem;
+    line-height: 1.5;
+
+    & strong {
+      color: var(--pl-ink);
+    }
+  }
+
+  & .pl-backends {
+    display: grid;
+    gap: 0.85rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & .pl-backend {
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--pl-edge);
+    border-radius: 1.25rem;
+    background: var(--pl-surface);
+    box-shadow: 0 22px 44px -32px var(--pl-glow);
+  }
+
+  & .pl-backend-name {
+    font-family: var(--pl-mono);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  & .pl-backend-rate {
+    margin-top: 0.3rem;
+    color: var(--pl-muted);
+  }
+
+  & .pl-backend-rate-value {
+    color: var(--pl-accent-ink);
+    font-family: var(--pl-mono);
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-shadow: 0 0 20px var(--pl-glow);
+  }
+
+  & .pl-backend-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+    gap: 0.6rem 1rem;
+    margin: 0.85rem 0 0;
+    padding-top: 0.85rem;
+    border-top: 1px dashed var(--pl-edge);
+
+    & dt {
+      color: var(--pl-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    & dd {
+      margin: 0.15rem 0 0;
+      font-family: var(--pl-mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+  }
+
+  /* ── Merged ───────────────────────────────────────────── */
+
+  & .pl-headline {
+    margin-top: 0.85rem;
+    font-size: clamp(1.3rem, 2.6vw, 1.75rem);
+    font-weight: 650;
+    letter-spacing: -0.015em;
+    line-height: 1.3;
+  }
+
+  & .pl-glow-number {
+    color: var(--pl-accent-ink);
+    font-family: var(--pl-mono);
+    font-size: 1.5em;
+    font-weight: 700;
+    text-shadow: 0 0 22px var(--pl-glow);
+  }
+
+  & .pl-sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+
+    & li {
+      display: inline-flex;
+      gap: 0.45rem;
+      align-items: center;
+      padding: 0.3rem 0.75rem;
+      border: 1px solid var(--pl-edge);
+      border-radius: 999px;
+      background: var(--pl-surface);
+      font-family: var(--pl-mono);
+      font-size: 0.85rem;
+    }
+  }
+
+  & [data-source="hive"] {
+    --pl-swatch: var(--pl-c-accent);
+  }
+
+  & [data-source="claudeCode"] {
+    --pl-swatch: var(--pl-c-claude);
+  }
+
+  & [data-source="dependabot"] {
+    --pl-swatch: var(--pl-c-dependabot);
+  }
+
+  & [data-source="other"] {
+    --pl-swatch: var(--pl-c-other);
+  }
+
+  /* ── Footer: the end of the line ──────────────────────── */
+
+  & .pl-footer {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    column-gap: clamp(0.85rem, 2.5vw, 2rem);
+    align-items: start;
+    margin-top: 0.5rem;
+    color: var(--pl-muted);
+    font-size: 0.95rem;
+    line-height: 1.55;
+
+    & p + p {
+      margin-top: 0.35rem;
+    }
+  }
+
+  & .pl-footer-node {
+    justify-self: center;
+    width: 1.25rem;
+    aspect-ratio: 1;
+    margin-top: 0.15rem;
+    border-radius: 50%;
+    background: var(--pl-accent);
+    box-shadow:
+      0 0 0 6px var(--pl-glow-soft),
+      0 0 24px var(--pl-glow);
+  }
+
+  @media (min-width: 48rem) {
+    & .pl-footer {
+      grid-template-columns: 4.5rem minmax(0, 1fr);
+    }
+  }
+
+  /* ── Motion: the light travels the conduits, only when it may ── */
+
+  @media (prefers-reduced-motion: no-preference) {
+    &:is([data-status="live"], [data-status="connecting"]) {
+      & .pl-conduit::after {
+        animation: pl-flow-y 3.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+        animation-delay: calc(var(--pl-i, 0) * 0.55s);
+      }
+
+      & .pl-rail::after {
+        animation: pl-rail 4.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+        animation-delay: calc(var(--pl-i, 0) * 0.9s);
+      }
+
+      & .pl-eyebrow-flow::after {
+        animation: pl-flow-x 2.8s linear infinite;
+      }
+
+      & .pl-stop-node::before,
+      & .pl-node::before {
+        animation: pl-breathe 3.4s ease-in-out infinite;
+        animation-delay: calc(var(--pl-i, 0) * 0.55s);
+      }
+    }
+
+    @media (min-width: 64rem) {
+      &:is([data-status="live"], [data-status="connecting"]) .pl-conduit::after {
+        animation-name: pl-flow-x;
+      }
+    }
+
+    & .pl-status[data-kind="live"] .pl-status-light::after {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--pl-accent);
+      animation: pl-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+      content: "";
+    }
+
+    & .pl-status[data-kind="connecting"] .pl-status-light {
+      animation: pl-spin 1s linear infinite;
+    }
+  }
+}
+
+/* ── Dark: the line at night, black with honey light ──────── */
+
+.dark .agx-pipeline {
+  --pl-bg: var(--flexoki-black);
+  --pl-surface: var(--flexoki-950);
+  --pl-ink: var(--flexoki-100);
+  --pl-muted: var(--flexoki-400);
+  --pl-hair: var(--flexoki-850);
+  --pl-accent: var(--flexoki-yellow-400);
+  --pl-accent-ink: var(--flexoki-yellow-200);
+  --pl-accent-bright: var(--flexoki-yellow-300);
+  --pl-edge: color-mix(in oklch, var(--flexoki-yellow-400) 40%, var(--flexoki-850));
+  --pl-glow: color-mix(in oklch, var(--flexoki-yellow-300) 60%, transparent);
+  --pl-glow-soft: color-mix(in oklch, var(--flexoki-yellow-300) 16%, transparent);
+  --pl-pulse: color-mix(in oklch, var(--flexoki-yellow-50), white 50%);
+  --pl-dots: color-mix(in oklch, var(--flexoki-yellow-300) 13%, transparent);
+  --pl-mode-idle: var(--flexoki-yellow-800);
+  --pl-mode-quiet: var(--flexoki-yellow-600);
+  --pl-mode-busy: var(--flexoki-yellow-400);
+  --pl-mode-surge: var(--flexoki-yellow-150);
+
+  --pl-c-text: var(--flexoki-100);
+  --pl-c-ink: var(--flexoki-400);
+  --pl-c-axis: var(--flexoki-700);
+  --pl-c-grid: var(--flexoki-850);
+  --pl-c-panel: var(--flexoki-950);
+  --pl-c-accent: var(--flexoki-yellow-400);
+  --pl-c-second: var(--flexoki-yellow-150);
+  --pl-c-muted: var(--flexoki-500);
+  --pl-c-glow: var(--flexoki-yellow-300);
+  --pl-c-abandon: var(--flexoki-600);
+  --pl-c-opened: var(--flexoki-yellow-800);
+  --pl-c-heat-0: var(--flexoki-900);
+  --pl-c-heat-1: var(--flexoki-yellow-900);
+  --pl-c-heat-2: var(--flexoki-yellow-600);
+  --pl-c-heat-3: var(--flexoki-yellow-150);
+
+  & .pl-title {
+    text-shadow:
+      0 0 28px color-mix(in oklch, var(--flexoki-yellow-300) 28%, transparent),
+      0 0 2px color-mix(in oklch, var(--flexoki-yellow-150) 30%, transparent);
+  }
+
+  & .pl-status[data-kind="stale"] {
+    border-color: var(--flexoki-orange-400);
+
+    & .pl-status-light {
+      border-color: var(--flexoki-orange-400);
+    }
+
+    & .pl-status-label {
+      color: var(--flexoki-orange-300);
+    }
+  }
+
+  & .pl-status[data-kind="offline"] {
+    border-color: var(--flexoki-red-400);
+
+    & .pl-status-light {
+      background: var(--flexoki-red-400);
+    }
+
+    & .pl-status-label {
+      color: var(--flexoki-red-300);
+    }
+  }
+}
+
+@keyframes pl-flow-x {
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes pl-flow-y {
+  to {
+    transform: translateY(250%);
+  }
+}
+
+@keyframes pl-rail {
+  to {
+    transform: translateY(50%);
+  }
+}
+
+@keyframes pl-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes pl-ping {
+  75%,
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+@keyframes pl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

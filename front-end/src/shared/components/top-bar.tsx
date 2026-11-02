@@ -50,10 +50,14 @@ export function TopBar(): JSX.Element {
     };
   }, []);
 
+  // The Agentic page paints its own backdrop under the bar; once content scrolls beneath, a blur keeps the nav legible.
+  const transparent = isActiveNavPath(location.pathname, AGENTIC_PAGE_PATH);
+
   return (
     <header
-      className="bg-[var(--site-page-bg)] sticky top-0 z-40 w-full"
+      className="sticky top-0 z-40 w-full bg-[var(--site-page-bg)] data-[transparent=true]:bg-transparent data-[transparent=true]:data-[scrolled=true]:backdrop-blur-md"
       data-scrolled={String(scrolled)}
+      data-transparent={String(transparent)}
     >
       <div className="mx-auto flex h-[4.2rem] max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="shrink-0">
