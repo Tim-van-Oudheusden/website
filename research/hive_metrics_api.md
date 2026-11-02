@@ -595,8 +595,10 @@ Dropped from the earlier recommendation because they need the owner token:
 - `/api/trend/history`
 - the ACMM level
 
-Getting them would need either an owner-token sidecar or Hive widening the
-widget scope upstream.
+Getting them from Hive would need either an owner-token sidecar or Hive
+widening the widget scope upstream. Decision (Tim, 2026-11-02): compute PR
+throughput and who wrote the merged work from this repo's public GitHub PRs
+instead. See the metrics spec, "Upstream calls".
 
 Still not consumed: `/api/snapshot`, `/api/events`, `/metrics`, cost
 endpoints.

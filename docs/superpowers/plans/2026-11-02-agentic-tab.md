@@ -27,50 +27,75 @@ charts. No owner token, no sidecar, no network change (research Q6).
   Behaviour, not class strings.
 - Quality gates after every task: `bun run test`, `bun run typecheck`, `bun run lint`, `bun run build`. E2E via
   `scripts/e2e.sh` on a podman host.
-- One task = one GitHub issue = one branch `<type>/<number>-<slug>` = one PR with `Fixes #<number>`.
+- One task = one GitHub issue = one branch `<type>/<number>-<slug>` = one PR with `Fixes #<number>`. Epic: #1048.
+  Every issue carries `hold` (Tim works them in session, not Hive). An issue with open blockers also carries
+  `blocked`; remove it when its last blocker closes.
 - Never publish a Hive field outside the allowlist in the metrics spec ("Public contract").
 - Check light and dark mode for every surface that is not the canyon scene; WCAG 2.2 AA (`BRANDING.md` §6).
 - Tasks touching `deploy/**` are high risk (`docs/risk-tiers.md`): the maintainer merges them.
 
-## Order
+## Order and issues
+
+| Task | Issue | Blocked by |
+| --- | --- | --- |
+| T1 route + nav | #1049 | — |
+| T2 canyon progress lib | #1050 | — |
+| D1 art direction round | #1051 | — |
+| D2 art refinement round | #1052 | D1 |
+| D3 motion study round | #1053 | D2 |
+| T3 strata config + cards | #1054 | T1 |
+| T4 canyon scene | #1055 | T2, T3, D2 |
+| T5 scroll wiring + e2e | #1056 | T4, D3 |
+| T6 shared metrics contract | #1057 | — |
+| M2 move PR attribution to `shared/` | #1058 | — |
+| T7 Hive allowlist builder | #1059 | T6 |
+| R repo PR activity (GitHub) | #1060 | T6, M2 |
+| T8 `GET /api/hive/metrics` + cache | #1061 | T7, R |
+| T9 deploy config | #1062 | T8 |
+| T10 polling hook | #1063 | — |
+| T11 SVG chart primitives | #1064 | — |
+| T12 metrics section | #1065 | T1, T8, T10, T11 |
+| T13 docs | #1066 | T9, T12 |
+| P1–P3 pairings (optional) | #1067, #1068, #1069 | T5, T12 |
 
 ```mermaid
 flowchart TD
-    T0["T0 mint widget token + decisions (Tim)"]
-    T1["T1 /agentic route + nav"]
-    T2["T2 canyon progress lib"] --> T4["T4 canyon scene"]
-    T3["T3 strata config + cards"] --> T4
-    T4 --> T5["T5 scroll wiring + reduced motion + e2e"]
-    T1 --> T3
-    T6["T6 shared metrics contract"] --> T7["T7 allowlist builder"]
-    T7 --> T8["T8 GET /api/hive/metrics + cache"]
-    T8 --> T9["T9 deploy env + optional secret"]
-    T0 --> T9
-    T6 --> T10["T10 polling hook"]
-    T6 --> T11["T11 SVG chart primitives"]
+    T1["T1 route + nav"] --> T3["T3 strata + cards"]
+    D1["D1 art direction"] --> D2["D2 refinement"] --> D3["D3 motion study"]
+    T2["T2 progress lib"] --> T4["T4 canyon scene"]
+    T3 --> T4
+    D2 --> T4
+    T4 --> T5["T5 scroll wiring + e2e"]
+    D3 --> T5
+    T6["T6 contract"] --> T7["T7 Hive builder"]
+    T6 --> R["R repo PR activity"]
+    M2["M2 attribution to shared"] --> R
+    T7 --> T8["T8 route + cache"]
+    R --> T8
+    T8 --> T9["T9 deploy"]
     T1 --> T12["T12 metrics section"]
-    T10 --> T12
-    T11 --> T12
     T8 --> T12
-    T5 --> P["Pairings P1-P3 (optional)"]
+    T10["T10 polling hook"] --> T12
+    T11["T11 chart primitives"] --> T12
+    T9 --> T13["T13 docs"]
+    T12 --> T13
+    T5 --> P["P1-P3 pairings"]
     T12 --> P
 ```
 
-The canyon track (T2-T5) and the metrics track (T6-T12) are independent after T1 and can run in parallel.
+Unblocked now: T1, T2, D1, T6, M2, T10 and T11. The canyon track and the metrics track are independent apart from T1.
 
 ---
 
-### T0: Mint the widget token and settle decisions (Tim, no code)
+### T0: Server facts, widget token, decisions (done 2026-11-02)
 
-Already done: the server facts (research Q6, checked 2026-11-02). Hive's auth is on, the gateway listens on `*:3001`,
-and the production pod reaches `host.containers.internal:3001`.
-
-- [ ] **Step 1:** Mint the widget token in Hive (`POST /api/widget/token` or the dashboard) and create the podman
-  secret on the host. The runbook for the secret comes in T9. The token is never in the repo.
-- [ ] **Step 2:** Decide metrics spec Open decisions 2 (PR throughput source) and 3 (optional anonymous extras). The
-  rest of this plan assumes the defaults: no throughput, no extras.
-
-**Acceptance:** the issue records that the secret exists (not its value) and the two decisions.
+- [x] Server facts (research Q6): Hive's auth is on, the gateway listens on `*:3001`, and the production pod reaches
+  `host.containers.internal:3001`.
+- [x] Widget token minted by Tim and stored on the server as podman secret `hive-widget-token`. It holds a
+  Kubernetes Secret YAML with `stringData.token`. A throwaway `kube play` pod resolved it via `secretKeyRef` and got
+  200 from `/api/widget/summary`.
+- [x] Decisions: PR throughput comes from this repo's public GitHub PRs; optional anonymous extras are left out.
+  The canyon art goes through design rounds D1–D3 before T4.
 
 ---
 
@@ -141,10 +166,27 @@ export function resolveCanyonMotion(env: { prefersReducedMotion: boolean }): Can
 
 ---
 
+### D1–D3: Canyon design rounds (#1051, #1052, #1053)
+
+Tim found the storyboard art too basic ("low on polygons"). The rounds and the "richer" checklist are in the canyon
+spec under "Fidelity and design rounds". Each round is one PR of static frames, plus a throwaway prototype in round
+3. Tim reviews each one.
+
+- [ ] **D1:** 2–3 art directions × golden hour / sunset / night, desktop size, under `docs/assets/agentic/`, with a
+  rationale each. Tim picks one.
+- [ ] **D2:** the chosen direction at desktop and phone sizes, with every stratum, hoodoo pillar, tablet, rim flag
+  and water reflection, framed by light and dark page chrome. Node budget checked. Tim signs off.
+- [ ] **D3:** throwaway scroll prototype with the real `--p` mechanics, ambient loops and the reduced-motion frame;
+  a phone performance trace. Findings go on #1053 for T4/T5.
+
+---
+
 ### T4: Canyon scene (static, `--p`-driven)
 
 **Files:**
-- Create: `front-end/src/features/agentic/components/canyon-scene.tsx` (inline SVG: sky layers, sun discs, stars, moon, mirrored walls with strata bands, bedrock hexagons, water layers, tablets)
+- Create: `front-end/src/features/agentic/components/canyon-scene.tsx`: inline SVG drawn from the D2 frames. That
+  means the depth layers, faceted strata, hoodoo pillars, water, sky layers, sun/moon, bedrock honeycomb and
+  tablets.
 - Create: `front-end/src/features/agentic/canyon-scene.css` (`--canyon-*` colours from the spec's colour table, `calc()` rules on `--p`, ambient keyframes behind `prefers-reduced-motion: no-preference`)
 - Modify: `front-end/src/index.css` (`@import` the scene CSS)
 - Tests: `test/front-end/src/features/agentic/components/canyon-scene.test.tsx`
@@ -205,7 +247,7 @@ export function resolveCanyonMotion(env: { prefersReducedMotion: boolean }): Can
 **Interfaces:**
 ```ts
 export interface HiveUpstream { health: unknown; widget: unknown | null; contributeMetrics: unknown | null; runStats: unknown | null }
-export function buildHivePublicMetrics(upstream: HiveUpstream): HivePublicMetrics;
+export function buildHivePublicMetrics(upstream: HiveUpstream): Pick<HivePublicMetrics, "online" | "hive" | "contributors">;
 ```
 
 - [ ] **Step 1:** Failing test: built from the fixtures, the serialised output contains none of the canaries and
@@ -220,6 +262,43 @@ export function buildHivePublicMetrics(upstream: HiveUpstream): HivePublicMetric
 - [ ] **Step 4:** Failing test: a non-number where a number is expected makes that part `null`/empty, never `NaN`,
   and never throws for the whole object. Implement. Pass.
 - [ ] **Step 5:** Full suite, gates, commit.
+
+---
+
+### M2: Move the PR attribution rule to `shared/` (#1058)
+
+**Files:**
+- Move: `scripts/pr-source.ts` → `shared/src/pr-source.ts` (exported from `shared`)
+- Modify: `scripts/pr-metrics.ts`, `scripts/ai-audit-report.ts` (import from `shared`)
+- Tests: the existing `test/shared/src/pr-metrics.test.ts` and `ai-audit-report.test.ts` must pass unchanged
+
+- [ ] **Step 1:** Move with no behaviour change, then run the full suite, gates, commit `refactor(shared): …`.
+
+---
+
+### R: Repo PR activity from public GitHub data (#1060)
+
+**Files:**
+- Create: `back-end/src/features/hive/repo-pr-activity.ts`, a pure function from the GitHub PR list to the
+  `repo` part
+- Create: `test/back-end/src/features/hive/fixtures/github-pulls.json`, with canaries: a title, body text, a branch
+  name and a login
+- Test: `test/back-end/src/features/hive/repo-pr-activity.test.ts`
+
+**Interfaces:**
+```ts
+export function buildRepoPrActivity(pulls: unknown, now: Date): HivePublicMetrics["repo"];
+export function needsNextPage(pulls: unknown, now: Date): boolean; // false once the oldest updated_at is before the window
+```
+
+- [ ] **Step 1:** Failing test: the canaries never reach the output. Implement. Pass.
+- [ ] **Step 2:** Failing tests, one at a time:
+  - 7 UTC days, oldest first; `created_at`, `merged_at` and closed-unmerged `closed_at` are bucketed separately.
+  - Events outside the window are ignored.
+  - `mergedBySource` uses the shared `attribute()`.
+  - Median and p90 hours to merge are computed, and are `null` when nothing merged.
+  - `needsNextPage` stops at the window edge.
+- [ ] **Step 3:** Implement each. Full suite, gates, commit.
 
 ---
 
@@ -240,7 +319,9 @@ export function buildHivePublicMetrics(upstream: HiveUpstream): HivePublicMetric
   In development it serves the checked-in fixture instead.
 - [ ] **Step 2:** Implement. Pass.
 - [ ] **Step 3:** Failing tests, one at a time:
-  - The four URLs requested are exactly the spec's list, as GET.
+  - The five URLs requested are exactly the spec's list (four Hive, one GitHub), as GET.
+  - GitHub paging follows `needsNextPage`, at most 3 pages.
+  - A GitHub 403/429 with `x-ratelimit-remaining: 0` keeps the last value until `x-ratelimit-reset`.
   - The widget header is sent only to the widget route, and only when the token is set.
   - Within a TTL there is no second upstream call. Concurrent requests share one in-flight call.
   - One failing upstream keeps its last value.
@@ -256,11 +337,13 @@ export function buildHivePublicMetrics(upstream: HiveUpstream): HivePublicMetric
 **Files:**
 - Modify: `deploy/kube/prod.yaml`, back-end container only:
   - `HIVE_BASE_URL=http://host.containers.internal:3001`.
+  - The secret is `hive-widget-token`, key `token`. It already exists on the server (T0).
   - `HIVE_WIDGET_TOKEN` via `valueFrom.secretKeyRef` with `optional: true`.
   - No new container, no new port.
 - Unchanged: `deploy/systemd/podman-kube@.service`. The network was already verified (research Q6).
 - Modify: `docs/deploy.md`:
-  - Create the podman secret on the host from the minted widget token. It is never in the repo.
+  - How the secret was created: a Kubernetes Secret YAML with `stringData.token`, piped to
+    `podman secret create hive-widget-token -`. It is never in the repo and never written to disk.
   - Rotate it with `DELETE /api/widget/token` and mint again.
   - Check the route with `curl`.
 - Test: `test/shared/src/deploy-config.test.ts`
@@ -326,7 +409,7 @@ export function buildHivePublicMetrics(upstream: HiveUpstream): HivePublicMetric
   - The queue title states the measured span from the data.
   - Run times appear per backend only.
 - [ ] **Step 2:** Implement following `docs/assets/agentic/metrics-wireframe.svg`. Pass.
-- [ ] **Step 3:** Failing e2e against the dev fixture: four tiles and four figures appear. With the route stubbed to
+- [ ] **Step 3:** Failing e2e against the dev fixture: four tiles and eight figures appear. With the route stubbed to
   `unavailable`, the explanation shows and no empty chart does. Implement. Pass.
 - [ ] **Step 4:** Light and dark screenshots for the PR. Full suite, gates, commit.
 

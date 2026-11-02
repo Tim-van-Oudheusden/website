@@ -5,7 +5,7 @@ Issue: #1046. Companion specs: [`2026-11-02-agentic-hive-metrics-design.md`](202
 (optional ways to make the two feel like one page). This spec stands on its own: the canyon ships without the
 metrics section, and the metrics section without the canyon.
 
-![Storyboard: golden hour, sunset, night](../../assets/agentic/canyon-storyboard.svg)
+![Storyboard: golden hour, sunset, night (low-fidelity composition sketch, not the final art)](../../assets/agentic/canyon-storyboard.svg)
 
 ## Context
 
@@ -70,6 +70,46 @@ cards, the fade into the next section) uses the existing theme tokens, so both t
 
 Tablet text is `#100F0F` on `#FFFCF0` (well above 4.5:1). Any copy placed over the scene sits on a solid
 `--card` / `--card-foreground` surface, never directly on the sky, so contrast does not depend on `p`.
+
+### Fidelity and design rounds
+
+Tim's review on 2026-11-02 accepted the concept: the composition, the sunset-to-night arc, the falling water and
+the strata as pillars. He found the storyboard's art "low on polygons", too basic. The storyboard fixes **layout and
+story only**. The final scene must be visibly richer, so its art is settled in design rounds before the scene is built
+(plan task T4). Each round is its own issue and produces static frames that Tim reviews in the PR.
+
+| Round | Output | Decision it asks for |
+| --- | --- | --- |
+| 1. Art direction | 2–3 distinct directions, each drawn as golden hour, sunset and night frames at desktop size (inline SVG + CSS, the same constraints as production) | Which direction to develop |
+| 2. Refinement | The chosen direction at desktop and phone sizes, with all six strata, pillars, tablets and the rim projects; light and dark page chrome around it | Final art, sign-off of the frames |
+| 3. Motion study | A throwaway scroll prototype of the chosen art (not merged into the app) with the real `--p` mechanics, ambient loops and the reduced-motion frame | Timing, easing and whether it holds 60 fps on a phone |
+
+What "richer" should explore, within the performance rules in "Scroll mechanics":
+
+- **Depth:** three or more parallax ridgelines (far mesas in haze, mid buttes, near walls) instead of one wall pair,
+  each moving at its own rate with `p`.
+- **Rock detail:**
+  - Faceted strata: several polygons per band with lit and shadowed faces, erosion notches, talus slopes at the
+    ledges.
+  - Hoodoo pillars standing on the ledges, one per pillar item, so "pillars" is literal.
+  - Bedrock with a honeycomb pattern that catches the light.
+- **Light:**
+  - A rim light on the sun-facing edges.
+  - Cast shadows that lengthen as the sun sinks, done with pre-drawn shadow layers crossfaded by opacity.
+  - A warm glow that fades to a cool moonlit palette.
+- **Water:**
+  - The sun's and moon's reflection as a broken column of strokes.
+  - Layered wave bands, and foam lines at the walls.
+  - A visible tide line on each revealed stratum.
+- **Atmosphere:** clouds in two layers, mist in the gorge at dusk, birds crossing at golden hour, stars and a
+  slow-moving satellite or meteor at night.
+
+Budget for the final art (checked in round 3):
+
+- Under ~1,500 SVG nodes.
+- No `filter` on large areas.
+- Per frame, only `transform` and `opacity` change.
+- Ambient loops pause when the scene is off-screen.
 
 ## The layers (pillars)
 
@@ -194,3 +234,4 @@ TDD per `AGENTS.md`; behaviour, not class strings.
 
 - The metrics section and any data from Hive (separate spec).
 - Sound, cursor effects, parallax on the top bar, or changing the theme toggle's behaviour on this page.
+- A canvas, WebGL or Lottie renderer, even for a richer art direction (see "Scroll mechanics" for why).

@@ -13,7 +13,9 @@ Revised after the PR #1047 review. Hive has a read-only **widget token**. The ch
 - Hive's auth is on.
 - The production website pod already reaches Hive.
 
-So this design uses no owner credential, needs no sidecar, and changes nothing in the network.
+So this design uses no owner credential, needs no sidecar, and changes nothing in the network. The widget token was
+minted and stored on the server on 2026-11-02 (see Decisions). PR throughput comes from this repo's public GitHub
+data instead of Hive.
 
 ## Product goal
 
@@ -37,10 +39,11 @@ down, the page says so.
 | Anonymous data | `/api/health`, `/api/contribute/metrics`, `/api/contribute/run-stats` answer 200 without credentials on the server (Q6). |
 | Network | No change: from inside the production back-end container, `host.containers.internal:3001/api/health` returns 200 (Q6). |
 | Freshness | The widget `history` gains one point per governor eval (300 s by default). The contributor series are hourly (Q4, Q6). |
+| PR throughput | Hive serves it only with the owner token. Computed instead from this repo's public GitHub PRs, attributed with `scripts/pr-source.ts`'s rule (decision 2026-11-02). |
 
-**Decision:** the website back-end fetches the widget summary and the anonymous endpoints. It caches them and serves
-an allowlisted summary at `GET /api/hive/metrics`. The front-end polls it and draws its own charts. There is no
-iframe, no screenshot, and no change to Hive or to the pod network.
+**Decision:** the website back-end fetches the widget summary, the anonymous Hive endpoints and this repo's public PR
+list. It caches them and serves an allowlisted summary at `GET /api/hive/metrics`. The front-end polls that and draws
+its own charts. There is no iframe, no screenshot, and no change to Hive or to the pod network.
 
 ## Architecture
 
@@ -55,6 +58,7 @@ flowchart LR
     browser["Visitor's browser<br/>polls every 60 s"]
     hive -- "GET /api/widget/summary<br/>(widget token)" --> backend
     hive -- "GET /api/health, /api/contribute/*<br/>(anonymous)" --> backend
+    github["api.github.com<br/>public PR list"] -- "GET, anonymous, 180 s" --> backend
     browser -- "/api/* via cloudflared" --> backend
 ```
 
@@ -74,6 +78,25 @@ out of the back-end. No owner token is involved now, so the sidecar is gone.
 | `GET /api/contribute/metrics` | none | `collected_at`, `tasks_done[]`, `fleet_size[]` (hourly, 7 days) | 180 s |
 | `GET /api/contribute/run-stats` | none | `window_days`, `total`, per backend: `backend`, `completed`, `failed`, `abandoned`, `duration_p50_s`, `duration_p95_s` | 180 s |
 
+| GitHub endpoint | Auth | Fields used | Refresh |
+| --- | --- | --- | --- |
+| `GET https://api.github.com/repos/Tim-van-Oudheusden/website/pulls?state=all&sort=updated&direction=desc&per_page=100` | none (public repo) | `created_at`, `merged_at`, `closed_at`, `head.ref`, `body` | 180 s |
+
+About the GitHub call:
+
+- **Pages:** it follows pages until a PR's `updated_at` is older than the 7-day window, at most 3 pages. Any PR
+  opened, merged or closed in the window was updated in it. On 2026-11-02, 60 PRs were updated in the last 7 days:
+  one page.
+- **Rate limit:** unauthenticated requests get 60 per hour per IP
+  ([GitHub docs](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api)). 20 refreshes an
+  hour fit even at 2 pages. On a 403/429 with `x-ratelimit-remaining: 0`, it keeps the last value and waits until
+  `x-ratelimit-reset`.
+- **Attribution:** `head.ref` and `body` are read only to attribute each PR with the rule the repo already uses for
+  its AI audit trail and PR acceptance metric (`scripts/pr-source.ts`, moved to `shared/` so the back-end can import
+  it). They are never forwarded.
+- **Why not Hive:** this replaces Hive's owner-only `/api/pr-throughput`, so the throughput charts use public data
+  about this repo and need no Hive credential.
+
 Dropped on purpose:
 
 - From the widget summary:
@@ -86,7 +109,7 @@ Dropped on purpose:
 
 Not requested:
 
-- `/api/contribute/effective-models` and `/api/leaderboard` (see Open decisions).
+- `/api/contribute/effective-models` and `/api/leaderboard` (left out, decided 2026-11-02).
 - Everything that needs the owner token: `/api/status`, `/api/pr-throughput`, `/api/timeseries`,
   `/api/trend/history`, cost.
 - `/api/snapshot`, `/api/events` and `/metrics`.
@@ -114,6 +137,12 @@ interface HivePublicMetrics {
     runs7d: { total: number; backends: { backend: string; completed: number; failed: number; abandoned: number;
               p50Seconds: number | null; p95Seconds: number | null }[] };
   } | null;
+  repo: {                                         // this repo's public GitHub PRs, last 7 days; null when unavailable
+    from: string; to: string;
+    days: { t: string; opened: number; merged: number; closedUnmerged: number }[];   // 7 UTC days, oldest first
+    mergedBySource: { t: string; hive: number; claudeCode: number; dependabot: number; other: number }[];
+    medianHoursToMerge: number | null; p90HoursToMerge: number | null;            // merged in window, created → merged
+  } | null;
 }
 
 interface HiveMetricsResponse {
@@ -124,13 +153,14 @@ interface HiveMetricsResponse {
 ```
 
 The builder picks fields into fresh objects. It never deletes fields from Hive's payload. It rejects any upstream
-value that is not the expected primitive. Each of `hive` and `contributors` fails independently: a missing widget
-token blanks the first, and the anonymous part still shows.
+value that is not the expected primitive. `hive`, `contributors` and `repo` fail independently: a missing widget
+token blanks `hive`, and the other two still show.
 
 ### Freshness and failure
 
 - **Back-end:**
-  - A single-flight in-memory cache: 60 s for health and the widget summary, 180 s for the contributor endpoints.
+  - A single-flight in-memory cache: 60 s for health and the widget summary, 180 s for the contributor endpoints and
+    GitHub.
   - Each upstream call has a 5 s timeout. A failed call keeps the last good value for its part.
   - `state` is `live` when every part is fresh, `stale` when any part is older than 10 minutes, and `unavailable`
     when nothing has ever been fetched.
@@ -141,11 +171,11 @@ token blanks the first, and the anonymous part still shows.
   - A failed poll keeps the last data on screen and marks it stale.
 - **Worst-case delay** from Hive changing a value to the visitor seeing it:
   - Widget data: 60 s (cache) + 30 s (HTTP cache) + 60 s (poll) = 150 s.
-  - Contributor series: 180 s + 30 s + 60 s = 270 s.
+  - Contributor series and GitHub: 180 s + 30 s + 60 s = 270 s.
 
   Both are under the 5-minute requirement.
-- **Upstream load** does not depend on visitor count: 2 calls per minute plus 2 every 3 minutes, all cheap. The
-  heavy audit-log routes from the first draft are not called.
+- **Upstream load** does not depend on visitor count. Hive gets 2 calls per minute plus 2 every 3 minutes, all cheap;
+  the heavy audit-log routes from the first draft are not called. GitHub gets about 20 calls an hour.
 
 ## Layout
 
@@ -153,8 +183,8 @@ The section follows the canyon. Without the canyon, it sits at the top of the pa
 and the site's wells, so it follows light and dark mode like every other page.
 
 1. **Header row.** Heading "The hive, live". One sentence: Hive is the agent system that files, claims and lands work
-   in this repo, and these numbers come from the instance running on this server. A status pill shows one of
-   `Live · updated 40 s ago`, `Stale · last update 14:05`, or `Offline`.
+   in this repo, and these numbers come from the instance running on this server and from this repo's public pull
+   requests. A status pill shows one of `Live · updated 40 s ago`, `Stale · last update 14:05`, or `Offline`.
 2. **KPI tiles** (four `Card`s, 2×2 on phones, 4 across from `lg`), all from the latest widget history point:
    - **Agents running:** `running / total`.
    - **Open work:** issues + PRs, with held as a sub-line.
@@ -171,19 +201,29 @@ and the site's wells, so it follows light and dark mode like every other page.
 6. **Runs by backend, last 7 days** (card beside it): one row per backend with a stacked bar
    (completed / failed / abandoned) and that backend's p50 and p95 run time. Percentiles are per backend and are
    never summed or averaged across backends (research Q6).
-7. **Footnote:**
+7. **Pull requests on this repo, last 7 days** (wide card, from `repo`): bars per day for opened, merged and closed
+   unmerged. Median and p90 time from opening to merge sit beside them.
+8. **Who wrote the merged work** (card beside it): a 100 % bar per day split into Hive, Claude Code in CI,
+   Dependabot and other, plus the 7-day Hive share as one number (e.g. "Hive wrote 41 of 55 merged PRs").
+   - The split is by author, using the repo's attribution rule: Hive's signature line in the PR body, then the
+     `claude/` and `dependabot/` branch prefixes. It is not by who clicked merge.
+   - The caption says so and links to `docs/metrics/README.md`.
+9. **Footnote:**
    - What Hive is, with a link to <https://github.com/hivecommons/hive>.
    - How it works on this repo, with a link to `docs/multi-agent.md` on GitHub.
    - That repository names, agent names, cost and logs are deliberately not published.
 
-If `hive` is null (no widget token yet), tiles 2 and charts 3–4 are replaced by one line: "Live queue data is not
-connected yet." The contributor charts still show. If both parts are null, the section shows a short explanation
-instead of empty charts.
+Each part degrades on its own:
+
+- If `hive` is null, tiles 2 and charts 3–4 are replaced by one line: "Live queue data is not connected right
+  now."
+- If `contributors` or `repo` is null, only its cards are replaced by such a line.
+- If all three are null, the section shows a short explanation instead of empty charts.
 
 ### Charts
 
 - Hand-rolled inline SVG components with no chart library. The site has none, and Hive's dashboard does the same
-  (research Q2). Four primitives: `LineSeries`, `ModeBand`, `BarSeries` (plain/stacked), `StackedRow`.
+  (research Q2). Four primitives: `LineSeries`, `ModeBand`, `BarSeries` (plain/grouped/stacked), `StackedRow`.
 - Colours:
   - Series use site tokens first: `--site-accent` for the headline series, the `--ink`/`--paper` ramp for secondary
     series.
@@ -208,7 +248,8 @@ instead of empty charts.
 | Setting | Where | Value |
 | --- | --- | --- |
 | `HIVE_BASE_URL` | back-end env, `deploy/kube/prod.yaml` | `http://host.containers.internal:3001` (verified from the production pod, research Q6) |
-| `HIVE_WIDGET_TOKEN` | back-end env via `valueFrom.secretKeyRef` with `optional: true` | The widget token Tim mints in Hive. Kept in a podman secret created on the host and never in the repo. Without it the pod still starts (podman skips an optional missing secret, research Recommendation), and `hive` is null |
+| `HIVE_WIDGET_TOKEN` | back-end env via `valueFrom.secretKeyRef` (`name: hive-widget-token`, `key: token`, `optional: true`) | The secret exists on the server: a Kubernetes Secret YAML with `stringData.token`, created with `podman secret create hive-widget-token -` on 2026-11-02. A throwaway `kube play` pod resolved it and got 200 from `/api/widget/summary`. It is never in the repo. Without it the pod still starts and `hive` is null |
+| `PR_STATS_REPOSITORY` | back-end constant, not env | `Tim-van-Oudheusden/website`. The public repo whose PRs feed `repo` |
 | Network flag | `deploy/systemd/podman-kube@.service` | unchanged |
 | Dev | `deploy/kube/dev.yaml` | `HIVE_BASE_URL` unset → the route serves a checked-in fixture in development only. The dev pod publishes the back-end on host `127.0.0.1:3001`, which collides with Hive on a machine that runs both; the server runs only prod |
 
@@ -220,15 +261,25 @@ Not used (research Q5): `-T` port forwards, `hostNetwork`, `--map-gw` / `--map-h
 TDD per `AGENTS.md`.
 
 - **Builder (pure):** built from recorded responses, the output keeps exactly the allowlisted fields. The fixtures
-  carry canaries: a repo in `history[].repos`, agent names, `hiveId`, a `per_user_done` login. None of them may
-  appear in the serialised output.
+  carry canaries, and none may appear in the serialised output:
+  - a repo in `history[].repos`, agent names, `hiveId`, and a `per_user_done` login;
+  - in the GitHub fixture: a PR title, body text, a branch name and a user login.
 - **Builder (rules):**
   - Modes are lower-cased, and unknown modes are rejected.
-  - `running` counts only `state === "running"`.
+  - `running` counts only `state === "running"`. On the server, states seen on 2026-11-02 were `running`, `paused`
+    and `stopped`.
+  - History `t` is epoch milliseconds and becomes ISO strings.
   - The latest point drives the tiles.
   - Malformed numbers become `null`/empty, never `NaN`, and never fail the whole object.
+- **Repo activity (pure):**
+  - PRs are bucketed into 7 UTC days by `created_at`, `merged_at` and `closed_at` (closed and not merged).
+  - PRs outside the window are ignored.
+  - Attribution matches `scripts/pr-source.ts` for each source.
+  - Median and p90 cover only PRs merged in the window, and are `null` with none.
 - **Route** (Fastify `inject`, fake fetch and clock):
-  - The URLs requested are exactly the four above, as GET.
+  - The URLs requested are exactly the five above, as GET.
+  - GitHub paging stops at the window edge or after 3 pages.
+  - A GitHub rate-limit response keeps the last value until `x-ratelimit-reset`.
   - The widget header is sent only to the widget route.
   - TTLs are 60 s and 180 s.
   - One failing upstream keeps its last value.
@@ -242,24 +293,13 @@ TDD per `AGENTS.md`.
   - Each chart renders its summary `aria-label` and data table.
   - The section renders the live, stale, offline, widget-missing and unavailable states.
   - Run-time percentiles appear per backend only.
-- **E2E:** with the dev fixture, four tiles and four figures appear. With the route stubbed to `unavailable`, the
+- **E2E:** with the dev fixture, four tiles and eight figures appear. With the route stubbed to `unavailable`, the
   explanation shows and no empty chart does.
 - **On the server after deploy:** `curl -s https://buildwithtim.dev/api/hive/metrics` shows `state: "live"`.
   Grepping the response for a repository name, `hiveId`, `github_username` or `usd` finds nothing.
 
-## Open decisions (Tim)
+## Decisions (Tim, 2026-11-02)
 
-1. **Mint the widget token** in Hive (`POST /api/widget/token` or the dashboard) and store it as the podman secret.
-   Until then the section shows only the anonymous contributor data.
-2. **PR throughput and "who merged the work"** are not reachable with the widget token. Options:
-   - (a) Leave them out (default).
-   - (b) Compute them from this repo's public GitHub PRs, reusing the source classification in
-     `scripts/pr-metrics.ts`.
-   - (c) Ask Hive upstream to add throughput to the widget summary.
-   - (d) An owner-token sidecar, which was rejected earlier for risk.
-3. **Optional anonymous extras:**
-   - `/api/contribute/effective-models` (per-model merged PRs and first-pass merge rate). It reveals which model
-     providers are paid for.
-   - `/api/leaderboard` `agents[]` (agent account usernames and avatars).
-
-   Both are excluded by default.
+1. **Widget token:** minted, and stored on the server as the podman secret `hive-widget-token` (see Configuration).
+2. **PR throughput and who wrote the merged work:** computed from this repo's public GitHub PRs (`repo` above).
+3. **Optional anonymous extras** (`/api/contribute/effective-models`, `/api/leaderboard`): left out.
