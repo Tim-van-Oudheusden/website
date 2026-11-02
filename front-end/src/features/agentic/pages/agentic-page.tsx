@@ -1,6 +1,11 @@
 import type { JSX } from "react";
 
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
+import { httpContentLoader } from "@/shared/lib/content-loader";
+
+import { CanyonRim } from "../components/canyon-rim";
+import { CanyonStratumCard } from "../components/canyon-stratum-card";
+import { CANYON_STRATA } from "../config/canyon-strata";
 
 /** The Agentic tab: how this site is built with AI agents. */
 export function AgenticPage(): JSX.Element {
@@ -12,6 +17,12 @@ export function AgenticPage(): JSX.Element {
           I build this site with AI agents: they pick up GitHub issues and open pull requests, which go through the same
           checks and review as mine. This page shows how that works.
         </p>
+        <div className="mt-8 flex flex-col gap-6">
+          <CanyonRim loader={httpContentLoader} />
+          {CANYON_STRATA.map((stratum) => (
+            <CanyonStratumCard key={stratum.id} stratum={stratum} />
+          ))}
+        </div>
       </div>
     </main>
   );

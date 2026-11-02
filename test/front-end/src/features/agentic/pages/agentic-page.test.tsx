@@ -1,0 +1,137 @@
+import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
+
+import { act, createElement } from "react";
+import { MemoryRouter } from "react-router";
+
+import { AgenticPage } from "../../../../../../front-end/src/features/agentic/pages/agentic-page";
+import type { FakeMount } from "../../../../src/test/dom-harness";
+import { initFakeDomHarness, jsonResponse, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import type { FakeElement } from "../../../../src/test/fake-dom";
+import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
+
+const ORIGINAL_FETCH = globalThis.fetch;
+
+beforeAll(async () => {
+  await initFakeDomHarness();
+});
+
+afterEach(() => {
+  globalThis.fetch = ORIGINAL_FETCH;
+});
+
+afterAll(() => {
+  uninstallFakeDom();
+});
+
+function mountPage(): FakeMount {
+  // The rim's project list never settles here; these tests are about the strata.
+  globalThis.fetch = mock(() => new Promise<Response>(() => undefined)) as unknown as typeof globalThis.fetch;
+
+  return mountIntoBody(createElement(MemoryRouter, null, createElement(AgenticPage)));
+}
+
+function byName(root: FakeElement, nodeName: string): FakeElement[] {
+  return queryFakeElements(root, (el) => el.nodeName === nodeName);
+}
+
+function strataSections(page: FakeMount): FakeElement[] {
+  return byName(page.container, "SECTION").filter((section) => byName(section, "H2").length === 1);
+}
+
+describe("AgenticPage strata", () => {
+  test("lists the six strata as h2 headings in rim-to-bedrock order", () => {
+    const page = mountPage();
+
+    try {
+      expect(byName(page.container, "H2").map((h2) => h2.textContent)).toEqual([
+        "Content",
+        "Interface",
+        "API",
+        "Quality",
+        "Delivery",
+        "Agents · Hive",
+      ]);
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("gives every stratum a unique deep-link id, a sentence and its pillars as a list", () => {
+    const page = mountPage();
+
+    try {
+      const sections = strataSections(page);
+      const ids = sections.map((section) => section.getAttribute("id"));
+
+      expect(sections).toHaveLength(6);
+      expect(ids).toContain("quality");
+      expect(new Set(ids).size).toBe(6);
+
+      for (const section of sections) {
+        expect(section.getAttribute("id")).toMatch(/^[a-z][a-z-]*$/);
+        expect(byName(section, "P").some((p) => p.textContent.trim().length > 0)).toBe(true);
+
+        const pillars = byName(section, "UL").flatMap((list) => byName(list, "LI")).filter((li) => byName(li, "A").length === 0);
+
+        expect(pillars.length).toBeGreaterThan(0);
+      }
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("names the real tools as pillars", () => {
+    const page = mountPage();
+
+    try {
+      const textById = new Map(strataSections(page).map((section) => [section.getAttribute("id"), section.textContent]));
+
+      expect(textById.get("interface")).toContain("React 19");
+      expect(textById.get("quality")).toContain("Stryker");
+      expect(textById.get("delivery")).toContain("Cloudflare Tunnel");
+      expect(textById.get("agents-hive")).toContain("Dependabot");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("links every stratum to its sources in the repository on GitHub", () => {
+    const page = mountPage();
+
+    try {
+      const sections = strataSections(page);
+
+      expect(sections).toHaveLength(6);
+
+      for (const section of sections) {
+        const hrefs = byName(section, "A").map((a) => a.getAttribute("href"));
+
+        expect(hrefs.length).toBeGreaterThan(0);
+
+        for (const href of hrefs) {
+          expect(href).toStartWith("https://github.com/Tim-van-Oudheusden/website/");
+        }
+      }
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("puts the rim with the project links above the first stratum", async () => {
+    globalThis.fetch = mock(() => Promise.resolve(jsonResponse([{ slug: "minimal-android-launcher", title: "Minimal Android Launcher", type: "project" }]))) as unknown as typeof globalThis.fetch;
+    const page = mountIntoBody(createElement(MemoryRouter, null, createElement(AgenticPage)));
+
+    try {
+      await act(async () => {
+        await settleMicrotasks();
+      });
+
+      const text = page.container.textContent;
+
+      expect(byName(page.container, "A")[0]?.getAttribute("href")).toBe("/projects/minimal-android-launcher");
+      expect(text.indexOf("Minimal Android Launcher")).toBeLessThan(text.indexOf("Content"));
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+});
