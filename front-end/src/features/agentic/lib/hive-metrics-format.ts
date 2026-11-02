@@ -10,6 +10,11 @@ const DAY = 24 * HOUR;
 
 const ONE_DECIMAL = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 1 });
 
+/** A count or chart value: grouped thousands, at most one decimal. */
+export function formatValue(value: number): string {
+  return ONE_DECIMAL.format(value);
+}
+
 /** "14:05". */
 export function formatClock(iso: string, timeZone: string | null): string {
   const options: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit", hourCycle: "h23" };

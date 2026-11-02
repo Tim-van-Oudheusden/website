@@ -1,0 +1,101 @@
+/*
+ * Aurora: frosted panes over a slow polar glow. Soft blurred light behind the page, rounded glass panels with a lit
+ * top edge, and a drift in the glow when motion is allowed.
+ */
+
+[data-design="aurora"] {
+  --ag-radius: 1.5rem;
+  --ag-gap: 1.25rem;
+  --ag-pad: 1.5rem;
+  --ag-page: #fffcf0;
+}
+
+.dark [data-design="aurora"] {
+  --ag-page: #100f0f;
+  --ag-panel: #1c1b1a;
+}
+
+/*
+ * The glow: blurred light fields in the accent and its glow tint across the top of the page, behind everything. Kept
+ * at 40 % or less, so the muted text over it stays at 4.5:1 in dark mode.
+ */
+[data-design="aurora"]::before {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: -10%;
+  left: -10%;
+  height: 52rem;
+  background:
+    radial-gradient(40% 45% at 20% 25%, color-mix(in srgb, var(--ag-glow) 40%, transparent), transparent 70%),
+    radial-gradient(35% 40% at 75% 12%, color-mix(in srgb, var(--ag-accent) 30%, transparent), transparent 70%),
+    radial-gradient(45% 35% at 55% 55%, color-mix(in srgb, var(--ag-glow) 25%, transparent), transparent 70%);
+  content: "";
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-design="aurora"]::before {
+    animation: ag-aurora-drift 24s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes ag-aurora-drift {
+  to {
+    transform: translate3d(4%, 3%, 0) scale(1.08);
+  }
+}
+
+[data-design="aurora"] .ag-title {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+}
+
+[data-design="aurora"] .ag-switch {
+  border-color: color-mix(in srgb, var(--ag-accent) 35%, var(--ag-line));
+  background: color-mix(in srgb, var(--ag-panel) 92%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+/* Glass: nearly opaque, so text keeps the panel's contrast, blurred, with the accent lighting the top edge. */
+[data-design="aurora"] .ag-kpi,
+[data-design="aurora"] .ag-panel,
+[data-design="aurora"] .ag-missing,
+[data-design="aurora"] .ag-fallback,
+[data-design="aurora"] .ag-status {
+  border-color: color-mix(in srgb, var(--ag-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--ag-panel) 92%, transparent);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--ag-glow) 70%, transparent),
+    0 1.25rem 2.5rem -1.5rem color-mix(in srgb, var(--ag-accent) 45%, transparent);
+}
+
+[data-design="aurora"] .ag-kpi-value {
+  font-size: 2.25rem;
+  font-weight: 300;
+}
+
+[data-design="aurora"] .ag-kpi:first-child .ag-kpi-value {
+  color: var(--ag-accent-text);
+  font-weight: 600;
+}
+
+[data-design="aurora"] .ag-panel-title {
+  font-weight: 500;
+}
+
+[data-design="aurora"] .ag-h2 {
+  font-weight: 300;
+  font-size: 1.875rem;
+}
+
+[data-design="aurora"] .ag-swatch {
+  border-radius: 50%;
+}
+
+[data-design="aurora"] .ag-swatch[data-shape="line"] {
+  border-radius: 2px;
+}

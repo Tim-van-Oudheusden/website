@@ -1,5 +1,5 @@
 import type { JSX, ReactNode } from "react";
-import { createContext, use, useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, use, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -16,14 +16,25 @@ const ThemeContext = createContext<{
   setTheme: () => {},
 });
 
+const DARK_SCHEME_QUERY = "(prefers-color-scheme: dark)";
+
+function systemPrefersDark(): boolean {
+  return window.matchMedia(DARK_SCHEME_QUERY).matches;
+}
+
+function subscribeToSystemScheme(onChange: () => void): () => void {
+  const query = window.matchMedia(DARK_SCHEME_QUERY);
+
+  query.addEventListener("change", onChange);
+
+  return () => {
+    query.removeEventListener("change", onChange);
+  };
+}
+
 /** Toggle the document-level theme class for the given theme selection. */
 export function applyTheme(theme: Theme): void {
-  const root = document.documentElement;
-  const isDark
-    = theme === "dark"
-      || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-
-  root.classList.toggle("dark", isDark);
+  document.documentElement.classList.toggle("dark", theme === "dark" || (theme === "system" && systemPrefersDark()));
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }): JSX.Element {
@@ -50,17 +61,9 @@ export function ThemeProvider({ children }: { children: ReactNode }): JSX.Elemen
       return;
     }
 
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-
-    function onChange(): void {
+    return subscribeToSystemScheme(() => {
       applyTheme("system");
-    }
-
-    mq.addEventListener("change", onChange);
-
-    return () => {
-      mq.removeEventListener("change", onChange);
-    };
+    });
   }, [theme]);
 
   return (
@@ -72,4 +75,12 @@ export function ThemeProvider({ children }: { children: ReactNode }): JSX.Elemen
 
 export function useTheme(): { theme: Theme; setTheme: (theme: Theme) => void } {
   return use(ThemeContext);
+}
+
+/** The theme on screen: the visitor's choice, with "system" resolved to the OS preference (and following it). */
+export function useResolvedTheme(): "light" | "dark" {
+  const { theme } = useTheme();
+  const systemDark = useSyncExternalStore(subscribeToSystemScheme, systemPrefersDark, () => false);
+
+  return theme === "dark" || (theme === "system" && systemDark) ? "dark" : "light";
 }

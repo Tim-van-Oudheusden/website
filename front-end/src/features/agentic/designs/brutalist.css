@@ -1,0 +1,123 @@
+/*
+ * Brutalist: raw slabs. Heavy ink borders, hard offset shadows in the accent, square corners, a heavy grotesque in
+ * capitals, and numbers set as large as they will go.
+ */
+
+[data-design="brutalist"] {
+  --ag-radius: 0;
+  --ag-gap: 1.5rem;
+  --ag-font-display: "Arial Black", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ag-font-data: "Arial Black", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ag-page: #fffcf0;
+  --ag-panel: #fffcf0;
+  --ag-slab: 3px solid var(--ag-ink);
+  --ag-drop: 0.4rem 0.4rem 0 var(--ag-accent);
+}
+
+.dark [data-design="brutalist"] {
+  --ag-page: #100f0f;
+  --ag-panel: #100f0f;
+}
+
+[data-design="brutalist"] .ag-title {
+  font-size: clamp(2.75rem, 10vw, 6rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+[data-design="brutalist"] .ag-hero {
+  padding-bottom: 1.5rem;
+  border-bottom: var(--ag-slab);
+}
+
+[data-design="brutalist"] .ag-switch {
+  border: var(--ag-slab);
+  border-radius: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+[data-design="brutalist"] .ag-switch:hover {
+  box-shadow: var(--ag-drop);
+}
+
+/* The current design: a solid accent slab; its text is the page colour, at 4.8:1 or more either way. */
+[data-design="brutalist"] .ag-switch[aria-current] {
+  border-color: var(--ag-accent);
+  background: var(--ag-accent);
+  box-shadow: none;
+  color: var(--ag-page);
+}
+
+[data-design="brutalist"] .ag-switch[aria-current] .ag-switch-index {
+  color: inherit;
+}
+
+[data-design="brutalist"] .ag-kpi,
+[data-design="brutalist"] .ag-panel,
+[data-design="brutalist"] .ag-missing,
+[data-design="brutalist"] .ag-fallback,
+[data-design="brutalist"] .ag-status {
+  border: var(--ag-slab);
+  box-shadow: var(--ag-drop);
+}
+
+[data-design="brutalist"] .ag-status {
+  border-radius: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+[data-design="brutalist"] .ag-status-dot {
+  border-radius: 0;
+}
+
+[data-design="brutalist"] .ag-h2,
+[data-design="brutalist"] .ag-panel-title {
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+[data-design="brutalist"] .ag-h2 {
+  font-size: 2rem;
+}
+
+[data-design="brutalist"] .ag-panel-title {
+  margin-inline: calc(-1 * (var(--ag-pad) + 0.25rem));
+  margin-top: calc(-1 * var(--ag-pad));
+  padding: 0.6rem calc(var(--ag-pad) + 0.25rem);
+  border-bottom: var(--ag-slab);
+  font-size: 1rem;
+}
+
+[data-design="brutalist"] .ag-kpi-label {
+  color: var(--ag-ink);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+[data-design="brutalist"] .ag-kpi-value {
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+[data-design="brutalist"] .ag-lead {
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+[data-design="brutalist"] .ag-swatch {
+  border-radius: 0;
+}
+
+[data-design="brutalist"] .ag-table tbody tr {
+  border-top-width: 2px;
+}
+
+[data-design="brutalist"] .ag-footer {
+  padding-top: 1rem;
+  border-top: var(--ag-slab);
+}

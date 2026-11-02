@@ -1,0 +1,112 @@
+/*
+ * Cockpit: an instrument panel. Panels sit in bezels with a screw at each corner, headings are small capitals over a
+ * tick-mark scale in the accent, and the readouts are monospace amber that glows in dark mode. The status pill is an
+ * annunciator light.
+ */
+
+[data-design="cockpit"] {
+  --ag-radius: 0.625rem;
+  --ag-gap: 1rem;
+  --ag-pad: 1.125rem;
+  --ag-font-data: var(--ag-font-mono);
+  --ag-bezel: #b7b5ac; /* Flexoki base-300 */
+}
+
+.dark [data-design="cockpit"] {
+  --ag-page: #1c1b1a;
+  --ag-panel: #100f0f;
+  --ag-bezel: #403e3c; /* base-800 */
+}
+
+[data-design="cockpit"] .ag-title {
+  font-family: var(--ag-font-mono);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[data-design="cockpit"] .ag-switch {
+  border-color: var(--ag-bezel);
+  border-radius: 0.375rem;
+  font-family: var(--ag-font-mono);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+}
+
+/* Bezels: an outer frame and an inner rim, with four screw heads drawn into the corners. */
+[data-design="cockpit"] .ag-kpi,
+[data-design="cockpit"] .ag-panel,
+[data-design="cockpit"] .ag-missing,
+[data-design="cockpit"] .ag-fallback {
+  border: 3px solid var(--ag-bezel);
+  background:
+    radial-gradient(circle, var(--ag-bezel) 0.2rem, transparent 0.22rem) 0.35rem 0.35rem / 0.7rem 0.7rem no-repeat,
+    radial-gradient(circle, var(--ag-bezel) 0.2rem, transparent 0.22rem) calc(100% - 0.35rem) 0.35rem / 0.7rem 0.7rem no-repeat,
+    radial-gradient(circle, var(--ag-bezel) 0.2rem, transparent 0.22rem) 0.35rem calc(100% - 0.35rem) / 0.7rem 0.7rem no-repeat,
+    radial-gradient(circle, var(--ag-bezel) 0.2rem, transparent 0.22rem) calc(100% - 0.35rem) calc(100% - 0.35rem) / 0.7rem 0.7rem no-repeat,
+    var(--ag-panel);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ag-accent) 40%, transparent);
+}
+
+[data-design="cockpit"] .ag-panel-title,
+[data-design="cockpit"] .ag-kpi-label,
+[data-design="cockpit"] .ag-h2 {
+  font-family: var(--ag-font-mono);
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+}
+
+/* A tick-mark scale under each panel heading. */
+[data-design="cockpit"] .ag-panel-title {
+  padding-bottom: 0.75rem;
+  background:
+    repeating-linear-gradient(90deg, var(--ag-accent) 0 1px, transparent 1px 0.5rem) left bottom / 100% 0.35rem no-repeat,
+    repeating-linear-gradient(90deg, var(--ag-accent) 0 2px, transparent 2px 2.5rem) left bottom / 100% 0.6rem no-repeat;
+  color: var(--ag-muted);
+  font-size: 1.0625rem;
+}
+
+[data-design="cockpit"] .ag-kpi {
+  align-items: flex-start;
+}
+
+[data-design="cockpit"] .ag-kpi-value,
+[data-design="cockpit"] .ag-lead,
+[data-design="cockpit"] .ag-stat dd {
+  color: var(--ag-accent-text);
+}
+
+[data-design="cockpit"] .ag-kpi-value {
+  font-size: 2rem;
+}
+
+.dark [data-design="cockpit"] .ag-kpi-value,
+.dark [data-design="cockpit"] .ag-lead,
+.dark [data-design="cockpit"] .ag-stat dd {
+  text-shadow: 0 0 0.5rem color-mix(in srgb, var(--ag-glow) 75%, transparent);
+}
+
+/* The annunciator: a square lamp. */
+[data-design="cockpit"] .ag-status {
+  border: 2px solid var(--ag-bezel);
+  border-radius: 0.375rem;
+  font-family: var(--ag-font-mono);
+  text-transform: uppercase;
+}
+
+[data-design="cockpit"] .ag-status-dot {
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 0.125rem;
+}
+
+[data-design="cockpit"] .ag-status[data-status="live"] .ag-status-dot {
+  box-shadow: 0 0 0.75rem 0.1rem var(--ag-glow);
+}
+
+[data-design="cockpit"] .ag-figcaption,
+[data-design="cockpit"] .ag-legend {
+  font-family: var(--ag-font-mono);
+  font-size: 0.8125rem;
+}

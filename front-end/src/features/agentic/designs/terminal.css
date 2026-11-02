@@ -1,0 +1,159 @@
+/*
+ * Terminal: a phosphor console. Monospace throughout, panes framed in the accent with a title bar, a prompt before
+ * each heading and a cursor after the page title. Dark mode glows and carries faint scanlines; light mode reads as a
+ * printout on paper.
+ */
+
+[data-design="terminal"] {
+  --ag-radius: 0.25rem;
+  --ag-gap: 1rem;
+  --ag-font-body: var(--ag-font-mono);
+  --ag-font-display: var(--ag-font-mono);
+  --ag-font-data: var(--ag-font-mono);
+  --ag-page: #fffcf0;
+  --ag-panel: #fffcf0;
+}
+
+.dark [data-design="terminal"] {
+  --ag-page: #100f0f;
+  --ag-panel: #100f0f;
+}
+
+/* Scanlines over the whole page in dark mode; decoration, under the content. */
+.dark [data-design="terminal"]::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--ag-glow) 7%, transparent) 0 1px,
+    transparent 1px 3px
+  );
+  content: "";
+  pointer-events: none;
+}
+
+[data-design="terminal"] .ag-text {
+  font-size: 0.9375rem;
+}
+
+[data-design="terminal"] .ag-title {
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  font-weight: 700;
+}
+
+[data-design="terminal"] .ag-title::before {
+  color: var(--ag-accent-text);
+  content: "~/";
+}
+
+[data-design="terminal"] .ag-title::after {
+  display: inline-block;
+  width: 0.6em;
+  height: 1em;
+  margin-left: 0.2em;
+  background: var(--ag-accent);
+  content: "";
+  vertical-align: -0.12em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-design="terminal"] .ag-title::after {
+    animation: ag-terminal-blink 1.1s steps(1) infinite;
+  }
+}
+
+@keyframes ag-terminal-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+[data-design="terminal"] .ag-switch {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding-inline: 0.25rem;
+}
+
+[data-design="terminal"] .ag-switch::before {
+  color: var(--ag-muted);
+  content: "[";
+}
+
+[data-design="terminal"] .ag-switch::after {
+  color: var(--ag-muted);
+  content: "]";
+}
+
+[data-design="terminal"] .ag-switch[aria-current] {
+  box-shadow: none;
+  color: var(--ag-accent-text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+[data-design="terminal"] .ag-h2::before,
+[data-design="terminal"] .ag-panel-title::before {
+  margin-right: 0.5em;
+  color: var(--ag-accent-text);
+  content: "$";
+}
+
+[data-design="terminal"] .ag-kpi,
+[data-design="terminal"] .ag-panel,
+[data-design="terminal"] .ag-missing,
+[data-design="terminal"] .ag-fallback,
+[data-design="terminal"] .ag-status {
+  border-color: var(--ag-accent);
+}
+
+.dark [data-design="terminal"] .ag-kpi,
+.dark [data-design="terminal"] .ag-panel,
+.dark [data-design="terminal"] .ag-missing,
+.dark [data-design="terminal"] .ag-status {
+  box-shadow:
+    0 0 0.75rem color-mix(in srgb, var(--ag-glow) 30%, transparent),
+    inset 0 0 1.5rem color-mix(in srgb, var(--ag-glow) 10%, transparent);
+}
+
+/* The pane's title bar: a strip in the accent above the heading. */
+[data-design="terminal"] .ag-panel {
+  padding-top: 0;
+}
+
+[data-design="terminal"] .ag-panel-title {
+  margin-inline: calc(-1 * (var(--ag-pad) + 0.25rem));
+  padding: 0.4rem calc(var(--ag-pad) + 0.25rem);
+  border-bottom: 1px solid var(--ag-accent);
+  font-size: 0.9375rem;
+}
+
+[data-design="terminal"] .ag-kpi-label::before {
+  content: "# ";
+}
+
+[data-design="terminal"] .ag-kpi-value {
+  color: var(--ag-accent-text);
+}
+
+.dark [data-design="terminal"] .ag-kpi-value,
+.dark [data-design="terminal"] .ag-lead {
+  text-shadow: 0 0 0.6rem color-mix(in srgb, var(--ag-glow) 70%, transparent);
+}
+
+[data-design="terminal"] .ag-status {
+  border-radius: 0;
+}
+
+[data-design="terminal"] .ag-status-dot {
+  border-radius: 0;
+}
+
+[data-design="terminal"] .ag-swatch {
+  border-radius: 0;
+}
+
+[data-design="terminal"] .ag-data-toggle::marker {
+  color: var(--ag-accent-text);
+}

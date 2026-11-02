@@ -1,0 +1,149 @@
+/*
+ * Zen: whitespace and hairlines. A narrow measure, light type, no boxes, panels separated by single rules, and one
+ * vermilion seal beside the title. The accent stays rare: the seal, the live lamp, the charts and the links.
+ */
+
+[data-design="zen"] {
+  --ag-radius: 0;
+  --ag-gap: 3rem;
+  --ag-pad: 0;
+  --ag-plot-height: 11rem;
+  --ag-page: #fffcf0;
+  --ag-panel: #fffcf0;
+}
+
+.dark [data-design="zen"] {
+  --ag-page: #1c1b1a;
+  --ag-panel: #1c1b1a;
+}
+
+[data-design="zen"] .ag-shell {
+  max-width: 60rem;
+  gap: 3.5rem;
+}
+
+[data-design="zen"] .ag-hero {
+  padding-top: 2rem;
+}
+
+[data-design="zen"] .ag-title {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
+
+/* The seal: a small square stamp, slightly turned. */
+[data-design="zen"] .ag-title::after {
+  width: 0.7em;
+  height: 0.7em;
+  flex-shrink: 0;
+  border-radius: 0.12em;
+  background: var(--ag-accent);
+  box-shadow: inset 0 0 0 0.08em var(--ag-page), inset 0 0 0 0.12em var(--ag-accent);
+  content: "";
+  transform: rotate(-4deg);
+}
+
+[data-design="zen"] .ag-text {
+  font-weight: 300;
+  line-height: 1.8;
+}
+
+[data-design="zen"] .ag-switcher-list {
+  gap: 0.25rem 1.25rem;
+}
+
+[data-design="zen"] .ag-switch {
+  padding: 0.25rem 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ag-muted);
+}
+
+[data-design="zen"] .ag-switch[aria-current] {
+  box-shadow: inset 0 -1px 0 var(--ag-accent);
+  color: var(--ag-ink);
+  font-weight: 400;
+}
+
+[data-design="zen"] .ag-h2 {
+  font-weight: 300;
+  font-size: 1.75rem;
+  letter-spacing: 0.02em;
+}
+
+[data-design="zen"] .ag-status {
+  border: 0;
+  background: transparent;
+  padding-inline: 0;
+}
+
+[data-design="zen"] .ag-status-dot {
+  border-radius: 0.1rem;
+}
+
+/* No boxes: hairlines between everything, one column for reading. */
+[data-design="zen"] .ag-board {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+[data-design="zen"] .ag-panel[data-panel] {
+  grid-column: auto;
+}
+
+[data-design="zen"] .ag-kpi,
+[data-design="zen"] .ag-panel,
+[data-design="zen"] .ag-missing,
+[data-design="zen"] .ag-fallback {
+  border: 0;
+  background: transparent;
+}
+
+[data-design="zen"] .ag-panel {
+  padding-top: var(--ag-gap);
+  border-top: 1px solid var(--ag-line);
+}
+
+[data-design="zen"] .ag-kpis {
+  gap: 0;
+}
+
+[data-design="zen"] .ag-kpi {
+  padding: 0.5rem 1rem 0.5rem 0;
+}
+
+[data-design="zen"] .ag-kpi-value {
+  font-size: 2.5rem;
+  font-weight: 200;
+}
+
+[data-design="zen"] .ag-kpi[data-kpi="agents"] .ag-kpi-value {
+  color: var(--ag-accent-text);
+}
+
+[data-design="zen"] .ag-panel-title {
+  color: var(--ag-muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+[data-design="zen"] .ag-lead {
+  font-size: 1.375rem;
+  font-weight: 300;
+}
+
+[data-design="zen"] .ag-stat dd {
+  font-weight: 300;
+  font-size: 1.5rem;
+}
+
+[data-design="zen"] .ag-footer {
+  padding-top: var(--ag-gap);
+  border-top: 1px solid var(--ag-line);
+}

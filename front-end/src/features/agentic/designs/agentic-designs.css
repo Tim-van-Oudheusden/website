@@ -1,0 +1,12 @@
+/* The Agentic page's shared structure, then one stylesheet per candidate design (config/agentic-designs.ts). */
+@import "./base.css";
+@import "./blueprint.css";
+@import "./terminal.css";
+@import "./broadsheet.css";
+@import "./honeycomb.css";
+@import "./aurora.css";
+@import "./synthwave.css";
+@import "./bento.css";
+@import "./brutalist.css";
+@import "./cockpit.css";
+@import "./zen.css";

@@ -218,6 +218,14 @@ The response `state` is:
 Each part (Hive, contributor agents, repo PRs) fails on its own: without the
 widget token only the Hive part is blank.
 
+On the page, a pure view model
+(`front-end/src/features/agentic/lib/hive-view-model.ts`) turns one response
+into every word, number, chart series and "Show data" table a design shows.
+The charts are drawn with [Apache ECharts](https://echarts.apache.org/), loaded
+in its own chunk once the first chart mounts; if it cannot load, each chart's
+data table opens in its place. `?design=<slug>` picks one of ten candidate
+designs (#1100), which style the same markup and data.
+
 Deliberately excluded: the builder copies allowlisted counts, durations, modes
 and timestamps into fresh objects, so the response never contains repository
 names, agent names, Hive's `hiveId`, GitHub logins (including Hive's

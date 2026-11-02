@@ -1,0 +1,147 @@
+/*
+ * Blueprint: a cyanotype drafting sheet. Grid paper in faint accent lines, square frames with registration ticks at
+ * the corners, monospace stencil labels and numbered figures.
+ */
+
+[data-design="blueprint"] {
+  --ag-radius: 0;
+  --ag-gap: 1.25rem;
+  --ag-font-display: var(--ag-font-mono);
+  --ag-font-data: var(--ag-font-mono);
+  --ag-panel: #fffcf0;
+
+  background-color: var(--ag-page);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ag-accent) 14%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ag-accent) 14%, transparent) 1px, transparent 1px),
+    linear-gradient(color-mix(in srgb, var(--ag-accent) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ag-accent) 6%, transparent) 1px, transparent 1px);
+  background-size: 6rem 6rem, 6rem 6rem, 1.5rem 1.5rem, 1.5rem 1.5rem;
+}
+
+.dark [data-design="blueprint"] {
+  --ag-panel: #100f0f;
+}
+
+[data-design="blueprint"] .ag-title,
+[data-design="blueprint"] .ag-h2,
+[data-design="blueprint"] .ag-panel-title {
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+[data-design="blueprint"] .ag-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* A dimension line after the title: a rule with an arrowhead tick at each end. */
+[data-design="blueprint"] .ag-title::after {
+  flex: 1;
+  height: 0.75rem;
+  border-inline: 1px solid var(--ag-accent);
+  background: linear-gradient(var(--ag-accent), var(--ag-accent)) center / 100% 1px no-repeat;
+  content: "";
+}
+
+[data-design="blueprint"] .ag-switch {
+  border-color: var(--ag-accent);
+  border-radius: 0;
+  font-family: var(--ag-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+[data-design="blueprint"] .ag-switch[aria-current] {
+  border-width: 2px;
+  box-shadow: none;
+}
+
+[data-design="blueprint"] .ag-kpi,
+[data-design="blueprint"] .ag-panel,
+[data-design="blueprint"] .ag-missing,
+[data-design="blueprint"] .ag-fallback,
+[data-design="blueprint"] .ag-status {
+  position: relative;
+  border-color: var(--ag-accent);
+  border-radius: 0;
+}
+
+/* Registration ticks just outside two opposite corners of every frame. */
+[data-design="blueprint"] .ag-kpi::before,
+[data-design="blueprint"] .ag-panel::before,
+[data-design="blueprint"] .ag-kpi::after,
+[data-design="blueprint"] .ag-panel::after {
+  position: absolute;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 0 solid var(--ag-accent);
+  content: "";
+  pointer-events: none;
+}
+
+[data-design="blueprint"] .ag-kpi::before,
+[data-design="blueprint"] .ag-panel::before {
+  top: -0.4rem;
+  left: -0.4rem;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+
+[data-design="blueprint"] .ag-kpi::after,
+[data-design="blueprint"] .ag-panel::after {
+  right: -0.4rem;
+  bottom: -0.4rem;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+}
+
+[data-design="blueprint"] .ag-kpi-label {
+  font-family: var(--ag-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+[data-design="blueprint"] .ag-kpi-value {
+  color: var(--ag-accent-text);
+}
+
+[data-design="blueprint"] .ag-board {
+  counter-reset: ag-figure;
+}
+
+[data-design="blueprint"] .ag-panel {
+  counter-increment: ag-figure;
+}
+
+[data-design="blueprint"] .ag-panel-title::before {
+  margin-right: 0.75rem;
+  color: var(--ag-accent-text);
+  content: "Fig. " counter(ag-figure, decimal-leading-zero);
+}
+
+[data-design="blueprint"] .ag-panel-title {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed var(--ag-accent);
+  font-size: 0.9375rem;
+}
+
+[data-design="blueprint"] .ag-figcaption,
+[data-design="blueprint"] .ag-legend,
+[data-design="blueprint"] .ag-data,
+[data-design="blueprint"] .ag-note {
+  font-family: var(--ag-font-mono);
+  font-size: 0.8125rem;
+}
+
+[data-design="blueprint"] .ag-swatch {
+  border-radius: 0;
+}
+
+.dark [data-design="blueprint"] .ag-panel,
+.dark [data-design="blueprint"] .ag-kpi {
+  box-shadow: 0 0 1.25rem color-mix(in srgb, var(--ag-glow) 18%, transparent);
+}

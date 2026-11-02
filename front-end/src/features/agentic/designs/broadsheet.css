@@ -1,0 +1,170 @@
+/*
+ * Broadsheet: a newspaper front page. A serif masthead between double rules, a red kicker rule, stories set in
+ * columns divided by hairlines instead of boxes, and a drop cap on the standfirst.
+ */
+
+[data-design="broadsheet"] {
+  --ag-radius: 0;
+  --ag-gap: 2rem;
+  --ag-font-display: var(--ag-font-serif);
+  --ag-font-body: var(--ag-font-serif);
+  --ag-font-data: var(--ag-font-serif);
+  --ag-page: #fffcf0;
+  --ag-panel: #fffcf0;
+  --ag-plot-height: 12rem;
+}
+
+.dark [data-design="broadsheet"] {
+  --ag-page: #1c1b1a;
+  --ag-panel: #1c1b1a;
+}
+
+[data-design="broadsheet"] .ag-hero {
+  align-items: center;
+  padding-block: 1rem;
+  border-block: 4px double var(--ag-ink);
+  text-align: center;
+}
+
+[data-design="broadsheet"] .ag-title {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-style: italic;
+}
+
+[data-design="broadsheet"] .ag-hero .ag-text {
+  font-size: 1.125rem;
+  text-align: left;
+}
+
+[data-design="broadsheet"] .ag-hero .ag-text::first-letter {
+  float: left;
+  margin: 0.1em 0.12em 0 0;
+  color: var(--ag-accent-text);
+  font-size: 3.4em;
+  font-weight: 700;
+  line-height: 0.8;
+}
+
+[data-design="broadsheet"] .ag-switcher {
+  align-items: center;
+  text-align: center;
+}
+
+[data-design="broadsheet"] .ag-switcher-list {
+  justify-content: center;
+  gap: 0;
+}
+
+[data-design="broadsheet"] .ag-switch {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+}
+
+[data-design="broadsheet"] li + li .ag-switch {
+  border-left: 1px solid var(--ag-line);
+}
+
+[data-design="broadsheet"] .ag-switch[aria-current] {
+  box-shadow: inset 0 -3px 0 var(--ag-accent);
+}
+
+[data-design="broadsheet"] .ag-metrics-head {
+  padding-top: 0.75rem;
+  border-top: 6px solid var(--ag-accent);
+}
+
+[data-design="broadsheet"] .ag-h2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+[data-design="broadsheet"] .ag-status {
+  border-radius: 0;
+  font-variant: small-caps;
+}
+
+/* No boxes: stories in columns, ruled above and between. */
+[data-design="broadsheet"] .ag-kpi,
+[data-design="broadsheet"] .ag-panel,
+[data-design="broadsheet"] .ag-missing,
+[data-design="broadsheet"] .ag-fallback {
+  border: 0;
+  border-top: 1px solid var(--ag-ink);
+  background: transparent;
+}
+
+[data-design="broadsheet"] .ag-panel {
+  padding-inline: 0;
+}
+
+@media (min-width: 64rem) {
+  [data-design="broadsheet"] .ag-board {
+    column-gap: 0;
+  }
+
+  [data-design="broadsheet"] .ag-panel {
+    padding-inline: 1.25rem;
+  }
+
+  /* The column rule: the narrow stories sit right of the wide ones. */
+  [data-design="broadsheet"] .ag-panel:is([data-panel="mode"], [data-panel="runs"], [data-panel="merged-by"]) {
+    border-left: 1px solid var(--ag-line);
+  }
+
+  [data-design="broadsheet"] .ag-kpi:not(:first-child) {
+    border-left: 1px solid var(--ag-line);
+  }
+}
+
+[data-design="broadsheet"] .ag-kpis {
+  gap: 0;
+  border-block: 1px solid var(--ag-ink);
+}
+
+[data-design="broadsheet"] .ag-kpi {
+  align-items: center;
+  border-top: 0;
+  text-align: center;
+}
+
+/* Two numbers a row on phones, so a rule only before the second of each pair; four a row from 64rem (above). */
+[data-design="broadsheet"] .ag-kpi:nth-child(even) {
+  border-left: 1px solid var(--ag-line);
+}
+
+[data-design="broadsheet"] .ag-kpi-label {
+  color: var(--ag-accent-text);
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+}
+
+[data-design="broadsheet"] .ag-kpi-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+[data-design="broadsheet"] .ag-panel-title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+[data-design="broadsheet"] .ag-lead,
+[data-design="broadsheet"] .ag-figcaption {
+  font-style: italic;
+  font-weight: 400;
+}
+
+[data-design="broadsheet"] .ag-note {
+  font-style: italic;
+}
+
+[data-design="broadsheet"] .ag-footer {
+  padding-top: 0.75rem;
+  border-top: 4px double var(--ag-ink);
+}

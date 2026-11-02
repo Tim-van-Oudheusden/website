@@ -1,0 +1,133 @@
+/*
+ * Synthwave: neon edges and a horizon grid. The hero sits over a perspective grid in the accent, the title is set in
+ * wide italic capitals with a chrome sheen, and every frame is a neon tube that glows in dark mode.
+ */
+
+[data-design="synthwave"] {
+  --ag-radius: 0.375rem;
+  --ag-display-tracking: 0.12em;
+  --ag-page: #fffcf0;
+}
+
+.dark [data-design="synthwave"] {
+  --ag-page: #100f0f;
+  --ag-panel: #1c1b1a;
+}
+
+[data-design="synthwave"] .ag-hero {
+  position: relative;
+  z-index: 0;
+  padding-block: 1.5rem 9rem;
+}
+
+/* The sun: a striped half disc in the glow-to-accent gradient, sitting on the horizon. */
+[data-design="synthwave"] .ag-hero::before {
+  position: absolute;
+  z-index: -1;
+  right: 10%;
+  bottom: 4.5rem;
+  width: 10rem;
+  height: 5rem;
+  border-radius: 10rem 10rem 0 0;
+  background: linear-gradient(var(--ag-glow), var(--ag-accent));
+  content: "";
+  mask: repeating-linear-gradient(to bottom, black 0 0.7rem, transparent 0.7rem 1rem);
+}
+
+/* The horizon grid: lines in the accent, tilted back into the distance under the hero text. */
+[data-design="synthwave"] .ag-hero::after {
+  position: absolute;
+  z-index: -1;
+  right: -50%;
+  bottom: 0;
+  left: -50%;
+  height: 11rem;
+  background:
+    linear-gradient(color-mix(in srgb, var(--ag-accent) 60%, transparent) 2px, transparent 2px) 0 0 / 100% 2rem,
+    linear-gradient(90deg, color-mix(in srgb, var(--ag-accent) 60%, transparent) 2px, transparent 2px) 50% 0 / 3rem 100%;
+  content: "";
+  mask: linear-gradient(to top, black, transparent);
+  transform: perspective(16rem) rotateX(60deg);
+  transform-origin: bottom;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-design="synthwave"] .ag-hero::after {
+    animation: ag-synthwave-scroll 3s linear infinite;
+  }
+}
+
+@keyframes ag-synthwave-scroll {
+  to {
+    background-position: 0 2rem, 50% 0;
+  }
+}
+
+[data-design="synthwave"] .ag-title {
+  background: linear-gradient(180deg, var(--ag-ink) 15%, var(--ag-accent-text) 55%, var(--ag-ink) 90%);
+  background-clip: text;
+  color: transparent;
+  font-size: clamp(2.25rem, 7vw, 4.5rem);
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: var(--ag-display-tracking);
+  text-transform: uppercase;
+}
+
+.dark [data-design="synthwave"] .ag-title {
+  filter: drop-shadow(0 0 0.75rem color-mix(in srgb, var(--ag-glow) 70%, transparent));
+}
+
+[data-design="synthwave"] .ag-h2,
+[data-design="synthwave"] .ag-panel-title,
+[data-design="synthwave"] .ag-kpi-label {
+  font-style: italic;
+  letter-spacing: var(--ag-display-tracking);
+  text-transform: uppercase;
+}
+
+[data-design="synthwave"] .ag-panel-title {
+  font-size: 0.9375rem;
+  color: var(--ag-accent-text);
+}
+
+[data-design="synthwave"] .ag-switch {
+  border-color: var(--ag-accent);
+  border-radius: 0.25rem;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+[data-design="synthwave"] .ag-switch[aria-current] {
+  box-shadow: 0 0 0.75rem color-mix(in srgb, var(--ag-glow) 60%, transparent), inset 0 0 0 1px var(--ag-accent);
+}
+
+/* Neon tubes: a hard accent edge and a soft halo. */
+[data-design="synthwave"] .ag-kpi,
+[data-design="synthwave"] .ag-panel,
+[data-design="synthwave"] .ag-missing,
+[data-design="synthwave"] .ag-fallback,
+[data-design="synthwave"] .ag-status {
+  border: 2px solid var(--ag-accent);
+  box-shadow: 0 0 0.5rem color-mix(in srgb, var(--ag-glow) 35%, transparent);
+}
+
+.dark [data-design="synthwave"] .ag-kpi,
+.dark [data-design="synthwave"] .ag-panel,
+.dark [data-design="synthwave"] .ag-missing,
+.dark [data-design="synthwave"] .ag-status {
+  box-shadow:
+    0 0 0.75rem color-mix(in srgb, var(--ag-glow) 60%, transparent),
+    0 0 2.5rem color-mix(in srgb, var(--ag-glow) 20%, transparent),
+    inset 0 0 0.75rem color-mix(in srgb, var(--ag-glow) 25%, transparent);
+}
+
+[data-design="synthwave"] .ag-kpi-value {
+  font-style: italic;
+  font-weight: 800;
+}
+
+.dark [data-design="synthwave"] .ag-kpi-value {
+  text-shadow: 0 0 0.75rem color-mix(in srgb, var(--ag-glow) 80%, transparent);
+}

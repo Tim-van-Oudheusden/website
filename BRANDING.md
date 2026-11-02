@@ -61,11 +61,16 @@ Colour tokens live in [`front-end/src/index.css`](front-end/src/index.css). Comp
 - the neutral ramp, lightest to darkest: `--paper-1` … `--paper-5`, then `--ink-1` … `--ink-5`. Dark mode swaps in the
   Flexoki ramp at matching lightness, so `dark:text-(--paper-1)` stays the lightest step;
 - site roles with one job each: `--site-page-bg`, `--site-section-well-bg`, `--site-accent` (accent text, rings and
-  indicators), `--site-toc-inactive` and `--site-chart-*` (chart series on the Agentic page: the accent, two neutral
-  steps and the Flexoki accents, 600 in light mode and 400 in dark mode, each at least 3:1 on the well).
-  `--site-chart-hive` is the canyon's honey bedrock carried into the live metrics: the "Agents running" tile and the
-  contributor bars. Dark mode uses the bedrock itself (Flexoki yellow-500, `#be9207`, 5.2:1 on the well); light mode
-  uses yellow-600 (`#ad8301`, 3.5:1), because yellow-500 is 2.9:1 on white. It is a graphics colour, not a text colour.
+  indicators) and `--site-toc-inactive`.
+
+The Agentic page is the exception while its design is being chosen (#1100): each of its ten candidate designs
+(`/agentic?design=<slug>`) takes Flexoki as its whole palette, with one strong accent (one Flexoki hue, a 600–700 shade
+in light mode and a 300–400 shade in dark mode) for borders, graphs, edge highlights and glow. The design list and
+the palette rules are in
+[`front-end/src/features/agentic/config/agentic-designs.ts`](front-end/src/features/agentic/config/agentic-designs.ts);
+the page hands them to the stylesheets as `--ag-*` properties. Text and graphs sit only on Flexoki's paper and base-50
+(light) or black, base-950 and base-900 (dark), and a unit test holds every graph colour to 3:1 and the text to 4.5:1
+on each of them.
 
 Every design change is checked in both light and dark mode, and every text and UI pair must meet WCAG 2.2 AA: 4.5:1 for
 body text, 3:1 for large text, UI boundaries and focus rings.

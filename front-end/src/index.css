@@ -12,7 +12,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "./features/agentic/canyon-scene.css";
+@import "./features/agentic/designs/agentic-designs.css";
 
 @plugin "@tailwindcss/typography";
 
@@ -116,11 +116,9 @@
  *       behind the wells), --site-section-well-bg, --site-accent (accent
  *       text, rings and indicators on page and well surfaces; not
  *       shadcn's --accent, which is a neutral hover fill),
- *       --site-toc-inactive and --site-chart-* (Agentic chart series:
- *       accent, two neutral steps, the Flexoki accents, 600 in light
- *       and 400 in dark, and hive, the canyon's honey bedrock; each at
- *       least 3:1 on the well, checked by
- *       test/front-end/src/features/agentic/components/charts/chart-tones.test.ts).
+ *       and --site-toc-inactive. The Agentic page's designs take
+ *       their colours from Flexoki through --ag-* properties instead
+ *       (front-end/src/features/agentic/designs/base.css).
  *   Everything else is a shadcn semantic token (list above).
  * The tokens .dark leaves out alias another token (var(--foreground),
  * var(--muted), …); they resolve to the dark value because use-theme
@@ -159,20 +157,6 @@
   --site-page-bg: #f3efe5;
   --site-section-well-bg: #ffffff;
   --site-accent: #0461be;
-  --site-chart-accent: var(--site-accent);
-  --site-chart-ink: var(--ink-4);
-  --site-chart-base: var(--ink-1);
-  /* Flexoki 600 accents */
-  --site-chart-red: #af3029;
-  --site-chart-orange: #bc5215;
-  --site-chart-yellow: #ad8301;
-  --site-chart-green: #66800b;
-  --site-chart-cyan: #24837b;
-  --site-chart-blue: #205ea6;
-  --site-chart-purple: #5e409d;
-  --site-chart-magenta: #a02f6f;
-  /* The canyon's honey bedrock (yellow-500, #be9207) is 2.9:1 on white; yellow-600, one shade darker, is 3.5:1. */
-  --site-chart-hive: #ad8301;
   --site-toc-inactive: #8a8376;
   --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   /* The fixed TOC's footprint (its xl:w-[…] plus xl:right-8), so the article centres between sidebar and TOC. */
@@ -238,19 +222,6 @@
   --site-section-well-bg: #282726; /* base-900 */
   /* blue-200 for fill and text: blue-300 fails as text on raised surfaces, and blue keeps the light-mode hue. */
   --site-accent: #92bfdb; /* blue-200 */
-  --site-chart-ink: var(--paper-2);
-  --site-chart-base: var(--paper-5);
-  /* Flexoki 400 accents */
-  --site-chart-red: #d14d41;
-  --site-chart-orange: #da702c;
-  --site-chart-yellow: #d0a215;
-  --site-chart-green: #879a39;
-  --site-chart-cyan: #3aa99f;
-  --site-chart-blue: #4385be;
-  --site-chart-purple: #8b7ec8;
-  --site-chart-magenta: #ce5d97;
-  /* The canyon's honey bedrock itself, yellow-500: 5.2:1 on the well. */
-  --site-chart-hive: #be9207;
   --site-toc-inactive: var(--paper-4);
   --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   --articles-content-toc-gap: calc(clamp(12rem, 17vw, 15.5rem) + 2rem);

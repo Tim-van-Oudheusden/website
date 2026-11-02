@@ -1,112 +1,132 @@
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 import type { HiveMetricsResponse } from "shared";
 
 import type { PollingApiGetState } from "@/shared/hooks/use-polling-api-get";
 
-import { HiveKpiTiles } from "./hive-kpi-tiles";
-import { ContributorsCard, MergedWorkCard, ModeCard, QueueCard, RepoPullRequestsCard, RunsCard } from "./hive-metrics-cards";
-import type { HiveStatus } from "./hive-status-pill";
+import type { DesignPalette } from "../config/agentic-designs";
+import type { BoardItem, HiveView, NoteSegment, PanelView } from "../lib/hive-view-model";
+import { buildHiveView } from "../lib/hive-view-model";
+
+import { HiveChart } from "./hive-chart";
 import { HiveStatusPill } from "./hive-status-pill";
 
-export interface HiveMetricsViewProps {
-  poll: PollingApiGetState<HiveMetricsResponse>;
-  /** Epoch ms the relative times are measured against. */
-  now: number;
-  /** IANA zone for clock times; `null` for the visitor's own. */
-  timeZone: string | null;
+interface ChartLook {
+  palette: DesignPalette;
+  animate: boolean;
 }
 
-function resolveStatus(poll: PollingApiGetState<HiveMetricsResponse>): HiveStatus {
-  const response = poll.data;
+function Note({ segments }: { segments: readonly NoteSegment[] }): JSX.Element {
+  return (
+    <p className="ag-note">
+      {segments.map((segment) => {
+        if (segment.kind === "code") {
+          return <code key={segment.text}>{segment.text}</code>;
+        }
 
-  if (response === null) {
-    return poll.status === "error" ? { kind: "offline" } : { kind: "connecting" };
-  }
+        if (segment.kind === "link") {
+          return <a key={segment.text} href={segment.href} className="ag-link">{segment.text}</a>;
+        }
 
-  if (response.state === "unavailable" || response.metrics?.online !== true) {
-    return { kind: "offline" };
-  }
-
-  if (response.state === "live" && !poll.stale && response.fetchedAt !== null) {
-    return { kind: "live", at: response.fetchedAt };
-  }
-
-  return { kind: "stale", at: response.fetchedAt };
+        return segment.text;
+      })}
+    </p>
+  );
 }
 
-const LINK_CLASS = "underline underline-offset-4 hover:text-(--site-accent)";
+/** One titled panel of the board; `data-panel` names it for the design's grid. */
+function Panel({ panel, palette, animate }: { panel: PanelView } & ChartLook): JSX.Element {
+  const headingId = useId();
 
-/** The one line that stands in for a part whose upstream is missing, across the whole grid row. */
-function MissingPart({ children }: { children: string }): JSX.Element {
-  return <p className="rounded-xl border bg-card px-6 py-4 text-base text-card-foreground lg:col-span-3">{children}</p>;
+  return (
+    <section aria-labelledby={headingId} className="ag-panel" data-panel={panel.id}>
+      <h3 id={headingId} className="ag-panel-title">{panel.title}</h3>
+      {panel.lead !== null && <p className="ag-lead">{panel.lead}</p>}
+      {panel.chart !== null && <HiveChart chart={panel.chart} palette={palette} animate={animate} />}
+      {panel.stats.length > 0 && (
+        <dl className="ag-stats">
+          {panel.stats.map((stat) => (
+            <div key={stat.label} className="ag-stat">
+              <dt>{stat.label}</dt>
+              <dd>{stat.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {panel.notes.map((segments) => <Note key={segments.map((segment) => segment.text).join("")} segments={segments} />)}
+    </section>
+  );
 }
 
-/** The live Hive metrics section, drawn from one polled response. */
-export function HiveMetricsView({ poll, now, timeZone }: HiveMetricsViewProps): JSX.Element {
-  const metrics = poll.data?.state === "unavailable" ? null : poll.data?.metrics ?? null;
-  const hasAnyPart = metrics !== null
-    && (metrics.hive !== null || metrics.contributors !== null || metrics.repo !== null);
-  let fallback: string | null = null;
+function BoardEntry({ item, palette, animate }: { item: BoardItem } & ChartLook): JSX.Element {
+  if (item.kind === "missing") {
+    return <p className="ag-missing" data-part={item.part}>{item.text}</p>;
+  }
 
-  if (poll.status === "loading") {
-    fallback = "Loading the live numbers…";
-  } else if (!hasAnyPart) {
-    fallback = "The live numbers are not available right now: this site cannot reach Hive or GitHub. "
-      + "They fill in on their own once it can.";
+  if (item.kind === "panel") {
+    return <Panel panel={item.panel} palette={palette} animate={animate} />;
   }
 
   return (
-    <section id="metrics" aria-labelledby="metrics-heading" className="flex scroll-mt-24 flex-col gap-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 id="metrics-heading" className="text-2xl font-semibold tracking-tight">The hive, live</h2>
-          <p className="mt-3 max-w-[65ch] text-base leading-relaxed">
+    <ul aria-label="Hive right now" className="ag-kpis">
+      {item.kpis.map((kpi) => (
+        <li key={kpi.id} className="ag-kpi" data-kpi={kpi.id}>
+          <p className="ag-kpi-label">{kpi.label}</p>
+          <p className="ag-kpi-value">{kpi.value}</p>
+          <p className="ag-kpi-detail">{kpi.detail}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function boardKey(item: BoardItem): string {
+  switch (item.kind) {
+    case "kpis":
+      return "kpis";
+    case "panel":
+      return item.panel.id;
+    case "missing":
+      return `missing-${item.part}`;
+  }
+}
+
+/** The live Hive metrics section, drawn from the view of one polled response. */
+export function HiveMetricsView({ view, palette, animate }: { view: HiveView } & ChartLook): JSX.Element {
+  return (
+    <section id="metrics" aria-labelledby="metrics-heading" className="ag-metrics">
+      <header className="ag-metrics-head">
+        <div className="ag-metrics-intro">
+          <h2 id="metrics-heading" className="ag-h2">The hive, live</h2>
+          <p className="ag-text">
             Hive is the agent system that files, claims and lands work in this repo. These numbers come from the
             instance running on this server and from this repo&apos;s public pull requests.
           </p>
         </div>
-        <HiveStatusPill status={resolveStatus(poll)} now={now} timeZone={timeZone} />
+        <HiveStatusPill status={view.status} />
       </header>
-      {fallback !== null && <p className="max-w-[65ch] text-base leading-relaxed">{fallback}</p>}
-      {fallback === null && metrics !== null && (
-        <div className="grid gap-6 lg:grid-cols-3">
-          {metrics.hive === null
-            ? <MissingPart>Live queue data is not connected right now.</MissingPart>
-            : (
-                <>
-                  <HiveKpiTiles hive={metrics.hive} />
-                  <QueueCard hive={metrics.hive} timeZone={timeZone} />
-                  <ModeCard hive={metrics.hive} timeZone={timeZone} />
-                </>
-              )}
-          {metrics.contributors === null
-            ? <MissingPart>Contributor agent data is not available right now.</MissingPart>
-            : (
-                <>
-                  <ContributorsCard contributors={metrics.contributors} timeZone={timeZone} />
-                  <RunsCard contributors={metrics.contributors} />
-                </>
-              )}
-          {metrics.repo === null
-            ? <MissingPart>Pull request data for this repo is not available right now.</MissingPart>
-            : (
-                <>
-                  <RepoPullRequestsCard repo={metrics.repo} />
-                  <MergedWorkCard repo={metrics.repo} />
-                </>
-              )}
+      {view.fallback !== null && <p className="ag-fallback">{view.fallback}</p>}
+      {view.board.length > 0 && (
+        <div className="ag-board">
+          {view.board.map((item) => (
+            <BoardEntry
+              key={boardKey(item)}
+              item={item}
+              palette={palette}
+              animate={animate}
+            />
+          ))}
         </div>
       )}
-      <footer className="flex max-w-[80ch] flex-col gap-1 text-sm text-(--ink-2) dark:text-(--paper-4)">
+      <footer className="ag-footer">
         <p>
           Hive is an open-source agent orchestrator:
           {" "}
-          <a href="https://github.com/hivecommons/hive" className={LINK_CLASS}>hivecommons/hive</a>
+          <a href="https://github.com/hivecommons/hive" className="ag-link">hivecommons/hive</a>
           . How it works on this repo:
           {" "}
-          <a href="https://github.com/Tim-van-Oudheusden/website/blob/main/docs/multi-agent.md" className={LINK_CLASS}>
+          <a href="https://github.com/Tim-van-Oudheusden/website/blob/main/docs/multi-agent.md" className="ag-link">
             docs/multi-agent.md
           </a>
           .
@@ -124,11 +144,10 @@ export function HiveMetricsView({ poll, now, timeZone }: HiveMetricsViewProps): 
 /** How often "updated 40 s ago" re-reads the clock between polls. */
 const AGE_TICK_MS = 10_000;
 
-/**
- * The section, drawn from the page's poll of `GET /api/hive/metrics` (once a
- * minute while the tab is visible; the canyon reads the same response).
- */
-export function HiveMetricsSection({ poll }: { poll: PollingApiGetState<HiveMetricsResponse> }): JSX.Element {
+/** The section for the page's poll of `GET /api/hive/metrics`; it alone re-renders as the age ticks. */
+export function HiveMetricsSection(
+  { poll, palette, animate }: { poll: PollingApiGetState<HiveMetricsResponse> } & ChartLook,
+): JSX.Element {
   const [now, setNow] = useState(Date.now);
 
   useEffect(() => {
@@ -141,5 +160,5 @@ export function HiveMetricsSection({ poll }: { poll: PollingApiGetState<HiveMetr
     };
   }, []);
 
-  return <HiveMetricsView poll={poll} now={now} timeZone={null} />;
+  return <HiveMetricsView view={buildHiveView(poll, now, null)} palette={palette} animate={animate} />;
 }
