@@ -125,14 +125,14 @@ The manifest and `theme-color` in `front-end/index.html` use the mark's blue, `#
 ## 7. Home page map
 
 The home page is one continuous scroll with a floating section nav. Section order and purpose, as planned in the home
-redesign epic (#576):
+redesign epic (#576), with the Agentic teaser in place of About me since #1130:
 
 | # | Nav label | Purpose |
 |---|---|---|
 | 1 | start | Slogan and hero line from §2, with a call to action into the page |
 | 2 | for you | Three recommended articles, each with its social image |
-| 3 | for devs | Showcase of open-source projects, linking to their source on GitHub |
-| 4 | about me | Who Tim is: a photo on the right and short facts in a brick-style block |
+| 3 | for devs | Showcase of open-source projects; each card's Learn more opens the project's page, which links to its source |
+| 4 | agentic | Teaser for the Agentic page: the agents' flow from issue to live site, with a call to action into `/agentic` |
 | 5 | what's new | The latest articles, pulled from `content/` |
 | 6 | experience | Work history as a vertical timeline |
 | 7 | socials | Where to find Tim (GitHub, LinkedIn) |
