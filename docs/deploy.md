@@ -375,7 +375,10 @@ under `/opt/website/deploy`. When the back-end digest changes, the service:
    - another pod name, or any annotations;
    - host network, PID or IPC;
    - images outside `ghcr.io/tim-van-oudheusden/website/`;
-   - privileged containers, privilege escalation or added capabilities;
+   - privileged containers, privilege escalation or added capabilities. Like
+     host network, PID and IPC, `privileged` and `allowPrivilegeEscalation`
+     pass only when absent or exactly `false`: podman reads `!!bool "true"` as
+     true where Bun reads a string (#1118);
    - a pod-level `securityContext`, or a container `securityContext` key other
      than `privileged`, `allowPrivilegeEscalation`, `capabilities`,
      `readOnlyRootFilesystem` and `runAsNonRoot` (so no `seLinuxOptions`,
@@ -384,6 +387,9 @@ under `/opt/website/deploy`. When the back-end digest changes, the service:
    - host ports not bound to `127.0.0.1`;
    - volumes other than the `website-data` hostPath or an `emptyDir`;
    - secrets other than `hive-widget-token`;
+   - a key that is not ASCII, or that spells a key the check reads in another
+     case (`HostNetwork`, `hostpid`): podman matches keys ignoring case, and
+     folds some non-ASCII letters onto ASCII ones (#1118);
 3. installs it over `${WEBSITE_REPO}/deploy/kube/prod.yaml` and replays.
 
 A manifest that fails the check logs `manifest REJECTED` and the reasons, and
