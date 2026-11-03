@@ -105,8 +105,10 @@ test command and report file names:
 
 | Workspace   | Mutates                                                        | Tests run per mutant                                                                  |
 | ----------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `back-end`  | `back-end/src/**`                                              | back-end suite                                                                        |
-| `front-end` | `front-end/src/**` and `front-end/server/**`, not `components/ui/` | front-end suite                                                                   |
+| `back-end`  | `back-end/src/**`, not `features/content/`                     | back-end suite                                                                        |
+| `back-end-content` | `back-end/src/features/content/**`                      | back-end suite                                                                        |
+| `front-end` | `front-end/src/**` and `front-end/server/**`, not `components/ui/` or `features/` | front-end suite                                                    |
+| `front-end-features` | `front-end/src/features/**`                           | front-end suite                                                                       |
 | `shared`    | `shared/src/**`                                                | back-end and front-end suites, plus the `test/shared` files that import `shared/src` |
 | `scripts`   | `scripts/**/*.ts`, not `readme-screenshots.ts`; `deploy/systemd/*.ts` | the `test/shared` files that run a `scripts/*.ts` or import a `deploy/systemd/*.ts` |
 
@@ -124,9 +126,14 @@ to put back the executable bit of `scripts/*.ts`.
 Stryker has no Bun test runner, so the configs use its `command` runner: every
 mutant runs the whole suite and is killed when the command exits non-zero.
 Locally on 2 cores (October 2026), the back-end's 1486 mutants took 21
-minutes and the shared workspace's 60 took 3; the front-end has about 3200
-mutants at roughly 4 s each, so expect around an hour on a 4-core runner. The
-`shared` job leaves out the rest of `test/shared` because those tests check
+minutes and the shared workspace's 60 took 3. On the 4-core runner the
+front-end's 4498 mutants took about 130 minutes (November 2026), past the job's
+120-minute timeout, and the back-end's 2348 took 104. So each is split in two
+configs that run as separate jobs: `front-end-features` (about 2800 mutants)
+and `front-end` (about 1700), `back-end-content` (about 1300) and `back-end`
+(about 1000).
+
+The `shared` job leaves out the rest of `test/shared` because those tests check
 repository tooling, and some of them (the typecheck run, for one) fail on any
 instrumented source.
 
