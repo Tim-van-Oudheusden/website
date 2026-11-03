@@ -21,9 +21,12 @@ interface Pod {
   metadata: { name: string };
   spec: {
     hostNetwork?: boolean;
+    hostPID?: boolean;
+    hostIPC?: boolean;
     securityContext?: Record<string, unknown>;
+    initContainers?: Container[];
     containers: Container[];
-    volumes: { name: string; hostPath?: { path: string } }[];
+    volumes: { name: string; hostPath?: { path: string }; emptyDir?: object; nfs?: object }[];
   };
 }
 
@@ -57,6 +60,15 @@ describe("deploy/systemd/validate-manifest.ts", () => {
     }],
     ["host networking", (pod: Pod) => {
       pod.spec.hostNetwork = true;
+    }],
+    ["the host PID namespace", (pod: Pod) => {
+      pod.spec.hostPID = true;
+    }],
+    ["the host IPC namespace", (pod: Pod) => {
+      pod.spec.hostIPC = true;
+    }],
+    ["a privileged init container", (pod: Pod) => {
+      pod.spec.initContainers = [{ image: backEnd(pod).image, securityContext: { privileged: true } }];
     }],
     ["an image from another registry", (pod: Pod) => {
       backEnd(pod).image = "docker.io/library/alpine:latest";
@@ -106,6 +118,12 @@ describe("deploy/systemd/validate-manifest.ts", () => {
     ["a host folder other than website-data", (pod: Pod) => {
       pod.spec.volumes.push({ name: "root", hostPath: { path: "/" } });
     }],
+    ["an emptyDir volume that also names a host folder", (pod: Pod) => {
+      pod.spec.volumes.push({ name: "scratch", emptyDir: {}, hostPath: { path: "/" } });
+    }],
+    ["a website-data volume that also names a network share", (pod: Pod) => {
+      pod.spec.volumes.push({ name: "share", hostPath: { path: "website-data" }, nfs: { server: "nas", path: "/" } });
+    }],
     ["a podman secret it was not given", (pod: Pod) => {
       backEnd(pod).env?.push({ name: "TUNNEL", valueFrom: { secretKeyRef: { name: "cloudflared-token" } } });
     }],
@@ -119,6 +137,12 @@ describe("deploy/systemd/validate-manifest.ts", () => {
   test("rejects text that is not a pod manifest", () => {
     expect(validateManifest("just: [unbalanced")).not.toEqual([]);
     expect(validateManifest("kind: Deployment\nmetadata:\n  name: website\n")).not.toEqual([]);
+  });
+
+  test("rejects another kind even when its spec would pass as a pod", () => {
+    expect(validateManifest(mutated((pod) => Object.assign(pod, { kind: "Deployment" })))).toEqual([
+      "not a single Pod manifest",
+    ]);
   });
 
   test("accepts an emptyDir volume, which grants nothing on the host", () => {
