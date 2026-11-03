@@ -108,15 +108,18 @@ test command and report file names:
 | `back-end`  | `back-end/src/**`                                              | back-end suite                                                                        |
 | `front-end` | `front-end/src/**` and `front-end/server/**`, not `components/ui/` | front-end suite                                                                   |
 | `shared`    | `shared/src/**`                                                | back-end and front-end suites, plus the `test/shared` files that import `shared/src` |
-| `scripts`   | `scripts/**/*.ts`, not `readme-screenshots.ts`                 | the `test/shared` files that run a `scripts/*.ts`                                     |
+| `scripts`   | `scripts/**/*.ts`, not `readme-screenshots.ts`; `deploy/systemd/*.ts` | the `test/shared` files that run a `scripts/*.ts` or import a `deploy/systemd/*.ts` |
 
 `scripts` is not a workspace: it covers the TypeScript tools in `scripts/` (the
-coverage-floor tuner, the mutation score table, the README screenshot plan).
+coverage-floor tuner, the mutation score table, the README screenshot plan) and
+the host's pod manifest check, `deploy/systemd/validate-manifest.ts`.
 `readme-screenshots.ts` itself drives a browser against the dev pod and has no
-unit test. Its 145 mutants take about 10 s. To run it locally, use
-`bun x stryker run stryker/scripts.conf.mjs`. Stryker restores the files'
-contents but not their mode, so run `git checkout -- scripts/` afterwards to
-put back the executable bit of `scripts/*.ts`.
+unit test. `doc-claims.test.ts` reads `validate-manifest.ts` as text, so it is
+not among the tests run per mutant: it would fail on every instrumented copy.
+Its 680 mutants take about a minute on 16 cores (November 2026). To run it
+locally, use `bun x stryker run stryker/scripts.conf.mjs`. Stryker restores the
+files' contents but not their mode, so run `git checkout -- scripts/` afterwards
+to put back the executable bit of `scripts/*.ts`.
 
 Stryker has no Bun test runner, so the configs use its `command` runner: every
 mutant runs the whole suite and is killed when the command exits non-zero.
