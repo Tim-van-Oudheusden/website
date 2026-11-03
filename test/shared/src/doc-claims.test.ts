@@ -169,3 +169,17 @@ describe("docs/deploy.md manifest check", () => {
     expect(sorted(matchAll(bullet, /`(\w+)`/g))).toEqual(sorted(matchAll(keys, /"(\w+)"/g)));
   });
 });
+
+describe("BRANDING.md home page map", () => {
+  test("lists the nav label of every HOME_SECTIONS entry, in order", () => {
+    const map = section(readRootFile("BRANDING.md"), "## 7. Home page map");
+    const documented = map
+      .split("\n")
+      .filter((line) => /^\|\s*\d+\s*\|/.test(line))
+      .map((line) => (line.split("|")[2] ?? "").trim());
+    const labels = matchAll(readRootFile("front-end/src/features/home/config/home-sections.ts"), /^\s+label: "([^"]+)",$/gm);
+
+    expect(labels).not.toHaveLength(0);
+    expect(documented).toEqual(labels);
+  });
+});
