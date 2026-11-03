@@ -4,7 +4,7 @@ import type { ContentLoader } from "@/shared/lib/content-loader";
 
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
 
-import { HomeAboutMe } from "./home-about-me";
+import { HomeAgentic } from "./home-agentic";
 import { HomeExperience } from "./home-experience";
 import { HomeProjectShowcase } from "./home-project-showcase";
 import { HomeRecentPosts } from "./home-recent-posts";
@@ -30,8 +30,8 @@ export function HomeSection({ section, onCtaActivate, loader }: HomeSectionProps
       return <HomeRecommendations section={section} loader={loader} />;
     case "projects":
       return <HomeProjectShowcase section={section} loader={loader} />;
-    case "about":
-      return <HomeAboutMe section={section} />;
+    case "agentic":
+      return <HomeAgentic section={section} />;
     case "recent-posts":
       return <HomeRecentPosts section={section} loader={loader} />;
     case "experience":

@@ -1,0 +1,442 @@
+/*
+ * Home 'agentic' section: the Agentic tab's honey line inside the home page's rounded well. Every colour is a Flexoki
+ * token (see agentic/flexoki.css), as on the tab; light is the default, `.dark` the line at night.
+ * Motion runs only under `prefers-reduced-motion: no-preference`.
+ */
+
+.home-agentic {
+  --ha-bg: var(--flexoki-paper);
+  --ha-surface: var(--flexoki-paper);
+  --ha-ink: var(--flexoki-black);
+  --ha-muted: var(--flexoki-600);
+  --ha-accent: var(--flexoki-yellow-600);
+  --ha-accent-ink: var(--flexoki-yellow-800);
+  --ha-cta: var(--flexoki-yellow-300);
+  --ha-cta-hover: var(--flexoki-yellow-200);
+  --ha-glow: color-mix(in oklch, var(--flexoki-yellow-300) 60%, transparent);
+  --ha-glow-soft: color-mix(in oklch, var(--flexoki-yellow-150) 45%, transparent);
+  --ha-pulse: color-mix(in oklch, var(--flexoki-yellow-50), white 40%);
+  --ha-dots: color-mix(in oklch, var(--flexoki-yellow-600) 16%, transparent);
+  --ha-hex: color-mix(in oklch, var(--flexoki-yellow-600) 35%, transparent);
+  --ha-hex-lit: color-mix(in oklch, var(--flexoki-yellow-300) 55%, transparent);
+  --ha-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--ha-ink);
+  /* A solid colour under the glows, so contrast checks that read `background-color` see the real surface. */
+  background-color: var(--ha-bg);
+  background-image:
+    radial-gradient(ellipse 55% 60% at 88% 8%, var(--ha-glow-soft), transparent 70%),
+    radial-gradient(ellipse 45% 50% at 0% 100%, var(--ha-glow-soft), transparent 70%),
+    radial-gradient(circle at 1px 1px, var(--ha-dots) 1px, transparent 0);
+  background-size: auto, auto, 22px 22px;
+  box-shadow:
+    inset 0 1px 3px rgb(0 0 0 / 12%),
+    inset 0 0 0 1px color-mix(in oklch, var(--ha-accent) 18%, transparent);
+
+  & p {
+    margin: 0;
+  }
+
+  /* ── Honeycomb ─────────────────────────────────────────── */
+
+  & .ha-honeycomb {
+    position: absolute;
+    z-index: -1;
+    top: -1.5rem;
+    right: -2.5rem;
+    width: min(18rem, 55%);
+    height: auto;
+    opacity: 0.55;
+  }
+
+  & .ha-cell {
+    fill: transparent;
+    stroke: var(--ha-hex);
+    stroke-width: 1.5;
+    transform-box: fill-box;
+    transform-origin: center;
+
+    &[data-lit] {
+      fill: var(--ha-hex-lit);
+      stroke: var(--ha-accent);
+      filter: drop-shadow(0 0 6px var(--ha-glow));
+    }
+  }
+
+  @media (min-width: 48rem) {
+    & .ha-honeycomb {
+      top: 1.25rem;
+      right: 2rem;
+      width: min(19rem, 30%);
+      opacity: 1;
+    }
+  }
+
+  /* ── Copy ──────────────────────────────────────────────── */
+
+  & .ha-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: clamp(2rem, 5vw, 3.5rem) clamp(1.5rem, 5vw, 3.5rem);
+  }
+
+  & .ha-eyebrow {
+    display: inline-flex;
+    gap: 0.75rem;
+    align-items: center;
+    color: var(--ha-accent-ink);
+    font-family: var(--ha-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  & .ha-eyebrow-flow {
+    position: relative;
+    width: clamp(3.5rem, 10vw, 7rem);
+    height: 2px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--ha-accent);
+    box-shadow: 0 0 10px var(--ha-glow);
+
+    &::after {
+      position: absolute;
+      inset: 0;
+      width: 35%;
+      background: linear-gradient(90deg, transparent, var(--ha-pulse), transparent);
+      transform: translateX(-100%);
+      content: "";
+    }
+  }
+
+  & .ha-title {
+    margin-top: 0.75rem;
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    text-shadow: 0 0 40px var(--ha-glow-soft);
+  }
+
+  & .ha-intro {
+    max-width: 38rem;
+    margin-top: 1.25rem;
+    color: var(--ha-muted);
+    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+    line-height: 1.55;
+  }
+
+  /* ── Route: the flow steps on one conduit, vertical until 48rem ── */
+
+  & .ha-route {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-self: stretch;
+    margin-top: clamp(2rem, 4vw, 3rem);
+  }
+
+  & .ha-conduit {
+    position: absolute;
+    top: 1.5rem;
+    bottom: 1rem;
+    left: calc(1.5rem - 2px);
+    width: 4px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--ha-accent);
+    box-shadow: 0 0 12px var(--ha-glow);
+  }
+
+  & .ha-pulse {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 30%;
+    background: linear-gradient(180deg, transparent, var(--ha-pulse), transparent);
+    transform: translateY(-100%);
+  }
+
+  & .ha-stops {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & .ha-stop {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  & .ha-node {
+    position: relative;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 3rem;
+    aspect-ratio: 1;
+    border: 2px solid var(--ha-accent);
+    border-radius: 50%;
+    background: var(--ha-surface);
+    box-shadow:
+      0 0 0 4px var(--ha-glow-soft),
+      0 0 18px var(--ha-glow);
+    color: var(--ha-accent-ink);
+    font-family: var(--ha-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    &::after {
+      position: absolute;
+      inset: -8px;
+      border: 1px solid color-mix(in oklch, var(--ha-accent) 45%, transparent);
+      border-radius: 50%;
+      content: "";
+    }
+  }
+
+  & .ha-step {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  & .ha-live {
+    position: relative;
+    display: grid;
+    place-items: center;
+    align-self: flex-start;
+    width: 3rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    background: var(--ha-accent);
+    box-shadow: 0 0 22px var(--ha-glow);
+    color: var(--flexoki-black);
+    font-family: var(--ha-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+
+    &::after {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: 0 0 0 2px var(--ha-accent);
+      opacity: 0;
+      content: "";
+    }
+  }
+
+  @media (min-width: 48rem) {
+    /* Keep the intro clear of the honeycomb in the top-right corner. */
+    & .ha-intro {
+      max-width: min(38rem, 62%);
+    }
+
+    & .ha-route {
+      flex-direction: row;
+      gap: 0;
+      align-items: flex-start;
+    }
+
+    & .ha-conduit {
+      top: calc(1.75rem - 2px);
+      right: 2rem;
+      bottom: auto;
+      left: 1.75rem;
+      width: auto;
+      height: 4px;
+    }
+
+    & .ha-pulse {
+      inset: 0 auto 0 0;
+      width: 22%;
+      height: auto;
+      background: linear-gradient(90deg, transparent, var(--ha-pulse), transparent);
+      transform: translateX(-100%);
+    }
+
+    & .ha-stops {
+      flex: 1;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    & .ha-stop {
+      flex-direction: column;
+      gap: 0.9rem;
+      align-items: flex-start;
+    }
+
+    & .ha-node {
+      width: 3.5rem;
+      font-size: 0.95rem;
+    }
+
+    & .ha-live {
+      width: 4rem;
+      height: 2rem;
+      margin-top: 0.75rem;
+    }
+  }
+
+  /* ── Call to action ────────────────────────────────────── */
+
+  & .ha-cta {
+    display: inline-flex;
+    gap: 0.6rem;
+    align-items: center;
+    height: 3.5rem;
+    margin-top: clamp(2rem, 4vw, 2.75rem);
+    padding-inline: 2rem 1.6rem;
+    border-radius: 999px;
+    background: var(--ha-cta);
+    box-shadow:
+      0 0 0 5px var(--ha-glow-soft),
+      0 8px 28px -6px var(--ha-glow);
+    color: var(--flexoki-black);
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition:
+      background-color 200ms ease,
+      box-shadow 200ms ease,
+      translate 200ms ease;
+
+    &:hover {
+      background: var(--ha-cta-hover);
+      box-shadow:
+        0 0 0 7px var(--ha-glow-soft),
+        0 10px 36px -4px var(--ha-glow);
+      translate: 0 -2px;
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--ha-accent-ink);
+      outline-offset: 4px;
+    }
+  }
+
+  & .ha-cta-arrow {
+    transition: translate 200ms ease;
+  }
+
+  & .ha-cta:hover .ha-cta-arrow {
+    translate: 4px 0;
+  }
+
+  /* ── Motion ────────────────────────────────────────────── */
+
+  @media (prefers-reduced-motion: no-preference) {
+    & .ha-eyebrow-flow::after {
+      animation: ha-flow-x 2.8s linear infinite;
+    }
+
+    & .ha-pulse {
+      animation: ha-flow-y 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+
+    & .ha-pulse + .ha-pulse {
+      animation-delay: 1.8s;
+    }
+
+    & .ha-node::after {
+      animation: ha-breathe 3.6s ease-in-out infinite;
+      animation-delay: calc(var(--ha-i, 0) * 0.6s);
+    }
+
+    & .ha-cell[data-lit] {
+      animation: ha-cell 5s ease-in-out infinite;
+      animation-delay: calc(var(--ha-i, 0) * 1s);
+    }
+
+    & .ha-live::after {
+      animation: ha-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    @media (min-width: 48rem) {
+      & .ha-pulse {
+        animation-name: ha-flow-x;
+      }
+    }
+  }
+}
+
+/* ── Dark: the line at night, black with honey light ──────── */
+
+.dark .home-agentic {
+  --ha-bg: var(--flexoki-black);
+  --ha-surface: var(--flexoki-950);
+  --ha-ink: var(--flexoki-100);
+  --ha-muted: var(--flexoki-400);
+  --ha-accent: var(--flexoki-yellow-400);
+  --ha-accent-ink: var(--flexoki-yellow-200);
+  --ha-cta: var(--flexoki-yellow-400);
+  --ha-cta-hover: var(--flexoki-yellow-300);
+  --ha-glow: color-mix(in oklch, var(--flexoki-yellow-300) 60%, transparent);
+  --ha-glow-soft: color-mix(in oklch, var(--flexoki-yellow-300) 16%, transparent);
+  --ha-pulse: color-mix(in oklch, var(--flexoki-yellow-50), white 50%);
+  --ha-dots: color-mix(in oklch, var(--flexoki-yellow-300) 13%, transparent);
+  --ha-hex: color-mix(in oklch, var(--flexoki-yellow-400) 28%, transparent);
+  --ha-hex-lit: color-mix(in oklch, var(--flexoki-yellow-400) 30%, transparent);
+
+  & .ha-title {
+    text-shadow: 0 0 36px color-mix(in oklch, var(--flexoki-yellow-300) 25%, transparent);
+  }
+}
+
+@keyframes ha-flow-x {
+  to {
+    transform: translateX(560%);
+  }
+}
+
+@keyframes ha-flow-y {
+  to {
+    transform: translateY(440%);
+  }
+}
+
+@keyframes ha-breathe {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes ha-cell {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ha-ping {
+  75%,
+  100% {
+    opacity: 0;
+    transform: scale(1.8, 2.2);
+  }
+}

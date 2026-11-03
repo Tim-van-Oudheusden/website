@@ -115,11 +115,11 @@ describe("HomePage section anchors", () => {
     const page = mountHomePage();
 
     try {
-      const event = fireFakePointer(anchorTo(page.container, "about-me", "about me"), "click");
+      const event = fireFakePointer(anchorTo(page.container, "agentic", "agentic"), "click");
 
       expect(event.defaultPrevented).toBe(true);
-      expect(sectionElement("about-me").scrollIntoViewCalls).toEqual([{ behavior: "smooth", block: "start" }]);
-      expect(window.location.hash).toBe("#about-me");
+      expect(sectionElement("agentic").scrollIntoViewCalls).toEqual([{ behavior: "smooth", block: "start" }]);
+      expect(window.location.hash).toBe("#agentic");
     } finally {
       unmountFakeDomRoot(page);
     }
@@ -142,14 +142,14 @@ describe("HomePage section anchors", () => {
     const page = mountHomePage();
 
     try {
-      const anchor = anchorTo(page.container, "about-me", "about me");
+      const anchor = anchorTo(page.container, "agentic", "agentic");
 
-      sectionElement("about-me").setAttribute("id", "about-me-detached");
+      sectionElement("agentic").setAttribute("id", "agentic-detached");
 
       const event = fireFakePointer(anchor, "click");
 
       expect(event.defaultPrevented).toBe(false);
-      expect(sectionElement("about-me-detached").scrollIntoViewCalls).toEqual([]);
+      expect(sectionElement("agentic-detached").scrollIntoViewCalls).toEqual([]);
       expect(window.location.hash).toBe("");
     } finally {
       unmountFakeDomRoot(page);
@@ -170,10 +170,10 @@ describe("HomePage section anchors and modified clicks", () => {
     const page = mountHomePage();
 
     try {
-      const event = fireFakePointer(anchorTo(page.container, "about-me", "about me"), "click", init);
+      const event = fireFakePointer(anchorTo(page.container, "agentic", "agentic"), "click", init);
 
       expect(event.defaultPrevented).toBe(false);
-      expect(sectionElement("about-me").scrollIntoViewCalls).toEqual([]);
+      expect(sectionElement("agentic").scrollIntoViewCalls).toEqual([]);
       expect(window.location.hash).toBe("");
     } finally {
       unmountFakeDomRoot(page);
@@ -216,13 +216,13 @@ describe("HomePage what's new section", () => {
     try {
       act(() => {
         triggerFakeIntersections([
-          { target: sectionElement("about-me"), intersectionRatio: 0.2 },
+          { target: sectionElement("agentic"), intersectionRatio: 0.2 },
           { target: sectionElement("whats-new"), intersectionRatio: 0.7 },
         ]);
       });
 
       expect(anchorTo(page.container, "whats-new", "what's new").getAttribute("aria-current")).toBe("location");
-      expect(anchorTo(page.container, "about-me", "about me").getAttribute("aria-current")).toBeNull();
+      expect(anchorTo(page.container, "agentic", "agentic").getAttribute("aria-current")).toBeNull();
     } finally {
       unmountFakeDomRoot(page);
     }

@@ -135,7 +135,7 @@ function RoleRow({ role, lastInGroup, onWell }: RoleRowProps): JSX.Element {
                       <Badge
                         className={cn(
                           "rounded-full border-transparent bg-[color-mix(in_oklab,var(--site-accent)_10%,transparent)] px-3 py-1 text-xs leading-5 font-medium text-(--site-accent)",
-                          // On the dark-mode well, pills match the about-me bricks.
+                          // On the dark-mode well, pills use the well's quiet white tint.
                           onWell ? "dark:border-white/20 dark:bg-white/10 dark:text-(--paper-1)" : "",
                         )}
                       >

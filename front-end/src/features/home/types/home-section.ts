@@ -6,7 +6,7 @@ export type HomeSectionId
   = | "start"
     | "for-you"
     | "for-devs"
-    | "about-me"
+    | "agentic"
     | "whats-new"
     | "experience"
     | "socials";
@@ -43,12 +43,13 @@ export interface HomeProjectsSection extends HomeSectionBase {
   featuredSubheading: (featuredTitle: string) => string;
 }
 
-export interface HomeAboutSection extends HomeSectionBase {
-  variant: "about";
-  /** Short facts, each shown as one brick in the brick wall. */
-  aboutItems: string[];
-  imageSrc: string;
-  imageAlt: string;
+/** Teaser for the Agentic tab: its flow of work on a glowing conduit, and a link to the tab. */
+export interface HomeAgenticSection extends HomeSectionBase {
+  variant: "agentic";
+  /** Label of the link to the Agentic tab. */
+  ctaLabel: string;
+  /** Route the link opens. */
+  ctaTo: string;
 }
 
 export interface HomeRecentPostsSection extends HomeSectionBase {
@@ -74,7 +75,7 @@ export type HomeSectionDefinition
   = | HomeStartSection
     | HomeRecommendationsSection
     | HomeProjectsSection
-    | HomeAboutSection
+    | HomeAgenticSection
     | HomeRecentPostsSection
     | HomeExperienceSection
     | HomeSocialsSection;

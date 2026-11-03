@@ -1,6 +1,6 @@
 import { cn } from "cn";
 import type { LucideIcon } from "lucide-react";
-import { AtSign, BriefcaseBusiness, CodeXml, House, IdCard, Newspaper, UserRound } from "lucide-react";
+import { AtSign, Bot, BriefcaseBusiness, CodeXml, House, Newspaper, UserRound } from "lucide-react";
 import type { CSSProperties, JSX, MouseEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -20,7 +20,7 @@ const HOME_NAV_ICONS: Record<HomeSectionId, LucideIcon> = {
   "start": House,
   "for-you": UserRound,
   "for-devs": CodeXml,
-  "about-me": IdCard,
+  "agentic": Bot,
   "whats-new": Newspaper,
   "experience": BriefcaseBusiness,
   "socials": AtSign,

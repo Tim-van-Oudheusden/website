@@ -68,11 +68,11 @@ describe("HomeFloatingNav", () => {
     expect(html).toContain("dark:text-(--ink-5)");
   });
 
-  test("lists the about-me section as \"about me\" with the id-card icon, linking to #about-me", () => {
-    const anchor = /<a [^>]*href="#about-me"[^>]*>[\s\S]*?<\/a>/.exec(renderFloatingNav())?.[0] ?? "";
+  test("lists the agentic section as \"agentic\" with the bot icon, linking to #agentic", () => {
+    const anchor = /<a [^>]*href="#agentic"[^>]*>[\s\S]*?<\/a>/.exec(renderFloatingNav())?.[0] ?? "";
 
-    expect(anchor).toContain("lucide-id-card");
-    expect(anchor).toContain("about me");
+    expect(anchor).toContain("lucide-bot");
+    expect(anchor).toContain("agentic");
   });
 
   test("lists the experience section as \"experience\" with the briefcase icon, linking to #experience", () => {
@@ -116,10 +116,10 @@ describe("HomeFloatingNav active indicator", () => {
 
     try {
       navAnchor(mount.container, "start").rect = { width: 96, height: 40 };
-      navAnchor(mount.container, "about-me").rect = { width: 150, height: 40 };
+      navAnchor(mount.container, "agentic").rect = { width: 150, height: 40 };
 
       act(() => {
-        mount.root.render(floatingNav(HOME_SECTIONS, "about-me"));
+        mount.root.render(floatingNav(HOME_SECTIONS, "agentic"));
       });
 
       expect(findBySlot(mount.container, "active-indicator").style.getPropertyValue("width")).toBe("150px");
@@ -142,10 +142,10 @@ describe("HomeFloatingNav active indicator", () => {
 
       expect(indicator.style.getPropertyValue("opacity")).toBe("1");
 
-      const withoutAboutMe = HOME_SECTIONS.filter((section) => section.id !== "about-me");
+      const withoutAgentic = HOME_SECTIONS.filter((section) => section.id !== "agentic");
 
       act(() => {
-        mount.root.render(floatingNav(withoutAboutMe, "about-me"));
+        mount.root.render(floatingNav(withoutAgentic, "agentic"));
       });
 
       expect(indicator.style.getPropertyValue("opacity")).toBe("0");
