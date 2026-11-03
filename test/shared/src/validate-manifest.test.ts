@@ -39,6 +39,17 @@ function mutated(change: (pod: Pod) => void): string {
   return JSON.stringify(pod);
 }
 
+/** prod.yaml as text with `lines` inserted after `anchor`, for YAML that JSON cannot spell (explicit tags). */
+function inserted(anchor: string, lines: string): string {
+  if (!prodYaml.includes(anchor)) {
+    throw new Error(`prod.yaml has no ${anchor}`);
+  }
+
+  return prodYaml.replace(anchor, `${anchor}${lines}`);
+}
+
+const backEndImage = "      image: ghcr.io/tim-van-oudheusden/website/back-end:latest\n";
+
 function backEnd(pod: Pod): Container {
   const container = pod.spec.containers.find((candidate) => candidate.image.endsWith("/back-end:latest"));
 
@@ -132,6 +143,57 @@ describe("deploy/systemd/validate-manifest.ts", () => {
     }],
   ])("rejects %s", (_label, change) => {
     expect(validateManifest(mutated(change))).not.toEqual([]);
+  });
+
+  // podman decodes with yaml.v3, which honours an explicit !!bool tag on a quoted scalar; Bun reads a string (#1118).
+  test.each([
+    ["host networking", inserted("spec:\n", "  hostNetwork: !!bool \"true\"\n")],
+    ["the host PID namespace", inserted("spec:\n", "  hostPID: !!bool \"true\"\n")],
+    ["the host IPC namespace", inserted("spec:\n", "  hostIPC: !!bool \"true\"\n")],
+    ["a privileged container", inserted(backEndImage, "      securityContext:\n        privileged: !!bool \"true\"\n")],
+    [
+      "privilege escalation",
+      inserted(backEndImage, "      securityContext:\n        allowPrivilegeEscalation: !!bool \"true\"\n"),
+    ],
+  ])("rejects %s tagged !!bool on a quoted scalar", (_label, text) => {
+    expect(validateManifest(text)).not.toEqual([]);
+  });
+
+  // podman decodes with Go's encoding/json, which matches keys to fields ignoring case (#1118).
+  test.each([
+    ["HostNetwork", (pod: Pod) => {
+      Object.assign(pod.spec, { HostNetwork: true });
+    }],
+    ["hostpid", (pod: Pod) => {
+      Object.assign(pod.spec, { hostpid: true });
+    }],
+    ["SecurityContext", (pod: Pod) => {
+      Object.assign(backEnd(pod), { SecurityContext: { privileged: true } });
+    }],
+    ["Annotations", (pod: Pod) => {
+      Object.assign(pod.metadata, { Annotations: { "io.podman.annotations.label/back-end": "disable" } });
+    }],
+    ["EnvFrom", (pod: Pod) => {
+      Object.assign(backEnd(pod), { EnvFrom: [{ secretRef: { name: "cloudflared-token" } }] });
+    }],
+    ["HostIP after hostIP", (pod: Pod) => {
+      Object.assign(backEnd(pod).ports?.[0] ?? {}, { HostIP: "0.0.0.0" });
+    }],
+    ["MountPropagation", (pod: Pod) => {
+      Object.assign(backEnd(pod).volumeMounts?.[0] ?? {}, { MountPropagation: "Bidirectional" });
+    }],
+    ["SecretKeyRef", (pod: Pod) => {
+      (backEnd(pod).env as unknown[]).push({ name: "TUNNEL", valueFrom: { SecretKeyRef: { name: "cloudflared-token" } } });
+    }],
+  ])("rejects a checked key spelled %s", (_label, change) => {
+    expect(validateManifest(mutated(change))).not.toEqual([]);
+  });
+
+  test("rejects a key that is not ASCII, which Go may fold onto a checked one", () => {
+    expect(validateManifest(mutated((pod) => {
+      // "hoſtNetwork", with U+017F LATIN SMALL LETTER LONG S, which Go folds to "s".
+      Object.assign(pod.spec, Object.fromEntries([["ho\u017FtNetwork", true]]));
+    }))).not.toEqual([]);
   });
 
   test("rejects text that is not a pod manifest", () => {
