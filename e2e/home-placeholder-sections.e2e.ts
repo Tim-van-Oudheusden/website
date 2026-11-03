@@ -41,15 +41,16 @@ test.describe("Home placeholder sections implemented", () => {
     );
   });
 
-  test("renders the about-me brick list and portrait", async ({ page }) => {
+  test("renders the agentic teaser with the flow of work and a link to the Agentic tab", async ({ page }) => {
     await openHome(page, { theme: "light", content: [] });
 
-    const section = page.locator("section#about-me");
+    const section = page.locator("section#agentic");
 
-    await scrollToSection(page, "about-me");
-    await expect(section.getByRole("heading", { level: 2, name: "About me" })).toBeVisible();
-    await expect(section.getByRole("listitem").first()).toBeVisible();
-    await expect(section.getByRole("img", { name: "Portrait of Tim van Oudheusden" })).toBeVisible();
+    await scrollToSection(page, "agentic");
+    await expect(section.getByRole("heading", { level: 2, name: "Built with agents" })).toBeVisible();
+    await expect(section.getByRole("list", { name: "How a change goes from issue to live" }).getByRole("listitem")).toHaveCount(5);
+    await section.getByRole("link", { name: "Watch the hive work" }).click();
+    await expect(page).toHaveURL(/\/agentic$/);
   });
 
   test("renders the recent-posts strip linked to real article pages", async ({ page }) => {

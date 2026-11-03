@@ -1,9 +1,11 @@
 /*
- * The full Flexoki palette (Steph Ango, MIT), the base palette of the Agentic page.
- * Theme-independent constants: pipeline/pipeline.css maps them to its own roles for light and dark mode.
+ * The full Flexoki palette (Steph Ango, MIT), the base palette of the Agentic page and of its home page teaser.
+ * Theme-independent constants: pipeline/pipeline.css and home/components/home-agentic.css map them to their own roles
+ * for light and dark mode.
  * Source: https://github.com/kepano/flexoki/blob/main/css/flexoki.css
  */
-.agentic-page {
+.agentic-page,
+.home-agentic {
   --flexoki-black: #100f0f;
   --flexoki-paper: #fffcf0;
   --flexoki-50: #f2f0e5;

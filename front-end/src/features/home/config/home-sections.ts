@@ -1,4 +1,4 @@
-import { HERO_LINE } from "shared";
+import { AGENTIC_PAGE_PATH, HERO_LINE } from "shared";
 import { SOCIAL_LINKS } from "shared/social-links";
 
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
@@ -46,24 +46,14 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     featuredSubheading: (featuredTitle) => `Start with ${featuredTitle}, then explore the rest on GitHub.`,
   },
   {
-    id: "about-me",
-    label: "about me",
-    heading: "About me",
-    body: "I'm a senior software engineer at Gemeente Tilburg, moving the city's digital forms onto Docker and Azure DevOps pipelines. Before that I built cloud platforms on AWS at DebitRoom. Off the clock I tinker with Linux and share what I learn in articles here.",
+    id: "agentic",
+    label: "agentic",
+    heading: "Built with agents",
+    body: "A hive of AI agents builds this site with me: they pick up GitHub issues and open pull requests, which pass the same checks as mine.",
     bgColor: "var(--site-page-bg)",
-    variant: "about",
-    aboutItems: [
-      "Software engineer since 2019",
-      "DevOps with Docker, Kubernetes, AWS and Azure",
-      "On Linux since 2022",
-      "Bazzite on the desktop, Bluefin on my Framework 13",
-      "Taking notes in Obsidian since 2020",
-      "Building a minimal Android launcher",
-      "Graduated cum laude",
-      "Yoga Nidra to stay calm in chaos",
-    ],
-    imageSrc: "/images/me.png",
-    imageAlt: "Portrait of Tim van Oudheusden",
+    variant: "agentic",
+    ctaLabel: "Watch the hive work",
+    ctaTo: AGENTIC_PAGE_PATH,
   },
   {
     id: "whats-new",

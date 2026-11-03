@@ -78,7 +78,7 @@ test.describe("Home section surfaces", () => {
       await expect(page.locator("section#whats-new li a").first()).toBeVisible();
 
       await expectReadable(page.getByTestId("start-white-box"));
-      await expectReadable(page.locator("section#about-me ul"));
+      await expectReadable(page.locator("section#agentic ol"));
       await expectReadable(page.locator("section#whats-new li a"));
       // The current item sits on the sliding active indicator, a sibling the ancestor-based sampler cannot see;
       // the next test checks it against the indicator.
