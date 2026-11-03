@@ -79,4 +79,22 @@ describe("project navigation links", () => {
     expect(html).toContain("Live demo");
     expect(html).toContain('href="https://github.com/Tim-van-Oudheusden/website"');
   });
+
+  test("detail header leads with the source repository as the primary button, the other links as secondary ones", () => {
+    const withLinks = project({
+      links: [
+        { type: "demo", label: "Live demo", href: "https://example.com" },
+        { type: "repo", label: "Source repository", href: "https://github.com/Tim-van-Oudheusden/website" },
+      ],
+    });
+    const html = renderWithRouter(createElement(ProjectMetaHeader, { project: withLinks }));
+    const external = [...html.matchAll(/<a [^>]*href="https:[^"]*"[^>]*>[\s\S]*?<\/a>/g)].map((match) => match[0]);
+
+    expect(external).toHaveLength(2);
+    expect(external[0]).toContain('href="https://github.com/Tim-van-Oudheusden/website"');
+    expect(external[0]).toContain('data-variant="default"');
+    expect(external[0]).toContain("<svg");
+    expect(external[1]).toContain('href="https://example.com"');
+    expect(external[1]).toContain('data-variant="secondary"');
+  });
 });

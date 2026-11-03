@@ -5,6 +5,7 @@ import { Link, useParams } from "react-router";
 import type { ProjectFrontmatter } from "shared";
 
 import { ErrorBoundary, renderErrorFallback } from "@/shared/components/error-boundary";
+import { GitHubIcon } from "@/shared/components/icons/github-icon";
 import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { Badge } from "@/shared/components/ui/badge";
@@ -54,7 +55,13 @@ interface ProjectMetaHeaderProps {
   project: ProjectData;
 }
 
+/** Accent-filled: since the homepage cards open this page, the repository button is the way to a project's code. */
+const REPO_BUTTON_CLASSES = "bg-(--site-accent) font-semibold text-(--paper-1) shadow-sm hover:bg-(--site-accent)/90 dark:text-(--ink-5)";
+
 export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): JSX.Element {
+  // Repository links first, each group in the order written.
+  const links = [...project.links.filter((link) => link.type === "repo"), ...project.links.filter((link) => link.type !== "repo")];
+
   return (
     <header className="mb-8">
       <Link to="/projects" className="text-[var(--ink-5)] dark:text-[var(--paper-1)] mb-6 inline-flex text-sm font-semibold underline-offset-4 hover:underline">
@@ -94,14 +101,26 @@ export function ProjectMetaHeader({ project }: ProjectMetaHeaderProps): JSX.Elem
           )}
         </dl>
         {project.links.length > 0 && (
-          <div className="mt-5 flex flex-wrap gap-2">
-            {project.links.map((link) => (
-              <Button key={`${link.type}-${link.href}`} asChild variant="secondary" size="sm">
-                <a href={link.href} target={link.href.startsWith("http") ? "_blank" : undefined} rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}>
-                  {link.label}
-                </a>
-              </Button>
-            ))}
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            {links.map((link) => {
+              const external = link.href.startsWith("http");
+              const repo = link.type === "repo";
+
+              return (
+                <Button
+                  key={`${link.type}-${link.href}`}
+                  asChild
+                  variant={repo ? "default" : "secondary"}
+                  size={repo ? "default" : "sm"}
+                  className={repo ? REPO_BUTTON_CLASSES : undefined}
+                >
+                  <a href={link.href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}>
+                    {repo && <GitHubIcon className="size-4" />}
+                    {link.label}
+                  </a>
+                </Button>
+              );
+            })}
           </div>
         )}
       </div>
