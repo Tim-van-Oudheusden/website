@@ -134,6 +134,37 @@ describe("deploy/systemd/validate-manifest.ts", () => {
     expect(validateManifest(mutated(change))).not.toEqual([]);
   });
 
+  // podman decodes the manifest with Go's encoding/json, which matches keys case-insensitively
+  // (folding ſ, K and İ too), so it reads these as the checked keys.
+  test.each([
+    ["HostNetwork", (pod: Pod) => Object.assign(pod.spec, { HostNetwork: true })],
+    ["hostpid", (pod: Pod) => Object.assign(pod.spec, { hostpid: true })],
+    ["SecurityContext", (pod: Pod) => Object.assign(backEnd(pod), { SecurityContext: { privileged: true } })],
+    ["Privileged", (pod: Pod) => Object.assign(backEnd(pod), { securityContext: { Privileged: true } })],
+    ["Annotations", (pod: Pod) => Object.assign(pod.metadata, { Annotations: { a: "b" } })],
+    ["hoſtNetwork (long s)", (pod: Pod) => Object.assign(pod.spec, { hoſtNetwork: true })],
+  ])("rejects the key %s, which podman reads as a checked key", (_label, change) => {
+    expect(validateManifest(mutated(change))).not.toEqual([]);
+  });
+
+  // Bun ignores an explicit tag on a quoted scalar and reads a string; podman's yaml.v3 reads a boolean.
+  test.each([
+    ["hostNetwork", "  hostNetwork: !!bool \"true\"\n"],
+    ["hostPID", "  hostPID: !!bool \"true\"\n"],
+    ["hostIPC", "  hostIPC: !!bool \"true\"\n"],
+  ])("rejects %s given as a tagged string", (_label, line) => {
+    expect(validateManifest(prodYaml.replace("\nspec:\n", `\nspec:\n${line}`))).not.toEqual([]);
+  });
+
+  test.each([
+    ["privileged", { privileged: "true" }],
+    ["allowPrivilegeEscalation", { allowPrivilegeEscalation: "true" }],
+  ])("rejects %s set to anything but a boolean false", (_label, securityContext) => {
+    expect(validateManifest(mutated((pod) => {
+      backEnd(pod).securityContext = securityContext;
+    }))).not.toEqual([]);
+  });
+
   test("rejects text that is not a pod manifest", () => {
     expect(validateManifest("just: [unbalanced")).not.toEqual([]);
     expect(validateManifest("kind: Deployment\nmetadata:\n  name: website\n")).not.toEqual([]);

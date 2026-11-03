@@ -15,7 +15,14 @@
 //   - no volume mount with mountPropagation;
 //   - host ports only on 127.0.0.1;
 //   - volumes only the relative hostPath "website-data" or an emptyDir;
-//   - secrets only by name from ALLOWED_SECRETS, one key at a time.
+//   - secrets only by name from ALLOWED_SECRETS, one key at a time;
+//   - a checked switch (hostNetwork, privileged, ...) only absent or exactly
+//     false, and no key that differs from a checked key only in case.
+//
+// podman parses differently from Bun.YAML: yaml.v3 honours a tag such as
+// `!!bool "true"` that Bun reads as a string, and Go's encoding/json matches
+// keys case-insensitively (`HostNetwork`, `hoſtNetwork`). The last two rules
+// close those gaps.
 //
 // Usage (website-update.sh runs it with bun from the previously running image,
 // with no network): bun validate-manifest.ts <prod.yaml>. Prints one line per
@@ -35,6 +42,16 @@ const SECURITY_KEYS: readonly string[] = [
   "readOnlyRootFilesystem",
   "runAsNonRoot",
 ];
+// Every key this file reads. Go's encoding/json, which podman decodes the
+// manifest with, also matches a key that differs from one of these in case,
+// and folds ſ, K and İ to s, k and i.
+const CHECKED_KEYS: readonly string[] = [
+  "kind", "metadata", "name", "annotations", "spec", "securityContext",
+  "hostNetwork", "hostPID", "hostIPC", "initContainers", "containers", "image",
+  "ports", "hostPort", "hostIP", "volumeMounts", "mountPropagation", "envFrom",
+  "env", "valueFrom", "secretKeyRef", "volumes", "emptyDir", "hostPath", "path",
+  "add", ...SECURITY_KEYS,
+];
 
 type Fields = Record<string, unknown>;
 
@@ -44,6 +61,37 @@ function isFields(value: unknown): value is Fields {
 
 function list(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
+}
+
+/** Whether a switch is set to anything but absent or `false`, so podman may read it as on. */
+function switchedOn(value: unknown): boolean {
+  return value !== undefined && value !== false;
+}
+
+/** Reports every key under `value` that podman could read as a checked key this file does not see. */
+function checkKeys(value: unknown, problems: string[]): void {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      checkKeys(item, problems);
+    }
+
+    return;
+  }
+
+  if (!isFields(value)) {
+    return;
+  }
+
+  for (const [key, child] of Object.entries(value)) {
+    const folded = key.toLowerCase();
+    const isAscii = /^[\x20-\x7e]*$/.test(key);
+
+    if (!isAscii || CHECKED_KEYS.some((checked) => checked !== key && checked.toLowerCase() === folded)) {
+      problems.push(`key ${JSON.stringify(key)} is not allowed`);
+    }
+
+    checkKeys(child, problems);
+  }
 }
 
 function checkContainer(container: unknown, problems: string[]): void {
@@ -67,11 +115,11 @@ function checkContainer(container: unknown, problems: string[]): void {
       problems.push(`${label}: securityContext.${key} is not allowed`);
     }
 
-    if (security["privileged"] === true) {
+    if (switchedOn(security["privileged"])) {
       problems.push(`${label}: privileged`);
     }
 
-    if (security["allowPrivilegeEscalation"] === true) {
+    if (switchedOn(security["allowPrivilegeEscalation"])) {
       problems.push(`${label}: allows privilege escalation`);
     }
 
@@ -144,6 +192,9 @@ export function validateManifest(text: string): string[] {
   }
 
   const problems: string[] = [];
+
+  checkKeys(pod, problems);
+
   const metadata = isFields(pod["metadata"]) ? pod["metadata"] : {};
   const spec = isFields(pod["spec"]) ? pod["spec"] : {};
 
@@ -160,7 +211,7 @@ export function validateManifest(text: string): string[] {
   }
 
   for (const namespace of ["hostNetwork", "hostPID", "hostIPC"]) {
-    if (spec[namespace] === true) {
+    if (switchedOn(spec[namespace])) {
       problems.push(`${namespace} is not allowed`);
     }
   }
