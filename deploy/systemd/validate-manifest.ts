@@ -35,28 +35,35 @@ const ALLOWED_SECRETS: readonly string[] = ["hive-widget-token"];
 // Container securityContext keys that take privileges away, or are checked
 // below. Any other key (seLinuxOptions, runAsUser, procMount, seccompProfile,
 // ...) can hand the container more than the pod on main gets.
-const SECURITY_KEYS: readonly string[] = [
+const SECURITY_KEYS = [
   "privileged",
   "allowPrivilegeEscalation",
   "capabilities",
   "readOnlyRootFilesystem",
   "runAsNonRoot",
-];
+] as const;
 // Every key this file reads. Go's encoding/json, which podman decodes the
 // manifest with, also matches a key that differs from one of these in case,
-// and folds ſ, K and İ to s, k and i.
-const CHECKED_KEYS: readonly string[] = [
+// and folds ſ, K and İ to s, k and i. field() takes only these keys, so a read
+// of a key missing here fails the typecheck instead of reopening that gap.
+const CHECKED_KEYS = [
   "kind", "metadata", "name", "annotations", "spec", "securityContext",
   "hostNetwork", "hostPID", "hostIPC", "initContainers", "containers", "image",
   "ports", "hostPort", "hostIP", "volumeMounts", "mountPropagation", "envFrom",
   "env", "valueFrom", "secretKeyRef", "volumes", "emptyDir", "hostPath", "path",
   "add", ...SECURITY_KEYS,
-];
+] as const;
 
+type CheckedKey = (typeof CHECKED_KEYS)[number];
 type Fields = Record<string, unknown>;
 
 function isFields(value: unknown): value is Fields {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** The only way this file reads a manifest key, so every key read is in CHECKED_KEYS. */
+function field(fields: Fields, key: CheckedKey): unknown {
+  return fields[key];
 }
 
 function list(value: unknown): unknown[] {
@@ -101,57 +108,58 @@ function checkContainer(container: unknown, problems: string[]): void {
     return;
   }
 
-  const label = typeof container["name"] === "string" ? container["name"] : "(unnamed)";
-  const image = container["image"];
+  const name = field(container, "name");
+  const label = typeof name === "string" ? name : "(unnamed)";
+  const image = field(container, "image");
 
   if (typeof image !== "string" || !image.startsWith(IMAGE_PREFIX)) {
     problems.push(`${label}: image ${String(image)} is not from ${IMAGE_PREFIX}`);
   }
 
-  const security = container["securityContext"];
+  const security = field(container, "securityContext");
 
   if (isFields(security)) {
-    for (const key of Object.keys(security).filter((name) => !SECURITY_KEYS.includes(name))) {
+    for (const key of Object.keys(security).filter((name) => !SECURITY_KEYS.some((allowed) => allowed === name))) {
       problems.push(`${label}: securityContext.${key} is not allowed`);
     }
 
-    if (switchedOn(security["privileged"])) {
+    if (switchedOn(field(security, "privileged"))) {
       problems.push(`${label}: privileged`);
     }
 
-    if (switchedOn(security["allowPrivilegeEscalation"])) {
+    if (switchedOn(field(security, "allowPrivilegeEscalation"))) {
       problems.push(`${label}: allows privilege escalation`);
     }
 
-    const capabilities = security["capabilities"];
+    const capabilities = field(security, "capabilities");
 
-    if (isFields(capabilities) && list(capabilities["add"]).length > 0) {
+    if (isFields(capabilities) && list(field(capabilities, "add")).length > 0) {
       problems.push(`${label}: adds capabilities`);
     }
   }
 
-  for (const port of list(container["ports"])) {
-    if (isFields(port) && port["hostPort"] !== undefined && port["hostIP"] !== "127.0.0.1") {
-      problems.push(`${label}: host port ${JSON.stringify(port["hostPort"])} is not bound to 127.0.0.1`);
+  for (const port of list(field(container, "ports"))) {
+    if (isFields(port) && field(port, "hostPort") !== undefined && field(port, "hostIP") !== "127.0.0.1") {
+      problems.push(`${label}: host port ${JSON.stringify(field(port, "hostPort"))} is not bound to 127.0.0.1`);
     }
   }
 
-  for (const mount of list(container["volumeMounts"])) {
-    if (isFields(mount) && mount["mountPropagation"] !== undefined) {
-      problems.push(`${label}: volume mount ${String(mount["name"])} sets mountPropagation`);
+  for (const mount of list(field(container, "volumeMounts"))) {
+    if (isFields(mount) && field(mount, "mountPropagation") !== undefined) {
+      problems.push(`${label}: volume mount ${String(field(mount, "name"))} sets mountPropagation`);
     }
   }
 
-  if (container["envFrom"] !== undefined) {
+  if (field(container, "envFrom") !== undefined) {
     problems.push(`${label}: envFrom is not allowed`);
   }
 
-  for (const variable of list(container["env"])) {
-    const valueFrom = isFields(variable) ? variable["valueFrom"] : undefined;
-    const secretRef = isFields(valueFrom) ? valueFrom["secretKeyRef"] : undefined;
+  for (const variable of list(field(container, "env"))) {
+    const valueFrom = isFields(variable) ? field(variable, "valueFrom") : undefined;
+    const secretRef = isFields(valueFrom) ? field(valueFrom, "secretKeyRef") : undefined;
 
-    if (isFields(secretRef) && !ALLOWED_SECRETS.includes(String(secretRef["name"]))) {
-      problems.push(`${label}: secret ${String(secretRef["name"])} is not allowed`);
+    if (isFields(secretRef) && !ALLOWED_SECRETS.includes(String(field(secretRef, "name")))) {
+      problems.push(`${label}: secret ${String(field(secretRef, "name"))} is not allowed`);
     }
   }
 }
@@ -164,17 +172,17 @@ function checkVolume(volume: unknown, problems: string[]): void {
   }
 
   const kinds = Object.keys(volume).filter((key) => key !== "name");
-  const hostPath = volume["hostPath"];
+  const hostPath = field(volume, "hostPath");
 
   if (kinds.length === 1 && kinds[0] === "emptyDir") {
     return;
   }
 
-  if (kinds.length === 1 && isFields(hostPath) && hostPath["path"] === DATA_HOST_PATH) {
+  if (kinds.length === 1 && isFields(hostPath) && field(hostPath, "path") === DATA_HOST_PATH) {
     return;
   }
 
-  problems.push(`volume ${String(volume["name"])}: only hostPath ${DATA_HOST_PATH} or emptyDir is allowed`);
+  problems.push(`volume ${String(field(volume, "name"))}: only hostPath ${DATA_HOST_PATH} or emptyDir is allowed`);
 }
 
 /** Every reason the manifest may not be installed; empty when it may. */
@@ -187,7 +195,7 @@ export function validateManifest(text: string): string[] {
     return [`not YAML: ${String(error)}`];
   }
 
-  if (!isFields(pod) || pod["kind"] !== "Pod") {
+  if (!isFields(pod) || field(pod, "kind") !== "Pod") {
     return ["not a single Pod manifest"];
   }
 
@@ -195,28 +203,30 @@ export function validateManifest(text: string): string[] {
 
   checkKeys(pod, problems);
 
-  const metadata = isFields(pod["metadata"]) ? pod["metadata"] : {};
-  const spec = isFields(pod["spec"]) ? pod["spec"] : {};
+  const podMetadata = field(pod, "metadata");
+  const podSpec = field(pod, "spec");
+  const metadata = isFields(podMetadata) ? podMetadata : {};
+  const spec = isFields(podSpec) ? podSpec : {};
 
-  if (metadata["name"] !== POD_NAME) {
-    problems.push(`pod name ${String(metadata["name"])} is not ${POD_NAME}`);
+  if (field(metadata, "name") !== POD_NAME) {
+    problems.push(`pod name ${String(field(metadata, "name"))} is not ${POD_NAME}`);
   }
 
-  if (metadata["annotations"] !== undefined) {
+  if (field(metadata, "annotations") !== undefined) {
     problems.push("annotations are not allowed");
   }
 
-  if (spec["securityContext"] !== undefined) {
+  if (field(spec, "securityContext") !== undefined) {
     problems.push("a pod-level securityContext is not allowed");
   }
 
-  for (const namespace of ["hostNetwork", "hostPID", "hostIPC"]) {
-    if (switchedOn(spec[namespace])) {
+  for (const namespace of ["hostNetwork", "hostPID", "hostIPC"] as const) {
+    if (switchedOn(field(spec, namespace))) {
       problems.push(`${namespace} is not allowed`);
     }
   }
 
-  const containers = [...list(spec["initContainers"]), ...list(spec["containers"])];
+  const containers = [...list(field(spec, "initContainers")), ...list(field(spec, "containers"))];
 
   if (containers.length === 0) {
     problems.push("no containers");
@@ -226,7 +236,7 @@ export function validateManifest(text: string): string[] {
     checkContainer(container, problems);
   }
 
-  for (const volume of list(spec["volumes"])) {
+  for (const volume of list(field(spec, "volumes"))) {
     checkVolume(volume, problems);
   }
 
