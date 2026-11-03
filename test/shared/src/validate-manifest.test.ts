@@ -165,6 +165,24 @@ describe("deploy/systemd/validate-manifest.ts", () => {
     }))).not.toEqual([]);
   });
 
+  // A list given as a mapping or a scalar is not a list Bun can walk; report it rather than skip it (#1117).
+  test.each([
+    ["initContainers", (pod: Pod) => Object.assign(pod.spec, {
+      initContainers: { name: "x", image: "docker.io/library/alpine", securityContext: { privileged: true } },
+    })],
+    ["volumes", (pod: Pod) => Object.assign(pod.spec, { volumes: { name: "root", hostPath: { path: "/" } } })],
+    ["ports", (pod: Pod) => Object.assign(backEnd(pod), { ports: { containerPort: 22, hostPort: 22 } })],
+    ["volumeMounts", (pod: Pod) => Object.assign(backEnd(pod), {
+      volumeMounts: { name: "views-data", mountPath: "/data", mountPropagation: "Bidirectional" },
+    })],
+    ["env", (pod: Pod) => Object.assign(backEnd(pod), {
+      env: { name: "T", valueFrom: { secretKeyRef: { name: "cloudflared-token", key: "token" } } },
+    })],
+    ["capabilities.add", (pod: Pod) => Object.assign(backEnd(pod), { securityContext: { capabilities: { add: "SYS_ADMIN" } } })],
+  ])("rejects %s that is not a list", (_label, change) => {
+    expect(validateManifest(mutated(change))).not.toEqual([]);
+  });
+
   test("rejects text that is not a pod manifest", () => {
     expect(validateManifest("just: [unbalanced")).not.toEqual([]);
     expect(validateManifest("kind: Deployment\nmetadata:\n  name: website\n")).not.toEqual([]);

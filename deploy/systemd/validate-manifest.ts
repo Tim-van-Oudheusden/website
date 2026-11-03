@@ -16,6 +16,8 @@
 //   - host ports only on 127.0.0.1;
 //   - volumes only the relative hostPath "website-data" or an emptyDir;
 //   - secrets only by name from ALLOWED_SECRETS, one key at a time;
+//   - a list field (containers, volumes, ports, env, ...) only absent or a
+//     list, so no item is skipped unseen (#1117);
 //   - a checked switch (hostNetwork, privileged, ...) only absent or exactly
 //     false, and no key that differs from a checked key only in case.
 //
@@ -66,8 +68,21 @@ function field(fields: Fields, key: CheckedKey): unknown {
   return fields[key];
 }
 
-function list(value: unknown): unknown[] {
-  return Array.isArray(value) ? value : [];
+/**
+ * The items of a list field. A value that is present but not a list is
+ * reported under `where`, not skipped: Bun would see no items in it, and only
+ * podman's decoder would stand between it and the pod.
+ */
+function list(value: unknown, where: string, problems: string[]): unknown[] {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (value !== undefined) {
+    problems.push(`${where} is not a list`);
+  }
+
+  return [];
 }
 
 /** Whether a switch is set to anything but absent or `false`, so podman may read it as on. */
@@ -133,18 +148,18 @@ function checkContainer(container: unknown, problems: string[]): void {
 
     const capabilities = field(security, "capabilities");
 
-    if (isFields(capabilities) && list(field(capabilities, "add")).length > 0) {
+    if (isFields(capabilities) && list(field(capabilities, "add"), `${label}: capabilities.add`, problems).length > 0) {
       problems.push(`${label}: adds capabilities`);
     }
   }
 
-  for (const port of list(field(container, "ports"))) {
+  for (const port of list(field(container, "ports"), `${label}: ports`, problems)) {
     if (isFields(port) && field(port, "hostPort") !== undefined && field(port, "hostIP") !== "127.0.0.1") {
       problems.push(`${label}: host port ${JSON.stringify(field(port, "hostPort"))} is not bound to 127.0.0.1`);
     }
   }
 
-  for (const mount of list(field(container, "volumeMounts"))) {
+  for (const mount of list(field(container, "volumeMounts"), `${label}: volumeMounts`, problems)) {
     if (isFields(mount) && field(mount, "mountPropagation") !== undefined) {
       problems.push(`${label}: volume mount ${String(field(mount, "name"))} sets mountPropagation`);
     }
@@ -154,7 +169,7 @@ function checkContainer(container: unknown, problems: string[]): void {
     problems.push(`${label}: envFrom is not allowed`);
   }
 
-  for (const variable of list(field(container, "env"))) {
+  for (const variable of list(field(container, "env"), `${label}: env`, problems)) {
     const valueFrom = isFields(variable) ? field(variable, "valueFrom") : undefined;
     const secretRef = isFields(valueFrom) ? field(valueFrom, "secretKeyRef") : undefined;
 
@@ -226,7 +241,10 @@ export function validateManifest(text: string): string[] {
     }
   }
 
-  const containers = [...list(field(spec, "initContainers")), ...list(field(spec, "containers"))];
+  const containers = [
+    ...list(field(spec, "initContainers"), "initContainers", problems),
+    ...list(field(spec, "containers"), "containers", problems),
+  ];
 
   if (containers.length === 0) {
     problems.push("no containers");
@@ -236,7 +254,7 @@ export function validateManifest(text: string): string[] {
     checkContainer(container, problems);
   }
 
-  for (const volume of list(field(spec, "volumes"))) {
+  for (const volume of list(field(spec, "volumes"), "volumes", problems)) {
     checkVolume(volume, problems);
   }
 
