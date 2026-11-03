@@ -145,7 +145,7 @@ export function buildRepoPrActivity(pulls: unknown, now: Date): RepoPart {
 }
 
 /** GitHub's `per_page`; a shorter page is the last one. */
-const PAGE_SIZE = 100;
+export const PAGE_SIZE = 100;
 
 /**
  * Whether to fetch the page after `pulls` (one page, sorted by `updated_at` descending): only when the page is full

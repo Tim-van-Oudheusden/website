@@ -1,6 +1,6 @@
 import type { HiveConfig } from "../../core/server-config";
 
-import { needsNextPage } from "./repo-pr-activity";
+import { needsNextPage, PAGE_SIZE } from "./repo-pr-activity";
 
 export type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
 
@@ -11,7 +11,7 @@ export const UPSTREAM_TIMEOUT_MS = 5_000;
 const PR_STATS_REPOSITORY = "Tim-van-Oudheusden/website";
 
 const GITHUB_PULLS_URL
-  = `https://api.github.com/repos/${PR_STATS_REPOSITORY}/pulls?state=all&sort=updated&direction=desc&per_page=100`;
+  = `https://api.github.com/repos/${PR_STATS_REPOSITORY}/pulls?state=all&sort=updated&direction=desc&per_page=${String(PAGE_SIZE)}`;
 
 /** Most GitHub pages fetched per refresh. */
 const MAX_GITHUB_PAGES = 3;
