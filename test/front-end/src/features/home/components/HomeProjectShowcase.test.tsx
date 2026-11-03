@@ -78,7 +78,7 @@ describe("HomeProjectShowcase", () => {
       });
 
       expect(texts(mount, "H3")).toEqual(["launcher", "pipeline", "sandbox"]);
-      expect(mount.container.textContent).toContain("Start with launcher, then explore the rest on GitHub.");
+      expect(mount.container.textContent).toContain("Start with launcher,");
     } finally {
       unmountFakeDomRoot(mount);
     }

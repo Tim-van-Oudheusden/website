@@ -16,7 +16,7 @@ test.describe("Home placeholder sections implemented", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
   });
 
-  test("showcases real projects, featured first, linking to GitHub or the project page", async ({ page }) => {
+  test("showcases real projects, featured first, each linking to its project page", async ({ page }) => {
     await openHome(page, { theme: "light", content: ["project"] });
 
     const section = page.locator("section#for-devs");
@@ -30,10 +30,10 @@ test.describe("Home placeholder sections implemented", () => {
       "Obsidian Content Pipeline",
     ]);
 
-    const github = section.getByRole("link", { name: "Learn more: Dailies (opens in a new tab)" });
+    const dailies = section.getByRole("link", { name: "Learn more: Dailies" });
 
-    await expect(github).toHaveAttribute("href", "https://github.com/Tim-van-Oudheusden/Dailies");
-    await expect(github).toHaveAttribute("target", "_blank");
+    await expect(dailies).toHaveAttribute("href", "/projects/dailies");
+    await expect(dailies).not.toHaveAttribute("target", "_blank");
 
     await expect(section.getByRole("link", { name: "Learn more: Obsidian Content Pipeline" })).toHaveAttribute(
       "href",

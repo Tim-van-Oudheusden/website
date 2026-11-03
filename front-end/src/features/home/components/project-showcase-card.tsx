@@ -1,5 +1,5 @@
 import { cn } from "cn";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { JSX } from "react";
 import { Link } from "react-router";
 
@@ -7,33 +7,21 @@ import type { ProjectFrontmatter } from "shared";
 
 import { Button } from "@/shared/components/ui/button";
 
-import { projectCaption, resolveProjectCta } from "../lib/showcase-projects";
+import { projectCaption } from "../lib/showcase-projects";
 
 /** Outline pill; an icon-only 44px circle while the card is narrower than 32rem. */
 const CTA_CLASSES = "size-11 flex-none rounded-full border-(--paper-3) bg-(--paper-2) text-(--ink-5) shadow-none transition-all duration-300 hover:border-(--ink-1) hover:bg-(--paper-1) dark:border-(--ink-2) dark:bg-(--popover) dark:text-(--paper-1) dark:hover:border-(--paper-3) dark:hover:bg-white/10 @lg/card:h-12 @lg/card:w-auto @lg/card:gap-2 @lg/card:pr-4 @lg/card:pl-6 @lg/card:text-base motion-reduce:transition-none";
 
-function ProjectCtaLink({ project }: { project: ProjectFrontmatter }): JSX.Element {
-  const cta = resolveProjectCta(project);
-  const content = (
-    <>
-      <span className="sr-only @lg/card:not-sr-only">{cta.label}</span>
-      <ArrowUpRight aria-hidden="true" className="size-5" />
-    </>
-  );
+const CTA_LABEL = "Learn more";
 
+/** The card's call to action: the project's page on this site, where its repository and other links live. */
+function ProjectCtaLink({ project }: { project: ProjectFrontmatter }): JSX.Element {
   return (
     <Button asChild variant="outline" size="icon" className={CTA_CLASSES}>
-      {cta.kind === "repo"
-        ? (
-            <a href={cta.href} target="_blank" rel="noopener noreferrer" aria-label={`${cta.label}: ${project.title} (opens in a new tab)`}>
-              {content}
-            </a>
-          )
-        : (
-            <Link to={cta.href} aria-label={`${cta.label}: ${project.title}`}>
-              {content}
-            </Link>
-          )}
+      <Link to={`/projects/${project.slug}`} aria-label={`${CTA_LABEL}: ${project.title}`}>
+        <span className="sr-only @lg/card:not-sr-only">{CTA_LABEL}</span>
+        <ArrowRight aria-hidden="true" className="size-5" />
+      </Link>
     </Button>
   );
 }

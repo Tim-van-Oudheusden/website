@@ -49,13 +49,12 @@ describe("ProjectShowcaseCard", () => {
     expect(html).toMatch(/>Shipped · Developer</);
   });
 
-  test("opens the repository in a new tab under a name that says which project and that it leaves the site", () => {
+  test("links a project that lists a repository to its page on this site, not to GitHub", () => {
     const [cta] = links(renderToStaticMarkup(cardElement(project())));
 
-    expect(cta).toContain('href="https://github.com/Tim-van-Oudheusden/website"');
-    expect(cta).toContain('target="_blank"');
-    expect(cta).toContain('rel="noopener noreferrer"');
-    expect(cta).toContain('aria-label="Learn more: Pi Sandbox Automation (opens in a new tab)"');
+    expect(cta).toContain('href="/projects/pi-sandbox-automation"');
+    expect(cta).not.toContain("target=");
+    expect(cta).toContain('aria-label="Learn more: Pi Sandbox Automation"');
   });
 
   test("links a project without a repository to its page on this site", () => {

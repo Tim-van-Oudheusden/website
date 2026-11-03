@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import type { ProjectFrontmatter } from "shared";
 
-import { projectCaption, resolveProjectCta, selectShowcaseProjects } from "../../../../../../front-end/src/features/home/lib/showcase-projects";
+import { projectCaption, selectShowcaseProjects } from "../../../../../../front-end/src/features/home/lib/showcase-projects";
 
 function project(slug: string, overrides: Partial<ProjectFrontmatter> = {}): ProjectFrontmatter {
   return {
@@ -47,25 +47,6 @@ describe("selectShowcaseProjects", () => {
     const projects = Array.from({ length: 7 }, (_, index) => project(`p${String(index)}`, { projectOrder: index }));
 
     expect(slugs(selectShowcaseProjects(projects))).toEqual(["p0", "p1", "p2", "p3", "p4"]);
-  });
-});
-
-describe("resolveProjectCta", () => {
-  test("opens the project's repository on GitHub when it has one", () => {
-    const cta = resolveProjectCta(project("launcher", {
-      links: [
-        { type: "article", label: "Notes", href: "/articles/notes" },
-        { type: "repo", label: "Source", href: "https://github.com/Tim-van-Oudheusden/launcher" },
-      ],
-    }));
-
-    expect(cta).toEqual({ kind: "repo", href: "https://github.com/Tim-van-Oudheusden/launcher", label: "Learn more" });
-  });
-
-  test("falls back to the project's page on this site when it has no repository", () => {
-    const cta = resolveProjectCta(project("pipeline", { links: [{ type: "article", label: "Notes", href: "/articles/notes" }] }));
-
-    expect(cta).toEqual({ kind: "project-page", href: "/projects/pipeline", label: "Learn more" });
   });
 });
 
