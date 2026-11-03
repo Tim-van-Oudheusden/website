@@ -387,6 +387,9 @@ under `/opt/website/deploy`. When the back-end digest changes, the service:
    - host ports not bound to `127.0.0.1`;
    - volumes other than the `website-data` hostPath or an `emptyDir`;
    - secrets other than `hive-widget-token`;
+   - a list field (`containers`, `initContainers`, `volumes`, `ports`,
+     `volumeMounts`, `env`, `capabilities.add`) given as anything but a list,
+     which the check would otherwise skip unseen (#1117);
    - a key that is not ASCII, or that spells a key the check reads in another
      case (`HostNetwork`, `hostpid`): podman matches keys ignoring case, and
      folds some non-ASCII letters onto ASCII ones (#1118);
