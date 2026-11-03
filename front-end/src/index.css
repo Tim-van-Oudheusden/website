@@ -155,6 +155,8 @@
   --site-section-well-bg: #ffffff;
   --site-accent: #0461be;
   --site-toc-inactive: #8a8376;
+  /* The top bar's height; the pages that lay out around the bar (articles sidebar, Agentic page) use it too. */
+  --site-top-bar-height: 4.2rem;
   --articles-sidebar-width: clamp(22.5rem, 25vw, 30rem);
   /* The fixed TOC's footprint (its xl:w-[…] plus xl:right-8), so the article centres between sidebar and TOC. */
   --articles-content-toc-gap: calc(clamp(12rem, 17vw, 15.5rem) + 2rem);

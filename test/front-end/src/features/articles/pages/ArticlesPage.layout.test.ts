@@ -25,7 +25,8 @@ describe("ARTICLES_PAGE_LAYOUT_CLASSES", () => {
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:min-w-[var(--articles-sidebar-width)]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:shrink-0");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:sticky");
-    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:top-[4.2rem]");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:top-(--site-top-bar-height)");
+    expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("lg:h-[calc(100dvh-var(--site-top-bar-height))]");
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.sidebar).toContain("overflow-y-auto");
     expect(Object.hasOwn(ARTICLES_PAGE_LAYOUT_CLASSES, "divider")).toBe(false);
     expect(ARTICLES_PAGE_LAYOUT_CLASSES.content).toContain("flex-1");

@@ -24,7 +24,8 @@ const AGE_TICK_MS = 10_000;
 
 /**
  * The Agentic tab: how this site is built with AI agents, with the live Hive numbers. The page starts under the
- * transparent top bar (`--agentic-top-inset` is the bar's height), so its backdrop runs to the top of the window.
+ * transparent top bar (`--agentic-top-inset` is set to the bar's `--site-top-bar-height`), so its backdrop runs to the
+ * top of the window.
  */
 export function AgenticPage(): JSX.Element {
   // Polled once a minute while the tab is visible; the back-end caches the upstream answers.
@@ -45,12 +46,12 @@ export function AgenticPage(): JSX.Element {
   return (
     <main
       id={MAIN_CONTENT_ID}
-      className="agentic-page -mt-[4.2rem] w-full flex-1 bg-(--site-page-bg) [--agentic-top-inset:4.2rem]"
+      className="agentic-page -mt-(--site-top-bar-height) w-full flex-1 bg-(--site-page-bg) [--agentic-top-inset:var(--site-top-bar-height)]"
     >
       {/* Until the view's chunk loads, the page still has its title. */}
       <Suspense
         fallback={(
-          <div className="mx-auto max-w-screen-xl px-4 pt-[calc(4.2rem+2.5rem)] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-screen-xl px-4 pt-[calc(var(--site-top-bar-height)+2.5rem)] sm:px-6 lg:px-8">
             <h1 className="text-[2rem] font-semibold tracking-tight">{AGENTIC_COPY.title}</h1>
             <p className="mt-4">Loading…</p>
           </div>
