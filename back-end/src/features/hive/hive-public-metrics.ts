@@ -1,7 +1,7 @@
 import type { GovernorMode, HivePublicMetrics } from "shared";
 
 /** Raw upstream payloads; `null` when that Hive call failed or is not configured. */
-export interface HiveUpstream {
+export interface HiveUpstreamPayloads {
   health: unknown;
   widget: unknown;
   contributeMetrics: unknown;
@@ -204,7 +204,7 @@ function buildContributors(contributeMetrics: unknown, runStats: unknown): Contr
  * only their own field or part; it never throws.
  */
 export function buildHivePublicMetrics(
-  upstream: HiveUpstream,
+  upstream: HiveUpstreamPayloads,
 ): Pick<HivePublicMetrics, "online" | "hive" | "contributors"> {
   return {
     online: field(upstream.health, "status") === "ok",
