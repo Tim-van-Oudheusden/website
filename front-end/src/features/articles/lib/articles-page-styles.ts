@@ -4,7 +4,7 @@ import { TAG_PILL_CLASSES } from "@/shared/lib/tag-pill";
 // From `lg` the list is a sticky left sidebar; from `xl` the TOC is a fixed right rail.
 export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   container: "flex w-full min-h-0 flex-1 flex-col bg-[var(--site-page-bg)] lg:flex-row",
-  sidebar: "order-last w-full min-h-0 overflow-y-auto bg-[var(--site-page-bg)] lg:order-none lg:sticky lg:top-[4.2rem] lg:h-[calc(100dvh-4.2rem)] lg:basis-[var(--articles-sidebar-width)] lg:min-w-[var(--articles-sidebar-width)] lg:shrink-0",
+  sidebar: "order-last w-full min-h-0 overflow-y-auto bg-[var(--site-page-bg)] lg:order-none lg:sticky lg:top-(--site-top-bar-height) lg:h-[calc(100dvh-var(--site-top-bar-height))] lg:basis-[var(--articles-sidebar-width)] lg:min-w-[var(--articles-sidebar-width)] lg:shrink-0",
   content: "bg-[var(--site-page-bg)] min-h-[20rem] min-w-0 flex-1 px-5 pt-6 pb-16 sm:px-8 sm:pt-8 lg:px-10 lg:pb-24",
   contentWithToc: "mx-auto w-full max-w-[120rem] xl:pr-[var(--articles-content-toc-gap)]",
   locationTrailAlign: "mx-auto w-full max-w-[40rem]",

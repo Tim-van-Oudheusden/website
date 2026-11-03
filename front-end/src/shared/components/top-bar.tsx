@@ -59,7 +59,7 @@ export function TopBar(): JSX.Element {
       data-scrolled={String(scrolled)}
       data-transparent={String(transparent)}
     >
-      <div className="mx-auto flex h-[4.2rem] max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-(--site-top-bar-height) max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="shrink-0">
           <SiteLogo />
         </Link>

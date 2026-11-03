@@ -162,10 +162,10 @@ paths, text). Polygons are closed subpaths.
 
 ## Page chrome
 
-The chrome frames put the desktop sunset frame under the site's top bar (`h-[4.2rem]`, `--site-page-bg`, the
-wordmark from `front-end/src/shared/components/site-logo.tsx`, nav with Agentic active, theme toggle). The API
-stratum card sits in the left column (`rounded-xl border bg-card p-8`, heading, sentence, pillars, mono source
-links).
+The chrome frames put the desktop sunset frame under the site's top bar (`--site-top-bar-height`, 4.2rem,
+`--site-page-bg`, the wordmark from `front-end/src/shared/components/site-logo.tsx`, nav with Agentic active, theme
+toggle). The API stratum card sits in the left column (`rounded-xl border bg-card p-8`, heading, sentence, pillars,
+mono source links).
 
 Chrome colours are the theme tokens from `front-end/src/index.css`:
 
