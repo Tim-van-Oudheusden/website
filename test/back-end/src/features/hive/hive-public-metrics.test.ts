@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import type { HivePublicMetrics } from "shared";
 
-import type { HiveUpstream } from "../../../../../back-end/src/features/hive/hive-public-metrics";
+import type { HiveUpstreamPayloads } from "../../../../../back-end/src/features/hive/hive-public-metrics";
 import { buildHivePublicMetrics } from "../../../../../back-end/src/features/hive/hive-public-metrics";
 
 /** Reads a sanitised upstream sample (live Hive, 2026-11-02) seeded with canaries. */
@@ -12,7 +12,7 @@ function fixture(name: string): unknown {
   return JSON.parse(readFileSync(join(import.meta.dir, "fixtures", `${name}.json`), "utf8"));
 }
 
-function fixtureUpstream(): HiveUpstream {
+function fixtureUpstream(): HiveUpstreamPayloads {
   return {
     health: fixture("health"),
     widget: fixture("widget-summary"),
