@@ -6,6 +6,8 @@ export default {
     "front-end/src/**/*.{ts,tsx}",
     "front-end/server/**/*.ts",
     "!front-end/src/shared/components/ui/**",
+    // Mutated by stryker/front-end-features.conf.mjs.
+    "!front-end/src/features/**",
     "!**/*.d.ts",
   ],
   commandRunner: { command: "bun run --filter front-end test" },
