@@ -97,18 +97,61 @@ export function renderSocialMeta(html: string, item: ContentFrontmatter, origin:
     tags.push({ attribute: "name", key: "twitter:card", content: "summary_large_image" });
   }
 
-  const title = `<title>${escapeAttribute(`${item.title} | ${SITE_NAME}`)}</title>`;
-  // A replacer function: a string replacement would expand `$&`, `$'`, … in authored text.
-  const retitled = html.replace(/<title>[\s\S]*?<\/title>/, () => title);
-
   return injectIntoHead(
-    retitled,
+    retitle(html, item.title),
     [
       `    <link rel="canonical" href="${escapeAttribute(pageUrl)}" />`,
       renderTags(tags),
       renderJsonLd(item, pageUrl, imageUrl, origin),
     ].join("\n"),
   );
+}
+
+/** A fixed route's head: where it lives, its title, and the description it shows ("" when it has none). */
+export interface PageHead {
+  path: string;
+  title: string;
+  description: string;
+}
+
+/**
+ * Retitle the SPA shell after a fixed page (/agentic, /now, …) and add its
+ * description, canonical URL and link-preview tags. These pages have no
+ * authored image, so the homepage portrait stands in on the small card.
+ */
+export function renderPageMeta(html: string, page: PageHead, origin: string): string {
+  const pageUrl = `${origin}${page.path}`;
+  const descriptionTags: MetaTag[] = page.description === ""
+    ? []
+    : [
+        { attribute: "name", key: "description", content: page.description },
+        { attribute: "property", key: "og:description", content: page.description },
+      ];
+  const tags: MetaTag[] = [
+    ...descriptionTags,
+    { attribute: "property", key: "og:type", content: "website" },
+    { attribute: "property", key: "og:site_name", content: SITE_NAME },
+    { attribute: "property", key: "og:title", content: page.title },
+    { attribute: "property", key: "og:url", content: pageUrl },
+    { attribute: "property", key: "og:image", content: `${origin}${HOME_IMAGE_PATH}` },
+    { attribute: "name", key: "twitter:card", content: "summary" },
+  ];
+
+  return injectIntoHead(
+    retitle(html, page.title),
+    [
+      `    <link rel="canonical" href="${escapeAttribute(pageUrl)}" />`,
+      renderTags(tags),
+    ].join("\n"),
+  );
+}
+
+/** Replace the shell's <title> with `<page> | <site name>`. */
+function retitle(html: string, pageTitle: string): string {
+  const title = `<title>${escapeAttribute(`${pageTitle} | ${SITE_NAME}`)}</title>`;
+
+  // A replacer function: a string replacement would expand `$&`, `$'`, … in authored text.
+  return html.replace(/<title>[\s\S]*?<\/title>/, () => title);
 }
 
 /**

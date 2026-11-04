@@ -115,8 +115,11 @@ and `WantedBy=default.target` makes `enable` rebuild the pod on session start.
 The front-end container runs a small Bun server (`front-end/server/`). It
 serves the build, and for `/articles/<slug>` it fetches that article from the
 back-end over the pod's loopback (`127.0.0.1:3001`, 2 s timeout) to inject
-link-preview (Open Graph) tags and `BlogPosting` structured data (JSON-LD). If
-the back-end is down, pages still load, just without previews. Check a preview
+link-preview (Open Graph) tags and `BlogPosting` structured data (JSON-LD).
+The fixed pages get a title, description, canonical URL and preview tags too:
+`/agentic` and `/projects` from text in `shared`, `/articles` from the
+introduction article, and `/now` and `/uses` from their frontmatter. If the
+back-end is down, pages still load, just without previews. Check a preview
 on the host:
 
 ```bash

@@ -1,5 +1,7 @@
 /** The words every Agentic design shows, so the designs differ in look only, never in what they say. */
 
+import { AGENTIC_INTRO } from "shared";
+
 const REPO_URL = "https://github.com/Tim-van-Oudheusden/website";
 
 export interface CopyLink {
@@ -9,8 +11,7 @@ export interface CopyLink {
 
 export const AGENTIC_COPY = {
   title: "Agentic",
-  intro: "I build this site with AI agents: they pick up GitHub issues and open pull requests, which go through the same "
-    + "checks and review as mine. This page shows how that works.",
+  intro: AGENTIC_INTRO,
   /** How a change gets from an issue to the live site, in order; a design pairs its live numbers by `id`. */
   flow: [
     { id: "issue", step: "Issue", text: "Work starts as a GitHub issue; its labels and assignee say who is working on it." },
