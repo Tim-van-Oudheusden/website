@@ -84,6 +84,14 @@ describe("TopBar", () => {
     expect(html).toContain('data-active-nav="false"');
   });
 
+  test("marks the active top navbar page as the current page for assistive tech", () => {
+    const currentLinks = renderTopBar("/projects").match(/<a [^>]*aria-current="page"[^>]*>/g) ?? [];
+
+    expect(currentLinks).toHaveLength(1);
+    expect(currentLinks[0]).toContain('href="/projects"');
+    expect(currentLinks[0]).toContain('data-active-nav="true"');
+  });
+
   test.each(["/agentic", "/agentic#metrics"])("lists Agentic after Projects and marks only it active on %s", (pathname) => {
     const html = renderTopBar(pathname);
     const navHrefs = [...html.matchAll(/<a [^>]*data-active-nav="[^"]*"[^>]*>/g)].map((match) => /href="([^"]*)"/.exec(match[0])?.[1]);
