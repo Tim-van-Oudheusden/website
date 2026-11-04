@@ -78,7 +78,7 @@ Enforced by `.claude/settings.json` (see the safety layers in
 | `sudo`, `rm -rf` on `/` or `~` | Denied |
 | `git rebase`, `git reset`, `git clean`, `git branch -D` | Needs confirmation |
 | `bun add` / `remove` / `update`, `npm install` | Needs confirmation |
-| `gh pr merge` | Needs confirmation; agents never merge their own PRs (the merge queue workflow merges, see `docs/multi-agent.md`) |
+| `gh pr merge` | Needs confirmation; agents do not merge by hand (the merge queue workflow merges, see `docs/multi-agent.md`). Hive's merge sweep is the one exception: it may merge low- and medium-risk PRs, including ones Hive wrote, and never a high-risk PR or one labelled `hold` or `sentinel-alert`. That limit is a rule, not a setting in this repository |
 
 Personal `.claude/settings.local.json` overrides may add permissions but
 cannot lift the project's deny rules.
@@ -91,9 +91,11 @@ Agent changes go through the same gates as human ones, with no shortcuts:
   unit tests, build, E2E, and prod-assets checks. The coverage gate and the PR
   review rubric (`.github/workflows/review.yml`) run as well.
 - The merge queue (`.github/workflows/merge-queue.yml`) merges low- and
-  medium-risk PRs once their required checks pass; review them before then or
-  add `hold`. A human reviews and merges every high-risk PR
-  ([`docs/risk-tiers.md`](../risk-tiers.md)). Look harder at changes that touch:
+  medium-risk PRs once their required checks pass, and Hive's merge sweep may
+  also merge them; review them before then or add `hold`.
+  A human reviews and merges every high-risk PR
+  ([`docs/risk-tiers.md`](../risk-tiers.md)) and every PR labelled `hold` or
+  `sentinel-alert`. Look harder at changes that touch:
   - `.github/workflows/`: keep `permissions:` least-privilege. Every
     workflow's token grants are policy as code in
     `.github/policies/workflow-permissions.yml`, and `bun run test` fails when

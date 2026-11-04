@@ -23,7 +23,7 @@ gh pr create --title "type(scope): summary (#<number>)" --body-file <file>   # L
 ## Sessions with GitHub issues
 
 - Before working an issue: read it with `gh issue view <number>` (or the API); claim/assign it there, then branch off an up-to-date `main` as `<type>/<number>-<slug>` (e.g. `docs/639-pr-based-landing`)
-- When done: push the branch and open a pull request whose body says `Fixes #<number>`. Once the required checks pass, the merge queue (`docs/multi-agent.md`) merges it, or the maintainer does if it is high risk or labelled `hold`; the merge closes the issue
+- When done: push the branch and open a pull request whose body says `Fixes #<number>`. Once the required checks pass, the merge queue (`docs/multi-agent.md`) or Hive's merge sweep merges it, or the maintainer does if it is high risk or labelled `hold` or `sentinel-alert`; the merge closes the issue
 - Other agents (Hive, Claude Code in CI) work this repo concurrently; check an issue's assignees, labels and open PRs before claiming it. The coordination contract is `docs/multi-agent.md`
 
 ## Session Completion
@@ -49,7 +49,7 @@ gh pr create --title "type(scope): summary (#<number>)" --body-file <file>   # L
 - Work is NOT complete until the branch is pushed and its PR is open
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push and open the PR
-- Push only the issue branch; never merge it yourself. The merge queue (or the maintainer, for high-risk or `hold` PRs) merges the PR into `main` after the required checks pass
+- Push only the issue branch; never merge it yourself. The merge queue or Hive's merge sweep (or the maintainer, for high-risk, `hold` or `sentinel-alert` PRs) merges the PR into `main` after the required checks pass. That sweep is the only agent merge, and it may merge low- and medium-risk PRs only
 - If push fails, resolve and retry until it succeeds
 
 ## Git and Version Management

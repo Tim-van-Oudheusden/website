@@ -33,8 +33,10 @@ flowchart LR
     branch --> pr["Pull request<br/>body says Fixes #N"]
     pr --> checks["Required checks<br/>CI, coverage gate, PR review rubric"]
     checks --> queue["Merge queue<br/>re-tests on latest main, merges"]
+    checks --> sweep["Hive's merge sweep<br/>low or medium risk"]
     checks --> manual["Maintainer merges<br/>high risk, hold or sentinel-alert"]
     queue --> close["Issue closes"]
+    sweep --> close
     manual --> close
 ```
 
@@ -52,10 +54,12 @@ flowchart LR
 4. **Same gates for every author.** CI, the coverage gate, the PR review
    rubric and the risk tier ([`risk-tiers.md`](risk-tiers.md)) run on every
    PR, whoever opened it.
-5. **The merge queue merges.** `main` is protected; the
-   [merge queue](#merge-queue) merges a PR once its required checks pass. The
-   maintainer merges high-risk PRs and any PR labelled `hold` or
-   `sentinel-alert`. Agents never run `gh pr merge` themselves.
+5. **The merge queue, Hive or the maintainer merges.** `main` is protected; the
+   [merge queue](#merge-queue) merges a low- or medium-risk PR once its required
+   checks pass, and Hive's merge sweep may merge such a PR too, but never a
+   high-risk one. The maintainer merges high-risk PRs and any PR labelled `hold`
+   or `sentinel-alert`. Apart from that sweep, agents never run `gh pr merge`
+   themselves.
 
 ## Merge queue
 
