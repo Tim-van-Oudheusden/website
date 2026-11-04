@@ -87,9 +87,9 @@ cannot lift the project's deny rules.
 
 Agent changes go through the same gates as human ones, with no shortcuts:
 
-- CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, build,
-  E2E, and prod-assets checks. The coverage gate and the PR review rubric
-  (`.github/workflows/review.yml`) run as well.
+- CI (`.github/workflows/ci.yml`) runs lint, copy-paste detection, typecheck,
+  unit tests, build, E2E, and prod-assets checks. The coverage gate and the PR
+  review rubric (`.github/workflows/review.yml`) run as well.
 - The merge queue (`.github/workflows/merge-queue.yml`) merges low- and
   medium-risk PRs once their required checks pass; review them before then or
   add `hold`. A human reviews and merges every high-risk PR

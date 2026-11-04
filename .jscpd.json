@@ -1,0 +1,6 @@
+{
+  "path": ["back-end/src", "front-end/src", "front-end/server", "shared/src", "scripts"],
+  "threshold": 0.18,
+  "absolute": true,
+  "reporters": ["console"]
+}
