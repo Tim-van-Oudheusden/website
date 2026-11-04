@@ -1,6 +1,8 @@
 import type { JSX } from "react";
 import { Link } from "react-router";
 
+import { useDocumentTitle } from "@/shared/hooks/use-document-title";
+
 import { MAIN_CONTENT_ID } from "./skip-link";
 
 const WAYS_BACK = [
@@ -15,6 +17,8 @@ const WAYS_BACK = [
  * 404 (front-end/server/handler.ts), so the two must agree on what is missing.
  */
 export function NotFoundPage(): JSX.Element {
+  useDocumentTitle(null);
+
   return (
     <main id={MAIN_CONTENT_ID} className="flex flex-1 flex-col items-center justify-center gap-4 bg-(--site-page-bg) p-4">
       <h1 className="text-3xl font-semibold">Page not found</h1>

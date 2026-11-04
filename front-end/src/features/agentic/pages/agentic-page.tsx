@@ -7,6 +7,7 @@ import type { HiveMetricsResponse } from "shared";
 import { ROUTES } from "shared";
 
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
+import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 import { usePollingApiGet } from "@/shared/hooks/use-polling-api-get";
 
 import { AGENTIC_COPY } from "../config/agentic-copy";
@@ -32,6 +33,8 @@ export function AgenticPage(): JSX.Element {
   const poll = usePollingApiGet<HiveMetricsResponse>(ROUTES.HIVE_METRICS);
   const [now, setNow] = useState(Date.now);
   const model = useMemo(() => buildHiveViewModel(poll, now, null), [poll, now]);
+
+  useDocumentTitle(AGENTIC_COPY.title);
 
   useEffect(() => {
     const timer = window.setInterval(() => {

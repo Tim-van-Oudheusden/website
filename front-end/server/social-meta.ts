@@ -40,8 +40,10 @@ export function renderNotFoundMeta(html: string): string {
 
 /**
  * Add the homepage's description, canonical URL and link-preview tags to the
- * SPA shell. The shell itself carries only the <title>, so non-home routes
- * never inherit homepage tags. Origin-dependent values (canonical, og:url,
+ * SPA shell. The shell itself carries only the <title>, so a direct load of a
+ * non-home route never inherits homepage tags. After a client-side navigation
+ * the tags from the entry page stay in the DOM; only the title follows the
+ * visitor (use-document-title). Origin-dependent values (canonical, og:url,
  * og:image) are why this happens per request rather than in index.html.
  */
 export function renderHomeMeta(html: string, origin: string): string {

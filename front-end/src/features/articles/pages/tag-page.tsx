@@ -5,6 +5,7 @@ import type { ArticleSummary } from "shared/articles";
 import { tagSlug } from "shared/tags";
 
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
+import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import { httpContentLoader } from "@/shared/lib/content-loader";
 
@@ -20,6 +21,8 @@ function loadArticles(): Promise<ArticleSummary[]> {
 export function TagPage(): JSX.Element {
   const { tag = "" } = useParams<{ tag: string }>();
   const list = useLoadOnMount(loadArticles, "Failed to load articles");
+
+  useDocumentTitle(null);
 
   if (list.data === null) {
     return (

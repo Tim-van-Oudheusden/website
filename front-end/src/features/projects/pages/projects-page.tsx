@@ -8,6 +8,7 @@ import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import { httpContentLoader } from "@/shared/lib/content-loader";
 import { STATUS_PILL_CLASSES } from "@/shared/lib/status-pill";
@@ -90,6 +91,8 @@ function loadProjects(): Promise<ProjectFrontmatter[]> {
 
 export function ProjectsPage(): JSX.Element {
   const { status, data: projects, error } = useLoadOnMount(loadProjects, "Failed to load projects");
+
+  useDocumentTitle(PROJECTS_PAGE_TEXT.heading);
 
   if (status === "loading") {
     return (

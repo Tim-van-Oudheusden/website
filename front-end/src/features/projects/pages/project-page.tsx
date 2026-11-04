@@ -10,6 +10,7 @@ import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
+import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import { useRecordView } from "@/shared/hooks/use-record-view";
 import { ApiError } from "@/shared/lib/api";
@@ -133,6 +134,8 @@ export function ProjectPage(): JSX.Element {
   // No slug means nothing to load: the hook stays idle and the page reads as not found.
   const load = useMemo(() => (slug ? (): Promise<ProjectData | null> => loadProjectOrNull(slug) : null), [slug]);
   const { status, data: project, error } = useLoadOnMount(load, "Failed to load project");
+
+  useDocumentTitle(project?.title ?? null);
 
   useRecordView(project?.slug ?? null);
 
