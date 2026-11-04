@@ -23,7 +23,7 @@ when this file conflicts with AGENTS.md, AGENTS.md wins.**
   strings or private state. `bun:test` with `renderToStaticMarkup` for
   components; keep pure logic in testable modules.
 - Quality gates after any change: `bun run test`, `bun run typecheck`,
-  `bun run lint`, `bun run build`.
+  `bun run lint`, `bun run duplication`, `bun run build`.
 - No new dependencies without explicit approval; always an exact version;
   never `--force` / `--legacy-peer-deps`.
 - Conventional Commits, one commit per issue, referencing the issue number.

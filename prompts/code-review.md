@@ -11,7 +11,8 @@ Check two axes and report them separately:
   passes (`bun run test`).
 - No test weakened/deleted to make CI pass; no `@ts-expect-error` / `# type:
   ignore` suppressions added; no new dependencies without approval.
-- Gates green: `bun run test`, `bun run typecheck`, `bun run lint`, `bun run build`.
+- Gates green: `bun run test`, `bun run typecheck`, `bun run lint`,
+  `bun run duplication`, `bun run build`.
 - Conventional Commits, one commit per issue, issue number referenced.
 
 ## Spec
