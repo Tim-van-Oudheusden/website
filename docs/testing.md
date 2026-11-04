@@ -5,6 +5,7 @@
 | `bun run test`                  | Unit tests (all workspaces)                           | no           |
 | `bun run typecheck`             | TypeScript across shared, root, and both apps         | no           |
 | `bun run lint`                  | ESLint (`eslint .`)                                   | no           |
+| `bun run duplication`           | Copy-paste detection (jscpd, `.jscpd.json`)           | no           |
 | `bun run build`                 | Production builds for both apps                       | no           |
 | `scripts/e2e.sh`                | Playwright E2E suite against the dev pod              | yes          |
 | `scripts/prod-assets.sh`        | Prod front-end image serves every `public/` file      | yes          |
@@ -14,6 +15,31 @@
 | `bun scripts/auto-qa-tuner.ts` | Propose ratcheted coverage floors from a quality report | no           |
 | `bun x stryker run stryker/<workspace>.conf.mjs` | Mutation testing of one workspace (StrykerJS) | no |
 | `bun run screenshots:readme`    | README screenshots + social preview from the dev pod | yes          |
+
+## Copy-paste detection
+
+`bun run duplication` runs [jscpd](https://github.com/kucherenko/jscpd) with
+`.jscpd.json`, and the `check` job in `ci.yml` runs it on every PR. It scans
+`back-end/src`, `front-end/src`, `front-end/server`, `shared/src` and
+`scripts`, every format jscpd knows there (TypeScript, TSX, CSS, Bash), and
+skips gitignored files. `test/` and `e2e/` stay out: a test that spells its
+case out reads better than one that shares setup to avoid a copy.
+
+A clone is at least 50 tokens over at least 5 lines, jscpd's defaults. The run
+fails when the duplicated lines are more than `threshold` percent of all
+scanned lines. The threshold is the share measured when the gate landed
+(#1149): 28 of 15,844 lines, 0.18%. So a new copied block of a few lines fails
+the PR that adds it, and the clones already there do not.
+
+When it fails, the console lists every clone with both locations. Move the
+copied code into one place both callers use. When a PR removes clones, lower
+`threshold` to the new figure in the same PR, so the slack is not spent on the
+next copy. Raising it lets copies through, so that is the maintainer's call.
+
+jscpd compares token sequences: it finds copied blocks, not a fact restated in
+different words, such as one constant retyped in two files. For a value that
+has to live in two files that cannot import each other, add a row to
+`test/shared/src/shared-literals.test.ts` (see `CONTRIBUTING.md`).
 
 ## Quality report
 
@@ -326,9 +352,10 @@ GitHub has no API for it.
 ## Agent sandbox: what runs where
 
 **Decision:** the agent sandbox (`Dockerfile.sandbox`) runs the non-container
-gates only — `bun run test`, `bun run typecheck`, `bun run lint`, and
-`bun run build`. The E2E suite runs on a podman-capable host (a developer
-machine via `scripts/e2e.sh`, or the CI `e2e` job).
+gates only — `bun run test`, `bun run typecheck`, `bun run lint`,
+`bun run duplication`, and `bun run build`. The E2E suite runs on a
+podman-capable host (a developer machine via `scripts/e2e.sh`, or the CI `e2e`
+job).
 
 Why: `Dockerfile.sandbox` ships no podman or docker binary, and running rootless
 podman inside it would need nested-container support (user namespaces, a

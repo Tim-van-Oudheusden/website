@@ -114,6 +114,7 @@ The back-end reads seven variables. None is required.
 | `bun run typecheck` | TypeScript across `shared`, both apps and the root scripts |
 | `bun run typecheck:root` | TypeScript for `playwright.config.ts`, `scripts/` and `e2e/` only |
 | `bun run lint` / `bun run lint:fix` | ESLint with zero warnings allowed / apply every autofix |
+| `bun run duplication` | Copy-paste detection ([jscpd](https://github.com/kucherenko/jscpd), `.jscpd.json`); fails when duplication grows past the threshold |
 | `bun run build` | Production builds of both apps |
 | `bun run test:e2e` / `bun run test:e2e:headed` | Playwright E2E suite against a running dev pod (headless / headed) |
 | `scripts/e2e.sh` | The CI E2E job locally: build, start the pod, run the suite, tear down |

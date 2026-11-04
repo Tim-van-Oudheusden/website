@@ -82,6 +82,7 @@ Run these before opening a PR:
 | `bun run test`        | Full unit test suite (all workspaces)     |
 | `bun run typecheck`   | TypeScript across shared, root, and both apps |
 | `bun run lint`        | ESLint, zero warnings (`eslint . --max-warnings 0`) |
+| `bun run duplication` | Copy-paste detection (jscpd); fails when duplication grows past `.jscpd.json`'s threshold |
 | `bun run build`       | Production builds for both apps           |
 
 End-to-end tests run against the Podman pod. `scripts/e2e.sh` mirrors the CI E2E job (build dev images, `podman kube play`, wait for services, `bun run test:e2e`, tear down):
@@ -93,7 +94,7 @@ scripts/prod-assets.sh   # prod front-end image serves every public/ file (#480)
 
 See [`docs/testing.md`](docs/testing.md) for prerequisites and why the agent sandbox runs only the non-container gates.
 
-CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests, and build on every PR, plus an E2E job on the dev pod, a `prod-assets` job on the prod front-end image, and a release job on `main` that waits for all three.
+CI (`.github/workflows/ci.yml`) runs lint, copy-paste detection, typecheck, unit tests, and build on every PR, plus an E2E job on the dev pod, a `prod-assets` job on the prod front-end image, and a release job on `main` that waits for all three. When copy-paste detection fails, move the copied block into one place both callers use; [`docs/testing.md`](docs/testing.md#copy-paste-detection) covers what it scans and how its threshold moves.
 
 Coverage shows that a branch ran, not that a test asserts on it. `.github/workflows/mutation-testing.yml` runs StrykerJS mutation testing on the TypeScript workspaces and the TypeScript tools in `scripts/` nightly, report-only. Shell scripts have a table of hand mutants instead (`test/shared/src/shell-mutants.test.ts`), which `bun run test` runs: when a hand mutation of a script survives, add the test that kills it and the mutant as a row. See [`docs/testing.md`](docs/testing.md#mutation-testing).
 
