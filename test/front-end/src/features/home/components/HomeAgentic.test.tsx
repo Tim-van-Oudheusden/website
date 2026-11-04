@@ -32,6 +32,13 @@ function textOf(html: string): string {
   return [...html.matchAll(/(?:^|>)([^<]*)/g)].map((match) => match[1] ?? "").join("").replaceAll("&amp;", "&");
 }
 
+/** Opening tags of the elements that have the class. */
+function tagsWithClass(html: string, className: string): string[] {
+  return [...html.matchAll(/<[a-z]+ [^>]*>/g)]
+    .map((match) => match[0])
+    .filter((tag) => /class="([^"]*)"/.exec(tag)?.[1]?.split(" ").includes(className));
+}
+
 describe("HomeAgentic", () => {
   test("labels the agentic section with its h2", () => {
     const html = renderAgentic();
@@ -46,6 +53,25 @@ describe("HomeAgentic", () => {
 
     expect(steps.map((step) => step.replace(/^\d+/, ""))).toEqual(AGENTIC_COPY.flow.map((entry) => entry.step));
   });
+
+  test("numbers the flow steps from 01", () => {
+    const nodes = [...renderAgentic().matchAll(/<span class="ha-node"[^>]*>([^<]*)<\/span>/g)].map((match) => match[1]);
+
+    expect(nodes).toEqual(AGENTIC_COPY.flow.map((_, index) => `0${String(index + 1)}`));
+  });
+
+  test.each(["ha-honeycomb", "ha-eyebrow", "ha-node", "ha-live"])(
+    "hides the decorative .%s from assistive technology",
+    (className) => {
+      const tags = tagsWithClass(renderAgentic(), className);
+
+      expect(tags).not.toBeEmpty();
+
+      for (const tag of tags) {
+        expect(tag).toContain('aria-hidden="true"');
+      }
+    },
+  );
 
   test("links to the Agentic tab in the same tab", () => {
     const section = configuredAgenticSection();
