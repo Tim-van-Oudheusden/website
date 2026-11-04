@@ -21,6 +21,7 @@ Fixes #<!-- issue number -->
 - [ ] `bun run test` passes (full suite)
 - [ ] `bun run typecheck` passes
 - [ ] `bun run lint` passes
+- [ ] `bun run duplication` passes
 - [ ] `bun run build` passes
 
 ## Notes for the reviewer
