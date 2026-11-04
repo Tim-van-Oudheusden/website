@@ -3,7 +3,7 @@ import type { HeatmapSeriesOption, SankeySeriesOption } from "echarts/charts";
 import type { LinearGradientObject } from "echarts/core";
 
 import type { ChartOption, ChartTable, CssReader } from "../components/echart";
-import type { BackendRunsView, ContributorsView, HiveWidgetView, RepoView } from "../lib/hive-view-model";
+import type { BackendRunsView, ContributorsView, HiveWidgetView, MergedSource, RepoView } from "../lib/hive-view-model";
 import { GOVERNOR_MODES } from "../lib/hive-view-model";
 
 /** A chart as the page draws it: its option builder and the numbers behind it. */
@@ -433,7 +433,7 @@ export function pullRequestsChart(repo: RepoView): PipelineChart {
   };
 }
 
-const SOURCE_TOKENS: Record<string, string> = {
+const SOURCE_TOKENS: Record<MergedSource, string> = {
   hive: "--pl-c-accent",
   claudeCode: "--pl-c-claude",
   dependabot: "--pl-c-dependabot",
@@ -469,7 +469,7 @@ export function outcomesSankey(repo: RepoView): PipelineChart {
         "Finished": "--pl-c-second",
         "Merged": "--pl-c-accent",
         "Closed unmerged": "--pl-c-fail",
-        ...Object.fromEntries(authors.map((author) => [author.name, SOURCE_TOKENS[author.key] ?? "--pl-c-other"])),
+        ...Object.fromEntries(authors.map((author) => [author.name, SOURCE_TOKENS[author.key]])),
       };
       const names = Object.keys(values).filter((name) => (values[name] ?? 0) > 0);
 
@@ -538,7 +538,7 @@ export function authorsChart(repo: RepoView): PipelineChart {
         stack: "authors",
         barMaxWidth: 28,
         data: repo.mergedBySource.map((day) => day[author.key]),
-        color: css(SOURCE_TOKENS[author.key] ?? "--pl-c-other"),
+        color: css(SOURCE_TOKENS[author.key]),
         itemStyle: {
           borderRadius: index === authors.length - 1 ? [4, 4, 0, 0] : 0,
           ...(author.key === "hive" ? { shadowBlur: 12, shadowColor: alpha(css("--pl-c-glow"), 0.7) } : {}),
