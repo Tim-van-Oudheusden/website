@@ -1,7 +1,7 @@
 ---
 title: Now
 description: What I am focused on at the moment.
-updated: 2026-10-29
+updated: 2026-11-04
 ---
 This is a [now page](https://nownownow.com/about): a short note on what I am focused on at the moment, updated as that changes.
 
@@ -9,4 +9,4 @@ This is a [now page](https://nownownow.com/about): a short note on what I am foc
 
 - A [minimal Android launcher](/projects/minimal-android-launcher) for keyboard-centric phones from Zinwa, Clicks and Unihertz, inspired by MinUI and Cannoli. It is still in progress.
 - [Dailies](/projects/dailies), a GNOME app that gathers daily guessing games like Wordle and Connections in one window. The first FlatPark release is next.
-- This website: its articles, its projects, and the [content pipeline](/projects/obsidian-content-pipeline) behind them.
+- This website: its articles, its projects, the [content pipeline](/projects/obsidian-content-pipeline) behind them, and [how AI agents help build it](/agentic).
