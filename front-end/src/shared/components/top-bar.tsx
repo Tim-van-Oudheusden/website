@@ -79,7 +79,11 @@ export function TopBar(): JSX.Element {
                 )}
                 asChild
               >
-                <Link to={link.href} data-active-nav={isActive ? "true" : "false"}>
+                <Link
+                  to={link.href}
+                  aria-current={isActive ? "page" : undefined}
+                  data-active-nav={isActive ? "true" : "false"}
+                >
                   <span
                     data-active-nav-text={isActive ? "true" : "false"}
                     className={cn(
