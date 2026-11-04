@@ -49,7 +49,7 @@ gh pr list --state merged --search "<commit>"   # the PR, whose body links the i
 ```
 
 From an agent to everything it did: filter PRs by author or branch, e.g.
-`gh pr list --state all --author app/hive-forge-app` for Hive,
+`gh pr list --state all --author app/hive-worker-bee` for Hive,
 `gh pr list --state all --search "head:claude/"` for Claude Code in CI. Hive's
 `— hive: agent=<name>` signature line in each PR body names the Hive agent.
 

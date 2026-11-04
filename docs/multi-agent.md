@@ -14,7 +14,7 @@ monitor agent work and debug it when it gets stuck.
 
 | Agent | Started by | Branches | Instructions |
 | --- | --- | --- | --- |
-| Hive agents (`app/hive-forge-app`), e.g. scanner, architect, quality, craftsman, strategist | Hive's own scheduler, outside this repo | `<type>/…` or `<agent>/…`, e.g. `fix/948-…`, `craftsman/…`, `quality/…` | `AGENTS.md` |
+| Hive agents (`app/hive-worker-bee`), e.g. scanner, architect, quality, craftsman, strategist | Hive's own scheduler, outside this repo | `<type>/…` or `<agent>/…`, e.g. `fix/948-…`, `craftsman/…`, `quality/…` | `AGENTS.md` |
 | Claude Code in CI (`.github/workflows/claude.yml`) | The `ai-fix-requested` label applied by a person, or an `@claude` mention from an `OWNER`/`MEMBER`/`COLLABORATOR` | `claude/*` | `CLAUDE.md`, then `AGENTS.md` |
 | Local coding agents (Claude Code, Cursor, Copilot, …) | A maintainer, one session per issue | `<type>/<number>-<slug>` | `AGENTS.md`, plus `CLAUDE.md`, `.cursor/rules/agent-guidance.mdc` or `.github/copilot-instructions.md`; the `github-issue-flow` skill in `.claude/skills/` |
 | Dependabot (`.github/dependabot.yml`) | Weekly schedule | `dependabot/*` | — |
