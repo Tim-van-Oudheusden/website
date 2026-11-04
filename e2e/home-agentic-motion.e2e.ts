@@ -35,11 +35,34 @@ async function teaserAnimations(page: Page): Promise<string[]> {
   );
 }
 
+/** How far the call to action and its arrow move once the link is hovered and any transition has finished. */
+async function hoverMovement(page: Page): Promise<{ ctaDy: number; arrowTranslate: string }> {
+  const cta = page.locator("section#agentic .ha-cta");
+  const before = await cta.boundingBox();
+
+  await cta.hover();
+  // Transitions run for 200 ms.
+  await page.waitForTimeout(300);
+
+  const after = await cta.boundingBox();
+
+  return {
+    ctaDy: (after?.y ?? Number.NaN) - (before?.y ?? Number.NaN),
+    arrowTranslate: await cta.locator(".ha-cta-arrow").evaluate((arrow) => getComputedStyle(arrow).translate),
+  };
+}
+
 test.describe("Home agentic teaser motion", () => {
   test("runs the conduit, node, honeycomb and live animations by default", async ({ page }) => {
     await openTeaser(page);
 
     expect(new Set(await teaserAnimations(page))).toEqual(new Set(["ha-flow-x", "ha-breathe", "ha-cell", "ha-ping"]));
+  });
+
+  test("lifts the link and nudges its arrow on hover by default", async ({ page }) => {
+    await openTeaser(page);
+
+    expect(await hoverMovement(page)).toEqual({ ctaDy: -2, arrowTranslate: "4px" });
   });
 
   test.describe("with reduced motion", () => {
@@ -49,6 +72,12 @@ test.describe("Home agentic teaser motion", () => {
       await openTeaser(page);
 
       expect(await teaserAnimations(page)).toEqual([]);
+    });
+
+    test("does not move the link or its arrow on hover", async ({ page }) => {
+      await openTeaser(page);
+
+      expect(await hoverMovement(page)).toEqual({ ctaDy: 0, arrowTranslate: "none" });
     });
   });
 });

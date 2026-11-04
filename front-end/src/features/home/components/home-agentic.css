@@ -310,15 +310,13 @@
     letter-spacing: 0.01em;
     transition:
       background-color 200ms ease,
-      box-shadow 200ms ease,
-      translate 200ms ease;
+      box-shadow 200ms ease;
 
     &:hover {
       background: var(--ha-cta-hover);
       box-shadow:
         0 0 0 7px var(--ha-glow-soft),
         0 10px 36px -4px var(--ha-glow);
-      translate: 0 -2px;
     }
 
     &:focus-visible {
@@ -327,17 +325,28 @@
     }
   }
 
-  & .ha-cta-arrow {
-    transition: translate 200ms ease;
-  }
-
-  & .ha-cta:hover .ha-cta-arrow {
-    translate: 4px 0;
-  }
-
   /* ── Motion ────────────────────────────────────────────── */
 
   @media (prefers-reduced-motion: no-preference) {
+    & .ha-cta {
+      transition:
+        background-color 200ms ease,
+        box-shadow 200ms ease,
+        translate 200ms ease;
+
+      &:hover {
+        translate: 0 -2px;
+      }
+    }
+
+    & .ha-cta-arrow {
+      transition: translate 200ms ease;
+    }
+
+    & .ha-cta:hover .ha-cta-arrow {
+      translate: 4px 0;
+    }
+
     & .ha-eyebrow-flow::after {
       animation: ha-flow-x 2.8s linear infinite;
     }
