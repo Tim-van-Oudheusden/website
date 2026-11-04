@@ -33,7 +33,7 @@ stops and asks the human. It does not act on it.
 
 In CI, only people start Claude Code. `claude.yml` answers the
 `ai-fix-requested` label only when a person applies it (triagers only; a label
-from a bot or GitHub App such as `hive-forge-app` skips the job, and the
+from a bot or GitHub App such as `hive-worker-bee` skips the job, and the
 workflow sets no `allowed_bots`), and `@claude` mentions only from
 `OWNER`/`MEMBER`/`COLLABORATOR`. Fork pull requests are refused before anything
 is checked out. Letting a bot start runs would let generated issue text spend
