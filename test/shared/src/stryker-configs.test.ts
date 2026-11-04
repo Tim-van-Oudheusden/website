@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const rootPath = resolve(import.meta.dirname, "../../..");
@@ -68,4 +68,17 @@ describe.each([
     expect(partFiles.filter((file) => restFiles.includes(file))).toEqual([]);
     expect([...restFiles, ...partFiles].sort()).toEqual(files);
   });
+});
+
+// Each config only runs when the workflow's matrix names it: a config left out
+// of the matrix mutates nothing, and the split above would hide that.
+test("mutation-testing.yml runs every stryker config", () => {
+  const workflow = Bun.YAML.parse(
+    readFileSync(resolve(rootPath, ".github/workflows/mutation-testing.yml"), "utf8"),
+  ) as { jobs: { mutation: { strategy: { matrix: { workspace: string[] } } } } };
+  const configs = readdirSync(resolve(rootPath, "stryker"))
+    .filter((file) => file.endsWith(".conf.mjs"))
+    .map((file) => file.slice(0, -".conf.mjs".length));
+
+  expect(workflow.jobs.mutation.strategy.matrix.workspace.sort()).toEqual(configs.sort());
 });
