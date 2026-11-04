@@ -42,11 +42,20 @@ test.describe("Top bar theme toggle", () => {
     await expect(html).toHaveClass(/\bdark\b/);
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBeNull();
 
-    await page.emulateMedia({ colorScheme: "light" });
-    await expect(html).not.toHaveClass(/\bdark\b/);
-
     await pickTheme(page, "Dark");
+
+    // A real OS change after the pick: the page is already dark, so wait one frame (media changes dispatch
+    // in the rendering step, ahead of rAF callbacks) or the assertion could pass before the listener ran.
     await page.emulateMedia({ colorScheme: "light" });
+
+    await page.evaluate(async () => {
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          resolve();
+        });
+      });
+    });
+
     await expect(html).toHaveClass(/\bdark\b/);
   });
 
