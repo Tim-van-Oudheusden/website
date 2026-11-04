@@ -9,6 +9,10 @@ import { resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "../../..");
 
+interface Workflow {
+  jobs: Record<string, { steps: { run?: string }[] }>;
+}
+
 const NUMBER_WORDS: Record<string, number> = {
   one: 1,
   two: 2,
@@ -59,6 +63,40 @@ function firstColumnNames(text: string): string[] {
     .split("\n")
     .filter((line) => line.startsWith("|"))
     .flatMap((line) => matchAll(line.split("|")[1] ?? "", /`([^`]+)`/g));
+}
+
+/**
+ * The scripts that the `bun run <script>` steps of `job` in the workflow at `workflowPath` run. Steps that are not
+ * `bun run` (checkout, `bun install`) never match, so in `check` every step returned is a quality gate and nothing
+ * is excluded by hand; a job that gains a non-gate `bun run` step needs an explicit exclusion where it is read.
+ */
+function bunRunScripts(workflowPath: string, job: string): string[] {
+  const steps = (Bun.YAML.parse(readRootFile(workflowPath)) as Workflow).jobs[job]?.steps;
+
+  if (steps === undefined) {
+    throw new Error(`${workflowPath} has no job ${job}`);
+  }
+
+  return steps.flatMap((step) => matchAll(step.run ?? "", /\bbun run (\S+)/g));
+}
+
+/** The Markdown bullet that starts with `- ` and `lead`, with the indented lines that continue it. */
+function bullet(text: string, lead: string): string {
+  const lines = text.split("\n");
+  const start = lines.findIndex((line) => line.startsWith(`- ${lead}`));
+
+  if (start === -1) {
+    throw new Error(`bullet not found: - ${lead}`);
+  }
+
+  const continued = lines.slice(start + 1);
+  const length = continued.findIndex((line) => !line.startsWith("  "));
+
+  return lines.slice(start, start + 1 + (length === -1 ? continued.length : length)).join("\n");
+}
+
+function bulletReader(lead: string): (text: string) => string {
+  return (text) => bullet(text, lead);
 }
 
 function directoryNames(relativePath: string): string[] {
@@ -181,5 +219,29 @@ describe("BRANDING.md home page map", () => {
 
     expect(labels).not.toHaveLength(0);
     expect(documented).toEqual(labels);
+  });
+});
+
+describe("quality-gate lists", () => {
+  const gates = sorted(bunRunScripts(".github/workflows/ci.yml", "check"));
+  const agentBullet = bulletReader("Quality gates after any change:");
+
+  // Where each file keeps its list: a bullet, or the PR template's checklist. The
+  // files mention other `bun run` commands elsewhere, so only this region is read.
+  const lists: [file: string, region: (text: string) => string][] = [
+    ["CLAUDE.md", agentBullet],
+    [".github/copilot-instructions.md", agentBullet],
+    [".cursor/rules/agent-guidance.mdc", agentBullet],
+    [".claude/skills/github-issue-flow/SKILL.md", bulletReader("Gates before finishing:")],
+    [".github/pull_request_template.md", (text) => section(text, "## Quality gates")],
+    ["prompts/code-review.md", bulletReader("Gates green:")],
+  ];
+
+  test("ci.yml check job has bun run steps to compare against", () => {
+    expect(gates).not.toHaveLength(0);
+  });
+
+  test.each(lists)("%s names every bun run step of the check job, and no other", (file, region) => {
+    expect(sorted(matchAll(region(readRootFile(file)), /`bun run ([\w:-]+)`/g))).toEqual(gates);
   });
 });
