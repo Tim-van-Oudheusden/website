@@ -92,7 +92,9 @@ branch, all at 100% line coverage.
 ### TypeScript: StrykerJS, nightly and report-only
 
 `.github/workflows/mutation-testing.yml` runs [StrykerJS](https://stryker-mutator.io/)
-nightly (02:47 UTC) and on demand (`workflow_dispatch`), one job per config below.
+nightly (02:47 UTC) and on demand (`workflow_dispatch`), one job per config below;
+`test/shared/src/stryker-configs.test.ts` fails when the workflow's matrix and
+the `stryker/*.conf.mjs` files name different configs.
 Each job publishes a score table (`scripts/mutation-summary.ts`) as its job
 summary and uploads the HTML and JSON reports as the `mutation-<workspace>`
 artifact. Open the HTML report to see each survivor in place. No job fails on

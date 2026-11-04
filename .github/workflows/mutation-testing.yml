@@ -21,12 +21,14 @@ jobs:
     name: Mutation testing (${{ matrix.workspace }})
     runs-on: ubuntu-latest
     # Every mutant runs its workspace's whole suite (Stryker has no Bun runner, so
-    # no per-test coverage); front-end, the largest, takes about an hour.
+    # no per-test coverage). The front-end and back-end each took longer than the
+    # timeout alone, so each is split in two configs, one job each
+    # (docs/testing.md).
     timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
-        workspace: [back-end, front-end, shared, scripts]
+        workspace: [back-end, back-end-content, front-end, front-end-features, shared, scripts]
     env:
       WORKSPACE: ${{ matrix.workspace }}
     steps:
