@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 
 import { NotFoundPage } from "@/shared/components/not-found-page";
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
+import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 import { useRecordView } from "@/shared/hooks/use-record-view";
 
 import { ArticleContent } from "../components/article-content";
@@ -28,6 +29,8 @@ export function ArticlesPage(): JSX.Element {
     articleNotFound,
   } = useArticles(slug);
   const toc = useArticleToc(selectedArticle, loadingArticle);
+
+  useDocumentTitle(selectedArticle?.title ?? "Articles");
 
   useRecordView(selectedArticle?.slug ?? null);
 

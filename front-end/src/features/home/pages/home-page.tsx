@@ -2,6 +2,7 @@ import type { JSX, MouseEvent } from "react";
 import { useState } from "react";
 
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
+import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 import { httpContentLoader, shareArticleList } from "@/shared/lib/content-loader";
 
 import { HomeFloatingNav } from "../components/home-floating-nav";
@@ -54,6 +55,8 @@ export function HomePage(): JSX.Element {
   const activeSectionId = useActiveHomeSection(sectionIds);
   // One article-list request per page visit, shared by every section that lists articles.
   const [loader] = useState(() => shareArticleList(httpContentLoader));
+
+  useDocumentTitle(null);
 
   return (
     <main id={MAIN_CONTENT_ID} className="flex-1 scroll-smooth motion-reduce:scroll-auto">

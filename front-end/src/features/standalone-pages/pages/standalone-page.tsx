@@ -7,6 +7,7 @@ import type { PageData } from "shared";
 import { ErrorBoundary, renderErrorFallback } from "@/shared/components/error-boundary";
 import { MarkdownRenderer } from "@/shared/components/markdown-renderer";
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
+import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 
 import { fetchPage } from "../lib/page-loader";
@@ -24,6 +25,8 @@ interface StandalonePageProps {
 export function StandalonePage({ slug }: StandalonePageProps): JSX.Element {
   const load = useCallback((): Promise<PageData | null> => fetchPage(slug), [slug]);
   const { status, data: page, error } = useLoadOnMount(load, "Failed to load page");
+
+  useDocumentTitle(page?.title ?? null);
 
   if (status === "loading") {
     return (
