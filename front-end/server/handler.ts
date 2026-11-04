@@ -1,11 +1,22 @@
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { ContentFrontmatter, HealthCheckResponse } from "shared";
-import { AGENTIC_PAGE_PATH, API_BASE, APP_NAME, CF_CONNECTING_IP_HEADER, ROUTES, STANDALONE_PAGE_SLUGS } from "shared";
+import type { ContentFrontmatter, HealthCheckResponse, PageData } from "shared";
+import {
+  AGENTIC_INTRO,
+  AGENTIC_PAGE_PATH,
+  API_BASE,
+  APP_NAME,
+  CF_CONNECTING_IP_HEADER,
+  DEFAULT_ARTICLE_SLUG,
+  PROJECTS_DESCRIPTION,
+  ROUTES,
+  STANDALONE_PAGE_SLUGS,
+} from "shared";
 
 import { renderFeed, renderLlmsTxt, renderRobotsTxt, renderSitemap } from "./seo";
-import { CONTENT_PAGE_PREFIX, renderHomeMeta, renderNotFoundMeta, renderSocialMeta } from "./social-meta";
+import type { PageHead } from "./social-meta";
+import { CONTENT_PAGE_PREFIX, renderHomeMeta, renderNotFoundMeta, renderPageMeta, renderSocialMeta } from "./social-meta";
 
 export interface RequestHandlerOptions {
   /** Directory holding the Vite build output (index.html + assets). */
@@ -25,7 +36,7 @@ export interface RequestHandlerOptions {
 }
 
 /** Which back-end lookup could not be completed. */
-export type BackendLookup = "content item" | "content list";
+export type BackendLookup = "content item" | "content list" | "page";
 
 /** The back-end's answer for a slug; `unavailable` when it could not say (down, rate-limited, …). */
 type ContentLookup
@@ -45,6 +56,12 @@ const APP_ROUTE = new RegExp(
   "i",
 );
 
+/** Fixed pages whose head text ships with the app, so it needs no back-end lookup. */
+const STATIC_PAGE_HEADS: readonly PageHead[] = [
+  { path: AGENTIC_PAGE_PATH, title: "Agentic", description: AGENTIC_INTRO },
+  { path: "/projects", title: "Projects", description: PROJECTS_DESCRIPTION },
+];
+
 /**
  * The same baseline @fastify/helmet gives the back-end (security-headers.ts):
  * cloudflared routes every page to this server, not to Fastify.
@@ -56,8 +73,9 @@ const SECURITY_HEADERS: Readonly<Record<string, string>> = {
 
 /**
  * Production request handler for the front-end: serves the built SPA, and for
- * article URLs injects that article's link-preview tags into index.html, and
- * the homepage gets its description, canonical URL and preview tags. It
+ * article and project URLs injects that item's link-preview tags into
+ * index.html. The homepage and the other fixed pages (/agentic, /articles, …)
+ * get their title, description, canonical URL and preview tags. It
  * also answers /robots.txt, /llms.txt, /sitemap.xml and /feed.xml, which cloudflared
  * routes here.
  */
@@ -152,7 +170,15 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
       }
     } else if (url.pathname === "/") {
       html = renderHomeMeta(indexHtml, origin);
-    } else if (!APP_ROUTE.test(url.pathname)) {
+    } else if (APP_ROUTE.test(url.pathname)) {
+      // Like the router: one page whatever its case or trailing slash, so one canonical URL.
+      const head = await fixedPageHead(options, url.pathname.toLowerCase().replace(/\/$/, ""), backendHeaders);
+
+      // Without its text (back-end down, page missing) the plain shell still serves the page.
+      if (head !== null) {
+        html = renderPageMeta(indexHtml, head, origin);
+      }
+    } else {
       status = 404;
     }
 
@@ -250,6 +276,63 @@ async function fetchContentItem(
     options.onBackendUnavailable("content item", describeError(error));
 
     return { status: "unavailable" };
+  }
+}
+
+/**
+ * The head for a fixed page, or null when it has none or the back-end cannot
+ * give its text. /articles shows the introduction article by default, so that
+ * article's description is the page's; /now and /uses carry their own
+ * frontmatter title and description.
+ */
+async function fixedPageHead(
+  options: RequestHandlerOptions,
+  path: string,
+  headers: Record<string, string>,
+): Promise<PageHead | null> {
+  const staticHead = STATIC_PAGE_HEADS.find((head) => head.path === path);
+
+  if (staticHead !== undefined) {
+    return staticHead;
+  }
+
+  if (path === "/articles") {
+    const lookup = await fetchContentItem(options, DEFAULT_ARTICLE_SLUG, headers);
+
+    return lookup.status === "found" ? { path, title: "Articles", description: lookup.item.description } : null;
+  }
+
+  const slug = STANDALONE_PAGE_SLUGS.find((pageSlug) => `/${pageSlug}` === path);
+  const page = slug === undefined ? null : await fetchPage(options, slug, headers);
+
+  return page === null ? null : { path, title: page.title, description: page.description };
+}
+
+/**
+ * Look up a standalone page for its head. Null when the back-end has no such
+ * page (404) or cannot answer; only the latter is reported.
+ */
+async function fetchPage(
+  options: RequestHandlerOptions,
+  slug: string,
+  headers: Record<string, string>,
+): Promise<PageData | null> {
+  try {
+    const response = await options.fetchBackend(`${API_BASE}${ROUTES.PAGE_BY_SLUG.replace(":slug", slug)}`, headers);
+
+    if (response.ok) {
+      return await response.json() as PageData;
+    }
+
+    if (response.status !== 404) {
+      options.onBackendUnavailable("page", `status ${response.status}`);
+    }
+
+    return null;
+  } catch (error) {
+    options.onBackendUnavailable("page", describeError(error));
+
+    return null;
   }
 }
 

@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import { Link } from "react-router";
 
 import type { ProjectFrontmatter } from "shared";
+import { PROJECTS_DESCRIPTION } from "shared";
 
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { Badge } from "@/shared/components/ui/badge";
@@ -35,7 +36,7 @@ export const PROJECTS_PAGE_TYPOGRAPHY_CLASSES = {
 export const PROJECTS_PAGE_TEXT = {
   eyebrow: "Selected work",
   heading: "Projects",
-  description: "A curated set of projects that show how I build practical, maintainable systems across content, automation, and web experiences.",
+  description: PROJECTS_DESCRIPTION,
   featuredHeading: "Featured project",
   galleryHeading: "More projects",
 } as const;

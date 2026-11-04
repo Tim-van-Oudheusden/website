@@ -94,6 +94,20 @@ export const STANDALONE_PAGE_SLUGS = ["now", "uses"] as const;
 export const AGENTIC_PAGE_PATH = "/agentic";
 
 /**
+ * The Agentic page's intro, shown under its heading. The front-end server
+ * sends it as the page's description and link-preview text, so it lives here.
+ */
+export const AGENTIC_INTRO = "I build this site with AI agents: they pick up GitHub issues and open pull requests, "
+  + "which go through the same checks and review as mine. This page shows how that works.";
+
+/**
+ * The Projects page's description, shown under its heading. The front-end
+ * server sends it as the page's description and link-preview text, so it lives here.
+ */
+export const PROJECTS_DESCRIPTION = "A curated set of projects that show how I build practical, maintainable systems "
+  + "across content, automation, and web experiences.";
+
+/**
  * The mark's blue (see `BRANDING.md`). Hand-copied into `front-end/index.html`'s
  * `theme-color` meta tag, `public/manifest.webmanifest`, `public/favicon.svg`'s
  * fill, and `front-end/src/index.css`'s `--primary`/`--chart-1` tokens — those

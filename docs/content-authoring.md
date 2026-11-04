@@ -265,6 +265,12 @@ from `title`) and a `CreativeWork` for a project (name from `title`). Both carry
 there is one. The homepage carries a `WebSite` and a `Person` for Tim, whose
 `sameAs` lists his profiles from `shared/src/social-links.ts`.
 
+The fixed pages get a title, description, canonical URL and preview tags as
+well, on the same small portrait card, but no structured data: `/now` and
+`/uses` take their `title` and `description` from their frontmatter (see
+[Standalone pages](#standalone-pages-contentpages)), and `/articles` takes its
+description from the introduction article, which it shows by default.
+
 ### Standalone pages (`content/pages/`)
 
 `/now` and `/uses` are single Markdown pages read from `content/pages/now.md`
@@ -273,9 +279,9 @@ listings, and they use their own frontmatter instead of the rules above:
 
 | Field | Required | Allowed values | Effect |
 | --- | --- | --- | --- |
-| `title` | Yes | Non-empty string | Page heading. |
+| `title` | Yes | Non-empty string | Page heading, and the page's title in search results and link previews. |
 | `updated` | Yes | Date as `YYYY-MM-DD` (`2026-10-08`), a day that exists on the calendar | Shown under the heading as "Last updated October 8, 2026". Any other value, such as `October 8` or `2026-02-30`, counts as missing. |
-| `description` | No | String (default empty) | Line under the heading. |
+| `description` | No | String (default empty) | Line under the heading, and the page's description in search results and link previews. |
 
 Any other field, such as `type`, `category` or `draft`, is ignored. There is
 no draft state: a page is live as soon as its file is deployed.

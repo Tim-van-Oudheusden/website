@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 import { createRoutesFromChildren } from "react-router";
 
-import type { ArticleFrontmatter } from "shared";
+import type { ArticleFrontmatter, PageData } from "shared";
 
 import { createRequestHandler } from "../../../front-end/server/handler";
 import { AppRoutes } from "../../../front-end/src/App";
@@ -54,6 +54,20 @@ afterAll(() => {
 
 const PROJECT = { ...ARTICLE, type: "project", slug: "pi-sandbox-automation", title: "Pi Sandbox Automation" };
 
+/** The article /articles shows when no slug is picked; its description is the page's description. */
+const INTRODUCTION = {
+  ...ARTICLE,
+  slug: "introduction",
+  title: "Introduction",
+  description: "A quick overview of this website and what you can expect here.",
+  category: "Introduction",
+};
+
+const STANDALONE_PAGES: Readonly<Record<string, PageData>> = {
+  now: { slug: "now", title: "Now", description: "What I am focused on at the moment.", updated: "2026-10-29", body: "" },
+  uses: { slug: "uses", title: "Uses", description: "The hardware & tools I use.", updated: "2026-10-08", body: "" },
+};
+
 /** For tests that do not check what the handler reports about the back-end. */
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 function ignoreUnavailable(): void {}
@@ -67,7 +81,7 @@ const ROUTE_SAMPLES: Readonly<Record<string, string>> = {
   "/tags/:tag": "/tags/docker",
 };
 
-/** A back-end that knows one article and one project, at their real API paths. */
+/** A back-end that knows one article, one project, the introduction and both standalone pages, at their API paths. */
 function backend(path: string): Promise<Response> {
   if (path === "/api/content") {
     return Promise.resolve(Response.json([ARTICLE, PROJECT]));
@@ -79,6 +93,16 @@ function backend(path: string): Promise<Response> {
 
   if (path === "/api/content/pi-sandbox-automation") {
     return Promise.resolve(Response.json(PROJECT));
+  }
+
+  if (path === "/api/content/introduction") {
+    return Promise.resolve(Response.json(INTRODUCTION));
+  }
+
+  const page = STANDALONE_PAGES[path.replace(/^\/api\/pages\//, "")];
+
+  if (page !== undefined) {
+    return Promise.resolve(Response.json(page));
   }
 
   return Promise.resolve(Response.json({ error: "Content not found" }, { status: 404 }));
@@ -204,9 +228,11 @@ describe("front-end request handler", () => {
     // React Router ignores case and a trailing slash, so these render real pages too.
     for (const path of ["/projects", "/projects/", "/articles", "/Articles", "/tags/docker", "/now", "/uses/"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+      const html = await response.text();
 
       expect(response.status).toBe(200);
-      expect(await response.text()).toBe(INDEX_HTML);
+      expect(html).toContain('<div id="root"></div>');
+      expect(html).not.toContain(NOINDEX);
     }
 
     const mixedCase = await handle(new Request("https://buildwithtim.dev/Articles/yoga-nidra/"));
@@ -220,12 +246,141 @@ describe("front-end request handler", () => {
 
     for (const path of ["/agentic", "/agentic/"]) {
       const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+      const html = await response.text();
 
       expect({ path, status: response.status }).toEqual({ path, status: 200 });
-      expect(await response.text()).toBe(INDEX_HTML);
+      expect(html).toContain('<div id="root"></div>');
+      expect(html).not.toContain(NOINDEX);
     }
 
     expect((await handle(new Request("https://buildwithtim.dev/agentic/extra"))).status).toBe(404);
+  });
+
+  test("serves each fixed page with its own title, description, canonical URL and summary preview tags", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
+    const cases = [
+      {
+        path: "/agentic",
+        title: "Agentic",
+        description: "I build this site with AI agents: they pick up GitHub issues and open pull requests, which go through "
+          + "the same checks and review as mine. This page shows how that works.",
+      },
+      {
+        path: "/projects",
+        title: "Projects",
+        description: "A curated set of projects that show how I build practical, maintainable systems across content, "
+          + "automation, and web experiences.",
+      },
+      { path: "/articles", title: "Articles", description: "A quick overview of this website and what you can expect here." },
+      { path: "/now", title: "Now", description: "What I am focused on at the moment." },
+      { path: "/uses", title: "Uses", description: "The hardware &amp; tools I use." },
+    ];
+
+    for (const { path, title, description } of cases) {
+      const response = await handle(new Request(`http://buildwithtim.dev${path}`, { headers: { "x-forwarded-proto": "https" } }));
+      const html = await response.text();
+      const url = `https://buildwithtim.dev${path}`;
+
+      expect({ path, status: response.status }).toEqual({ path, status: 200 });
+      expect(html).toContain(`<title>${title} | Build with Tim</title>`);
+      expect(html).toContain(`<link rel="canonical" href="${url}" />`);
+      expect(html).toContain(`<meta name="description" content="${description}" />`);
+      expect(html).toContain('<meta property="og:type" content="website" />');
+      expect(html).toContain('<meta property="og:site_name" content="Build with Tim" />');
+      expect(html).toContain(`<meta property="og:title" content="${title}" />`);
+      expect(html).toContain(`<meta property="og:description" content="${description}" />`);
+      expect(html).toContain(`<meta property="og:url" content="${url}" />`);
+      expect(html).toContain('<meta property="og:image" content="https://buildwithtim.dev/images/me.png" />');
+      expect(html).toContain('<meta name="twitter:card" content="summary" />');
+      expect(html).toContain('<div id="root"></div>');
+      expect(html).not.toContain(NOINDEX);
+    }
+  });
+
+  test("gives a fixed page one canonical URL however the router-matched path is cased or slashed", async () => {
+    const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
+
+    for (const [path, canonical] of [["/Agentic", "/agentic"], ["/agentic/", "/agentic"], ["/NOW/", "/now"], ["/Projects", "/projects"]]) {
+      const html = await (await handle(new Request(`https://buildwithtim.dev${path}`))).text();
+
+      expect({ path, html }).toEqual({ path, html: expect.stringContaining(`<link rel="canonical" href="https://buildwithtim.dev${canonical}" />`) });
+    }
+  });
+
+  test("leaves the description tags out for a standalone page with no description, but keeps its title and canonical URL", async () => {
+    const handle = createRequestHandler({
+      distDir,
+      fetchBackend: () => Promise.resolve(Response.json({ ...STANDALONE_PAGES["uses"], description: "" })),
+      onBackendUnavailable: ignoreUnavailable,
+    });
+
+    const html = await (await handle(new Request("https://buildwithtim.dev/uses"))).text();
+
+    expect(html).toContain("<title>Uses | Build with Tim</title>");
+    expect(html).toContain('<link rel="canonical" href="https://buildwithtim.dev/uses" />');
+    expect(html).not.toContain('name="description"');
+    expect(html).not.toContain("og:description");
+  });
+
+  test("serves the plain shell as a 200 for a fixed page whose text the back-end cannot give", async () => {
+    // Same rule as content pages: an outage must not 404 or de-index a real page.
+    for (const fetchBackend of [
+      () => Promise.reject(new Error("connect ECONNREFUSED 127.0.0.1:3001")),
+      () => Promise.resolve(new Response("", { status: 503 })),
+      () => Promise.resolve(Response.json({ error: "Page not found" }, { status: 404 })),
+    ]) {
+      const handle = createRequestHandler({ distDir, fetchBackend, onBackendUnavailable: ignoreUnavailable });
+
+      for (const path of ["/articles", "/now", "/uses"]) {
+        const response = await handle(new Request(`https://buildwithtim.dev${path}`));
+
+        expect({ path, status: response.status }).toEqual({ path, status: 200 });
+        expect(await response.text()).toBe(INDEX_HTML);
+      }
+    }
+  });
+
+  test("reports a standalone page lookup it could not complete", async () => {
+    const reports: [string, string][] = [];
+    const handle = createRequestHandler({
+      distDir,
+      fetchBackend: () => Promise.resolve(new Response("", { status: 503 })),
+      onBackendUnavailable: (lookup, why) => reports.push([lookup, why]),
+    });
+
+    await handle(new Request("https://buildwithtim.dev/now"));
+    await handle(new Request("https://buildwithtim.dev/articles"));
+
+    expect(reports).toEqual([["page", "status 503"], ["content item", "status 503"]]);
+  });
+
+  test("sends one canonical URL, description and title on every page the sitemap lists", async () => {
+    // A fixed page added to the sitemap without a head would be a bare, untitled link in every preview.
+    const realDist = join(root, "sitemap-dist");
+
+    mkdirSync(realDist, { recursive: true });
+    writeFileSync(join(realDist, "index.html"), readFileSync(join(import.meta.dir, "../../../front-end/index.html")));
+    const handle = createRequestHandler({
+      distDir: realDist,
+      fetchBackend: backend,
+      onBackendUnavailable: ignoreUnavailable,
+    });
+    const sitemap = await (await handle(new Request("https://buildwithtim.dev/sitemap.xml"))).text();
+    const urls = [...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map((match) => match[1] ?? "");
+
+    expect(urls).toContain("https://buildwithtim.dev/agentic");
+
+    for (const url of urls) {
+      const html = await (await handle(new Request(url))).text();
+
+      expect({ url, canonical: html.match(/<link rel="canonical" href="([^"]*)" \/>/g) })
+        .toEqual({ url, canonical: [`<link rel="canonical" href="${url}" />`] });
+
+      expect({ url, descriptions: html.match(/<meta name="description" content="[^"]+" \/>/g)?.length })
+        .toEqual({ url, descriptions: 1 });
+
+      expect({ url, titles: html.match(/<title>/g)?.length }).toEqual({ url, titles: 1 });
+    }
   });
 
   test("serves every route App.tsx declares as an indexable 200, so the server's route list cannot fall behind it", async () => {
