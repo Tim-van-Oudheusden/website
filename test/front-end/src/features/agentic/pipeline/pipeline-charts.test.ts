@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
+import { buildHiveViewModel } from "../../../../../../front-end/src/features/agentic/lib/hive-view-model";
 import {
   authorsChart,
   modeChart,
@@ -11,7 +12,7 @@ import {
 } from "../../../../../../front-end/src/features/agentic/pipeline/pipeline-charts";
 import type { PipelineChart } from "../../../../../../front-end/src/features/agentic/pipeline/pipeline-charts";
 
-import { liveModel } from "./pipeline-model";
+import { liveMetrics, liveModel, NOW } from "./pipeline-model";
 
 function css(): string {
   return "#100f0f";
@@ -73,6 +74,33 @@ describe("pipeline charts", () => {
     const shown = xAxis.data.filter((label, index) => xAxis.axisLabel.interval(index, label));
 
     expect(shown).toEqual(["Sun 00:00", "Mon 00:00"]);
+    expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual(["Sun", "Mon"]);
+  });
+
+  test("label and tick where each day starts in a zone whose offset is not a whole hour", () => {
+    const twoDays = liveMetrics({
+      contributors: {
+        collectedAt: "2026-11-02T01:00:00.000Z",
+        tasksPerHour: Array<number>(48).fill(1),
+        fleetSize: Array<number>(48).fill(1),
+        runs7d: { total: 0, backends: [] },
+      },
+    });
+    const { contributors: kolkata } = buildHiveViewModel(
+      { status: "success", data: { state: "live", fetchedAt: "2026-11-02T14:14:20.000Z", metrics: twoDays }, error: null, stale: false },
+      NOW,
+      "Asia/Kolkata",
+    );
+    const xAxis = tasksChart(kolkata!).option(css).xAxis as {
+      data: string[];
+      axisTick: { interval: (index: number, value: string) => boolean };
+      axisLabel: { interval: (index: number, value: string) => boolean; formatter: (value: string) => string };
+    };
+    const shown = xAxis.data.filter((label, index) => xAxis.axisLabel.interval(index, label));
+    const ticked = xAxis.data.filter((label, index) => xAxis.axisTick.interval(index, label));
+
+    expect(shown).toEqual(["Sun 00:30", "Mon 00:30"]);
+    expect(ticked).toEqual(shown);
     expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual(["Sun", "Mon"]);
   });
 
