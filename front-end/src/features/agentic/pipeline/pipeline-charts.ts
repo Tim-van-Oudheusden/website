@@ -196,15 +196,20 @@ export function modeChart(hive: HiveWidgetView): PipelineChart {
   };
 }
 
-/** Whether an hourly label ("Mon 00:00") names the first hour of its day. */
-function startsDay(_index: number, label: string): boolean {
-  return label.endsWith(" 00:00");
+/** The weekday an hourly label ("Mon 00:30") falls on. */
+function weekday(label: string): string {
+  return label.slice(0, label.indexOf(" "));
 }
 
 /** Contributor tasks as one bar per hour, the peak hour marked; past a day, the axis names where each day starts. */
 export function tasksChart(contributors: ContributorsView): PipelineChart {
   const { hours, peak, span } = contributors;
   const days = hours.length > 24;
+
+  // A day starts where the weekday changes from the bar before; the clock reads 00:30 in zones off the whole hour.
+  function startsDay(index: number, label: string): boolean {
+    return index > 0 && weekday(label) !== weekday(hours[index - 1]?.label ?? label);
+  }
 
   return {
     label: `Tasks per hour, ${span}, by contributor agents`,
@@ -225,7 +230,7 @@ export function tasksChart(contributors: ContributorsView): PipelineChart {
           color: css("--pl-c-ink"),
           fontSize: 11,
           ...(days
-            ? { interval: startsDay, formatter: (label: string): string => label.slice(0, label.indexOf(" ")) }
+            ? { interval: startsDay, formatter: weekday }
             : { hideOverlap: true }),
         },
       },
