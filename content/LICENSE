@@ -19,6 +19,15 @@ introduction video, with the icon in them replaced by the current app
 icon from that repository. They are licensed under the GNU General
 Public License v3.0 or later (GPL-3.0-or-later).
 
+And except: the images in content/images/pindu-launcher/ and the cover
+public/images/projects/pindu-launcher.webp show the Pindu launcher icon
+and banner from https://github.com/Tim-van-Oudheusden/pindu-launcher,
+licensed under the GNU General Public License v3.0 or later
+(GPL-3.0-or-later). The banner's outlined text is Adwaita Sans, under
+the SIL Open Font License 1.1. The game art in the screenshots stays
+under each game's own licence, as listed in data/screenshots/CREDITS.md
+in that repository.
+
 The full legal code follows.
 
 =======================================================================
