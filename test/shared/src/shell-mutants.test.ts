@@ -148,6 +148,27 @@ const MUTANTS: readonly ShellMutant[] = [
     killedBy: MERGE_QUEUE_TEST,
   },
   {
+    name: "a dispatch that fails once is tried again (#1195)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `  for attempt in 1 2 3; do\n    gh workflow run`,
+    to: `  for attempt in 1; do\n    gh workflow run`,
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
+    name: "a workflow that will not start does not stop the others or the next run (#1195)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `    start_workflow "$workflow" || failed=1\n`,
+    to: `    start_workflow "$workflow"\n`,
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
+    name: "a run that left a main workflow unstarted fails (#1195)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `  return "$failed"\n`,
+    to: `  return 0\n`,
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
     name: "the draft leak guard fails instead of passing when grep cannot read the content directory (#1024)",
     file: "scripts/draft-leak-guard.sh",
     from: "    exit 2\n",

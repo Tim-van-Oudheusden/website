@@ -12,11 +12,13 @@ const RUN_URL = "https://github.com/owner/website/actions/runs/42";
 // Stands in for the gh CLI. `gh pr list` and `gh pr view <n>` answer from the
 // pull requests in $FAKE_DIR/prs.json, filtered through `--jq` like gh does.
 // Every other call is appended to $FAKE_DIR/calls.log, one line per call. Any
-// call fails if it starts with the text in $FAKE_DIR/fail.
+// call fails if it starts with the text in $FAKE_DIR/fail, or only the first
+// such call does if $FAKE_DIR/fail-once exists.
 const FAKE_GH = `#!/usr/bin/env bash
 set -euo pipefail
 fails() {
-  [ -f "$FAKE_DIR/fail" ] && [[ "$*" == "$(cat "$FAKE_DIR/fail")"* ]]
+  [ -f "$FAKE_DIR/fail" ] && [[ "$*" == "$(cat "$FAKE_DIR/fail")"* ]] || return 1
+  [ ! -f "$FAKE_DIR/fail-once" ] || rm "$FAKE_DIR/fail"
 }
 if [ "$1" = pr ] && { [ "$2" = list ] || [ "$2" = view ]; }; then
   if fails "$@"; then
@@ -169,6 +171,9 @@ function runScript(...args: string[]): {
 
   writeFileSync(join(workDir, "gh"), FAKE_GH);
   chmodSync(join(workDir, "gh"), 0o755);
+  // The script waits between retries; the tests do not.
+  writeFileSync(join(workDir, "sleep"), "#!/usr/bin/env bash\n");
+  chmodSync(join(workDir, "sleep"), 0o755);
   writeFileSync(outputPath, "");
 
   const result = spawnSync("bash", [scriptPath, ...args], {
@@ -386,6 +391,54 @@ describe("scripts/merge-queue.sh land", () => {
     expect(stdout).toContain("::warning title=Merge queue::");
     expect(stdout).toContain("#7");
     expect(calls.filter((call) => call.startsWith("workflow run ")).sort()).toEqual(expectedRuns.sort());
+  });
+
+  // The merge has landed by then, and with GITHUB_TOKEN those runs are the only
+  // way main's gates run on it (#1195).
+  test("retries a workflow it could not start", () => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7 }]);
+
+    writeFileSync(join(workDir, "fail"), "workflow run ci.yml");
+    writeFileSync(join(workDir, "fail-once"), "");
+
+    const { status, stdout, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
+
+    expect(status).toBe(0);
+    expect(stdout).not.toContain("::error");
+    expect(calls.filter((call) => call === "workflow run ci.yml --ref main")).toHaveLength(2);
+    expect(calls.at(-1)).toBe("workflow run merge-queue.yml --ref main");
+  });
+
+  test.each(mainPushWorkflows)("when %s cannot be started, starts the rest and the next queue run, names it, and fails", (name) => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7 }]);
+
+    writeFileSync(join(workDir, "fail"), `workflow run ${name}`);
+
+    const { status, stdout, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
+    const others = [...mainPushWorkflows.filter((other) => other !== name), "merge-queue.yml"];
+
+    expect(status).toBe(1);
+    expect(stdout).toContain(`::error title=Merge queue::could not start ${name}`);
+    expect(stdout).toContain(`gh workflow run ${name} --ref main`);
+    expect(calls.filter((call) => call === `workflow run ${name} --ref main`)).toHaveLength(3);
+
+    expect(calls.filter((call) => call.startsWith("workflow run ") && !call.includes(name)).sort()).toEqual(
+      others.map((other) => `workflow run ${other} --ref main`).sort(),
+    );
+
+    expect(calls.at(-1)).toBe("workflow run merge-queue.yml --ref main");
+  });
+
+  test("fails when the next queue run cannot be started after a merge", () => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7 }]);
+
+    writeFileSync(join(workDir, "fail"), "workflow run merge-queue.yml");
+
+    const { status, stdout, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
+
+    expect(status).toBe(1);
+    expect(stdout).toContain("::error title=Merge queue::could not start merge-queue.yml");
+    expect(calls.filter((call) => call === "workflow run merge-queue.yml --ref main")).toHaveLength(3);
   });
 
   test("does not merge or close issues when main moved after verification, and queues a re-run against the new main", () => {

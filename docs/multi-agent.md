@@ -89,8 +89,10 @@ the queue merges one PR at a time.
 
 If the run cannot read or close a merged PR's linked issues, it warns
 (`::warning`) and still starts `main`'s workflows and the next run; close the
-issue by hand. If it cannot list the open PRs, the run fails rather than
-passing for an empty queue.
+issue by hand. If it cannot start one of those workflows, it tries twice more,
+logs an `::error` with the command to start it by hand, starts the others and
+the next run, and fails, so the run shows that `main` missed a gate. If it
+cannot list the open PRs, the run fails rather than passing for an empty queue.
 
 To keep a PR out of the queue, add `hold` or leave it a draft. Dependabot's PRs
 change dependency or workflow files, which are high risk, so the maintainer
