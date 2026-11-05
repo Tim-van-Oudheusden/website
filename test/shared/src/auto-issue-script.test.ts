@@ -11,20 +11,24 @@ const TITLE = "Nightly compliance failing";
 const RUN_URL = "https://github.com/owner/website/actions/runs/42";
 const REPORT = "# Nightly compliance\n\n| Check | Result |\n| ----- | ------ |\n| Dependency audit (high+) | ❌ fail |\n";
 
-// Stands in for the gh CLI. `gh issue list` answers with the open issues in
-// $FAKE_DIR/open-issues.json, filtered through `--jq` like gh does. Every other
+// Stands in for the gh CLI. `gh issue list` answers with the first `--limit`
+// (default 30, like gh) of the open issues in $FAKE_DIR/open-issues.json, filtered
+// through `--jq` like gh does, or fails when $FAKE_DIR/list-fails exists. Every other
 // call is appended to $FAKE_DIR/calls.log as NUL-terminated arguments ending in
 // a record separator, with a `--body-file <path>` replaced by `--body
 // <contents>` (the file is gone by the time the test reads the log).
 const FAKE_GH = `#!/usr/bin/env bash
 set -euo pipefail
 if [ "$1 $2" = "issue list" ]; then
+  [ ! -e "$FAKE_DIR/list-fails" ] || exit 1
   filter=.
+  limit=30
   while [ $# -gt 0 ]; do
     if [ "$1" = --jq ]; then filter="$2"; shift; fi
+    if [ "$1" = --limit ]; then limit="$2"; shift; fi
     shift
   done
-  jq -r "$filter" "$FAKE_DIR/open-issues.json"
+  jq -r ".[:$limit] | $filter" "$FAKE_DIR/open-issues.json"
   exit 0
 fi
 args=()
@@ -64,12 +68,13 @@ function parseCall(args: string[]): GhCall {
 function runScript(
   openIssues: { number: number; title: string }[],
   reportPath = join(workDir, "report.md"),
-): { status: number | null; calls: GhCall[] } {
+  args = [TITLE, reportPath, RUN_URL],
+): { status: number | null; calls: GhCall[]; stderr: string } {
   writeFileSync(join(workDir, "gh"), FAKE_GH);
   chmodSync(join(workDir, "gh"), 0o755);
   writeFileSync(join(workDir, "open-issues.json"), JSON.stringify(openIssues));
 
-  const result = spawnSync("bash", [scriptPath, TITLE, reportPath, RUN_URL], {
+  const result = spawnSync("bash", [scriptPath, ...args], {
     cwd: workDir,
     encoding: "utf8",
     env: { ...process.env, PATH: `${workDir}:${process.env["PATH"] ?? ""}`, FAKE_DIR: workDir },
@@ -78,7 +83,7 @@ function runScript(
   const records = existsSync(log) ? readFileSync(log, "utf8").split("\x1e").slice(0, -1) : [];
   const calls = records.map((record) => parseCall(record.split("\0").slice(0, -1)));
 
-  return { status: result.status, calls };
+  return { status: result.status, calls, stderr: result.stderr };
 }
 
 beforeEach(() => {
@@ -124,5 +129,45 @@ describe("scripts/auto-issue.sh", () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]?.command).toBe("issue create");
     expect(calls[0]?.flags["body"]).toContain(RUN_URL);
+    expect(calls[0]?.flags["body"]).toContain("The run left no report; see its log.");
+  });
+
+  test("treats an empty report as no report", () => {
+    writeFileSync(join(workDir, "report.md"), "");
+
+    const { calls } = runScript([]);
+
+    expect(calls[0]?.flags["body"]).toContain("The run left no report; see its log.");
+  });
+
+  // gh issue list stops at 30 by default, so a repository with more open issues
+  // than that would get a duplicate every night.
+  test("finds the open issue behind more than gh's default 30 others", () => {
+    const others = Array.from({ length: 40 }, (_, index) => ({ number: index + 100, title: `Other issue ${index}` }));
+
+    const { calls } = runScript([...others, { number: 7, title: TITLE }]);
+
+    expect(calls.map((call) => call.command)).toEqual(["issue comment 7"]);
+  });
+
+  test("opens nothing when it cannot list the open issues, rather than risk a duplicate", () => {
+    writeFileSync(join(workDir, "list-fails"), "");
+
+    const { status, calls } = runScript([{ number: 7, title: TITLE }]);
+
+    expect(status).not.toBe(0);
+    expect(calls).toEqual([]);
+  });
+
+  test.each([
+    ["no arguments", []],
+    ["too few arguments", [TITLE, "report.md"]],
+    ["too many arguments", [TITLE, "report.md", RUN_URL, "extra"]],
+  ])("prints its usage and exits 2 with %s", (_name, args) => {
+    const { status, calls, stderr } = runScript([], undefined, args);
+
+    expect(status).toBe(2);
+    expect(stderr).toContain("<title> <report.md> <run-url>");
+    expect(calls).toEqual([]);
   });
 });
