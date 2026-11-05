@@ -28,6 +28,11 @@ const UPDATE_SCRIPT = "deploy/systemd/website-update.sh";
 const UPDATE_TEST = "test/shared/src/website-update-script.test.ts";
 const MERGE_QUEUE_SCRIPT = "scripts/merge-queue.sh";
 const MERGE_QUEUE_TEST = "test/shared/src/merge-queue-script.test.ts";
+const TIER_SCRIPT = "scripts/tier-classify.sh";
+const TIER_TEST = "test/shared/src/tier-classifier-script.test.ts";
+const REVIEW_SCRIPT = "scripts/pr-review-check.sh";
+const REVIEW_TEST = "test/shared/src/pr-review-script.test.ts";
+const REVIEW_TYPES = "build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test";
 
 const MUTANTS: readonly ShellMutant[] = [
   {
@@ -135,6 +140,260 @@ const MUTANTS: readonly ShellMutant[] = [
     to: "  2)\n",
     killedBy: "test/shared/src/ci-workflow.test.ts",
   },
+  {
+    name: "a medium rule is not rated low",
+    file: TIER_SCRIPT,
+    from: "[medium]=2",
+    to: "[medium]=1",
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "a medium rule is not rated high",
+    file: TIER_SCRIPT,
+    from: "[medium]=2",
+    to: "[medium]=3",
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "a rejected policy prints nothing on stdout",
+    file: TIER_SCRIPT,
+    from: `echo "tier-classify: $*" >&2`,
+    to: `echo "tier-classify: $*"`,
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "a rules: line with a value is malformed",
+    file: TIER_SCRIPT,
+    from: `[ "$item" = rules: ] && [ -z "\${tier:-}" ] &&`,
+    to: `[ "$item" = rules: ] &&`,
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "a second rules: line is malformed",
+    file: TIER_SCRIPT,
+    from: `[ -z "\${tier:-}" ] && [ -z "$in_rules" ]; then`,
+    to: `[ -z "\${tier:-}" ]; then`,
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "an item before the rules: line is malformed",
+    file: TIER_SCRIPT,
+    from: `[ -n "$in_rules" ] && [ "$item" = - ]`,
+    to: `[ "$item" = - ]`,
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "an item needs its dash",
+    file: TIER_SCRIPT,
+    from: `[ -n "$in_rules" ] && [ "$item" = - ] &&`,
+    to: `[ -n "$in_rules" ] &&`,
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "an item needs a glob",
+    file: TIER_SCRIPT,
+    from: `[ "$item" = - ] && [ -n "\${glob:-}" ] &&`,
+    to: `[ "$item" = - ] &&`,
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "an item with an extra field is malformed",
+    file: TIER_SCRIPT,
+    from: `[ -n "\${glob:-}" ] && [ -z "\${extra:-}" ]`,
+    to: `[ -n "\${glob:-}" ]`,
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "a blank input line is no path",
+    file: TIER_SCRIPT,
+    from: `  [ -n "$path" ] || continue\n`,
+    to: "",
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "the tier column keeps its width",
+    file: TIER_SCRIPT,
+    from: "%-6s",
+    to: "%-5s",
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "spaces around a path stay part of the path",
+    file: TIER_SCRIPT,
+    from: `IFS= read -r -d "$delim" path`,
+    to: `read -r -d "$delim" path`,
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "a backslash in a rule reaches the glob",
+    file: TIER_SCRIPT,
+    from: "read -r item tier glob extra",
+    to: "read item tier glob extra",
+    killedBy: TIER_TEST,
+  },
+  {
+    name: "a failure is a GitHub error annotation",
+    file: REVIEW_SCRIPT,
+    from: `echo "::error::$1"`,
+    to: `echo "$1"`,
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "a title must start with its type",
+    file: REVIEW_SCRIPT,
+    from: "=~ ^($types)",
+    to: "=~ ($types)",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "a capitalised scope is no scope",
+    file: REVIEW_SCRIPT,
+    from: "[a-z0-9._/-]+",
+    to: "[a-zA-Z0-9._/-]+",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "a scope may hold digits",
+    file: REVIEW_SCRIPT,
+    from: "[a-z0-9._/-]+",
+    to: "[a-z._/-]+",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "a scope may hold a dot",
+    file: REVIEW_SCRIPT,
+    from: "[a-z0-9._/-]+",
+    to: "[a-z0-9_/-]+",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "a scope may hold an underscore",
+    file: REVIEW_SCRIPT,
+    from: "[a-z0-9._/-]+",
+    to: "[a-z0-9./-]+",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "a scope may hold a slash",
+    file: REVIEW_SCRIPT,
+    from: "[a-z0-9._/-]+",
+    to: "[a-z0-9._-]+",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "a scope may hold a dash",
+    file: REVIEW_SCRIPT,
+    from: "[a-z0-9._/-]+",
+    to: "[a-z0-9._/]+",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "the summary needs a space after the colon",
+    file: REVIEW_SCRIPT,
+    from: ":\\ .+",
+    to: ":.+",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "the summary must not be empty",
+    file: REVIEW_SCRIPT,
+    from: ":\\ .+",
+    to: ":\\ .*",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "only an author ending in [bot] is exempt",
+    file: REVIEW_SCRIPT,
+    from: `*"[bot]"`,
+    to: "*bot*",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "a digit before the keyword means it is no whole word",
+    file: REVIEW_SCRIPT,
+    from: "(^|[^[:alnum:]_])",
+    to: "(^|[^[:alpha:]_])",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "'fixed' links an issue",
+    file: REVIEW_SCRIPT,
+    from: "fix(es|ed)?",
+    to: "fix(es)?",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "bare 'fix' links an issue",
+    file: REVIEW_SCRIPT,
+    from: "fix(es|ed)?",
+    to: "fix(es|ed)",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "'closed' links an issue",
+    file: REVIEW_SCRIPT,
+    from: "close[sd]?",
+    to: "close[s]?",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "bare 'close' links an issue",
+    file: REVIEW_SCRIPT,
+    from: "close[sd]?",
+    to: "close[sd]",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "'resolved' links an issue",
+    file: REVIEW_SCRIPT,
+    from: "resolve[sd]?",
+    to: "resolve[s]?",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "bare 'resolve' links an issue",
+    file: REVIEW_SCRIPT,
+    from: "resolve[sd]?",
+    to: "resolve[sd]",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "bare 'ref' links an issue",
+    file: REVIEW_SCRIPT,
+    from: "refs?",
+    to: "refs",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "the keyword may be followed by several spaces",
+    file: REVIEW_SCRIPT,
+    from: ":?[[:space:]]+",
+    to: ":?[[:space:]]",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "the keyword needs a space before the number",
+    file: REVIEW_SCRIPT,
+    from: ":?[[:space:]]+",
+    to: ":?[[:space:]]*",
+    killedBy: REVIEW_TEST,
+  },
+  {
+    name: "the repository of a long-form link may hold dots, dashes and underscores",
+    file: REVIEW_SCRIPT,
+    from: "/[[:alnum:]_.-]+)?#",
+    to: "/[[:alnum:]]+)?#",
+    killedBy: REVIEW_TEST,
+  },
+  ...["build", "ci", "docs", "perf", "revert", "style", "test"].map((type) => ({
+    name: `'${type}' stays a title type`,
+    file: REVIEW_SCRIPT,
+    from: REVIEW_TYPES,
+    to: REVIEW_TYPES.split("|")
+      .filter((other) => other !== type)
+      .join("|"),
+    killedBy: REVIEW_TEST,
+  })),
 ];
 
 let shadowRoot: string | null = null;

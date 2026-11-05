@@ -9,7 +9,10 @@ const scriptPath = resolve(rootPath, "scripts/tier-classify.sh");
 const workflowPath = resolve(rootPath, ".github/workflows/tier-classifier.yml");
 const docPath = resolve(rootPath, "docs/risk-tiers.md");
 
-function classify(paths: string[], env: Record<string, string> = {}): { status: number | null; output: string } {
+function classify(
+  paths: string[],
+  env: Record<string, string> = {},
+): { status: number | null; stdout: string; output: string } {
   const result = spawnSync("bash", [scriptPath], {
     cwd: rootPath,
     encoding: "utf8",
@@ -17,7 +20,7 @@ function classify(paths: string[], env: Record<string, string> = {}): { status: 
     env: { PATH: process.env["PATH"] ?? "", ...env },
   });
 
-  return { status: result.status, output: `${result.stdout}${result.stderr}` };
+  return { status: result.status, stdout: result.stdout, output: `${result.stdout}${result.stderr}` };
 }
 
 describe("scripts/tier-classify.sh", () => {
@@ -59,6 +62,14 @@ describe("scripts/tier-classify.sh", () => {
   test("treats unrecognised paths, including tests, as medium risk", () => {
     expect(classify(["test/shared/src/routes.test.ts"]).output).toContain("tier=medium");
     expect(classify(["somewhere/new.txt"]).output).toContain("tier=medium");
+  });
+
+  test("skips blank input lines", () => {
+    expect(classify(["", "docs/testing.md", ""]).stdout).toBe("low     docs/testing.md\ntier=low\n");
+  });
+
+  test("keeps the spaces around a path as part of the path", () => {
+    expect(classify([" docs/testing.md "]).stdout).toBe("medium   docs/testing.md \ntier=medium\n");
   });
 
   test("lists each changed file with its own tier", () => {
@@ -196,6 +207,33 @@ describe("scripts/tier-classify.sh with a custom policy", () => {
     expect(status).not.toBe(0);
     expect(output).toContain(":1:");
     expect(output).not.toContain("tier=");
+  });
+
+  test.each([
+    ["a second rules: line", "rules:\n  - low docs/*\nrules:\n", ":3:"],
+    ["a rules: line with a value", "rules: all\n  - low docs/*\n", ":1:"],
+    ["an item before the rules: line", "  - low docs/*\nrules:\n", ":1:"],
+    ["an item without its dash", "rules:\n  x low docs/*\n", ":2:"],
+    ["an item without a glob", "rules:\n  - high\n", ":2:"],
+    ["an item with an extra field", "rules:\n  - low docs/* now\n", ":2:"],
+  ])("rejects %s, exiting 2 with nothing on stdout", (_name, policy, line) => {
+    const { status, stdout, output } = classifyWith(policy, ["docs/testing.md"]);
+
+    expect(status).toBe(2);
+    expect(stdout).toBe("");
+    expect(output).toContain(line);
+  });
+
+  test("rates a medium rule between low and high, in fixed-width columns", () => {
+    const { stdout } = classifyWith("rules:\n  - medium vault/*\n  - low docs/*\n", ["docs/a.md", "vault/b.md"]);
+
+    expect(stdout).toBe("low     docs/a.md\nmedium  vault/b.md\ntier=medium\n");
+  });
+
+  test("passes a backslash in a rule through to the glob", () => {
+    const { stdout } = classifyWith("rules:\n  - high docs/\\*.md\n", ["docs/a.md", "docs/*.md"]);
+
+    expect(stdout).toBe("medium  docs/a.md\nhigh    docs/*.md\ntier=high\n");
   });
 
   test("fails when the policy file is missing", () => {
