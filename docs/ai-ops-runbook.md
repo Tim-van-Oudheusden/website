@@ -71,9 +71,9 @@ The merge queue (`merge-queue.yml`, logic in `scripts/merge-queue.sh`) only
 picks a PR that meets all of the conditions in
 [`multi-agent.md`](multi-agent.md#merge-queue). Check them in order:
 
-1. **Draft or `hold`**: `gh pr view <N> --json isDraft,labels`. Hive sets
-   `hold` on its own PRs, and the queue sets it on a PR that failed
-   verification.
+1. **Draft or `hold`**: `gh pr view <N> --json isDraft,labels`. Hive's
+   hold-gated mode puts `hold` on Hive's own PRs, and the queue sets it on a PR
+   that failed verification.
 2. **`sentinel-alert`**: Hive's sentinel flagged the PR as touching sensitive
    files or matching a suspicious pattern, and its comment on the PR names the
    findings. Review the diff against them; only once you are satisfied, remove
