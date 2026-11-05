@@ -62,7 +62,7 @@ const restrictedImports = [
   { name: "tailwind-merge", message: cnPackageMessage },
 ];
 
-const sharedBackendBoundaryMessage = "Import only \"shared\" (index.ts) from back-end code. \"shared/articles\", \"shared/social-image\" and \"shared/social-links\" hold front-end-only code, kept out of index.ts specifically so the back-end bundle and its coverage run never load it.";
+const sharedBackendBoundaryMessage = "Back-end code must not import \"shared/articles\", \"shared/social-image\" or \"shared/social-links\". They hold front-end-only code, kept out of index.ts specifically so the back-end bundle and its coverage run never load it.";
 
 /* Enforce the split documented in shared/src/articles.ts, shared/src/social-image.ts and shared/src/social-links.ts. */
 const backendRestrictedSharedImports = [
