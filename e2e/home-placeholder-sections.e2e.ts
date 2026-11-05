@@ -26,6 +26,7 @@ test.describe("Home placeholder sections implemented", () => {
 
     await expect(section.getByRole("heading", { level: 3 })).toHaveText([
       "Minimal Android Launcher",
+      "Pindu launcher",
       "Dailies",
       "Obsidian Content Pipeline",
     ]);
