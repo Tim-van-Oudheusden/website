@@ -107,9 +107,11 @@ describe("pipeline charts", () => {
     const shown = xAxis.data.filter((label, index) => xAxis.axisLabel.interval(index, label));
 
     expect(shown).toEqual(["Fri 00:30", "Sat 00:30", "Sun 00:30", "Mon 00:30", "Tue 00:30", "Wed 00:30", "Thu 00:30"]);
+
     expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual([
       "Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu",
     ]);
+
     expect(xAxis.data.filter((label, index) => xAxis.axisTick.interval(index, label))).toEqual(shown);
   });
 

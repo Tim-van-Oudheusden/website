@@ -200,11 +200,16 @@ export function modeChart(hive: HiveWidgetView): PipelineChart {
 export function tasksChart(contributors: ContributorsView): PipelineChart {
   const { hours, peak, span } = contributors;
   const days = hours.length > 24;
+
   // A day starts where the weekday changes from the bucket before; the clock text is no guide, since a zone with a
   // fractional UTC offset has no ":00" midnight bucket. The series' first bucket has nothing to compare with.
-  const weekday = (label: string): string => label.slice(0, label.indexOf(" "));
-  const startsDay = (index: number, label: string): boolean =>
-    index > 0 && weekday(label) !== weekday(hours[index - 1]?.label ?? label);
+  function weekday(label: string): string {
+    return label.slice(0, label.indexOf(" "));
+  }
+
+  function startsDay(index: number, label: string): boolean {
+    return index > 0 && weekday(label) !== weekday(hours[index - 1]?.label ?? label);
+  }
 
   return {
     label: `Tasks per hour, ${span}, by contributor agents`,
