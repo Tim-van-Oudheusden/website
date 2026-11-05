@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import { useRef } from "react";
 import { Link } from "react-router";
 
+import { FEED_PATH } from "shared";
 import type { ArticleData, ArticleSummary } from "shared/articles";
 import { resolveSocialImagePath } from "shared/social-image";
 
@@ -117,6 +118,12 @@ function ArticleBody({ article, articles, toc }: ArticleBodyProps): JSX.Element 
         </ErrorBoundary>
       </div>
       <RelatedArticles article={article} articles={articles} />
+      <p className={ARTICLES_PAGE_LAYOUT_CLASSES.feed}>
+        Follow new articles with the
+        {" "}
+        <a href={FEED_PATH} className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.feedLink}>RSS feed</a>
+        .
+      </p>
     </div>
   );
 }

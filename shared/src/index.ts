@@ -19,6 +19,12 @@ export const SITE_OWNER = "Tim van Oudheusden";
 /** The home "start" section's hero copy, verbatim from `BRANDING.md` §2. */
 export const HERO_LINE = "I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.";
 
+/**
+ * Where the front-end server answers with the site's Atom feed. Hand-copied into
+ * the autodiscovery link in `front-end/index.html`, whose test asserts the copy.
+ */
+export const FEED_PATH = "/feed.xml";
+
 /* ── Network Constants ── */
 
 /** Default port the back-end listens on. */

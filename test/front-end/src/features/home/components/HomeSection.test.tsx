@@ -109,6 +109,13 @@ describe("HomeSection", () => {
     expect(copyright).toBe(`<p>© ${String(new Date().getFullYear())} ${SITE_OWNER}</p>`);
   });
 
+  test("links the site's feed from the socials footer, in the same tab", () => {
+    const feed = (renderSection("socials").match(/<a [^>]*>[^<]*/g) ?? []).find((tag) => tag.includes('href="/feed.xml"'));
+
+    expect(feed).toContain("RSS feed");
+    expect(feed).not.toContain("target=");
+  });
+
   test("links the experience section's full profile to the configured LinkedIn profile", () => {
     const profile = (renderSection("experience").match(/<a [^>]*>/g) ?? []).find((tag) => tag.includes("View full profile on LinkedIn"));
 

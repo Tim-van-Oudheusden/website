@@ -13,6 +13,7 @@ export const ARTICLES_PAGE_LAYOUT_CLASSES = {
   panelBox: "border-border bg-[var(--site-section-well-bg)] rounded-lg border px-4 py-3",
   cover: "mb-10 aspect-[1200/630] w-full overflow-hidden rounded-xl border border-border",
   related: "mt-16 border-t border-border pt-8",
+  feed: "mt-10 text-muted-foreground text-sm",
 } as const;
 
 export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
@@ -30,6 +31,7 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   relatedLink: "hover:bg-accent hover:text-accent-foreground -mx-3 flex flex-col gap-1 rounded-md px-3 py-2 transition-colors",
   relatedLinkTitle: "font-medium",
   relatedLinkDescription: "text-muted-foreground text-sm text-pretty",
+  feedLink: "text-foreground font-medium underline underline-offset-4 hover:text-primary",
   // On the wrapper around the shared MarkdownRenderer: article-only rhythm on
   // top of its prose styles (`[&>.prose]` outranks the renderer's own size
   // classes). Markdown `#` is a section heading here; the page title is the

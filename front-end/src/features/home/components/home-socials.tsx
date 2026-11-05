@@ -1,7 +1,7 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Rss } from "lucide-react";
 import type { ComponentType, JSX, SVGProps } from "react";
 
-import { SITE_OWNER } from "shared";
+import { FEED_PATH, SITE_OWNER } from "shared";
 import type { SocialNetwork } from "shared/social-links";
 
 import { GitHubIcon } from "@/shared/components/icons/github-icon";
@@ -23,14 +23,17 @@ const SITE_SOURCE_HREF = "https://github.com/Tim-van-Oudheusden/website";
 /** Outline pill in the site's neutral tokens, matching the project showcase's call to action. */
 const SOCIAL_LINK_CLASSES = "h-12 gap-3 rounded-full border-(--paper-3) bg-(--paper-2) px-5 text-base text-(--ink-5) shadow-none transition-colors duration-150 has-[>svg]:px-5 hover:border-(--ink-1) hover:bg-(--paper-1) hover:text-(--ink-5) dark:border-(--ink-2) dark:bg-(--popover) dark:text-(--paper-1) dark:hover:border-(--paper-3) dark:hover:bg-white/10 dark:hover:text-(--paper-1) motion-reduce:transition-none";
 
+/** The muted text links under the profiles: this site's source and its feed. */
+const SECONDARY_LINK_CLASSES = "inline-flex items-center gap-1 underline-offset-4 transition-colors duration-150 hover:text-(--ink-5) hover:underline focus-visible:text-(--ink-5) dark:hover:text-(--paper-1) dark:focus-visible:text-(--paper-1) motion-reduce:transition-none";
+
 interface HomeSocialsProps {
   section: HomeSocialsSection;
 }
 
 /**
  * Home 'socials' variant, the page's semantic footer, centered: one labelled
- * link per profile (official marks, monochrome), then the copyright line and a
- * link to this site's source.
+ * link per profile (official marks, monochrome), then the copyright line, a
+ * link to this site's source and one to its feed.
  */
 export function HomeSocials({ section }: HomeSocialsProps): JSX.Element {
   const currentYear = new Date().getFullYear();
@@ -67,10 +70,14 @@ export function HomeSocials({ section }: HomeSocialsProps): JSX.Element {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Source of this site (opens in a new tab)"
-            className="inline-flex items-center gap-1 underline-offset-4 transition-colors duration-150 hover:text-(--ink-5) hover:underline focus-visible:text-(--ink-5) dark:hover:text-(--paper-1) dark:focus-visible:text-(--paper-1) motion-reduce:transition-none"
+            className={SECONDARY_LINK_CLASSES}
           >
             Source of this site
             <ArrowUpRight aria-hidden="true" className="size-3.5" />
+          </a>
+          <a href={FEED_PATH} className={SECONDARY_LINK_CLASSES}>
+            RSS feed
+            <Rss aria-hidden="true" className="size-3.5" />
           </a>
         </div>
       </div>
