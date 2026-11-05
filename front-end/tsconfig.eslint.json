@@ -6,7 +6,8 @@
     "declaration": false,
     "declarationMap": false,
     "sourceMap": false,
-    "rootDir": "../.."
+    "rootDir": "../..",
+    "allowImportingTsExtensions": true
   },
   "include": ["src", "server", "vite.config.ts", "../test/front-end"],
   "exclude": []
