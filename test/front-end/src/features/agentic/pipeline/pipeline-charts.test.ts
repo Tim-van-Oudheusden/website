@@ -2,7 +2,6 @@ import { describe, expect, test } from "bun:test";
 
 import {
   authorsChart,
-  heatmapChart,
   modeChart,
   outcomesSankey,
   pullRequestsChart,
@@ -20,6 +19,7 @@ function css(): string {
 
 interface DrawnSeries {
   name?: string;
+  type?: string;
   data: unknown[];
   links?: { source: string; target: string; value: number }[];
   label?: { formatter: (params: unknown) => string };
@@ -48,16 +48,32 @@ describe("pipeline charts", () => {
     expect(queueChart(hive).table.caption).toBe("Queue, last 2 hours");
   });
 
-  test("mark the busiest hour of tasks, and grid every bucket by hour and day with a readable tooltip", () => {
+  test("draw one bar per hour and mark the busiest one", () => {
     const [tasks] = seriesOf(tasksChart(contributors));
-    const heatmap = heatmapChart(contributors);
-    const tooltip = heatmap.option(css).tooltip as { formatter: (params: unknown) => string };
 
+    expect(tasks?.type).toBe("bar");
     expect(tasks?.data).toEqual([1, 0, 4]);
     expect(tasks?.markPoint?.data).toEqual([{ type: "max", name: "Peak" }]);
-    expect(seriesOf(heatmap)[0]?.data).toEqual([[23, 0, 1], [0, 1, 0], [1, 1, 4]]);
-    expect(tooltip.formatter({ value: [1, 1, 4] })).toBe("Mon 2 Nov 01:00: 4 tasks");
-    expect(tooltip.formatter({})).toBe("");
+    expect(tasksChart(contributors).label).toBe("Tasks per hour, last 3 hours, by contributor agents");
+  });
+
+  test("label a span longer than a day only where each day starts, by its weekday", () => {
+    const twoDays = liveModel({
+      contributors: {
+        collectedAt: "2026-11-02T01:00:00.000Z",
+        tasksPerHour: Array<number>(48).fill(1),
+        fleetSize: Array<number>(48).fill(1),
+        runs7d: { total: 0, backends: [] },
+      },
+    }).contributors!;
+    const xAxis = tasksChart(twoDays).option(css).xAxis as {
+      data: string[];
+      axisLabel: { interval: (index: number, value: string) => boolean; formatter: (value: string) => string };
+    };
+    const shown = xAxis.data.filter((label, index) => xAxis.axisLabel.interval(index, label));
+
+    expect(shown).toEqual(["Sun 00:00", "Mon 00:00"]);
+    expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual(["Sun", "Mon"]);
   });
 
   test("leave out the peak mark when no task was done", () => {

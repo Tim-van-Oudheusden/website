@@ -118,18 +118,22 @@ describe("buildHiveViewModel contributors", () => {
     },
   };
 
-  test("dates each hourly bucket back from the collection hour, and grids the tasks by day and hour of day", () => {
+  test("dates each hourly bucket back from the collection hour, and names the span the buckets cover", () => {
     const view = buildHiveViewModel(poll(live(metrics({ contributors }))), NOW, "UTC").contributors;
 
     expect(view?.tasksTotal).toBe(3);
     expect(view?.fleet).toBe(2);
     expect(view?.hours.map((hour) => hour.label)).toEqual(["Sun 23:00", "Mon 00:00", "Mon 01:00"]);
     expect(view?.peak).toEqual({ label: "Mon 01:00", tasks: 2 });
+    expect(view?.span).toBe("last 3 hours");
+  });
 
-    expect(view?.heatmap).toEqual({
-      days: ["Sun 1 Nov", "Mon 2 Nov"],
-      cells: [{ day: 0, hour: 23, tasks: 1 }, { day: 1, hour: 0, tasks: 0 }, { day: 1, hour: 1, tasks: 2 }],
-    });
+  test.each([[168, "last week"], [1, "last hour"]] as const)("calls %i hourly buckets the %s", (hours, span) => {
+    const tasksPerHour = Array<number>(hours).fill(0);
+    const week = { ...contributors, tasksPerHour, fleetSize: tasksPerHour.map(() => 1) };
+    const view = buildHiveViewModel(poll(live(metrics({ contributors: week }))), NOW, "UTC").contributors;
+
+    expect(view?.span).toBe(span);
   });
 
   test("rates runs per backend with its own percentiles, and adds up only the counts across backends", () => {

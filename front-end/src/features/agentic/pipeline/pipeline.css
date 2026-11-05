@@ -41,10 +41,6 @@
   --pl-c-claude: var(--flexoki-purple-400);
   --pl-c-dependabot: var(--flexoki-blue-400);
   --pl-c-other: var(--flexoki-500);
-  --pl-c-heat-0: var(--flexoki-100);
-  --pl-c-heat-1: var(--flexoki-yellow-150);
-  --pl-c-heat-2: var(--flexoki-yellow-400);
-  --pl-c-heat-3: var(--flexoki-yellow-800);
 
   position: relative;
   overflow-x: clip;
@@ -1106,10 +1102,6 @@
   --pl-c-glow: var(--flexoki-yellow-300);
   --pl-c-abandon: var(--flexoki-600);
   --pl-c-opened: var(--flexoki-yellow-800);
-  --pl-c-heat-0: var(--flexoki-900);
-  --pl-c-heat-1: var(--flexoki-yellow-900);
-  --pl-c-heat-2: var(--flexoki-yellow-600);
-  --pl-c-heat-3: var(--flexoki-yellow-150);
 
   & .pl-title {
     text-shadow:

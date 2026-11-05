@@ -48,6 +48,14 @@ describe("PipelineView", () => {
     });
   });
 
+  test("shows the agents' tasks as one chart over the span the hours cover", () => {
+    const html = render(liveModel());
+    const agents = /<li class="pl-station" aria-labelledby="pl-station-2"[\s\S]*?<\/li>/.exec(html)?.[0] ?? "";
+    const titles = [...agents.matchAll(/<figcaption class="pl-panel-title">([^<]*)</g)].map((match) => match[1]);
+
+    expect(titles).toEqual(["Tasks per hour, last 3 hours"]);
+  });
+
   test("announces only the status word, and dates the update it describes", () => {
     const html = render(liveModel());
 

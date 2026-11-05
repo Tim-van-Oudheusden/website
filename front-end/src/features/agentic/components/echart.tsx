@@ -1,19 +1,12 @@
-import type { BarSeriesOption, HeatmapSeriesOption, LineSeriesOption, SankeySeriesOption } from "echarts/charts";
-import { BarChart, HeatmapChart, LineChart, SankeyChart } from "echarts/charts";
+import type { BarSeriesOption, LineSeriesOption, SankeySeriesOption } from "echarts/charts";
+import { BarChart, LineChart, SankeyChart } from "echarts/charts";
 import type {
   GridComponentOption,
   LegendComponentOption,
   MarkPointComponentOption,
   TooltipComponentOption,
-  VisualMapComponentOption,
 } from "echarts/components";
-import {
-  GridComponent,
-  LegendComponent,
-  MarkPointComponent,
-  TooltipComponent,
-  VisualMapComponent,
-} from "echarts/components";
+import { GridComponent, LegendComponent, MarkPointComponent, TooltipComponent } from "echarts/components";
 import type { ComposeOption, ECharts } from "echarts/core";
 import { init, use as registerChartParts } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
@@ -23,28 +16,24 @@ import { useEffect, useRef, useSyncExternalStore } from "react";
 /* Only what the page draws, so the chart chunk carries no unused chart types. */
 registerChartParts([
   BarChart,
-  HeatmapChart,
   LineChart,
   SankeyChart,
   GridComponent,
   LegendComponent,
   MarkPointComponent,
   TooltipComponent,
-  VisualMapComponent,
   CanvasRenderer,
 ]);
 
 /** An ECharts option limited to the charts and components registered above. */
 export type ChartOption = ComposeOption<
   | BarSeriesOption
-  | HeatmapSeriesOption
   | LineSeriesOption
   | SankeySeriesOption
   | GridComponentOption
   | LegendComponentOption
   | MarkPointComponentOption
   | TooltipComponentOption
-  | VisualMapComponentOption
 >;
 
 /** Reads a CSS custom property (or any property) as resolved on the chart, e.g. `css("--accent")`. */

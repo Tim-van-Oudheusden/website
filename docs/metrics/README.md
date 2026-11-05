@@ -220,9 +220,9 @@ widget token only the Hive part is blank.
 
 In the browser, one view model
 (`front-end/src/features/agentic/lib/hive-view-model.ts`) derives and formats
-everything the page shows from the response: totals, shares, the day × hour
-task grid and the status line. Hive's widget repeats each governor evaluation
-in its history; the view model keeps one point per timestamp.
+everything the page shows from the response: totals, shares, the span the
+hourly tasks cover and the status line. Hive's widget repeats each governor
+evaluation in its history; the view model keeps one point per timestamp.
 
 Deliberately excluded: the builder copies allowlisted counts, durations, modes
 and timestamps into fresh objects, so the response never contains repository
