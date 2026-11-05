@@ -142,9 +142,9 @@ gets fixed, stop each entry point:
 | Stop | Command | Undo |
 | --- | --- | --- |
 | Claude Code in CI | `gh workflow disable claude.yml` | `gh workflow enable claude.yml` |
-| Automatic merges | `gh workflow disable merge-queue.yml` | `gh workflow enable merge-queue.yml`, then `gh workflow run merge-queue.yml` |
+| The merge queue | `gh workflow disable merge-queue.yml` | `gh workflow enable merge-queue.yml`, then `gh workflow run merge-queue.yml` |
 | One PR | `gh pr edit <N> --add-label hold` | `gh pr edit <N> --remove-label hold` |
-| Hive | Pause it in Hive's own scheduler; it runs outside this repository | Resume it there |
+| Hive, including its merge sweep | Pause it in Hive's own scheduler; it runs outside this repository | Resume it there |
 
 CI keeps running on every PR either way, so nothing lands on `main` without
 passing the gates.

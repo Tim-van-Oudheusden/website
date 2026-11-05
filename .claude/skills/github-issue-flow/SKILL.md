@@ -40,5 +40,5 @@ required checks pass, so the issue branch is what you push.
    that link or a Conventional Commits title.
 3. Confirm `git status` shows up to date with `origin/<branch>`, and hand off
    the PR URL. The issue is done when the PR is open with CI running; the
-   merge queue (or the maintainer, for high-risk or `hold` PRs) merges it, and
-   the merge closes the issue.
+   merge queue or Hive's merge sweep (or the maintainer, for high-risk, `hold`
+   or `sentinel-alert` PRs) merges it, and the merge closes the issue.

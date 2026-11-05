@@ -17,8 +17,8 @@ direction. The coordination rules behind it are in
 | Branch | `<type>/<N>-<slug>` for local agents; `claude/issue-<N>-<timestamp>` for Claude Code in CI | `ci/968-strategy-report` | Convention |
 | Commit | `(#<N>)` at the end of the Conventional Commits subject | `ci: add weekly strategy report dashboard (#968)` | Convention |
 | Pull request | `Fixes #<N>` in the body (or `Closes`, `Resolves`, `Refs`); Hive's PRs also end with `— hive: agent=<name> … model=<model>` | #970 | `PR review rubric` check (`scripts/pr-review-check.sh`), required on `main` |
-| Merge | Merge commit `Merge pull request #<PR> from <owner>/<branch>`, written by the merge queue or the maintainer | `b96a92b` | `main` only changes through merged PRs |
-| Close | The merge closes the issue through `Fixes #<N>`: GitHub does it when the maintainer merges, `scripts/merge-queue.sh land` when the merge queue does (a `GITHUB_TOKEN` merge closes nothing) | #968 closed by #970 | GitHub, or the merge queue |
+| Merge | Merge commit `Merge pull request #<PR> from <owner>/<branch>`, written by the merge queue, Hive's merge sweep or the maintainer | `b96a92b` | `main` only changes through merged PRs |
+| Close | The merge closes the issue through `Fixes #<N>`: GitHub does it when the maintainer or Hive's merge sweep merges, `scripts/merge-queue.sh land` when the merge queue does (a `GITHUB_TOKEN` merge closes nothing) | #968 closed by #970 | GitHub, or the merge queue |
 
 The required rubric check is what guarantees the chain: a PR into `main`
 cannot merge without an issue link. Branch names and commit subjects carry the
