@@ -13,8 +13,9 @@
 # (RISK_TIER_POLICY overrides the path): the first rule whose glob matches a
 # path sets its tier, and unrecognised paths are medium. The file is YAML, read
 # here as a strict line subset: `rules:`, then one `- <tier> <glob>` item per
-# line, plus blank and `#` comment lines. A missing or malformed file exits 2
-# without printing a tier. Tiers are explained in docs/risk-tiers.md.
+# line, plus blank and `#` comment lines. A missing or malformed file, or one
+# with no rules, exits 2 without printing a tier. Tiers are explained in
+# docs/risk-tiers.md.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -55,6 +56,8 @@ while read -r item tier glob extra || [ -n "${item:-}" ]; do
   rule_ranks+=("${tier_rank[$tier]}")
   rule_globs+=("$glob")
 done < "$policy"
+[ "${#rule_globs[@]}" -gt 0 ] \
+  || fail "${policy}: no rules; expected one 'rules:' line, then '- <tier> <glob>' items"
 
 max=1
 while IFS= read -r -d "$delim" path || [ -n "$path" ]; do
