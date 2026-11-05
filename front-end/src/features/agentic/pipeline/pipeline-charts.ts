@@ -224,9 +224,7 @@ export function tasksChart(contributors: ContributorsView): PipelineChart {
         axisLabel: {
           color: css("--pl-c-ink"),
           fontSize: 11,
-          ...(days
-            ? { interval: startsDay, formatter: weekday }
-            : { hideOverlap: true }),
+          ...(days ? { interval: startsDay, formatter: weekday } : { hideOverlap: true }),
         },
       },
       yAxis: valueAxis(css),

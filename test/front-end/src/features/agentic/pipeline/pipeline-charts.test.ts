@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
+import { buildHiveViewModel } from "../../../../../../front-end/src/features/agentic/lib/hive-view-model";
 import {
   authorsChart,
   modeChart,
@@ -10,8 +11,6 @@ import {
   tasksChart,
 } from "../../../../../../front-end/src/features/agentic/pipeline/pipeline-charts";
 import type { PipelineChart } from "../../../../../../front-end/src/features/agentic/pipeline/pipeline-charts";
-
-import { buildHiveViewModel } from "../../../../../../front-end/src/features/agentic/lib/hive-view-model";
 
 import { liveMetrics, liveModel, NOW } from "./pipeline-model";
 
@@ -108,7 +107,9 @@ describe("pipeline charts", () => {
     const shown = xAxis.data.filter((label, index) => xAxis.axisLabel.interval(index, label));
 
     expect(shown).toEqual(["Fri 00:30", "Sat 00:30", "Sun 00:30", "Mon 00:30", "Tue 00:30", "Wed 00:30", "Thu 00:30"]);
-    expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual(["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"]);
+    expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual([
+      "Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu",
+    ]);
     expect(xAxis.data.filter((label, index) => xAxis.axisTick.interval(index, label))).toEqual(shown);
   });
 
