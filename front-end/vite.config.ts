@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-import { API_BASE, ASSET_PATH_PREFIX, BACKEND_HOST, BACKEND_PORT, FRONTEND_PORT } from "../shared/src/index";
+import { API_BASE, ASSET_PATH_PREFIX, BACKEND_HOST, BACKEND_PORT, FRONTEND_PORT } from "../shared/src/index.ts";
 
 /**
  * Resolve the back-end proxy target.
@@ -19,11 +19,11 @@ const proxyTarget = `http://${backendHost}:${BACKEND_PORT}`;
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  publicDir: path.resolve(__dirname, "../public"),
+  publicDir: path.resolve(import.meta.dirname, "../public"),
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
-      "shared": path.resolve(__dirname, "../shared/src"),
+      "@": path.resolve(import.meta.dirname, "src"),
+      "shared": path.resolve(import.meta.dirname, "../shared/src"),
     },
   },
   server: {

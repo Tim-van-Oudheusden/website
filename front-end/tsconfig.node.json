@@ -10,7 +10,8 @@
     "noEmit": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "types": ["bun"]
+    "types": ["bun"],
+    "allowImportingTsExtensions": true
   },
   "include": ["vite.config.ts", "../shared/src/index.ts"]
 }
