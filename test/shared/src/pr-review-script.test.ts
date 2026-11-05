@@ -33,6 +33,25 @@ describe("scripts/pr-review-check.sh", () => {
     }
   });
 
+  test("accepts every Conventional Commits type", () => {
+    for (const type of ["build", "chore", "ci", "docs", "feat", "fix", "perf", "refactor", "revert", "style", "test"]) {
+      expect(runCheck({ PR_TITLE: `${type}: keep embeds`, PR_BODY: "Fixes #1" }).status).toBe(0);
+    }
+  });
+
+  test("accepts digits, dots, underscores, slashes and dashes in a scope", () => {
+    expect(runCheck({ PR_TITLE: "fix(deploy/k8s_a-b.c): keep embeds", PR_BODY: "Fixes #1" }).status).toBe(0);
+  });
+
+  test.each([
+    ["with a type after other text", "wip feat: add form"],
+    ["with a capitalised scope", "fix(UI): add form"],
+    ["without a space after the colon", "fix(ui):add form"],
+    ["with an empty summary", "fix(ui): "],
+  ])("fails a title %s", (_name, title) => {
+    expect(runCheck({ PR_TITLE: title, PR_BODY: "Fixes #1" }).status).toBe(1);
+  });
+
   test("fails a title that does not follow Conventional Commits", () => {
     const { status, output } = runCheck({ PR_TITLE: "Add contact form", PR_BODY: "Fixes #123" });
 
@@ -50,12 +69,27 @@ describe("scripts/pr-review-check.sh", () => {
     }
   });
 
+  test("accepts every keyword form, in any case, however many spaces follow it", () => {
+    for (const keyword of ["fix", "fixes", "fixed", "close", "closes", "closed", "resolve", "resolves", "resolved", "ref", "refs"]) {
+      expect(runCheck({ PR_TITLE: "fix(content): keep embeds", PR_BODY: `${keyword} #12` }).status).toBe(0);
+    }
+
+    for (const body of ["FIXES #12", "Fixes  #12", "Fixes a/my-repo_x.y#12"]) {
+      expect(runCheck({ PR_TITLE: "fix(content): keep embeds", PR_BODY: body }).status).toBe(0);
+    }
+  });
+
+  test("fails a keyword with no space before the number", () => {
+    expect(runCheck({ PR_TITLE: "fix(content): keep embeds", PR_BODY: "Fixes#12" }).status).toBe(1);
+  });
+
   test("fails a body whose keyword is only part of another word", () => {
     for (const body of [
       "Follow-up to the hotfix #3; no issue yet.",
       "Uses the new prefix #1 format",
       "See prefs #2",
       "x_fixes #12",
+      "2fixes #12",
     ]) {
       expect(runCheck({ PR_TITLE: "fix(content): keep embeds", PR_BODY: body }).status).toBe(1);
     }
@@ -79,6 +113,22 @@ describe("scripts/pr-review-check.sh", () => {
     });
 
     expect(status).toBe(0);
+  });
+
+  test("does not exempt an author whose login merely contains 'bot'", () => {
+    const { status } = runCheck({
+      PR_TITLE: "fix(content): keep embeds",
+      PR_BODY: "Small cleanup.",
+      PR_AUTHOR: "robotics-fan",
+    });
+
+    expect(status).toBe(1);
+  });
+
+  test("reports each failure as a GitHub error annotation", () => {
+    const { output } = runCheck({ PR_TITLE: "wip", PR_BODY: "" });
+
+    expect(output.match(/^::error::/gm)).toHaveLength(2);
   });
 
   test("reports every failed rubric item, not just the first", () => {
