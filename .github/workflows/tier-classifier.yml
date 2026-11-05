@@ -2,7 +2,8 @@ name: Change classification
 
 # Classifies each pull request into a risk tier (low / medium / high) from the
 # paths it changes, so reviewers know how closely to look. Informational: the
-# tier lands in the job summary and never fails the run. Tiers and the review
+# tier lands in the job summary and no tier fails the run. A missing or
+# malformed risk assessment, or one with no rules, does. Tiers and the review
 # each one expects are defined in docs/risk-tiers.md.
 
 on:
