@@ -134,6 +134,20 @@ const MUTANTS: readonly ShellMutant[] = [
     killedBy: MERGE_QUEUE_TEST,
   },
   {
+    name: "next reports a PR it skips for a check that is not required (#1179)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `    if [ "$state" = UNSTABLE ]; then\n`,
+    to: `    if false; then\n`,
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
+    name: "next does not pick a PR past a red check that is not required (#1179)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `    [ "$state" = CLEAN ] || continue\n`,
+    to: `    [ "$state" = CLEAN ] || [ "$state" = UNSTABLE ] || continue\n`,
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
     name: "the draft leak guard fails instead of passing when grep cannot read the content directory (#1024)",
     file: "scripts/draft-leak-guard.sh",
     from: "    exit 2\n",

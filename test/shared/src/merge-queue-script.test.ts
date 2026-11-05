@@ -285,6 +285,21 @@ describe("scripts/merge-queue.sh next", () => {
     expect(calls).toEqual([]);
   });
 
+  // UNSTABLE means every required check passed and some other check did not.
+  // A run of the queue would otherwise skip the pull request without a word,
+  // and no later run retries it until that check turns green.
+  test("reports a pull request held back by a red check that is not required, without picking it", () => {
+    setUpRepository({ "README.md": "site\n" }, [{ number: 4, mergeStateStatus: "UNSTABLE" }]);
+
+    const { status, stdout, output, calls } = runScript("next");
+
+    expect(status).toBe(0);
+    expect(stdout).toContain("::notice title=Merge queue::#4 ");
+    expect(stdout).toContain("UNSTABLE");
+    expect(output).toEqual({});
+    expect(calls).toEqual([]);
+  });
+
   // An empty listing is an empty queue; a failed one is not, and must not
   // pass for it.
   test("fails instead of reporting an empty queue when listing the pull requests fails", () => {
