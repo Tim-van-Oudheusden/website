@@ -226,8 +226,9 @@ describe("quality-gate lists", () => {
   const gates = sorted(bunRunScripts(".github/workflows/ci.yml", "check"));
   const agentBullet = bulletReader("Quality gates after any change:");
 
-  // Where each file keeps its list: a bullet, or the PR template's checklist. The
-  // files mention other `bun run` commands elsewhere, so only this region is read.
+  // Where each file keeps its list: a bullet, the PR template's checklist, or one
+  // paragraph or table of a section. The files mention other `bun run` commands
+  // elsewhere, so only this region is read.
   const lists: [file: string, region: (text: string) => string][] = [
     ["CLAUDE.md", agentBullet],
     [".github/copilot-instructions.md", agentBullet],
@@ -235,6 +236,8 @@ describe("quality-gate lists", () => {
     [".claude/skills/github-issue-flow/SKILL.md", bulletReader("Gates before finishing:")],
     [".github/pull_request_template.md", (text) => section(text, "## Quality gates")],
     ["prompts/code-review.md", bulletReader("Gates green:")],
+    ["docs/testing.md", (text) => section(text, "## Agent sandbox: what runs where").split("\n\n")[0] ?? ""],
+    ["CONTRIBUTING.md", (text) => section(text, "## Quality gates").split("\n\n")[1] ?? ""],
   ];
 
   test("ci.yml check job has bun run steps to compare against", () => {
