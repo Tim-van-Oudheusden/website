@@ -10,7 +10,8 @@ export interface Attribution {
   model: string;
 }
 
-// Hive ends every PR body it writes with a signature line such as
+// Hive's signature is a line of its own, usually near the end of the body but
+// not always last, so match any line. It reads like
 // "— hive: agent=quality backend=claude model=claude-opus-5-5 effort=high";
 // contributor runs leave out `agent=`.
 const HIVE_SIGNATURE = /^— hive: (.*)$/m;
