@@ -17,7 +17,7 @@ import { HOME_SECTION_FRAME_CLASSES, HomeSectionFrame } from "./home-section-she
 const HEX_R = 30;
 const HEX_W = Math.sqrt(3) * HEX_R;
 
-/** Honeycomb cells as [column, row]; odd rows shift half a cell. Cells with a `glow` order light up in that order. */
+/** Honeycomb cells; odd rows shift half a cell. Cells with a `glow` order light up in that order. */
 const HONEYCOMB: readonly { col: number; row: number; glow: number | null }[] = [
   { col: 2, row: 0, glow: null },
   { col: 3, row: 0, glow: 0 },

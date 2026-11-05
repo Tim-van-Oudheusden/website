@@ -1,4 +1,4 @@
-/** The words every Agentic design shows, so the designs differ in look only, never in what they say. */
+/** The words of the Agentic page, kept apart from its layout; the home teaser reuses `flow`. */
 
 import { AGENTIC_INTRO } from "shared";
 
@@ -12,7 +12,7 @@ export interface CopyLink {
 export const AGENTIC_COPY = {
   title: "Agentic",
   intro: AGENTIC_INTRO,
-  /** How a change gets from an issue to the live site, in order; a design pairs its live numbers by `id`. */
+  /** How a change gets from an issue to the live site, in order; the pipeline pairs its live numbers by `id`. */
   flow: [
     { id: "issue", step: "Issue", text: "Work starts as a GitHub issue; its labels and assignee say who is working on it." },
     { id: "agent", step: "Agent", text: "A Hive agent, Claude Code in CI or I claim the issue and work on a branch." },
