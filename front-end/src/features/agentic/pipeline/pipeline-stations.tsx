@@ -5,7 +5,6 @@ import type { ContributorsView, HiveViewModel, HiveWidgetView, RepoView } from "
 
 import {
   authorsChart,
-  heatmapChart,
   modeChart,
   outcomesSankey,
   pullRequestsChart,
@@ -84,7 +83,6 @@ function QueueStation({ hive }: { hive: HiveWidgetView | null }): JSX.Element {
 
 function AgentsStation({ hive, contributors }: Pick<HiveViewModel, "hive" | "contributors">): JSX.Element {
   const tasks = contributors === null || contributors.hours.length === 0 ? null : tasksChart(contributors);
-  const heatmap = contributors !== null && contributors.heatmap.days.length > 1 ? heatmapChart(contributors) : null;
 
   return (
     <Station index={2} name="Agents" kicker="claiming work">
@@ -130,7 +128,7 @@ function AgentsStation({ hive, contributors }: Pick<HiveViewModel, "hive" | "con
       {contributors === null
         ? <Missing>{AGENTIC_COPY.missing.contributors}</Missing>
         : (
-            <div className={heatmap === null ? "pl-panels" : "pl-panels pl-panels--halves"}>
+            <div className="pl-panels">
               {tasks === null
                 ? (
                     <div className="pl-panel pl-panel--empty">
@@ -140,15 +138,8 @@ function AgentsStation({ hive, contributors }: Pick<HiveViewModel, "hive" | "con
                     </div>
                   )
                 : (
-                    <ChartPanel title={`Tasks per hour, last ${String(contributors.hours.length)} h`} chart={tasks} size="tall">
+                    <ChartPanel title={`Tasks per hour, ${contributors.span}`} chart={tasks} size="tall">
                       <p>{AGENTIC_COPY.notes.contributors}</p>
-                    </ChartPanel>
-                  )}
-              {heatmap === null
-                ? null
-                : (
-                    <ChartPanel title="Tasks by day and hour" chart={heatmap} size="tall">
-                      <p>Each cell is one hour; brighter cells did more tasks.</p>
                     </ChartPanel>
                   )}
             </div>

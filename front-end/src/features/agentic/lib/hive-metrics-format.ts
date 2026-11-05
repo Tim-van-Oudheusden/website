@@ -50,20 +50,6 @@ export function formatHour(epochMs: number, timeZone: string | null): string {
   return new Intl.DateTimeFormat("en-GB", { ...options, timeZone: timeZone ?? undefined }).format(epochMs).replace(",", "");
 }
 
-/** "Sun 1 Nov" for the day an hourly bucket falls on. */
-export function formatDay(epochMs: number, timeZone: string | null): string {
-  const options: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeric", month: "short" };
-
-  return new Intl.DateTimeFormat("en-GB", { ...options, timeZone: timeZone ?? undefined }).format(epochMs).replace(",", "");
-}
-
-/** The hour of day, 0 to 23, an instant falls in. */
-export function hourOfDay(epochMs: number, timeZone: string | null): number {
-  const options: Intl.DateTimeFormatOptions = { hour: "numeric", hourCycle: "h23" };
-
-  return Number(new Intl.DateTimeFormat("en-GB", { ...options, timeZone: timeZone ?? undefined }).format(epochMs));
-}
-
 /** A run time: "90 s", "6 min", "1.5 h". */
 export function formatDuration(seconds: number): string {
   if (seconds < 120) {
@@ -88,6 +74,11 @@ export function formatHours(hours: number): string {
 
 function lastCount(count: number, unit: string): string {
   return count === 1 ? `last ${unit}` : `last ${String(count)} ${unit}s`;
+}
+
+/** The span of `count` hourly buckets: "last hour", "last 23 hours", or "last week" for a week of them. */
+export function formatHourSpan(count: number): string {
+  return count === 7 * 24 ? "last week" : lastCount(count, "hour");
 }
 
 /**

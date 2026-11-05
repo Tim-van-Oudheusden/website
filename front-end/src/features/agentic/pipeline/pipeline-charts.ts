@@ -1,5 +1,5 @@
 import type { LegendComponentOption, TooltipComponentOption, XAXisComponentOption, YAXisComponentOption } from "echarts";
-import type { HeatmapSeriesOption, SankeySeriesOption } from "echarts/charts";
+import type { SankeySeriesOption } from "echarts/charts";
 import type { LinearGradientObject } from "echarts/core";
 
 import type { ChartOption, ChartTable, CssReader } from "../components/echart";
@@ -196,13 +196,18 @@ export function modeChart(hive: HiveWidgetView): PipelineChart {
   };
 }
 
-/** Contributor tasks per hour as one flowing area, the peak hour marked. */
+/** Whether an hourly label ("Mon 00:00") names the first hour of its day. */
+function startsDay(_index: number, label: string): boolean {
+  return label.endsWith(" 00:00");
+}
+
+/** Contributor tasks as one bar per hour, the peak hour marked; past a day, the axis names where each day starts. */
 export function tasksChart(contributors: ContributorsView): PipelineChart {
-  const { hours, peak } = contributors;
-  const dense = hours.length > 24;
+  const { hours, peak, span } = contributors;
+  const days = hours.length > 24;
 
   return {
-    label: `Tasks per hour, last ${String(hours.length)} hours, by contributor agents`,
+    label: `Tasks per hour, ${span}, by contributor agents`,
     table: {
       caption: "Tasks per hour",
       columns: ["Hour", "Tasks", "Contributor agents"],
@@ -210,21 +215,29 @@ export function tasksChart(contributors: ContributorsView): PipelineChart {
     },
     option: (css) => ({
       grid: { ...GRID, top: 14 },
-      tooltip: tooltip(css, "axis"),
-      xAxis: categoryAxis(css, hours.map((hour) => hour.label)),
+      tooltip: { ...tooltip(css, "axis"), axisPointer: { type: "shadow" } },
+      xAxis: {
+        type: "category",
+        data: hours.map((hour) => hour.label),
+        axisLine: { lineStyle: { color: css("--pl-c-axis") } },
+        axisTick: days ? { interval: startsDay, lineStyle: { color: css("--pl-c-axis") } } : { show: false },
+        axisLabel: {
+          color: css("--pl-c-ink"),
+          fontSize: 11,
+          ...(days
+            ? { interval: startsDay, formatter: (label: string): string => label.slice(0, label.indexOf(" ")) }
+            : { hideOverlap: true }),
+        },
+      },
       yAxis: valueAxis(css),
       series: [
         {
           name: "Tasks",
-          type: "line",
-          smooth: 0.4,
-          smoothMonotone: "x",
-          showSymbol: !dense,
-          symbolSize: 7,
+          type: "bar",
+          barCategoryGap: "20%",
           data: hours.map((hour) => hour.tasks),
           color: css("--pl-c-accent"),
-          lineStyle: { width: 2.5, shadowBlur: 14, shadowColor: alpha(css("--pl-c-glow"), 0.85) },
-          areaStyle: { color: fade(css, "--pl-c-accent", 0.6, 0.04) },
+          itemStyle: { borderRadius: [2, 2, 0, 0], shadowBlur: 8, shadowColor: alpha(css("--pl-c-glow"), 0.6) },
           ...(peak === null
             ? {}
             : {
@@ -244,81 +257,6 @@ export function tasksChart(contributors: ContributorsView): PipelineChart {
               }),
         },
       ],
-    }),
-  };
-}
-
-function heatmapSeries(heatmap: ContributorsView["heatmap"], css: CssReader): HeatmapSeriesOption {
-  return {
-    name: "Tasks",
-    type: "heatmap",
-    data: heatmap.cells.map((cell) => [cell.hour, cell.day, cell.tasks]),
-    itemStyle: { borderColor: css("--pl-c-panel"), borderWidth: 2, borderRadius: 3 },
-    emphasis: { itemStyle: { shadowBlur: 10, shadowColor: css("--pl-c-glow") } },
-  };
-}
-
-/** The same hourly buckets laid out as days × hours of the day. */
-export function heatmapChart(contributors: ContributorsView): PipelineChart {
-  const { heatmap } = contributors;
-  const hourLabels = Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, "0")}:00`);
-  const max = Math.max(1, ...heatmap.cells.map((cell) => cell.tasks));
-
-  return {
-    label: "Tasks per hour by day and hour of day",
-    table: {
-      caption: "Tasks by day and hour",
-      columns: ["Day", "Hour", "Tasks"],
-      rows: heatmap.cells.map((cell) => [
-        `${heatmap.days[cell.day] ?? ""} ${hourLabels[cell.hour] ?? ""}`,
-        hourLabels[cell.hour] ?? "",
-        cell.tasks,
-      ]),
-    },
-    option: (css) => ({
-      grid: { ...GRID, right: 8, top: 6, bottom: 34 },
-      tooltip: {
-        ...tooltip(css, "item"),
-        formatter: (params: unknown): string => {
-          const value = field(params, "value");
-
-          if (!Array.isArray(value)) {
-            return "";
-          }
-
-          const [hour, day, tasks] = value as number[];
-
-          return `${heatmap.days[day ?? 0] ?? ""} ${hourLabels[hour ?? 0] ?? ""}: ${String(tasks ?? 0)} tasks`;
-        },
-      },
-      xAxis: {
-        type: "category",
-        data: hourLabels,
-        axisLine: { show: false },
-        axisTick: { show: false },
-        splitArea: { show: false },
-        axisLabel: { color: css("--pl-c-ink"), fontSize: 10, interval: 5 },
-      },
-      yAxis: {
-        type: "category",
-        data: heatmap.days,
-        axisLine: { show: false },
-        axisTick: { show: false },
-        axisLabel: { color: css("--pl-c-ink"), fontSize: 11 },
-      },
-      visualMap: {
-        min: 0,
-        max,
-        orient: "horizontal",
-        left: "center",
-        bottom: 0,
-        itemHeight: 120,
-        itemWidth: 10,
-        text: ["more", "fewer"],
-        textStyle: { color: css("--pl-c-ink"), fontSize: 11 },
-        inRange: { color: [css("--pl-c-heat-0"), css("--pl-c-heat-1"), css("--pl-c-heat-2"), css("--pl-c-heat-3")] },
-      },
-      series: [heatmapSeries(heatmap, css)],
     }),
   };
 }

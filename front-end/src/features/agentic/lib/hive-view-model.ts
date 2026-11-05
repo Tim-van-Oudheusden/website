@@ -5,13 +5,12 @@ import type { PollingApiGetState } from "@/shared/hooks/use-polling-api-get";
 import {
   formatAgo,
   formatClock,
-  formatDay,
   formatDuration,
   formatHour,
   formatHours,
+  formatHourSpan,
   formatSpan,
   formatUtcDay,
-  hourOfDay,
 } from "./hive-metrics-format";
 
 const HOUR_MS = 3_600_000;
@@ -77,8 +76,8 @@ export interface ContributorsView {
   hours: { t: string; label: string; tasks: number; fleet: number }[];
   /** The busiest hour, the earliest on a tie; null when no task was done. */
   peak: { label: string; tasks: number } | null;
-  /** The same buckets by day (`days`, oldest first) and hour of day, for a day × hour grid. */
-  heatmap: { days: string[]; cells: { day: number; hour: number; tasks: number }[] };
+  /** "last week": the span the hourly buckets cover. */
+  span: string;
   /**
    * `total` is Hive's own count; `outcomes` adds up the backends' counts. Percentiles stay per backend: they are never
    * added up or averaged across backends.
@@ -174,36 +173,20 @@ function buildHive(hive: NonNullable<HivePublicMetrics["hive"]>, timeZone: strin
   };
 }
 
-/** Hourly buckets by the day they fall on and their hour of day, so the page can lay them out as a day × hour grid. */
-function buildHeatmap(buckets: readonly { epochMs: number; tasks: number }[], timeZone: string | null): ContributorsView["heatmap"] {
-  const days: string[] = [];
-  const cells = buckets.map(({ epochMs, tasks }) => {
-    const day = formatDay(epochMs, timeZone);
-
-    if (days.at(-1) !== day) {
-      days.push(day);
-    }
-
-    return { day: days.length - 1, hour: hourOfDay(epochMs, timeZone), tasks };
-  });
-
-  return { days, cells };
-}
-
 function buildContributors(contributors: NonNullable<HivePublicMetrics["contributors"]>, timeZone: string | null): ContributorsView {
   const { tasksPerHour, fleetSize, runs7d } = contributors;
   // The last bucket is the hour Hive collected the series in; the ones before it step back an hour each.
   const collected = Date.parse(contributors.collectedAt);
-  const buckets = tasksPerHour.map((tasks, index) => ({
-    epochMs: collected - ((tasksPerHour.length - 1 - index) * HOUR_MS),
-    tasks,
-  }));
-  const hours = buckets.map(({ epochMs, tasks }, index) => ({
-    t: new Date(epochMs).toISOString(),
-    label: formatHour(epochMs, timeZone),
-    tasks,
-    fleet: fleetSize[index] ?? 0,
-  }));
+  const hours = tasksPerHour.map((tasks, index) => {
+    const epochMs = collected - ((tasksPerHour.length - 1 - index) * HOUR_MS);
+
+    return {
+      t: new Date(epochMs).toISOString(),
+      label: formatHour(epochMs, timeZone),
+      tasks,
+      fleet: fleetSize[index] ?? 0,
+    };
+  });
   const peak = hours.reduce<ContributorsView["peak"]>(
     (best, hour) => (hour.tasks > (best?.tasks ?? 0) ? { label: hour.label, tasks: hour.tasks } : best),
     null,
@@ -228,7 +211,7 @@ function buildContributors(contributors: NonNullable<HivePublicMetrics["contribu
     fleet: fleetSize.at(-1) ?? 0,
     hours,
     peak,
-    heatmap: buildHeatmap(buckets, timeZone),
+    span: formatHourSpan(hours.length),
     runs: {
       total: runs7d.total,
       outcomes: {
