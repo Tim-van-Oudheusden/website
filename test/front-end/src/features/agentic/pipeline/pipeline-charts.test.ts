@@ -11,7 +11,9 @@ import {
 } from "../../../../../../front-end/src/features/agentic/pipeline/pipeline-charts";
 import type { PipelineChart } from "../../../../../../front-end/src/features/agentic/pipeline/pipeline-charts";
 
-import { liveModel } from "./pipeline-model";
+import { buildHiveViewModel } from "../../../../../../front-end/src/features/agentic/lib/hive-view-model";
+
+import { liveMetrics, liveModel, NOW } from "./pipeline-model";
 
 function css(): string {
   return "#100f0f";
@@ -74,6 +76,40 @@ describe("pipeline charts", () => {
 
     expect(shown).toEqual(["Sun 00:00", "Mon 00:00"]);
     expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual(["Sun", "Mon"]);
+  });
+
+  test("label each day of a week by its weekday in a zone with a fractional UTC offset", () => {
+    const week = buildHiveViewModel(
+      {
+        status: "success",
+        data: {
+          state: "live",
+          fetchedAt: "2026-11-05T17:00:20.000Z",
+          metrics: liveMetrics({
+            contributors: {
+              collectedAt: "2026-11-05T17:00:00.000Z",
+              tasksPerHour: Array<number>(168).fill(1),
+              fleetSize: Array<number>(168).fill(1),
+              runs7d: { total: 0, backends: [] },
+            },
+          }),
+        },
+        error: null,
+        stale: false,
+      },
+      NOW,
+      "Asia/Kolkata",
+    ).contributors!;
+    const xAxis = tasksChart(week).option(css).xAxis as {
+      data: string[];
+      axisLabel: { interval: (index: number, value: string) => boolean; formatter: (value: string) => string };
+      axisTick: { interval: (index: number, value: string) => boolean };
+    };
+    const shown = xAxis.data.filter((label, index) => xAxis.axisLabel.interval(index, label));
+
+    expect(shown).toEqual(["Fri 00:30", "Sat 00:30", "Sun 00:30", "Mon 00:30", "Tue 00:30", "Wed 00:30", "Thu 00:30"]);
+    expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual(["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"]);
+    expect(xAxis.data.filter((label, index) => xAxis.axisTick.interval(index, label))).toEqual(shown);
   });
 
   test("leave out the peak mark when no task was done", () => {

@@ -196,15 +196,15 @@ export function modeChart(hive: HiveWidgetView): PipelineChart {
   };
 }
 
-/** Whether an hourly label ("Mon 00:00") names the first hour of its day. */
-function startsDay(_index: number, label: string): boolean {
-  return label.endsWith(" 00:00");
-}
-
 /** Contributor tasks as one bar per hour, the peak hour marked; past a day, the axis names where each day starts. */
 export function tasksChart(contributors: ContributorsView): PipelineChart {
   const { hours, peak, span } = contributors;
   const days = hours.length > 24;
+  // A day starts where the weekday changes from the bucket before; the clock text is no guide, since a zone with a
+  // fractional UTC offset has no ":00" midnight bucket. The series' first bucket has nothing to compare with.
+  const weekday = (label: string): string => label.slice(0, label.indexOf(" "));
+  const startsDay = (index: number, label: string): boolean =>
+    index > 0 && weekday(label) !== weekday(hours[index - 1]?.label ?? label);
 
   return {
     label: `Tasks per hour, ${span}, by contributor agents`,
@@ -225,7 +225,7 @@ export function tasksChart(contributors: ContributorsView): PipelineChart {
           color: css("--pl-c-ink"),
           fontSize: 11,
           ...(days
-            ? { interval: startsDay, formatter: (label: string): string => label.slice(0, label.indexOf(" ")) }
+            ? { interval: startsDay, formatter: weekday }
             : { hideOverlap: true }),
         },
       },
