@@ -5,7 +5,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 
 import { ArticleLocationTrail } from "../../../../../../front-end/src/features/articles/components/article-location-trail";
-import type { TocNavigationDebugEvent } from "../../../../../../front-end/src/features/articles/lib/article-toc";
 import { extractArticleTableOfContents, navigateToArticleHeadingById } from "../../../../../../front-end/src/features/articles/lib/article-toc";
 import {
   ARTICLES_PAGE_LAYOUT_CLASSES,
@@ -174,13 +173,6 @@ describe("navigateToArticleHeadingById", () => {
   test("scrolls to heading and updates hash via native fragment path when the heading exists", () => {
     let receivedScrollOptions: ScrollIntoViewOptions | null = null;
     let updatedHash: string | null = null;
-    let loggedEvent: {
-      headingId: string;
-      foundTarget: boolean;
-      stage: "fallback-hash" | "scroll";
-      scrollYBefore: number;
-      scrollYAfter: number;
-    } | null = null;
 
     const didNavigate = navigateToArticleHeadingById("target-heading", {
       getElementById: () => ({
@@ -193,23 +185,11 @@ describe("navigateToArticleHeadingById", () => {
       setHash: (headingId: string) => {
         updatedHash = headingId;
       },
-      getScrollY: () => 200,
-      logNavigation: (event) => {
-        loggedEvent = event;
-      },
     });
 
     expect(didNavigate).toBe(true);
     expect<ScrollIntoViewOptions | null>(receivedScrollOptions).toEqual({ behavior: "smooth", block: "start" });
     expect<string | null>(updatedHash).toBe("target-heading");
-
-    expect<TocNavigationDebugEvent | null>(loggedEvent).toEqual({
-      headingId: "target-heading",
-      foundTarget: true,
-      stage: "scroll",
-      scrollYBefore: 200,
-      scrollYAfter: 200,
-    });
   });
 
   test("sidebar article button class does not include cursor-pointer, indicating Link-based navigation", () => {
@@ -218,34 +198,15 @@ describe("navigateToArticleHeadingById", () => {
 
   test("falls back to native hash updates when the heading target is missing", () => {
     let fallbackHash: string | null = null;
-    let loggedEvent: {
-      headingId: string;
-      foundTarget: boolean;
-      stage: "fallback-hash" | "scroll";
-      scrollYBefore: number;
-      scrollYAfter: number;
-    } | null = null;
 
     const didNavigate = navigateToArticleHeadingById("missing-heading", {
       getElementById: () => null,
       setHash: (hash: string) => {
         fallbackHash = hash;
       },
-      getScrollY: () => 0,
-      logNavigation: (event) => {
-        loggedEvent = event;
-      },
     });
 
     expect(didNavigate).toBe(false);
     expect<string | null>(fallbackHash).toBe("missing-heading");
-
-    expect<TocNavigationDebugEvent | null>(loggedEvent).toEqual({
-      headingId: "missing-heading",
-      foundTarget: false,
-      stage: "fallback-hash",
-      scrollYBefore: 0,
-      scrollYAfter: 0,
-    });
   });
 });

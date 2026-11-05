@@ -10,16 +10,6 @@ export interface ArticleTableOfContentsItem {
 export interface TocNavigationDependencies {
   getElementById: (id: string) => Pick<Element, "scrollIntoView"> | null;
   setHash: (headingId: string) => void;
-  getScrollY: () => number;
-  logNavigation: (event: TocNavigationDebugEvent) => void;
-}
-
-export interface TocNavigationDebugEvent {
-  headingId: string;
-  foundTarget: boolean;
-  stage: "fallback-hash" | "scroll";
-  scrollYBefore: number;
-  scrollYAfter: number;
 }
 
 export interface TocHeadingRect {
@@ -30,10 +20,6 @@ export const DEFAULT_TOC_NAVIGATION_DEPENDENCIES: TocNavigationDependencies = {
   getElementById: (id) => document.getElementById(id),
   setHash: (headingId) => {
     window.location.hash = headingId;
-  },
-  getScrollY: () => window.scrollY,
-  logNavigation: () => {
-    // Production navigation is not logged; tests inject a recorder to observe events.
   },
 };
 
@@ -68,33 +54,16 @@ export function navigateToArticleHeadingById(
   headingId: string,
   dependencies: TocNavigationDependencies = DEFAULT_TOC_NAVIGATION_DEPENDENCIES,
 ): boolean {
-  const scrollYBefore = dependencies.getScrollY();
   const targetHeading = dependencies.getElementById(headingId);
 
   if (targetHeading === null) {
     dependencies.setHash(headingId);
-
-    dependencies.logNavigation({
-      headingId,
-      foundTarget: false,
-      stage: "fallback-hash",
-      scrollYBefore,
-      scrollYAfter: dependencies.getScrollY(),
-    });
 
     return false;
   }
 
   targetHeading.scrollIntoView({ behavior: "smooth", block: "start" });
   dependencies.setHash(headingId);
-
-  dependencies.logNavigation({
-    headingId,
-    foundTarget: true,
-    stage: "scroll",
-    scrollYBefore,
-    scrollYAfter: dependencies.getScrollY(),
-  });
 
   return true;
 }
