@@ -229,11 +229,11 @@ type BlockRead
 const NOT_AN_ITEM = "has a line that is not a `- item`";
 
 /**
- * Parse a block of indented child lines. Returns a string[] when every item is
- * a scalar, otherwise a list of objects. A line that neither starts a `- `
- * item nor is a `key: value` field of an object item, or that is out of line
- * with its list or item, is returned so the caller can report it rather than
- * drop it.
+ * Parse a block of indented child lines into a list, in source order: each
+ * item is a typed scalar or, with a `key: value` field, an object, and one list
+ * can hold both. A line that neither starts a `- ` item nor is a `key: value`
+ * field of an object item, or that is out of line with its list or item, is
+ * returned so the caller can report it rather than drop it.
  */
 function parseBlockChildren(children: string[]): BlockRead {
   const items: FrontmatterValue[] = [];

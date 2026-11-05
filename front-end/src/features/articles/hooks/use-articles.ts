@@ -44,7 +44,7 @@ export interface UseArticlesResult {
  *
  * Selects the URL slug when present (otherwise the API-driven default), then loads
  * the selected article's body. All three transitions are observable from the
- * returned tuple; the page stays a pure composition of the result.
+ * returned object; the page stays a pure composition of the result.
  */
 export function useArticles(urlSlug: string | undefined): UseArticlesResult {
   const [pickedSlug, setPickedSlug] = useState<string | null>(urlSlug ?? null);

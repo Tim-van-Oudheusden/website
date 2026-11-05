@@ -20,7 +20,7 @@ const HOUR_MS = 3_600_000;
 export const GOVERNOR_MODES: readonly GovernorMode[] = ["idle", "quiet", "busy", "surge"];
 
 /**
- * What a design can say about its numbers: "Live · updated 40 s ago", "Stale · last update 14:05" or "Offline".
+ * What the page can say about its numbers: "Live · updated 40 s ago", "Stale · last update 14:05" or "Offline".
  * `at` is when the back-end last got a good upstream answer, for a `<time>` element; `detail` is null when there is
  * no time to give.
  */
@@ -93,7 +93,7 @@ export interface ContributorsView {
 /** Who wrote a merged PR (docs/metrics/README.md, "How PRs are attributed"). */
 export type MergedSource = "hive" | "claudeCode" | "dependabot" | "other";
 
-/** Authors in the order a design lists them, Hive first. */
+/** Authors in the order the page lists them, Hive first. */
 export const MERGED_SOURCES: readonly { key: MergedSource; name: string }[] = [
   { key: "hive", name: "Hive" },
   { key: "claudeCode", name: "Claude Code" },
@@ -114,12 +114,12 @@ export interface RepoView {
   timeToMerge: { median: string | null; p90: string | null };
 }
 
-/** Everything a design shows, derived from one poll of `GET /api/hive/metrics`. */
+/** Everything the page shows, derived from one poll of `GET /api/hive/metrics`. */
 export interface HiveViewModel {
   status: HiveStatusView;
   /** One line to show instead of every part, while the first poll loads or when no part is available; else null. */
   fallback: string | null;
-  /** Each part is null when its upstream is missing; a design says so in one line and keeps the other parts. */
+  /** Each part is null when its upstream is missing; the page says so in one line and keeps the other parts. */
   hive: HiveWidgetView | null;
   contributors: ContributorsView | null;
   repo: RepoView | null;
@@ -174,7 +174,7 @@ function buildHive(hive: NonNullable<HivePublicMetrics["hive"]>, timeZone: strin
   };
 }
 
-/** Hourly buckets by the day they fall on and their hour of day, so a design can lay them out as a day × hour grid. */
+/** Hourly buckets by the day they fall on and their hour of day, so the page can lay them out as a day × hour grid. */
 function buildHeatmap(buckets: readonly { epochMs: number; tasks: number }[], timeZone: string | null): ContributorsView["heatmap"] {
   const days: string[] = [];
   const cells = buckets.map(({ epochMs, tasks }) => {
