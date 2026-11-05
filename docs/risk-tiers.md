@@ -3,8 +3,10 @@
 Every pull request is classified into one of three risk tiers from the paths it
 changes. `.github/workflows/tier-classifier.yml` runs `scripts/tier-classify.sh`
 on each PR and posts the tier, plus every changed file with its own tier, to the
-run's job summary. The classification never fails the run: it tells reviewers
-how closely to look, and it decides who merges. The
+run's job summary. No tier fails the run: the tier tells reviewers how closely
+to look, and it decides who merges. A missing or malformed risk assessment, or
+one with no rules, does fail the run, because the classifier then exits 2
+without a tier. The
 [merge queue](multi-agent.md#merge-queue) merges low- and medium-risk PRs once
 their required checks pass, and Hive's merge sweep may do the same, so review
 them before then or add `hold`. The maintainer merges high-risk PRs after the
