@@ -12,7 +12,8 @@ let stubDir: string;
 let contentDir: string;
 let argsLog: string;
 
-// Stub `bun`: `bun audit` prints an advisory and exits 1 when STUB_AUDIT_FAIL=1.
+// Stub `bun`: `bun audit` prints an advisory and exits 1 when STUB_AUDIT_FAIL=1,
+// or when it is not run from the repository root, whose lockfile it reads.
 // Every invocation's arguments are appended, one per line, to $STUB_ARGS_LOG.
 function writeBunStub(): void {
   const stubPath = join(stubDir, "bun");
@@ -22,7 +23,7 @@ function writeBunStub(): void {
     `#!/usr/bin/env bash
 printf '%s\\n' "$@" >> "$STUB_ARGS_LOG"
 if [ "$1" = audit ]; then
-  if [ "\${STUB_AUDIT_FAIL:-0}" = 1 ]; then
+  if [ ! -f scripts/nightly-compliance.sh ] || [ "\${STUB_AUDIT_FAIL:-0}" = 1 ]; then
     echo "high: fastify vulnerable to something - https://github.com/advisories/GHSA-xxxx"
     exit 1
   fi
@@ -38,7 +39,7 @@ exit 0
 
 function runScript(env: Record<string, string> = {}): { status: number | null; report: string; log: string } {
   const result = spawnSync("bash", [scriptPath], {
-    cwd: rootPath,
+    cwd: workDir,
     encoding: "utf8",
     env: {
       ...process.env,
@@ -73,10 +74,20 @@ describe("scripts/nightly-compliance.sh", () => {
     const { status, report } = runScript();
 
     expect(status).toBe(0);
-    expect(report).toContain("# Nightly compliance");
-    expect(report).toContain("`abc1234`");
-    expect(report).toMatch(/Dependency audit.*pass/);
-    expect(report).toMatch(/Draft leak guard.*pass/);
+
+    expect(report).toBe(
+      [
+        "# Nightly compliance",
+        "",
+        "Commit: `abc1234`",
+        "",
+        "| Check | Result |",
+        "| ----- | ------ |",
+        "| Dependency audit (high+) | ✅ pass |",
+        "| Draft leak guard | ✅ pass |",
+        "",
+      ].join("\n"),
+    );
   });
 
   test("fails when the dependency audit finds high-severity advisories", () => {
@@ -97,9 +108,17 @@ describe("scripts/nightly-compliance.sh", () => {
     expect(command).toBe("audit");
     expect(flags).toContain("--audit-level=high");
 
-    for (const flag of flags.filter((f) => f !== "--audit-level=high")) {
+    const ignores = flags.filter((f) => f !== "--audit-level=high");
+
+    for (const flag of ignores) {
       expect(flag).toMatch(/^--ignore=(GHSA(-[23456789cfghjmpqrvwx]{4}){3}|CVE-\d{4}-\d{4,})$/);
     }
+
+    // Read from the script, because entries are meant to go when a fix ships.
+    const list = /^AUDIT_IGNORE=\((.*)\)$/m.exec(readFileSync(scriptPath, "utf8"))?.[1];
+
+    expect(list).toBeDefined();
+    expect(ignores).toEqual((list ?? "").split(/\s+/).filter(Boolean).map((id) => `--ignore=${id}`));
   });
 
   test("fails and names the file when content contains a draft", () => {

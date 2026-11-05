@@ -10,32 +10,32 @@ const scriptPath = resolve(rootPath, "scripts/e2e.sh");
 let stubDir: string;
 let callLog: string;
 
-// Each stub records its argv to the call log; STUB_FAIL_<NAME>=1 makes it exit 1.
+// Each stub records its argv to the call log; STUB_FAIL_<NAME>=1 makes it exit 1,
+// and so does running anywhere but the repository root.
 function writeStub(name: string): void {
   const stubPath = join(stubDir, name);
 
   writeFileSync(
     stubPath,
-    `#!/usr/bin/env bash\necho "${name} $*" >> "${callLog}"\n[ "\${STUB_FAIL_${name.toUpperCase()}:-0}" = 1 ] && exit 1\nexit 0\n`,
+    `#!/usr/bin/env bash\necho "${name} $*" >> "${callLog}"\n[ -f scripts/e2e.sh ] || exit 1\n[ "\${STUB_FAIL_${name.toUpperCase()}:-0}" = 1 ] && exit 1\nexit 0\n`,
   );
 
   chmodSync(stubPath, 0o755);
 }
 
-function runScript(env: Record<string, string> = {}): { status: number | null; calls: string[] } {
+function runScript(env: Record<string, string> = {}): { status: number | null; calls: string[]; stderr: string } {
   const result = spawnSync("bash", [scriptPath], {
-    cwd: rootPath,
+    cwd: stubDir,
     encoding: "utf8",
     env: {
       ...process.env,
       PATH: `${stubDir}:${process.env["PATH"] ?? ""}`,
-      E2E_WAIT_INTERVAL: "0",
       ...env,
     },
   });
   const calls = readFileSync(callLog, "utf8").trim().split("\n");
 
-  return { status: result.status, calls };
+  return { status: result.status, calls, stderr: result.stderr };
 }
 
 beforeEach(() => {
@@ -43,7 +43,7 @@ beforeEach(() => {
   callLog = join(stubDir, "calls.log");
   writeFileSync(callLog, "");
 
-  for (const name of ["podman", "curl", "bun"]) {
+  for (const name of ["podman", "curl", "bun", "sleep"]) {
     writeStub(name);
   }
 });
@@ -78,9 +78,10 @@ describe("scripts/e2e.sh", () => {
   });
 
   test("gives up after the configured polls, dumps pod logs, skips tests, and tears down", () => {
-    const { status, calls } = runScript({ STUB_FAIL_CURL: "1", E2E_WAIT_ATTEMPTS: "3" });
+    const { status, calls, stderr } = runScript({ STUB_FAIL_CURL: "1", E2E_WAIT_ATTEMPTS: "3" });
 
     expect(status).not.toBe(0);
+    expect(stderr).toContain("services did not become ready");
     expect(calls.filter((call) => call === "curl -fsS --max-time 5 http://localhost:3001/health")).toHaveLength(3);
     expect(calls).not.toContain("bun run test:e2e");
 
@@ -88,6 +89,26 @@ describe("scripts/e2e.sh", () => {
       "podman pod logs website",
       "podman kube down deploy/kube/dev.yaml",
     ]);
+  });
+
+  test("waits E2E_WAIT_INTERVAL seconds after each failed poll", () => {
+    const { calls } = runScript({ STUB_FAIL_CURL: "1", E2E_WAIT_ATTEMPTS: "2", E2E_WAIT_INTERVAL: "7" });
+
+    expect(calls.filter((call) => call.startsWith("sleep "))).toEqual(["sleep 7", "sleep 7"]);
+  });
+
+  test("polls 60 times, 5 seconds apart, by default, as CI does", () => {
+    const { status, calls } = runScript({ STUB_FAIL_CURL: "1" });
+
+    expect(status).not.toBe(0);
+    expect(calls.filter((call) => call === "sleep 5")).toHaveLength(60);
+  });
+
+  test("stops at the first command that fails and starts no pod", () => {
+    const { status, calls } = runScript({ STUB_FAIL_PODMAN: "1" });
+
+    expect(status).not.toBe(0);
+    expect(calls).toEqual(["podman build -f front-end/Dockerfile --target dev -t localhost/website/front-end:dev ."]);
   });
 
   test("bounds every readiness poll so a service that accepts but never answers cannot hang the run", () => {

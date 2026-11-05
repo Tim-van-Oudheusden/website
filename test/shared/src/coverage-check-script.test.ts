@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -11,13 +11,17 @@ let stubDir: string;
 
 // Stub `bun`: `bun test … --coverage` prints a Bun-style coverage table with
 // STUB_FUNCS / STUB_LINES as the `All files` row, omits that row when
-// STUB_NO_SUMMARY=1, and exits with STUB_TEST_STATUS (default 0).
+// STUB_NO_SUMMARY=1, and exits with STUB_TEST_STATUS (default 0). The table goes
+// to stderr, as Bun's does. Each run appends its directory name and arguments to
+// bun-calls.log.
 function writeBunStub(): void {
   const stubPath = join(stubDir, "bun");
 
   writeFileSync(
     stubPath,
     `#!/usr/bin/env bash
+echo "$(basename "$PWD") $*" >> "${stubDir}/bun-calls.log"
+exec 1>&2
 echo "---------------------|---------|---------|-------------------"
 echo "File                 | % Funcs | % Lines | Uncovered Line #s"
 echo "---------------------|---------|---------|-------------------"
@@ -35,11 +39,11 @@ exit "\${STUB_TEST_STATUS:-0}"
   chmodSync(stubPath, 0o755);
 }
 
-function runCheck(
-  floors: { funcs: string; lines: string },
-  env: Record<string, string>,
+function runArgs(
+  args: string[],
+  env: Record<string, string> = {},
 ): { status: number | null; stdout: string; stderr: string } {
-  const result = spawnSync("bash", [scriptPath, "shared", floors.funcs, floors.lines], {
+  const result = spawnSync("bash", [scriptPath, ...args], {
     cwd: rootPath,
     encoding: "utf8",
     env: {
@@ -50,6 +54,19 @@ function runCheck(
   });
 
   return { status: result.status, stdout: result.stdout, stderr: result.stderr };
+}
+
+function runCheck(
+  floors: { funcs: string; lines: string },
+  env: Record<string, string>,
+): { status: number | null; stdout: string; stderr: string } {
+  return runArgs(["shared", floors.funcs, floors.lines], env);
+}
+
+function bunCalls(): string[] {
+  const log = join(stubDir, "bun-calls.log");
+
+  return existsSync(log) ? readFileSync(log, "utf8").trim().split("\n") : [];
 }
 
 beforeEach(() => {
@@ -74,6 +91,44 @@ describe("scripts/coverage-check.sh", () => {
     expect(stdout).toContain(
       "Coverage (shared): funcs 95.50%, lines 90.00% (floors: 90% funcs, 90% lines)",
     );
+  });
+
+  test("runs the workspace's own tests with coverage, from inside the workspace", () => {
+    runCheck({ funcs: "90", lines: "90" }, { STUB_FUNCS: "95.50", STUB_LINES: "90.00" });
+
+    expect(bunCalls()).toEqual(["shared test ../test/shared --coverage"]);
+  });
+
+  test("passes when both figures sit exactly on their floors", () => {
+    const { status } = runCheck({ funcs: "90", lines: "80" }, { STUB_FUNCS: "90.00", STUB_LINES: "80.00" });
+
+    expect(status).toBe(0);
+  });
+
+  test("compares functions with the functions floor and lines with the lines floor", () => {
+    const { status } = runCheck({ funcs: "95", lines: "80" }, { STUB_FUNCS: "90.00", STUB_LINES: "96.00" });
+
+    expect(status).not.toBe(0);
+  });
+
+  // A floor that defaulted to 0 would pass any coverage at all.
+  test.each([
+    ["a workspace", [], "usage: coverage-check.sh"],
+    ["a functions floor", ["shared"], "min funcs % required"],
+    ["a lines floor", ["shared", "90"], "min lines % required"],
+  ])("refuses to run without %s", (_name, args, message) => {
+    const { status, stderr } = runArgs(args, { STUB_FUNCS: "0.00", STUB_LINES: "0.00" });
+
+    expect(status).not.toBe(0);
+    expect(stderr).toContain(message);
+    expect(bunCalls()).toEqual([]);
+  });
+
+  test("fails without running anything when the workspace does not exist", () => {
+    const { status } = runArgs(["no-such-workspace", "90", "90"], { STUB_FUNCS: "100.00", STUB_LINES: "100.00" });
+
+    expect(status).not.toBe(0);
+    expect(bunCalls()).toEqual([]);
   });
 
   test("fails when function coverage is below its floor", () => {
