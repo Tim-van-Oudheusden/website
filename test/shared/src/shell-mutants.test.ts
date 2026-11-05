@@ -800,6 +800,13 @@ const MUTANTS: readonly ShellMutant[] = [
       .join("|"),
     killedBy: REVIEW_TEST,
   })),
+  {
+    name: "the risk tier classifier refuses a policy with no rules instead of rating every path medium (#1169)",
+    file: TIER_SCRIPT,
+    from: `[ "\${#rule_globs[@]}" -gt 0 ] \\\n  || fail`,
+    to: `true \\\n  || fail`,
+    killedBy: TIER_TEST,
+  },
 ];
 
 let shadowRoot: string | null = null;

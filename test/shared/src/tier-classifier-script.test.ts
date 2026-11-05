@@ -236,6 +236,18 @@ describe("scripts/tier-classify.sh with a custom policy", () => {
     expect(stdout).toBe("medium  docs/a.md\nhigh    docs/*.md\ntier=high\n");
   });
 
+  test.each([
+    ["an empty policy", ""],
+    ["a comments-only policy", "# Risk assessment\n# rules come later\n"],
+    ["a rules: line with no items", "# Risk assessment\nrules:\n\n"],
+  ])("rejects %s instead of rating every path medium", (_name, policy) => {
+    const { status, stdout, output } = classifyWith(policy, [".github/workflows/ci.yml"]);
+
+    expect(status).toBe(2);
+    expect(stdout).toBe("");
+    expect(output).toContain("no rules");
+  });
+
   test("fails when the policy file is missing", () => {
     const { status, output } = classify(["docs/testing.md"], { RISK_TIER_POLICY: join(workDir, "absent.policy") });
 
