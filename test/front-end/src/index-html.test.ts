@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { BRAND_COLOR, SITE_NAME } from "shared";
+import { BRAND_COLOR, FEED_PATH, SITE_NAME } from "shared";
 
 describe("index.html", () => {
   test("titles the browser tab with the site name", () => {
@@ -31,7 +31,7 @@ describe("index.html", () => {
 
     expect(feeds).toHaveLength(1);
     expect(feeds[0]).toContain('type="application/atom+xml"');
-    expect(feeds[0]).toContain('href="/feed.xml"');
+    expect(feeds[0]).toContain(`href="${FEED_PATH}"`);
     expect(feeds[0]).toContain(`title="${SITE_NAME}"`);
   });
 

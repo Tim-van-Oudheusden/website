@@ -1,5 +1,5 @@
 import type { ArticleFrontmatter, ContentFrontmatter } from "shared";
-import { AGENTIC_PAGE_PATH, HERO_LINE, SITE_NAME, SITE_OWNER, STANDALONE_PAGE_SLUGS } from "shared";
+import { AGENTIC_PAGE_PATH, FEED_PATH, HERO_LINE, SITE_NAME, SITE_OWNER, STANDALONE_PAGE_SLUGS } from "shared";
 
 import { contentPagePath } from "./social-meta";
 
@@ -111,7 +111,7 @@ export function renderFeed(origin: string, items: readonly ContentFrontmatter[])
     `  <title>${escapeXml(SITE_NAME)}</title>`,
     `  <updated>${updated}</updated>`,
     `  <author><name>${escapeXml(SITE_OWNER)}</name></author>`,
-    `  <link rel="self" href="${escapeXml(`${origin}/feed.xml`)}"/>`,
+    `  <link rel="self" href="${escapeXml(`${origin}${FEED_PATH}`)}"/>`,
     `  <link rel="alternate" href="${escapeXml(`${origin}/`)}"/>`,
     ...entries,
     "</feed>",
