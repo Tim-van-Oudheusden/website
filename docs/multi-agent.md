@@ -70,8 +70,8 @@ coverage gate or the PR review rubric succeeds, a draft is marked ready, or
 
 - comes from this repository, not a fork, and is not a draft;
 - has no `hold` label and no `sentinel-alert` label;
-- passes every required check (merge state `CLEAN`, so review threads are
-  resolved too);
+- has merge state `CLEAN`: every required check passes, no other check is red
+  or pending, and review threads are resolved;
 - is not high risk ([`risk-tiers.md`](risk-tiers.md)), rated from `main`'s
   `scripts/tier-classify.sh`.
 
