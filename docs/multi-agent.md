@@ -75,8 +75,9 @@ coverage gate or the PR review rubric succeeds, a draft is marked ready, or
 - is not high risk ([`risk-tiers.md`](risk-tiers.md)), rated from `main`'s
   `scripts/tier-classify.sh`.
 
-It merges that PR onto the current `main` and runs lint, typecheck, unit tests
-and build on the result; E2E and the prod-assets check are not re-run there.
+It merges that PR onto the current `main` and runs lint, duplication,
+typecheck, unit tests and build on the result; E2E and the prod-assets check
+are not re-run there.
 If they pass and neither the PR nor `main` moved, it merges the PR (a merge
 commit), closes the issues the PR links with `Fixes #<N>` (or `Closes`,
 `Resolves`), and starts CI, the coverage gate and the quality report on `main`.

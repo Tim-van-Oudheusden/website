@@ -248,3 +248,11 @@ describe("quality-gate lists", () => {
     expect(sorted(matchAll(region(readRootFile(file)), /`bun run ([\w:-]+)`/g))).toEqual(gates);
   });
 });
+
+describe(".github/workflows/merge-queue.yml verify job", () => {
+  test("re-runs every bun run step of the ci.yml check job, and no other", () => {
+    expect(sorted(bunRunScripts(".github/workflows/merge-queue.yml", "verify"))).toEqual(
+      sorted(bunRunScripts(".github/workflows/ci.yml", "check")),
+    );
+  });
+});
