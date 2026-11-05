@@ -104,6 +104,31 @@ describe("pipeline charts", () => {
     expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual(["Sun", "Mon"]);
   });
 
+  test("label the day whose midnight a daylight saving change skips", () => {
+    // Havana goes from 00:00 to 01:00 on Sunday 2026-03-08. The first bucket is Thu 23:00, so the second opens a day.
+    const week = liveMetrics({
+      contributors: {
+        collectedAt: "2026-03-13T03:00:00.000Z",
+        tasksPerHour: Array<number>(168).fill(1),
+        fleetSize: Array<number>(168).fill(1),
+        runs7d: { total: 0, backends: [] },
+      },
+    });
+    const { contributors: havana } = buildHiveViewModel(
+      { status: "success", data: { state: "live", fetchedAt: "2026-03-13T03:00:20.000Z", metrics: week }, error: null, stale: false },
+      NOW,
+      "America/Havana",
+    );
+    const { data, axisLabel } = tasksChart(havana!).option(css).xAxis as {
+      data: string[];
+      axisLabel: { interval: (index: number, value: string) => boolean };
+    };
+
+    expect(data.filter((label, index) => axisLabel.interval(index, label))).toEqual([
+      "Fri 00:00", "Sat 00:00", "Sun 01:00", "Mon 00:00", "Tue 00:00", "Wed 00:00", "Thu 00:00",
+    ]);
+  });
+
   test("leave out the peak mark when no task was done", () => {
     const quiet = liveModel({
       contributors: {
