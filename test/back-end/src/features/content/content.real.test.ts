@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from "bun:test";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -516,6 +516,24 @@ describe("real content directory sanity check", () => {
     );
 
     expect(missing).toEqual([]);
+  });
+
+  test("Obsidian Content Pipeline has a raster cover and a 1200×630 PNG link preview from files in the repository", async () => {
+    const project = (await getContentBySlug("obsidian-content-pipeline", REAL_CONTENT_DIR)) as ProjectFrontmatter | null;
+    const referenced = [project?.coverImage, project?.socialImage];
+    const missing = referenced.filter(
+      (imagePath) => imagePath === null || imagePath === undefined || !existsSync(repositoryFileFor(imagePath)),
+    );
+
+    expect(missing).toEqual([]);
+    // Link previews ignore SVG, and a project falls back to its cover when it has no social image.
+    expect(project?.coverImage).toEndWith(".webp");
+
+    // A PNG stores its width and height as big-endian integers at bytes 16 and 20.
+    const preview = readFileSync(repositoryFileFor(project?.socialImage ?? ""));
+
+    expect(preview.subarray(1, 4).toString("ascii")).toBe("PNG");
+    expect([preview.readUInt32BE(16), preview.readUInt32BE(20)]).toEqual([1200, 630]);
   });
 
   test("Dailies embeds its introduction video", async () => {
