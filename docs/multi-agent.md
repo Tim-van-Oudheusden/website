@@ -104,6 +104,6 @@ logic lives in `scripts/merge-queue.sh`.
 | `agent/<name>` | Hive | The Hive agent that filed the issue |
 | `hive/claimed-by-<agent>` | Hive | That Hive agent holds the issue |
 | `stage/<NNN>-<name>` | Hive | Where the issue or PR is in Hive's pipeline, from `stage/010-actionable` to `stage/100-merge-queue`; the label descriptions on GitHub define each stage |
-| `hold` | Hive, the merge queue, or a person | Keeps the PR out of the merge queue until removed: Hive sets it on its PRs, the queue on a PR that failed on the latest `main` |
+| `hold` | Hive, the merge queue, or a person | Keeps the PR out of the merge queue until removed: Hive's hold-gated mode puts it on Hive's PRs, the queue on a PR that failed on the latest `main` |
 | `sentinel-alert` | Hive's sentinel sweep | The PR touches sensitive files or matches a suspicious pattern (a weakened CI gate, removed tests, an exposed secret, escalated permissions). Keeps it out of the merge queue and out of Hive's approval and auto-merge paths; a maintainer reviews the PR, removes the label, and the queue picks it up again |
 | `acmm` | Hive | A gap found by Hive's ACMM evaluation |
