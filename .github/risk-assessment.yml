@@ -17,14 +17,33 @@ rules:
   # CI gates, review rubric, release job, and this file itself.
   - high    .github/*
 
-  # Runtime and image configuration.
+  # Runtime, image and build configuration.
   - high    deploy/*
   - high    Dockerfile*
   - high    */Dockerfile
   - high    .devcontainer/*
+  - high    .dockerignore
+  - high    */vite.config.ts
 
   # Gate and release tooling.
   - high    scripts/*
+
+  # Gate configuration: what lint, duplication, typecheck and the test runners
+  # enforce in CI. These gates pass a change that loosens their own config.
+  - high    eslint.config.js
+  - high    .jscpd.json
+  - high    tsconfig*.json
+  - high    */tsconfig*.json
+  - high    bunfig.toml
+  - high    */bunfig.toml
+  - high    playwright.config.ts
+
+  # The tests that pin the workflows, CODEOWNERS, these rules and the merge queue.
+  - high    test/shared/src/codeowners.test.ts
+  - high    test/shared/src/merge-queue-script.test.ts
+  - high    test/shared/src/tier-classifier-script.test.ts
+  - high    test/shared/src/workflow-*.test.ts
+  - high    test/shared/src/*-workflow.test.ts
 
   # Dependencies (supply chain).
   - high    package.json

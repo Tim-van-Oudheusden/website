@@ -1,7 +1,8 @@
 # Code owners: the maintainer owns every path the risk tiers rate high
-# (docs/risk-tiers.md): CI and gates, runtime and images, scripts,
-# dependencies, and agent instructions. A pull request that touches one asks
-# for his review; the merge queue leaves those pull requests for him to merge.
+# (docs/risk-tiers.md): CI and gates, gate configuration and the tests that pin
+# the gates, runtime, images and build, scripts, dependencies, and agent
+# instructions. A pull request that touches one asks for his review; the merge
+# queue leaves those pull requests for him to merge.
 # Low- and medium-risk paths have no owner, so their PRs merge through the
 # queue once the required checks pass.
 #
@@ -13,14 +14,31 @@
 # CI gates, review rubric, release job, and this file itself.
 /.github/          @Tim-van-Oudheusden
 
-# Runtime and image configuration.
+# Runtime, image and build configuration.
 /deploy/           @Tim-van-Oudheusden
 /Dockerfile*       @Tim-van-Oudheusden
 Dockerfile         @Tim-van-Oudheusden
 /.devcontainer/    @Tim-van-Oudheusden
+/.dockerignore     @Tim-van-Oudheusden
+vite.config.ts     @Tim-van-Oudheusden
 
 # Gate and release tooling.
 /scripts/          @Tim-van-Oudheusden
+
+# Gate configuration: what lint, duplication, typecheck and the test runners
+# enforce in CI.
+/eslint.config.js      @Tim-van-Oudheusden
+/.jscpd.json           @Tim-van-Oudheusden
+tsconfig*.json         @Tim-van-Oudheusden
+bunfig.toml            @Tim-van-Oudheusden
+/playwright.config.ts  @Tim-van-Oudheusden
+
+# The tests that pin the workflows, CODEOWNERS, the risk rules and the merge queue.
+/test/shared/src/codeowners.test.ts              @Tim-van-Oudheusden
+/test/shared/src/merge-queue-script.test.ts      @Tim-van-Oudheusden
+/test/shared/src/tier-classifier-script.test.ts  @Tim-van-Oudheusden
+/test/shared/src/workflow-*.test.ts              @Tim-van-Oudheusden
+/test/shared/src/*-workflow.test.ts              @Tim-van-Oudheusden
 
 # Dependencies (supply chain).
 package.json       @Tim-van-Oudheusden

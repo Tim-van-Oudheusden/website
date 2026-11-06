@@ -53,6 +53,38 @@ describe("scripts/tier-classify.sh", () => {
     }
   });
 
+  test.each([
+    "eslint.config.js",
+    ".jscpd.json",
+    "tsconfig.json",
+    "tsconfig.eslint.json",
+    "front-end/tsconfig.node.json",
+    "test/front-end/tsconfig.json",
+    "bunfig.toml",
+    "front-end/bunfig.toml",
+    "playwright.config.ts",
+    ".dockerignore",
+    "front-end/vite.config.ts",
+    "test/shared/src/codeowners.test.ts",
+    "test/shared/src/merge-queue-script.test.ts",
+    "test/shared/src/tier-classifier-script.test.ts",
+    "test/shared/src/workflow-permissions.test.ts",
+    "test/shared/src/ci-workflow.test.ts",
+  ])("rates %s high: a gate passes a change that loosens its own config", (path) => {
+    expect(classify([path]).output).toContain("tier=high");
+  });
+
+  test("leaves configuration that fails no gate, and the other tests, at medium", () => {
+    for (const path of [
+      "stryker/base.mjs",
+      ".editorconfig",
+      "test/shared/src/doc-claims.test.ts",
+      "test/front-end/src/App.test.tsx",
+    ]) {
+      expect(classify([path]).output).toContain("tier=medium");
+    }
+  });
+
   test("classifies research notes, static assets and top-level prose as low risk", () => {
     const { output } = classify(["research/font_recommendations.md", "public/favicon.svg", "README.md"]);
 

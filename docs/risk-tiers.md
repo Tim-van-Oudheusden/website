@@ -13,8 +13,9 @@ them before then or add `hold`. The maintainer merges high-risk PRs after the
 review below.
 
 The **highest tier of any changed file wins**, so one workflow edit makes the
-whole PR high risk. A path that matches no rule is **medium** — new kinds of
-files get a real review until they are classified.
+whole PR high risk. A path that matches no rule is **medium**, and medium merges
+without a human review, so a new kind of file that configures a gate or the
+build needs a high rule in the same PR that adds it.
 
 Run it locally against your branch:
 
@@ -33,13 +34,20 @@ matches no rule, so it is rated medium whatever its directory.
 Changes that alter how code is built, shipped, gated, or how agents behave.
 A mistake here can bypass every other check or reach production directly.
 
-| Paths                                                              | Why                                  |
-| ------------------------------------------------------------------ | ------------------------------------ |
-| `.github/**`                                                       | CI gates, review rubric, release job |
-| `deploy/**`, `Dockerfile*`, `*/Dockerfile`, `.devcontainer/**`     | Runtime and image configuration      |
-| `scripts/**`                                                       | Gate and release tooling             |
-| `package.json`, `*/package.json`, `bun.lock`                       | Dependencies (supply chain)          |
-| `AGENTS.md`, `CLAUDE.md`, `.claude/**`, `.cursor/**`, `prompts/**` | Agent instructions and governance    |
+| Paths                                                                                                 | Why                                                 |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `.github/**`                                                                                          | CI gates, review rubric, release job                |
+| `deploy/**`, `Dockerfile*`, `*/Dockerfile`, `.devcontainer/**`, `.dockerignore`, `*/vite.config.ts`   | Runtime, image and build configuration              |
+| `scripts/**`                                                                                          | Gate and release tooling                            |
+| `eslint.config.js`, `.jscpd.json`, `tsconfig*.json`, `bunfig.toml`, `playwright.config.ts`            | What lint, duplication, typecheck and tests enforce |
+| `test/shared/src/` tests of the workflows, CODEOWNERS, these rules and the merge queue                | The tests that pin the gates                        |
+| `package.json`, `*/package.json`, `bun.lock`                                                          | Dependencies (supply chain)                         |
+| `AGENTS.md`, `CLAUDE.md`, `.claude/**`, `.cursor/**`, `prompts/**`                                    | Agent instructions and governance                   |
+
+`tsconfig*.json`, `bunfig.toml` and `*/vite.config.ts` apply at any depth. A gate
+passes a change that loosens its own configuration, so these need a person even
+though CI stays green. `stryker/` stays medium while the mutation score fails no
+job; give it a high rule when that score gets a floor.
 
 Review: a human reviews the full diff line by line. Dependency changes follow
 the rules in `AGENTS.md` (approved, exact version, lockfile from `bun install`).
@@ -54,8 +62,8 @@ needs a matching CODEOWNERS pattern in the same PR.
 ## Tier: medium
 
 Application code and anything not otherwise classified: `front-end/`,
-`back-end/`, `shared/`, `test/`, `e2e/`, root config such as `tsconfig.json`
-and `eslint.config.js`.
+`back-end/`, `shared/`, `e2e/`, the tests in `test/` other than those rated
+high, `stryker/`, and root files such as `.editorconfig`.
 
 Review: the standard rubric in `.github/workflows/review.yml` — TDD evidence,
 behaviour-level tests, no weakened tests, quality gates green.
@@ -83,5 +91,5 @@ then rate medium; set `RISK_TIER_POLICY` to try a different file locally.
 The engine and the shipped rules are covered by
 `test/shared/src/tier-classifier-script.test.ts`. Update the rules, their
 tests, and the tables above in the same PR. The config (`high .github/*`) and
-`scripts/tier-classify.sh` (`high scripts/*`) are high risk; this doc and the
-test take their ordinary tiers (low and medium).
+`scripts/tier-classify.sh` (`high scripts/*`) are high risk, and so is the
+test; this doc takes its ordinary tier (low).
