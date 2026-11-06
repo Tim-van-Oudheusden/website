@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 interface EslintMessage {
   ruleId: string | null;
   message: string;
+  line: number;
 }
 
 interface EslintFileResult {
@@ -22,6 +23,7 @@ interface FixtureLocation {
 const rootPath = resolve(import.meta.dirname, "../../..");
 const sharedFixture: FixtureLocation = { directory: import.meta.dirname, extension: "ts" };
 const frontEndFixture: FixtureLocation = { directory: resolve(rootPath, "test/front-end/src"), extension: "tsx" };
+const e2eFixture: FixtureLocation = { directory: resolve(rootPath, "e2e"), extension: "ts" };
 
 /**
  * Runs the repo ESLint config on `source`; with `fix`, autofix runs as a dry run and only
@@ -206,5 +208,69 @@ describe("lint house style", () => {
     for (const message of restrictedImportMessages) {
       expect(message).toContain("\"cn\"");
     }
+  }, 30_000);
+
+  // test/ and e2e/ take their no-restricted-syntax list from different config blocks.
+  test.each([
+    ["test/", sharedFixture],
+    ["e2e/", e2eFixture],
+  ])("rejects every way of switching a test off in %s", (_folder, location) => {
+    const disabled = [
+      "test.skip(\"a\", run);",
+      "test.skip.each([1])(\"a\", run);",
+      "test.skipIf(true)(\"a\", run);",
+      "test.todo(\"a\", run);",
+      "test.todoIf(true)(\"a\", run);",
+      "test.if(false)(\"a\", run);",
+      "test.failing(\"a\", run);",
+      "test.fixme(\"a\", run);",
+      "test.fail(\"a\", run);",
+      "test.concurrent.skip(\"a\", run);",
+      "test.serial.skip(\"a\", run);",
+      "it.skip(\"a\", run);",
+      "describe.skip(\"a\", run);",
+      "describe.todo(\"a\", run);",
+      "test.describe.skip(\"a\", run);",
+      "test.describe.fixme(\"a\", run);",
+      "xtest(\"a\", run);",
+      "xit(\"a\", run);",
+      "xdescribe(\"a\", run);",
+    ];
+    const allowed = [
+      "test(\"a\", run);",
+      "test.each([1])(\"a\", run);",
+      "test.concurrent(\"a\", run);",
+      "test.slow();",
+      "test.step(\"a\", run);",
+      "test.describe(\"a\", run);",
+      "test.describe.configure({ mode: \"serial\" });",
+      "describe.each([1])(\"a\", run);",
+      "tokens.skip(1);",
+      "pattern.test(\"a\");",
+    ];
+    const source = [...disabled, ...allowed, ""].join("\n");
+
+    const flaggedLines = eslintRun(source, location, false).messages
+      .filter((message) => message.ruleId === "no-restricted-syntax" && message.message.includes("switch a test off"))
+      .map((message) => message.line);
+
+    expect(flaggedLines).toEqual(disabled.map((_line, index) => index + 1));
+  }, 30_000);
+
+  test("rejects a TypeScript suppression even when it gives a reason", () => {
+    const source = [
+      "// @ts-nocheck the whole file is generated",
+      "// @ts-expect-error the type is wrong here anyway",
+      "export const first: number = \"a\";",
+      "// @ts-ignore the type is wrong here anyway",
+      "export const second: number = \"b\";",
+      "",
+    ].join("\n");
+
+    const flaggedLines = eslintRun(source, sharedFixture, false).messages
+      .filter((message) => message.ruleId === "@typescript-eslint/ban-ts-comment")
+      .map((message) => message.line);
+
+    expect(flaggedLines).toEqual([1, 2, 4]);
   }, 30_000);
 });
