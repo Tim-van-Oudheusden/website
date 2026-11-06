@@ -135,7 +135,7 @@ describe("deploy/systemd/validate-manifest.ts", () => {
   });
 
   // podman decodes the manifest with Go's encoding/json, which matches keys case-insensitively
-  // (folding ſ, K and İ too), so it reads these as the checked keys.
+  // (folding ſ, K and İ too), so it reads these as the checked keys. None is on the key lists.
   test.each([
     ["HostNetwork", (pod: Pod) => Object.assign(pod.spec, { HostNetwork: true })],
     ["hostpid", (pod: Pod) => Object.assign(pod.spec, { hostpid: true })],
@@ -154,6 +154,38 @@ describe("deploy/systemd/validate-manifest.ts", () => {
     ["hostIPC", "  hostIPC: !!bool \"true\"\n"],
   ])("rejects %s given as a tagged string", (_label, line) => {
     expect(validateManifest(prodYaml.replace("\nspec:\n", `\nspec:\n${line}`))).not.toEqual([]);
+  });
+
+  // Bun reads `? key` in a flow mapping as the key "[object Object]", and leaves a tagged key's
+  // base64 text undecoded. podman's yaml.v3 and sigs.k8s.io/yaml read the key itself (#1210).
+  const container = "{name: back-end, image: \"ghcr.io/tim-van-oudheusden/website/back-end:latest\"";
+
+  test.each([
+    ["an explicit hostNetwork key", `kind: Pod\nmetadata: {name: website}\nspec: {containers: [${container}}], ? hostNetwork : true}\n`],
+    ["an explicit annotations key", `kind: Pod\nmetadata: {name: website, ? annotations : {a: b}}\nspec: {containers: [${container}}]}\n`],
+    ["an explicit hostPort key", `kind: Pod\nmetadata: {name: website}\nspec: {containers: [${container}, ports: [{containerPort: 3001, ? hostPort : 8080}]}]}\n`],
+    ["an explicit securityContext key", `kind: Pod\nmetadata: {name: website}\nspec: {containers: [${container}, ? securityContext : {privileged: true}}]}\n`],
+    ["a !!binary hostNetwork key", `kind: Pod\nmetadata: {name: website}\nspec:\n  !!binary aG9zdE5ldHdvcms=: true\n  containers: [${container}}]\n`],
+    ["a !!binary securityContext key", `kind: Pod\nmetadata: {name: website}\nspec:\n  containers:\n    - name: back-end\n      image: ghcr.io/tim-van-oudheusden/website/back-end:latest\n      !!binary c2VjdXJpdHlDb250ZXh0: {privileged: true}\n`],
+  ])("rejects %s, which only podman reads", (_label, manifest) => {
+    expect(validateManifest(manifest)).not.toEqual([]);
+  });
+
+  // A key this file has no rule for is refused, whatever it does: the list of keys is the rule (#1210).
+  test.each([
+    ["subPath", (pod: Pod) => Object.assign(backEnd(pod), {
+      volumeMounts: [{ name: "views-data", mountPath: "/host", subPath: "../../../.." }],
+    })],
+    ["subPathExpr", (pod: Pod) => Object.assign(backEnd(pod), {
+      volumeMounts: [{ name: "views-data", mountPath: "/host", subPathExpr: "../../.." }],
+    })],
+    ["volumeDevices", (pod: Pod) => Object.assign(backEnd(pod), { volumeDevices: [{ name: "views-data", devicePath: "/dev/x" }] })],
+    ["hostUsers", (pod: Pod) => Object.assign(pod.spec, { hostUsers: true })],
+    ["configMapKeyRef", (pod: Pod) => Object.assign(backEnd(pod), {
+      env: [{ name: "T", valueFrom: { configMapKeyRef: { name: "any", key: "k" } } }],
+    })],
+  ])("rejects the key %s, which has no rule here", (_label, change) => {
+    expect(validateManifest(mutated(change))).not.toEqual([]);
   });
 
   test.each([

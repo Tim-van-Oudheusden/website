@@ -19,12 +19,15 @@
 //   - a list field (containers, volumes, ports, env, ...) only absent or a
 //     list, so no item is skipped unseen (#1117);
 //   - a checked switch (hostNetwork, privileged, ...) only absent or exactly
-//     false, and no key that differs from a checked key only in case.
+//     false;
+//   - no key, at any depth, outside CHECKED_KEYS and INERT_KEYS.
 //
 // podman parses differently from Bun.YAML: yaml.v3 honours a tag such as
-// `!!bool "true"` that Bun reads as a string, and Go's encoding/json matches
-// keys case-insensitively (`HostNetwork`, `hoſtNetwork`). The last two rules
-// close those gaps.
+// `!!bool "true"` that Bun reads as a string, and a key that Bun reads as
+// something else (`!!binary` on a key, `? key` in a flow mapping), and Go's
+// encoding/json matches keys case-insensitively (`HostNetwork`, `hoſtNetwork`).
+// The last two rules close those gaps, the key list by refusing whatever it
+// cannot name rather than guessing what podman would read there (#1210).
 //
 // Usage (website-update.sh runs it with bun from the previously running image,
 // with no network): bun validate-manifest.ts <prod.yaml>. Prints one line per
@@ -44,16 +47,25 @@ const SECURITY_KEYS = [
   "readOnlyRootFilesystem",
   "runAsNonRoot",
 ] as const;
-// Every key this file reads. Go's encoding/json, which podman decodes the
-// manifest with, also matches a key that differs from one of these in case,
-// and folds ſ, K and İ to s, k and i. field() takes only these keys, so a read
-// of a key missing here fails the typecheck instead of reopening that gap.
+// Every key this file reads. field() takes only these keys, so a read of a key
+// missing here fails the typecheck instead of leaving it refused by checkKeys.
 const CHECKED_KEYS = [
   "kind", "metadata", "name", "annotations", "spec", "securityContext",
   "hostNetwork", "hostPID", "hostIPC", "initContainers", "containers", "image",
   "ports", "hostPort", "hostIP", "volumeMounts", "mountPropagation", "envFrom",
   "env", "valueFrom", "secretKeyRef", "volumes", "emptyDir", "hostPath", "path",
   "add", ...SECURITY_KEYS,
+] as const;
+
+// Keys the prod manifest needs that this file has no rule for, because none of
+// them can ask the host for anything. A new field in prod.yaml goes here only
+// after that has been checked: until then the manifest is refused and the
+// running one stays, and the host's hand-copied file needs the change too.
+const INERT_KEYS = [
+  "apiVersion", "labels", "app", "restartPolicy", "imagePullPolicy", "value",
+  "containerPort", "livenessProbe", "exec", "command", "initialDelaySeconds",
+  "periodSeconds", "timeoutSeconds", "failureThreshold", "mountPath", "type",
+  "key", "optional", "drop",
 ] as const;
 
 type CheckedKey = (typeof CHECKED_KEYS)[number];
@@ -90,7 +102,7 @@ function switchedOn(value: unknown): boolean {
   return value !== undefined && value !== false;
 }
 
-/** Reports every key under `value` that podman could read as a checked key this file does not see. */
+/** Reports every key under `value` that is not on the two key lists. */
 function checkKeys(value: unknown, problems: string[]): void {
   if (Array.isArray(value)) {
     for (const item of value) {
@@ -105,10 +117,7 @@ function checkKeys(value: unknown, problems: string[]): void {
   }
 
   for (const [key, child] of Object.entries(value)) {
-    const folded = key.toLowerCase();
-    const isAscii = /^[\x20-\x7e]*$/.test(key);
-
-    if (!isAscii || CHECKED_KEYS.some((checked) => checked !== key && checked.toLowerCase() === folded)) {
+    if (![...CHECKED_KEYS, ...INERT_KEYS].some((allowed) => allowed === key)) {
       problems.push(`key ${JSON.stringify(key)} is not allowed`);
     }
 
