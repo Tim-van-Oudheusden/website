@@ -421,6 +421,35 @@ describe("GET /api/hive/metrics state", () => {
   });
 });
 
+describe("GET /api/hive/metrics failure log", () => {
+  test("warns about the failed part by name, without the widget token", async () => {
+    const lines: string[] = [];
+    const logger = { level: "warn", stream: { write: (line: string) => lines.push(line) } };
+    const upstream = fakeFetch((url) => (url === `${BASE_URL}/api/widget/summary` ? failing() : recorded(url)));
+
+    app = await buildApp({ contentDir: import.meta.dir, logger }, createViewStore(":memory:"), {
+      config: CONFIGURED,
+      fetch: upstream.fetch,
+      now: () => NOW,
+    });
+
+    const { status, body } = await getMetrics(app);
+
+    expect(status).toBe(200);
+    expect(body.state).toBe("live");
+    expect(lines).toHaveLength(1);
+
+    expect(JSON.parse(lines[0] ?? "")).toMatchObject({
+      level: 40,
+      part: "widget",
+      reason: "status 503",
+      msg: "hive upstream unavailable",
+    });
+
+    expect(lines[0]).not.toContain("widget-secret");
+  });
+});
+
 describe("GET /api/hive/metrics response", () => {
   test("lets browsers and the edge cache it for 30 s", async () => {
     const server = await start(CONFIGURED, fakeFetch(recorded));
