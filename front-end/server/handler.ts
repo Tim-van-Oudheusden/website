@@ -123,7 +123,7 @@ export function createRequestHandler(options: RequestHandlerOptions): (request: 
     if (url.pathname === FEED_PATH) {
       const items = await fetchContentList(options, backendHeaders);
 
-      // An empty feed would read as "no articles"; a 503 tells feed readers to retry.
+      // An empty feed would read as "no entries"; a 503 tells feed readers to retry.
       if (items === null) {
         return new Response("Feed temporarily unavailable", {
           status: 503,
