@@ -37,14 +37,16 @@ A mistake here can bypass every other check or reach production directly.
 | Paths                                                                                                 | Why                                                 |
 | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
 | `.github/**`                                                                                          | CI gates, review rubric, release job                |
-| `deploy/**`, `Dockerfile*`, `*/Dockerfile`, `.devcontainer/**`, `.dockerignore`, `*/vite.config.ts`   | Runtime, image and build configuration              |
+| `deploy/**`, `Dockerfile*`, `*/Dockerfile`, `.devcontainer/**`, `.dockerignore`, `*/vite.config.*`    | Runtime, image and build configuration              |
 | `scripts/**`                                                                                          | Gate and release tooling                            |
-| `eslint.config.js`, `.jscpd.json`, `tsconfig*.json`, `bunfig.toml`, `playwright.config.ts`            | What lint, duplication, typecheck and tests enforce |
+| `eslint.config.*`, `.jscpd.json`, `tsconfig*.json`, `bunfig.toml`, `playwright.config.ts`             | What lint, duplication, typecheck and tests enforce |
 | `test/shared/src/` tests of the workflows, CODEOWNERS, these rules and the merge queue                | The tests that pin the gates                        |
 | `package.json`, `*/package.json`, `bun.lock`                                                          | Dependencies (supply chain)                         |
 | `AGENTS.md`, `CLAUDE.md`, `.claude/**`, `.cursor/**`, `prompts/**`                                    | Agent instructions and governance                   |
 
-`tsconfig*.json`, `bunfig.toml` and `*/vite.config.ts` apply at any depth. A gate
+`eslint.config.*`, `tsconfig*.json`, `bunfig.toml` and `*/vite.config.*` apply at
+any depth. ESLint reads the nearest config above each file and Vite tries
+`vite.config.js` before `.ts`, so a second file replaces the rated one. A gate
 passes a change that loosens its own configuration, so these need a person even
 though CI stays green. `stryker/` stays medium while the mutation score fails no
 job; give it a high rule when that score gets a floor.
