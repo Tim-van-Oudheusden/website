@@ -46,10 +46,6 @@ export function useActiveHomeSection(sectionIds: readonly HomeSectionId[]): Home
   const [activeSectionId, setActiveSectionId] = useState<HomeSectionId>(firstSectionId);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
     if (!("IntersectionObserver" in window)) {
       return;
     }

@@ -4,11 +4,7 @@ interface MatchMediaResult {
 
 type MatchMediaFn = (query: string) => MatchMediaResult;
 
-export function resolveAnchorScrollBehavior(matchMedia: MatchMediaFn | null): ScrollBehavior {
-  if (matchMedia === null) {
-    return "auto";
-  }
-
+export function resolveAnchorScrollBehavior(matchMedia: MatchMediaFn): ScrollBehavior {
   const reducedMotionPreference = matchMedia("(prefers-reduced-motion: reduce)");
 
   if (reducedMotionPreference.matches) {
