@@ -3,6 +3,8 @@ import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import type { HivePublicMetrics } from "shared";
+
 import { AGENTIC_COPY } from "../../../../../../front-end/src/features/agentic/config/agentic-copy";
 import type { HiveViewModel } from "../../../../../../front-end/src/features/agentic/lib/hive-view-model";
 import { UNAVAILABLE_TEXT } from "../../../../../../front-end/src/features/agentic/lib/hive-view-model";
@@ -109,5 +111,65 @@ describe("PipelineView", () => {
 
     expect(text).toContain("No PRs were merged in the last 7 days");
     expect(text).toContain("Time to merge no merges yet");
+  });
+
+  describe("when Hive's series were discarded as malformed", () => {
+    function withContributors(patch: { runs7d?: Partial<NonNullable<HivePublicMetrics["contributors"]>["runs7d"]>; blankHours?: boolean }): string {
+      const contributors = liveMetrics().contributors!;
+
+      return textOf(render(liveModel({
+        contributors: {
+          ...contributors,
+          tasksPerHour: patch.blankHours === true ? [] : contributors.tasksPerHour,
+          fleetSize: patch.blankHours === true ? [] : contributors.fleetSize,
+          runs7d: { ...contributors.runs7d, ...patch.runs7d },
+        },
+      })));
+    }
+
+    test("reports the run total, not 'no runs', when the per-backend breakdown is blank", () => {
+      const text = withContributors({ runs7d: { total: 76, backends: [] } });
+
+      expect(text).toContain("76 runs in 7 days.");
+      expect(text).toContain(AGENTIC_COPY.notes.runsNoBreakdown);
+      expect(text).not.toContain("No runs in the last 7 days.");
+      expect(text).not.toContain("0 completed, 0 failed, 0 abandoned");
+    });
+
+    test("still says 'no runs' when Hive counted none", () => {
+      const text = withContributors({ runs7d: { total: 0, backends: [] } });
+
+      expect(text).toContain("No runs in the last 7 days.");
+      expect(text).not.toContain(AGENTIC_COPY.notes.runsNoBreakdown);
+    });
+
+    test("draws no contributor gauges for an empty hourly series, and keeps the empty-series panel", () => {
+      const text = withContributors({ blankHours: true });
+
+      expect(text).not.toContain("Contributor tasks");
+      expect(text).not.toContain("Peak hour");
+      expect(text).not.toContain("0 contributor agents connected");
+      expect(text).toContain("No hourly series from Hive yet.");
+      expect(text).toContain("Agents running 14 / 16");
+    });
+
+    test("emits no empty gauge list in the Agents station when neither Hive nor the hours are there", () => {
+      const contributors = liveMetrics().contributors!;
+      const html = render(liveModel({
+        hive: null,
+        contributors: { ...contributors, tasksPerHour: [], fleetSize: [] },
+      }));
+      const agents = /<li class="pl-station" aria-labelledby="pl-station-2"[\s\S]*?<\/li>/.exec(html)?.[0] ?? "";
+
+      expect(agents).toContain("No hourly series from Hive yet.");
+      expect(agents).not.toContain("pl-gauges");
+    });
+
+    test("draws both contributor gauges when the hourly series is present", () => {
+      const text = textOf(render(liveModel()));
+
+      expect(text).toContain("Contributor tasks 5");
+      expect(text).toContain("Peak hour 4");
+    });
   });
 });
