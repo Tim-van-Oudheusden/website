@@ -58,7 +58,13 @@ function respond(readings: UpstreamReadings, now: Date): HiveMetricsResponse {
 
 export function registerHiveMetricsRoute(app: FastifyInstance, options: HiveMetricsRouteOptions): void {
   const { config, now } = options;
-  const upstream = createHiveUpstream({ ...options, timeoutMs: UPSTREAM_TIMEOUT_MS });
+  const upstream = createHiveUpstream({
+    ...options,
+    timeoutMs: UPSTREAM_TIMEOUT_MS,
+    onUnavailable: (part, reason) => {
+      app.log.warn({ part, reason }, "hive upstream unavailable");
+    },
+  });
 
   app.get(ROUTES.HIVE_METRICS, async (_request, reply): Promise<HiveMetricsResponse> => {
     reply.header("Cache-Control", "public, max-age=30");

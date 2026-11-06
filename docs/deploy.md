@@ -270,6 +270,14 @@ Check it end to end. Expect `"live"`; `"stale"` means a cached answer is over
 curl -s https://buildwithtim.dev/api/hive/metrics | jq .state
 ```
 
+The route still answers `200` when a source fails, so its request log and
+`/metrics` cannot show which one. Each failed refresh writes one warn line to
+the back-end container's log (`podman logs website-back-end`), with
+`msg: "hive upstream unavailable"`, `part` (`health`, `widget`,
+`contributeMetrics`, `runStats` or `pulls`) and `reason`, such as `status 401`
+for a revoked widget token. The cache limits this to one line per part per
+refresh, and none while waiting out a GitHub rate limit.
+
 ---
 
 ## 2. Cloudflare Tunnel
