@@ -8,12 +8,13 @@
 
 I'm Tim, a software engineer. I build small, self-hosted tools and write down how they work.
 
-[Live site](https://buildwithtim.dev) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fbuildwithtim.dev)](https://buildwithtim.dev) · [Articles](https://buildwithtim.dev/articles) · [Projects](https://buildwithtim.dev/projects) · [Agentic](https://buildwithtim.dev/agentic)
+[Live site](https://buildwithtim.dev) · [Articles](https://buildwithtim.dev/articles) · [Projects](https://buildwithtim.dev/projects) · [Agentic](https://buildwithtim.dev/agentic)
 
 [![CI](https://github.com/Tim-van-Oudheusden/website/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Tim-van-Oudheusden/website/actions/workflows/ci.yml)
 [![Coverage gate](https://github.com/Tim-van-Oudheusden/website/actions/workflows/coverage-gate.yml/badge.svg?branch=main)](https://github.com/Tim-van-Oudheusden/website/actions/workflows/coverage-gate.yml)
 [![License](https://img.shields.io/github/license/Tim-van-Oudheusden/website)](LICENSE)
 [![Last commit](https://img.shields.io/github/last-commit/Tim-van-Oudheusden/website)](https://github.com/Tim-van-Oudheusden/website/commits/main)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fbuildwithtim.dev)](https://buildwithtim.dev)
 
 </div>
 
