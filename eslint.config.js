@@ -30,6 +30,8 @@ const defaultExportSyntax = {
   message: "Use named exports; default exports are only allowed in tool config files.",
 };
 
+const disabledTestMessage = "Don't switch a test off: fix the code or the test (AGENTS.md, \"Never modify tests to make them pass\").";
+
 /* Syntax banned everywhere; tool config files only get the default-export exemption. */
 const restrictedSyntax = [
   { selector: "TSEnumDeclaration", message: "Use an `as const` object or a union type instead of `enum`." },
@@ -52,6 +54,12 @@ const restrictedSyntax = [
     selector: "JSXOpeningElement[attributes.length=0]:matches([name.name='Fragment'], [name.property.name='Fragment'])",
     message: "Use `<>` instead of `<Fragment>` unless it needs a `key`.",
   },
+  {
+    /* bun:test and Playwright pass a run with these in it, so a failing test can leave every gate green. */
+    selector: "MemberExpression:matches([object.name=/^(test|it|describe)$/], [object.property.name=/^(describe|concurrent|serial)$/])[property.name=/^(skip|skipIf|todo|todoIf|if|fixme|fail|failing)$/]",
+    message: disabledTestMessage,
+  },
+  { selector: "Identifier[name=/^x(test|it|describe)$/]", message: disabledTestMessage },
 ];
 
 const cnPackageMessage = "Import `cn` from \"cn\"; it is the only class-merge helper (#586). A shadcn `utils` registry item reintroduces clsx + tailwind-merge: delete it and drop those dependencies.";
@@ -199,6 +207,7 @@ export default tseslint.config(
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
       "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/ban-ts-comment": ["error", { "ts-expect-error": true }],
       "@typescript-eslint/explicit-function-return-type": [
         "error",
         {
