@@ -393,10 +393,16 @@ under `/opt/website/deploy`. When the back-end digest changes, the service:
    - a list field (`containers`, `initContainers`, `volumes`, `ports`,
      `volumeMounts`, `env`, `capabilities.add`) given as anything but a list,
      which the check would otherwise skip unseen (#1117);
-   - a key that is not ASCII, or that spells a key the check reads in another
-     case (`HostNetwork`, `hostpid`): podman matches keys ignoring case, and
-     folds some non-ASCII letters onto ASCII ones (#1118);
+   - any key, at any depth, outside the check's two key lists. The check does
+     not guess what an unknown key means: podman matches keys ignoring case and
+     reads tagged and explicit keys that Bun reads as something else (#1118,
+     #1210), and fields such as `subPath` or `volumeDevices` have no rule of
+     their own;
 3. installs it over `${WEBSITE_REPO}/deploy/kube/prod.yaml` and replays.
+
+A new field in `prod.yaml` therefore also needs adding to `INERT_KEYS` in
+`validate-manifest.ts`, once it is known to ask nothing of the host, and the
+host copy needs updating before that manifest ships.
 
 A manifest that fails the check logs `manifest REJECTED` and the reasons, and
 rejects the new images like a failed health check (§4), without replaying. On a
