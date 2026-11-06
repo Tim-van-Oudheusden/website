@@ -8,6 +8,8 @@ export default defineConfig({
     timeout: 5_000,
   },
   fullyParallel: false,
+  // One committed `test.only` would otherwise cut the whole CI run down to that test, and still pass.
+  forbidOnly: process.env["CI"] !== undefined,
   retries: process.env["CI"] !== undefined ? 2 : 0,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
