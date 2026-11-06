@@ -39,7 +39,8 @@ The site publishes two kinds of content: **articles** and **projects**. Both are
 | `Personal Life` | Personal reflections outside of tech | Yoga Nidra, a way to be at peace in chaos |
 
 **Projects** are open-source builds, each shown with its status (`PROJECT_STATUSES`: `Planned`, `In Progress`, `Shipped`, `Archived`) and links to the
-source. Each project page is structured as Problem, Approach and Outcome.
+source. A page for something you can install walks through what it does, then how to try it and where its artwork comes
+from. A project with nothing to install, such as Obsidian Content Pipeline, goes through Problem, Approach and Outcome.
 
 To add a category, change `ARTICLE_CATEGORIES` first, then update this table.
 
@@ -104,7 +105,8 @@ shade and backdrop colours were unused and are gone.
 
 ### Typography
 
-- **Typeface:** Source Sans 3 (weights 400, 500, 600, 700), loaded from Google Fonts in `front-end/src/index.css`.
+- **Typeface:** Source Sans 3 (variable, weights 400 to 700), self-hosted from `public/fonts/` through the `@font-face`
+  rules in `front-end/src/index.css`.
 - **Fallback stack:** `"Source Sans Pro", "Segoe UI", "Helvetica Neue", Arial, sans-serif` (the `--font-sans` token).
 
 ### Icons
