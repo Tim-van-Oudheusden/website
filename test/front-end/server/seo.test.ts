@@ -71,17 +71,15 @@ describe("renderFeed", () => {
     expect(xml).toContain('<link rel="alternate" href="https://buildwithtim.dev/"/>');
   });
 
-  test("lists articles newest first and leaves projects out", () => {
-    const older = { ...ARTICLE, slug: "older", date: "2026-01-15" };
-    const newer = { ...ARTICLE, slug: "newer", date: "2026-08-20" };
-    const project: ProjectFrontmatter = {
+  function projectOn(slug: string, date: string): ProjectFrontmatter {
+    return {
       type: "project",
       title: "Launcher",
       description: "",
-      date: "2026-12-01",
+      date,
       tags: [],
       draft: false,
-      slug: "launcher",
+      slug,
       socialImage: null,
       coverImage: "",
       coverImageAlt: "",
@@ -94,10 +92,28 @@ describe("renderFeed", () => {
       links: [],
       info: null,
     };
+  }
+
+  test("lists projects among articles in date order, each with its own URL", () => {
+    const older = { ...ARTICLE, slug: "older", date: "2026-01-15" };
+    const newer = { ...ARTICLE, slug: "newer", date: "2026-08-20" };
+    const project = projectOn("launcher", "2026-05-01");
 
     const xml = renderFeed(ORIGIN, [older, project, newer]);
 
-    expect(entryIds(xml)).toEqual([`${ORIGIN}/articles/newer`, `${ORIGIN}/articles/older`]);
+    expect(entryIds(xml)).toEqual([`${ORIGIN}/articles/newer`, `${ORIGIN}/projects/launcher`, `${ORIGIN}/articles/older`]);
+  });
+
+  test("dates the feed by its newest entry when that entry is a project", () => {
+    const xml = renderFeed(ORIGIN, [{ ...ARTICLE, date: "2026-02-08" }, projectOn("launcher", "2026-11-05")]);
+
+    expect(xml.indexOf("<updated>2026-11-05T00:00:00.000Z</updated>")).toBeLessThan(xml.indexOf("<entry>"));
+  });
+
+  test("drops a project whose date cannot be read, like an article", () => {
+    const xml = renderFeed(ORIGIN, [projectOn("dated", "2026-05-01"), projectOn("undated", "someday")]);
+
+    expect(entryIds(xml)).toEqual([`${ORIGIN}/projects/dated`]);
   });
 
   test("stamps entries and the feed with RFC 3339 times taken from the article dates", () => {

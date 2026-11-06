@@ -119,7 +119,7 @@ function ArticleBody({ article, articles, toc }: ArticleBodyProps): JSX.Element 
       </div>
       <RelatedArticles article={article} articles={articles} />
       <p className={ARTICLES_PAGE_LAYOUT_CLASSES.feed}>
-        Follow new articles with the
+        Follow new articles and projects with the
         {" "}
         <a href={FEED_PATH} className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.feedLink}>RSS feed</a>
         .

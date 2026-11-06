@@ -1,4 +1,4 @@
-import type { ArticleFrontmatter, ContentFrontmatter } from "shared";
+import type { ContentFrontmatter } from "shared";
 import { AGENTIC_PAGE_PATH, FEED_PATH, HERO_LINE, SITE_NAME, SITE_OWNER, STANDALONE_PAGE_SLUGS } from "shared";
 
 import { contentPagePath } from "./social-meta";
@@ -73,33 +73,32 @@ export function renderSitemap(origin: string, items: readonly ContentFrontmatter
 }
 
 /**
- * Atom 1.0 feed of the published articles, newest first, so readers can
- * subscribe without a newsletter. `items` is the same listing the sitemap uses;
- * projects are left out. An article whose date does not parse is left out too:
- * Atom requires a timestamp on every entry, and a made-up one would misorder it.
+ * Atom 1.0 feed of the published articles and projects, newest first, so
+ * readers can subscribe without a newsletter. `items` is the same listing the
+ * sitemap uses. An item whose date does not parse is left out: Atom requires a
+ * timestamp on every entry, and a made-up one would misorder it.
  */
 export function renderFeed(origin: string, items: readonly ContentFrontmatter[]): string {
-  const articles = items
-    .filter((item): item is ArticleFrontmatter => item.type === "article")
-    .map((article) => ({ article, time: Date.parse(article.date) }))
+  const dated = items
+    .map((item) => ({ item, time: Date.parse(item.date) }))
     .filter(({ time }) => !Number.isNaN(time))
     .sort((left, right) => right.time - left.time);
 
-  // Atom requires a feed-level <updated>; with no articles there is no real date to give.
-  const updated = new Date(articles[0]?.time ?? 0).toISOString();
+  // Atom requires a feed-level <updated>; with no entries there is no real date to give.
+  const updated = new Date(dated[0]?.time ?? 0).toISOString();
 
-  const entries = articles.map(({ article, time }) => {
-    const url = escapeXml(`${origin}${contentPagePath(article)}`);
+  const entries = dated.map(({ item, time }) => {
+    const url = escapeXml(`${origin}${contentPagePath(item)}`);
     const timestamp = new Date(time).toISOString();
 
     return [
       "  <entry>",
       `    <id>${url}</id>`,
-      `    <title>${escapeXml(article.title)}</title>`,
+      `    <title>${escapeXml(item.title)}</title>`,
       `    <link rel="alternate" href="${url}"/>`,
       `    <published>${timestamp}</published>`,
       `    <updated>${timestamp}</updated>`,
-      `    <summary>${escapeXml(article.description)}</summary>`,
+      `    <summary>${escapeXml(item.description)}</summary>`,
       "  </entry>",
     ].join("\n");
   });
