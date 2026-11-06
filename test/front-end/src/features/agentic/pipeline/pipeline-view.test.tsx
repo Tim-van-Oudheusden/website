@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+
 import type { HivePublicMetrics } from "shared";
 
 import { AGENTIC_COPY } from "../../../../../../front-end/src/features/agentic/config/agentic-copy";
@@ -154,7 +155,10 @@ describe("PipelineView", () => {
 
     test("emits no empty gauge list in the Agents station when neither Hive nor the hours are there", () => {
       const contributors = liveMetrics().contributors!;
-      const html = render(liveModel({ hive: null, contributors: { ...contributors, tasksPerHour: [], fleetSize: [] } }));
+      const html = render(liveModel({
+        hive: null,
+        contributors: { ...contributors, tasksPerHour: [], fleetSize: [] },
+      }));
       const agents = /<li class="pl-station" aria-labelledby="pl-station-2"[\s\S]*?<\/li>/.exec(html)?.[0] ?? "";
 
       expect(agents).toContain("No hourly series from Hive yet.");
