@@ -35,6 +35,7 @@ export const AGENTIC_COPY = {
     mode: "The governor rises with the size of the queue: idle, quiet, busy, surge.",
     contributors: "Tasks done by contributor agents connected to this hive.",
     runs: "Percentiles are per backend; they are never added up or averaged across backends.",
+    runsNoBreakdown: "The per-backend breakdown is not available right now.",
     repo: "From public GitHub data for Tim-van-Oudheusden/website.",
     attribution: "Split by author, not by who merged: a PR is Hive's when its body ends with Hive's signature line, "
       + "then a claude/ branch counts as Claude Code in CI and a dependabot/ branch as Dependabot.",

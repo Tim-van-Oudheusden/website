@@ -83,10 +83,12 @@ function QueueStation({ hive }: { hive: HiveWidgetView | null }): JSX.Element {
 
 function AgentsStation({ hive, contributors }: Pick<HiveViewModel, "hive" | "contributors">): JSX.Element {
   const tasks = contributors === null || contributors.hours.length === 0 ? null : tasksChart(contributors);
+  // Without hourly buckets the totals below would read a discarded series as measured zeros.
+  const contributorGauges = contributors !== null && tasks !== null ? contributors : null;
 
   return (
     <Station index={2} name="Agents" kicker="claiming work">
-      {hive === null && contributors === null
+      {hive === null && contributorGauges === null
         ? null
         : (
             <dl className="pl-gauges">
@@ -104,22 +106,22 @@ function AgentsStation({ hive, contributors }: Pick<HiveViewModel, "hive" | "con
                       detail={`${plural(hive.agents.total, "agent", "agents")} in the hive`}
                     />
                   )}
-              {contributors === null
+              {contributorGauges === null
                 ? null
                 : (
                     <>
                       <Gauge
                         label="Contributor tasks"
-                        value={contributors.tasksTotal}
-                        detail={`${plural(contributors.tasksTotal, "task", "tasks")} · `
-                          + `${plural(contributors.fleet, "contributor agent", "contributor agents")} connected`}
+                        value={contributorGauges.tasksTotal}
+                        detail={`${plural(contributorGauges.tasksTotal, "task", "tasks")} · `
+                          + `${plural(contributorGauges.fleet, "contributor agent", "contributor agents")} connected`}
                       />
                       <Gauge
                         label="Peak hour"
-                        value={contributors.peak === null ? "—" : contributors.peak.tasks}
-                        detail={contributors.peak === null
+                        value={contributorGauges.peak === null ? "—" : contributorGauges.peak.tasks}
+                        detail={contributorGauges.peak === null
                           ? "no tasks done yet"
-                          : `${plural(contributors.peak.tasks, "task", "tasks")} at ${contributors.peak.label}`}
+                          : `${plural(contributorGauges.peak.tasks, "task", "tasks")} at ${contributorGauges.peak.label}`}
                       />
                     </>
                   )}
@@ -196,10 +198,25 @@ function RunsStation({ contributors }: { contributors: ContributorsView | null }
   const { runs } = contributors;
 
   if (runs.backends.length === 0) {
+    // A positive total with no backends is a breakdown Hive sent in a shape we discarded, not an idle week.
     return (
       <Station index={3} name="Runs" kicker="agent runs, last 7 days">
-        <p className="pl-empty">No runs in the last 7 days.</p>
-        <p className="pl-note">{AGENTIC_COPY.notes.runs}</p>
+        {runs.total === 0
+          ? (
+              <>
+                <p className="pl-empty">No runs in the last 7 days.</p>
+                <p className="pl-note">{AGENTIC_COPY.notes.runs}</p>
+              </>
+            )
+          : (
+              <>
+                <p className="pl-lede">
+                  <strong>{plural(runs.total, "run", "runs")}</strong>
+                  {" in 7 days."}
+                </p>
+                <p className="pl-note">{AGENTIC_COPY.notes.runsNoBreakdown}</p>
+              </>
+            )}
       </Station>
     );
   }
