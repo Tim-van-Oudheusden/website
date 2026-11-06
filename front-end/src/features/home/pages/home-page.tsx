@@ -18,7 +18,7 @@ function isPlainPrimaryClick(event: MouseEvent<HTMLAnchorElement>): boolean {
 }
 
 function activateSectionAnchor(sectionId: HomeSectionId, event: MouseEvent<HTMLAnchorElement>): void {
-  if (typeof document === "undefined" || !isPlainPrimaryClick(event)) {
+  if (!isPlainPrimaryClick(event)) {
     return;
   }
 
@@ -30,20 +30,10 @@ function activateSectionAnchor(sectionId: HomeSectionId, event: MouseEvent<HTMLA
 
   event.preventDefault();
 
-  let matchMediaFn: ((query: string) => { matches: boolean }) | null = null;
-
-  if (typeof window !== "undefined") {
-    matchMediaFn = window.matchMedia.bind(window);
-  }
-
   targetElement.scrollIntoView({
-    behavior: resolveAnchorScrollBehavior(matchMediaFn),
+    behavior: resolveAnchorScrollBehavior(window.matchMedia.bind(window)),
     block: "start",
   });
-
-  if (typeof window === "undefined") {
-    return;
-  }
 
   const fragment = `#${sectionId}`;
 

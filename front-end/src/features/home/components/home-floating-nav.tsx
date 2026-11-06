@@ -56,10 +56,6 @@ export function HomeFloatingNav({
   useEffect(() => {
     updateIndicatorMetrics();
 
-    if (typeof window === "undefined") {
-      return;
-    }
-
     const animationFrameId = window.requestAnimationFrame(updateIndicatorMetrics);
 
     function handleResize(): void {
