@@ -64,8 +64,10 @@ const STATIC_PAGE_HEADS: readonly PageHead[] = [
 ];
 
 /**
- * The same baseline @fastify/helmet gives the back-end (security-headers.ts):
- * cloudflared routes every page to this server, not to Fastify.
+ * Framing and MIME-sniffing protection, with the values @fastify/helmet gives
+ * the back-end (security-headers.ts): cloudflared routes every page to this
+ * server, not to Fastify. Only these two: helmet's other headers, such as
+ * `Referrer-Policy: no-referrer`, are not sent here.
  */
 const SECURITY_HEADERS: Readonly<Record<string, string>> = {
   "x-content-type-options": "nosniff",
