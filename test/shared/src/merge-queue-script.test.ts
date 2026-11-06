@@ -165,14 +165,16 @@ function runScript(...args: string[]): {
   stdout: string;
   output: Record<string, string>;
   calls: string[];
+  sleeps: string[];
 } {
   const outputPath = join(workDir, "github-output");
   const callLog = join(workDir, "calls.log");
+  const sleepLog = join(workDir, "sleeps.log");
 
   writeFileSync(join(workDir, "gh"), FAKE_GH);
   chmodSync(join(workDir, "gh"), 0o755);
-  // The script waits between retries; the tests do not.
-  writeFileSync(join(workDir, "sleep"), "#!/usr/bin/env bash\n");
+  // The script waits between retries; the tests log the wait instead.
+  writeFileSync(join(workDir, "sleep"), "#!/usr/bin/env bash\necho \"$*\" >> \"$FAKE_DIR/sleeps.log\"\n");
   chmodSync(join(workDir, "sleep"), 0o755);
   writeFileSync(outputPath, "");
 
@@ -194,8 +196,9 @@ function runScript(...args: string[]): {
       .map((line) => line.split("=", 2) as [string, string]),
   );
   const calls = existsSync(callLog) ? readFileSync(callLog, "utf8").split("\n").filter(Boolean) : [];
+  const sleeps = existsSync(sleepLog) ? readFileSync(sleepLog, "utf8").split("\n").filter(Boolean) : [];
 
-  return { status: result.status, stdout: result.stdout, output, calls };
+  return { status: result.status, stdout: result.stdout, output, calls, sleeps };
 }
 
 beforeEach(() => {
@@ -401,11 +404,12 @@ describe("scripts/merge-queue.sh land", () => {
     writeFileSync(join(workDir, "fail"), "workflow run ci.yml");
     writeFileSync(join(workDir, "fail-once"), "");
 
-    const { status, stdout, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
+    const { status, stdout, calls, sleeps } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
 
     expect(status).toBe(0);
     expect(stdout).not.toContain("::error");
     expect(calls.filter((call) => call === "workflow run ci.yml --ref main")).toHaveLength(2);
+    expect(sleeps).toEqual(["10"]);
     expect(calls.at(-1)).toBe("workflow run merge-queue.yml --ref main");
   });
 
@@ -414,13 +418,14 @@ describe("scripts/merge-queue.sh land", () => {
 
     writeFileSync(join(workDir, "fail"), `workflow run ${name}`);
 
-    const { status, stdout, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
+    const { status, stdout, calls, sleeps } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
     const others = [...mainPushWorkflows.filter((other) => other !== name), "merge-queue.yml"];
 
     expect(status).toBe(1);
     expect(stdout).toContain(`::error title=Merge queue::could not start ${name}`);
     expect(stdout).toContain(`gh workflow run ${name} --ref main`);
     expect(calls.filter((call) => call === `workflow run ${name} --ref main`)).toHaveLength(3);
+    expect(sleeps).toEqual(["10", "10"]);
 
     expect(calls.filter((call) => call.startsWith("workflow run ") && !call.includes(name)).sort()).toEqual(
       others.map((other) => `workflow run ${other} --ref main`).sort(),

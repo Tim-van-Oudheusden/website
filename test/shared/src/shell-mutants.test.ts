@@ -155,6 +155,20 @@ const MUTANTS: readonly ShellMutant[] = [
     killedBy: MERGE_QUEUE_TEST,
   },
   {
+    name: "a retry waits, so a passing outage is not spent in three immediate tries (#1195)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `    [ "$attempt" -lt 3 ] && sleep 10\n`,
+    to: `    [ "$attempt" -lt 3 ] && sleep 0\n`,
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
+    name: "the last failed try gives up at once instead of waiting for nothing (#1195)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `    [ "$attempt" -lt 3 ] && sleep 10\n`,
+    to: `    sleep 10\n`,
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
     name: "a workflow that will not start does not stop the others or the next run (#1195)",
     file: MERGE_QUEUE_SCRIPT,
     from: `    start_workflow "$workflow" || failed=1\n`,
