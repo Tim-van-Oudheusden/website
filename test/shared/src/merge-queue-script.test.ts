@@ -321,6 +321,19 @@ describe("scripts/merge-queue.sh next", () => {
     expect(output).toEqual({});
   });
 
+  // A failed read of the merge state is not a pull request that is merely not
+  // ready: it must fail the run, not skip every candidate (#1228).
+  test("fails instead of skipping the pull request when reading its merge state fails", () => {
+    setUpRepository({ "README.md": "site\n" }, [{ number: 7 }]);
+
+    writeFileSync(join(workDir, "fail"), "pr view 7 --json mergeStateStatus");
+
+    const { status, output } = runScript("next");
+
+    expect(status).not.toBe(0);
+    expect(output).toEqual({});
+  });
+
   test("picks nothing when no pull request is open", () => {
     setUpRepository({ "README.md": "site\n" }, []);
 
@@ -457,6 +470,18 @@ describe("scripts/merge-queue.sh land", () => {
 
     expect(status).toBe(0);
     expect(calls).toEqual(["workflow run merge-queue.yml --ref main"]);
+  });
+
+  test("fails, without a false notice, a merge or a queued run, when reading the merge state fails (#1228)", () => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, closingIssues: [12] }]);
+
+    writeFileSync(join(workDir, "fail"), "pr view 7 --json mergeStateStatus");
+
+    const { status, stdout, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
+
+    expect(status).not.toBe(0);
+    expect(stdout).not.toContain("stopped being ready");
+    expect(calls).toEqual([]);
   });
 
   test.each<[string, Partial<PullRequest>]>([
