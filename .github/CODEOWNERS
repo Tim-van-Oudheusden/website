@@ -20,14 +20,14 @@
 Dockerfile         @Tim-van-Oudheusden
 /.devcontainer/    @Tim-van-Oudheusden
 /.dockerignore     @Tim-van-Oudheusden
-vite.config.ts     @Tim-van-Oudheusden
+vite.config.*      @Tim-van-Oudheusden
 
 # Gate and release tooling.
 /scripts/          @Tim-van-Oudheusden
 
 # Gate configuration: what lint, duplication, typecheck and the test runners
 # enforce in CI.
-/eslint.config.js      @Tim-van-Oudheusden
+eslint.config.*        @Tim-van-Oudheusden
 /.jscpd.json           @Tim-van-Oudheusden
 tsconfig*.json         @Tim-van-Oudheusden
 bunfig.toml            @Tim-van-Oudheusden

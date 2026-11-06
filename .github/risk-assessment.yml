@@ -23,14 +23,15 @@ rules:
   - high    */Dockerfile
   - high    .devcontainer/*
   - high    .dockerignore
-  - high    */vite.config.ts
+  - high    */vite.config.*
 
   # Gate and release tooling.
   - high    scripts/*
 
   # Gate configuration: what lint, duplication, typecheck and the test runners
   # enforce in CI. These gates pass a change that loosens their own config.
-  - high    eslint.config.js
+  - high    eslint.config.*
+  - high    */eslint.config.*
   - high    .jscpd.json
   - high    tsconfig*.json
   - high    */tsconfig*.json

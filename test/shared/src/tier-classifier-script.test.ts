@@ -55,6 +55,9 @@ describe("scripts/tier-classify.sh", () => {
 
   test.each([
     "eslint.config.js",
+    "back-end/src/core/eslint.config.js",
+    "test/shared/eslint.config.mjs",
+    "front-end/src/eslint.config.ts",
     ".jscpd.json",
     "tsconfig.json",
     "tsconfig.eslint.json",
@@ -65,6 +68,8 @@ describe("scripts/tier-classify.sh", () => {
     "playwright.config.ts",
     ".dockerignore",
     "front-end/vite.config.ts",
+    "front-end/vite.config.js",
+    "front-end/vite.config.mts",
     "test/shared/src/codeowners.test.ts",
     "test/shared/src/merge-queue-script.test.ts",
     "test/shared/src/tier-classifier-script.test.ts",
