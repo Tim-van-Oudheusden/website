@@ -113,11 +113,12 @@ describe("ArticleContent", () => {
     expect(renderContent()).not.toContain("More from");
   });
 
-  test("ends every article with a link to follow new articles through the feed", () => {
+  test("ends every article with a link to follow new articles and projects through the feed", () => {
     const html = renderContent();
     const feedLink = /<a[^>]*href="\/feed.xml"[^>]*>(.*?)<\/a>/s.exec(html);
 
     expect(feedLink?.[1]).toContain("RSS feed");
+    expect(html).toContain("Follow new articles and projects with the");
     expect(html.indexOf("/feed.xml")).toBeGreaterThan(html.indexOf("The first post."));
   });
 
