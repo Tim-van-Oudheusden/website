@@ -107,7 +107,7 @@ describe("renderFeed", () => {
   test("dates the feed by its newest entry when that entry is a project", () => {
     const xml = renderFeed(ORIGIN, [{ ...ARTICLE, date: "2026-02-08" }, projectOn("launcher", "2026-11-05")]);
 
-    expect(xml.indexOf("<updated>2026-11-05T00:00:00.000Z</updated>")).toBeLessThan(xml.indexOf("<entry>"));
+    expect(xml.slice(0, xml.indexOf("<entry>"))).toContain("<updated>2026-11-05T00:00:00.000Z</updated>");
   });
 
   test("drops a project whose date cannot be read, like an article", () => {
