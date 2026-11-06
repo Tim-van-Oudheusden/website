@@ -582,7 +582,7 @@ describe("front-end request handler", () => {
     ]);
   });
 
-  test("serves an Atom feed of published articles, not projects, on the visitor's origin", async () => {
+  test("serves an Atom feed of every published article and project on the visitor's origin", async () => {
     const handle = createRequestHandler({ distDir, fetchBackend: backend, onBackendUnavailable: ignoreUnavailable });
 
     const response = await handle(new Request("http://buildwithtim.dev/feed.xml", {
@@ -596,6 +596,7 @@ describe("front-end request handler", () => {
 
     expect([...xml.matchAll(/<entry>[\s\S]*?<id>([^<]*)<\/id>/g)].map((match) => match[1])).toEqual([
       "https://buildwithtim.dev/articles/yoga-nidra",
+      "https://buildwithtim.dev/projects/pi-sandbox-automation",
     ]);
   });
 
