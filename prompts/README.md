@@ -9,7 +9,7 @@ consistent.
 - [`code-review.md`](./code-review.md) — two-axis review checklist (standards +
   spec) matching the repo's quality gates.
 - [`pull-request.md`](./pull-request.md) — PR body prepared from an issue and its
-  commit, following the repo's commit conventions.
+  commit, following the repo's PR template and commit conventions.
 
 Usage: copy a template into your prompt, fill the bracketed fields, and follow
 `AGENTS.md` for issue tracking and the session-completion workflow.
