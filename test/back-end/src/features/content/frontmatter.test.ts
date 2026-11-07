@@ -432,6 +432,38 @@ Body
     expect(readFrontmatter(lines.join("\n"))).toEqual({ ok: false, reason });
   });
 
+  // YAML rejects a repeated key; keeping either value would drop the other
+  // without a word (#1246).
+  test.each([
+    ["a repeated top-level scalar", ["---", "slug: a", "title: T", "slug: b", "---", "Body"], "Frontmatter has a repeated key: slug"],
+    ["a scalar and then a parent key of the same name", ["---", "tags: x", "tags:", "  - y", "---", "Body"], "Frontmatter has a repeated key: tags"],
+    ["a repeated parent key", ["---", "tags:", "  - a", "tags:", "  - b", "---", "Body"], "Frontmatter has a repeated key: tags"],
+    [
+      "a field repeated in one object item",
+      ["---", "links:", "  - type: repo", "    label: L", "    label: M", "---", "Body"],
+      "links has a field repeated within its item: label: M",
+    ],
+    [
+      "the first field of an object item repeated",
+      ["---", "links:", "  - type: a", "    type: b", "---", "Body"],
+      "links has a field repeated within its item: type: b",
+    ],
+  ])("rejects %s (#1246)", (_label, lines, reason) => {
+    expect(readFrontmatter(lines.join("\n"))).toEqual({ ok: false, reason });
+  });
+
+  test("reads the same field name in two different object items (#1246)", () => {
+    const { data } = parsed(["---", "links:", "  - type: a", "  - type: b", "---", "Body"].join("\n"));
+
+    expect(data).toEqual({ links: [{ type: "a" }, { type: "b" }] });
+  });
+
+  test("reads `constructor` as a single key (#1246)", () => {
+    const { data } = parsed(["---", "constructor: x", "---", "Body"].join("\n"));
+
+    expect(Object.getOwnPropertyDescriptor(data, "constructor")?.value).toBe("x");
+  });
+
   // The spec reads -.5 as a number and keeps -0x1F as text; Bun's reader does
   // the opposite, so either reading would differ from some YAML tool.
   test.each([

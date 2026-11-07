@@ -38,7 +38,9 @@
  * with a tab or out of line with the lines it belongs with (a top-level key
  * left of the first key, a `- ` item off its list's indent, an object item's
  * field off its first field's column), which YAML would reject or read as
- * part of another value.
+ * part of another value. A key that repeats, at top level or among the
+ * fields of one object item, is a reason too: YAML rejects it, and keeping
+ * either value would drop the other without a word.
  *
  * A leading UTF-8 byte-order mark is ignored and frontmatter lines may end in
  * CRLF; the body keeps its original line endings.
@@ -297,6 +299,8 @@ function parseBlockChildren(children: string[]): BlockRead {
     }
 
     const obj: FrontmatterMap = { [inlineKey]: first.value };
+    // A Set, not `in`: `constructor` is a legal key and `__proto__` sets no own one.
+    const itemKeys = new Set<string>([inlineKey]);
 
     // The column of `type` in `  - type: repo`.
     const fieldIndent = line.length - rest.length;
@@ -338,6 +342,12 @@ function parseBlockChildren(children: string[]): BlockRead {
       const subKey = subField[1];
 
       if (subKey !== undefined && subKey !== "") {
+        if (itemKeys.has(subKey)) {
+          return { ok: false, problem: "has a field repeated within its item", line: sub.trim() };
+        }
+
+        itemKeys.add(subKey);
+
         const field = parseScalarValue(subField[2] ?? "");
 
         if (!field.ok) {
@@ -412,6 +422,8 @@ export function readFrontmatter(raw: string): FrontmatterRead {
   let valueKey: { key: string; indent: number } | null = null;
   // Top-level keys share the first key's indent; YAML rejects one left of it.
   let keyIndent: number | null = null;
+  // A Set, not `in`: `constructor` is a legal key and `__proto__` sets no own one.
+  const seenKeys = new Set<string>();
 
   let i = 0;
 
@@ -461,6 +473,14 @@ export function readFrontmatter(raw: string): FrontmatterRead {
 
       continue;
     }
+
+    // YAML rejects a repeated key; checked before the value so the scalar and
+    // parent-key forms are covered together.
+    if (seenKeys.has(key)) {
+      return { ok: false, reason: `Frontmatter has a repeated key: ${key}` };
+    }
+
+    seenKeys.add(key);
 
     const value = field[2] ?? "";
 

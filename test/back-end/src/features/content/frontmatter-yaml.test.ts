@@ -101,8 +101,9 @@ function frontmatterBlock(raw: string): string {
   return lines.slice(1, end === -1 ? lines.length : end).join("\n");
 }
 
-// One line of each kind the subset meets. `position` keeps every key distinct,
-// since YAML rejects a repeated key.
+// One line of each kind the subset meets. `position` keeps every key distinct
+// except `dup`, a constant key so that a block can repeat one, which YAML
+// rejects.
 const LINE_KINDS: ((position: number) => string)[] = [
   (position) => `k${position}: v${position}`,
   (position) => `k${position}:`,
@@ -113,6 +114,7 @@ const LINE_KINDS: ((position: number) => string)[] = [
   (position) => `- k${position}: null`,
   (position) => `wrapped words ${position}`,
   () => "# note",
+  () => "dup: v",
 ];
 const INDENTS = ["", " ", "  ", "   ", "    ", "\t", "  \t"];
 const MAX_LINES = 3;
