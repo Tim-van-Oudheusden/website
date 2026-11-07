@@ -26,20 +26,34 @@ export function applyTheme(theme: Theme): void {
   root.classList.toggle("dark", isDark);
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }): JSX.Element {
-  const [theme, setTheme] = useState<Theme>(() => {
+// Storage is optional: a browser can deny it to the page, and then even the
+// `localStorage` property read throws. The theme is only a preference, not
+// worth the page, so storage failures fall back to the default theme.
+function readStoredTheme(): Theme {
+  try {
     const stored = localStorage.getItem(STORAGE_KEY);
 
     if (stored === "light" || stored === "dark" || stored === "system") {
       return stored;
     }
+  } catch {
+    // Storage denied: use the default below.
+  }
 
-    return DEFAULT_THEME;
-  });
+  return DEFAULT_THEME;
+}
+
+export function ThemeProvider({ children }: { children: ReactNode }): JSX.Element {
+  const [theme, setTheme] = useState<Theme>(readStoredTheme);
 
   const persistTheme = useCallback((next: Theme): void => {
-    localStorage.setItem(STORAGE_KEY, next);
     setTheme(next);
+
+    try {
+      localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      // Storage denied or full: the theme still applies for this visit.
+    }
   }, []);
   const contextValue = useMemo(() => ({ theme, setTheme: persistTheme }), [theme, persistTheme]);
 

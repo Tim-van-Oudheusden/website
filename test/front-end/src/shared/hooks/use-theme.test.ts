@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 
 import { act, createElement } from "react";
 
@@ -53,6 +53,10 @@ function mountThemeProvider(storedTheme: string | null): MountedProvider {
     window.localStorage.setItem("theme", storedTheme);
   }
 
+  return mountProvider();
+}
+
+function mountProvider(): MountedProvider {
   let currentTheme: string | null = null;
   let setThemeFn: ((theme: "light" | "dark" | "system") => void) | null = null;
 
@@ -83,6 +87,31 @@ function mountThemeProvider(storedTheme: string | null): MountedProvider {
 function unmountProvider(mounted: MountedProvider): void {
   unmountFakeDomRoot(mounted.mount);
   window.localStorage.clear();
+}
+
+/**
+ * Make every `localStorage` access throw, as a browser that denies the page
+ * storage does: the property getter itself throws `SecurityError`. Returns a
+ * function that restores the fake storage.
+ */
+function denyStorage(): () => void {
+  const targets: object[] = [globalThis, window];
+  const saved = targets.map((target) => Object.getOwnPropertyDescriptor(target, "localStorage"));
+
+  for (const target of targets) {
+    Object.defineProperty(target, "localStorage", {
+      configurable: true,
+      get: () => {
+        throw new DOMException("The operation is insecure.", "SecurityError");
+      },
+    });
+  }
+
+  return () => {
+    targets.forEach((target, index) => {
+      Object.defineProperty(target, "localStorage", saved[index]!);
+    });
+  };
 }
 
 describe("applyTheme", () => {
@@ -205,5 +234,48 @@ describe("ThemeProvider", () => {
 
     triggerFakeMediaPreferenceChange(true);
     expect(doc.documentElement.classList.contains("dark")).toBe(false);
+  });
+});
+
+describe("ThemeProvider when the browser denies storage", () => {
+  let restoreStorage: () => void;
+
+  beforeEach(() => {
+    restoreStorage = denyStorage();
+  });
+
+  afterEach(() => {
+    restoreStorage();
+  });
+
+  test("renders with the system theme instead of throwing", () => {
+    const doc = document as unknown as FakeDocument;
+
+    triggerFakeMediaPreferenceChange(true);
+    const mounted = mountProvider();
+
+    try {
+      expect(mounted.probe.theme()).toBe("system");
+      expect(doc.documentElement.classList.contains("dark")).toBe(true);
+    } finally {
+      unmountFakeDomRoot(mounted.mount);
+    }
+  });
+
+  test("setTheme still applies the picked theme for the visit", async () => {
+    const doc = document as unknown as FakeDocument;
+    const mounted = mountProvider();
+
+    try {
+      await act(async () => {
+        mounted.probe.setTheme("dark");
+        await Promise.resolve();
+      });
+
+      expect(mounted.probe.theme()).toBe("dark");
+      expect(doc.documentElement.classList.contains("dark")).toBe(true);
+    } finally {
+      unmountFakeDomRoot(mounted.mount);
+    }
   });
 });
