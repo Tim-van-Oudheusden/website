@@ -211,7 +211,7 @@ add the mutant as a row so a later change to that test can't quietly drop it.
 YAML. `test/back-end/src/features/content/frontmatter-yaml.test.ts` checks it
 against `Bun.YAML`, which the pinned Bun runtime ships: for every frontmatter
 block in `content/`, every block of up to three generated lines (each one of
-nine line shapes at one of seven space and tab indents), and every listed scalar
+ten line shapes at one of seven space and tab indents), and every listed scalar
 (booleans, null, numbers, infinity and NaN, double-quoted escapes, and near
 misses of each that stay text) as a key's value, a list item, and an object
 item's first and later field, the parser must either reject the block or return
