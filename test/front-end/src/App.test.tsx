@@ -2,8 +2,9 @@ import { afterEach, describe, expect, test } from "bun:test";
 
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { MemoryRouter } from "react-router";
+import { createRoutesFromChildren, matchRoutes, MemoryRouter } from "react-router";
 
+import { ROUTE_HEADINGS } from "../../../e2e/route-headings";
 import { App, AppRoutes } from "../../../front-end/src/App";
 
 afterEach(() => {
@@ -79,6 +80,15 @@ describe("AppRoutes", () => {
 
     expect(html).toMatch(/<h1[^>]*>Page not found<\/h1>/);
     expect([...html.matchAll(/<a [^>]*href="([^"]*)"/g)].map((match) => match[1])).toEqual(["/", "/articles", "/projects"]);
+  });
+});
+
+describe("e2e/route-headings.ts", () => {
+  test("has one row for each route App.tsx declares, in its order, so a new page cannot stay out of the E2E run", () => {
+    const routes = createRoutesFromChildren(AppRoutes().props.children);
+    const reached = ROUTE_HEADINGS.map(([path]) => matchRoutes(routes, path)?.[0]?.route.path);
+
+    expect(reached).toStrictEqual(routes.map((route) => route.path));
   });
 });
 
