@@ -61,8 +61,9 @@ goes to stderr and the report to stdout.
 demand (`workflow_dispatch`) to catch problems that appear without a code
 change:
 
-- **Lockfile drift** — `bun install --frozen-lockfile` fails if `bun.lock` no
-  longer matches `package.json`.
+- **Lockfile drift** — the workflow's `bun install --frozen-lockfile` step fails
+  if `bun.lock` no longer matches `package.json`. It runs first, so drift stops
+  the job before the two checks below.
 - **Dependency audit** — `bun audit --audit-level=high` fails on any high or
   critical advisory in the locked dependency tree. Advisories with no patched
   release upstream are listed in `AUDIT_IGNORE` in the script, each with the
@@ -73,16 +74,19 @@ change:
   cannot read `content/` or a file in it, such as a dangling symlink. The
   `release` job in `ci.yml` runs the same script.
 
-`scripts/nightly-compliance.sh` writes the report, published as the run's job
-summary and as the `nightly-compliance` artifact. Every check runs even if an
-earlier one fails, and the job fails if any check failed. Run it locally with
-`scripts/nightly-compliance.sh > nightly-compliance.md`.
+`scripts/nightly-compliance.sh` runs the audit and the draft guard and writes
+the report, published as the run's job summary and as the `nightly-compliance`
+artifact. Both run even if the first fails, and the job fails if either failed.
+Run it locally with `scripts/nightly-compliance.sh > nightly-compliance.md`. It
+does not check the lockfile: to reproduce drift, run
+`bun install --frozen-lockfile`.
 
 A failed nightly run on `main` becomes an issue: `.github/workflows/auto-issues.yml`
 runs after it, downloads the report, and calls `scripts/auto-issue.sh`, which
 opens **Nightly compliance failing** with the run link and report, or comments
-on that issue if it is still open from an earlier failure. The PR that fixes the
-check closes it with `Fixes #<number>`.
+on that issue if it is still open from an earlier failure. A run stopped by
+lockfile drift leaves no report, so the issue has the run link and says to read
+its log. The PR that fixes the check closes it with `Fixes #<number>`.
 
 ## Coverage floor self-tuning
 
@@ -171,7 +175,8 @@ Stryker therefore rewrites the real files during a run and restores them from
 `.stryker-tmp/` at the end. Commit or stash your changes first, and do not edit
 sources while it runs. A run killed before it can clean up (`SIGKILL`, or
 piping its output into `head`) leaves instrumented sources behind; restore
-them with `git checkout -- <workspace>/` and delete `.stryker-tmp/`. To try
+them with `git checkout -- <workspace>/` (for `scripts`,
+`git checkout -- scripts/ deploy/systemd/`) and delete `.stryker-tmp/`. To try
 one file:
 
 ```bash
@@ -368,4 +373,4 @@ If in-sandbox E2E becomes a requirement, track it as a separate issue for a
 podman-capable runner image rather than adding podman to `Dockerfile.sandbox`.
 
 Inspecting CI results from the sandbox (the GitHub Actions API returning 403) is
-a token-scope problem, not a repository change; it is tracked in #1.
+a token-scope problem, not a repository change.

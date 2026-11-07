@@ -90,6 +90,10 @@ critical advisories (except those listed in the script's `AUDIT_IGNORE`), no `dr
 scripts/nightly-compliance.sh > nightly-compliance.md
 ```
 
+The script runs the audit and the draft check. The lockfile check is the
+workflow's install step, which stops the job before the script runs; see
+[Nightly compliance](../testing.md#nightly-compliance).
+
 ## Risk tier
 
 Classifies each PR as low, medium, or high risk from its changed paths; the
