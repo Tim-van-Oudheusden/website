@@ -19,8 +19,10 @@ interface RunningBackEnd {
 async function startBackEnd(): Promise<RunningBackEnd> {
   // Stay below 32768: Linux hands out ephemeral ports from 32768-60999 (macOS
   // and Windows from 49152), so a random pick there can land on a port another
-  // socket already holds, and the server exits early with EADDRINUSE.
-  const port = 20000 + Math.floor(Math.random() * 12000);
+  // socket already holds, and the server exits early with EADDRINUSE. The
+  // workspaces test in parallel, so the front-end's process tests stay in
+  // 20000-25999 and these in 26000-31999.
+  const port = 26000 + Math.floor(Math.random() * 6000);
   const child = Bun.spawn(["bun", "run", "src/index.ts"], {
     cwd: backEndDir,
     env: { ...process.env, HOST: "127.0.0.1", PORT: String(port), LOG_LEVEL: "info" },
