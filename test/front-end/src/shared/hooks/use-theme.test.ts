@@ -47,6 +47,7 @@ function stubGlobalLocalStorage(descriptor: PropertyDescriptor): void {
   const original = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
 
   Object.defineProperty(globalThis, "localStorage", { ...descriptor, configurable: true });
+
   restoreLocalStorage = () => {
     if (original === undefined) {
       Reflect.deleteProperty(globalThis, "localStorage");
@@ -206,6 +207,7 @@ describe("ThemeProvider", () => {
         throw new DOMException("denied", "SecurityError");
       },
     });
+
     const mounted = mountThemeProvider(null);
 
     try {
@@ -224,6 +226,7 @@ describe("ThemeProvider", () => {
         setItem: () => undefined,
       },
     });
+
     const mounted = mountThemeProvider(null);
 
     try {
@@ -244,6 +247,7 @@ describe("ThemeProvider", () => {
         },
       },
     });
+
     const mounted = mountThemeProvider(null);
 
     try {
