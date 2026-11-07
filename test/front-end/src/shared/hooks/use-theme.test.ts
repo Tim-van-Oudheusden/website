@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 
 import { act, createElement } from "react";
 
@@ -34,6 +34,27 @@ afterAll(() => {
 beforeEach(() => {
   triggerFakeMediaPreferenceChange(false);
 });
+
+let restoreLocalStorage: (() => void) | null = null;
+
+afterEach(() => {
+  restoreLocalStorage?.();
+  restoreLocalStorage = null;
+});
+
+/** Replace the bare global `localStorage` (what the provider reads) until the next afterEach. */
+function stubGlobalLocalStorage(descriptor: PropertyDescriptor): void {
+  const original = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+
+  Object.defineProperty(globalThis, "localStorage", { ...descriptor, configurable: true });
+  restoreLocalStorage = () => {
+    if (original === undefined) {
+      Reflect.deleteProperty(globalThis, "localStorage");
+    } else {
+      Object.defineProperty(globalThis, "localStorage", original);
+    }
+  };
+}
 
 /** Probe child that reports the context theme and a way to set a new one. */
 interface ProbeHandle {
@@ -173,6 +194,65 @@ describe("ThemeProvider", () => {
 
       expect(mounted.probe.theme()).toBe("dark");
       expect(window.localStorage.getItem("theme")).toBe("dark");
+      expect(doc.documentElement.classList.contains("dark")).toBe(true);
+    } finally {
+      unmountProvider(mounted);
+    }
+  });
+
+  test("mounts with the default theme when reading localStorage throws", () => {
+    stubGlobalLocalStorage({
+      get: () => {
+        throw new DOMException("denied", "SecurityError");
+      },
+    });
+    const mounted = mountThemeProvider(null);
+
+    try {
+      expect(mounted.probe.theme()).toBe("system");
+    } finally {
+      unmountProvider(mounted);
+    }
+  });
+
+  test("mounts with the default theme when localStorage.getItem throws", () => {
+    stubGlobalLocalStorage({
+      value: {
+        getItem: () => {
+          throw new TypeError("storage disabled");
+        },
+        setItem: () => undefined,
+      },
+    });
+    const mounted = mountThemeProvider(null);
+
+    try {
+      expect(mounted.probe.theme()).toBe("system");
+    } finally {
+      unmountProvider(mounted);
+    }
+  });
+
+  test("setTheme still applies the theme when localStorage.setItem throws", async () => {
+    const doc = document as unknown as FakeDocument;
+
+    stubGlobalLocalStorage({
+      value: {
+        getItem: () => null,
+        setItem: () => {
+          throw new DOMException("quota", "QuotaExceededError");
+        },
+      },
+    });
+    const mounted = mountThemeProvider(null);
+
+    try {
+      await act(async () => {
+        mounted.probe.setTheme("dark");
+        await Promise.resolve();
+      });
+
+      expect(mounted.probe.theme()).toBe("dark");
       expect(doc.documentElement.classList.contains("dark")).toBe(true);
     } finally {
       unmountProvider(mounted);
