@@ -116,6 +116,12 @@ The parser reads a subset of YAML: `key: value` lines, block lists
 - A key needs a space after its colon (`draft: true`). Without one the line is
   plain text: `- Re:Zero` and `- https://example.com` are string list items,
   and a top-level `draft:true` line makes the document invalid.
+- Each key appears once. A second top-level `slug:` or `tags:` line makes the
+  document invalid, and so does a field repeated within one `links` item, such
+  as two `type:` lines; the content checker reports
+  `Frontmatter has a repeated key: slug`. Separate `links` items each have their
+  own fields. Watch for this after resolving a merge conflict by keeping both
+  sides.
 - An unquoted value is typed as YAML types it, not read as text: `2025`,
   `1.5` and `+5` are numbers, `true`, `True` and `TRUE` (and the same spellings
   of `false`) are booleans, and `null` or `~` is no value at all. A number or
