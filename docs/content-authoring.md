@@ -163,6 +163,7 @@ the [content checker](#checking-content-before-pushing) before pushing.
 | --- | --- | --- | --- |
 | `title` | Yes | Non-empty string | Heading, card title, link-preview title. |
 | `date` / `publishDate` | One of them | Date as `YYYY-MM-DD` (`2026-02-08`), a day that exists on the calendar | Publication date for sorting and display. `date` wins when both are set. Any other value, such as `2026-02-30`, `2026-10-2`, `13-10-2026` or a time like `2026-06-10T00:30:00+02:00`, makes the document invalid, and the [content checker](#checking-content-before-pushing) reports `date must be a YYYY-MM-DD calendar day`. A valid `publishDate` does not make up for a malformed `date`. |
+| `updated` | No | Date as `YYYY-MM-DD` (`2026-10-26`), a day that exists on the calendar, not before `date` | The day the document last changed in a way readers should know about, such as a rewrite for a new release. The feed (`/feed.xml`) uses it as the entry's `<updated>`, the sitemap as the page's `<lastmod>`, and the structured data as `dateModified`. Without it, all three use `date`. Listings and the page itself still sort and show `date`, and the feed keeps the entry in its `date` place and keeps its `<published>`. A value that is not a calendar day makes the document invalid, like a bad `date`: the [content checker](#checking-content-before-pushing) reports `updated must be a YYYY-MM-DD calendar day`. So does a day before `date` (`updated must not be before date`). Same name and format as on [standalone pages](#standalone-pages-contentpages). |
 | `description` | No | String (default empty) | Summary on cards and in link previews. |
 | `tags` | No | List of strings, one `- item` per line | Tag badges. An unquoted number or `true`/`false` entry (`- 2025`) makes the document invalid; quote it (`- "2025"`). So does an unquoted entry with `: ` in it (`- Accessibility: WCAG`), which reads as a key and value; quote it (`- "Accessibility: WCAG"`). A value that is not a list, including a flow list (`tags: [a, b]`) or a single `tags: a`, also makes the document invalid. An article's badges link to `/tags/<tag>`: the tag in lowercase, with every run of characters other than letters, digits, `+` and `#` turned into one hyphen (`Content API` → `/tags/content-api`, `C++` → `/tags/c++`). Spellings that differ only in letter case, spaces, hyphens or underscores share a page. The [content checker](#checking-content-before-pushing) fails on an article tag with no letter, digit, `+` or `#` (such as an emoji), and on two other spellings that would share a page (`.NET` and `NET`), drafts included. |
 | `type` | No | `article` or `project` | Content kind. Missing or any other value counts as `article`, so a typo such as `type: projet` makes a project fail the article rules. |
@@ -267,7 +268,8 @@ cache previews; LinkedIn's Post Inspector re-fetches one on demand.
 The same server adds schema.org structured data (JSON-LD) to each page, so
 search engines can show a rich result: a `BlogPosting` for an article (headline
 from `title`) and a `CreativeWork` for a project (name from `title`). Both carry
-`description`, the date from `date`, Tim as author, and the preview image when
+`description`, the date from `date` (`datePublished`), the date from `updated`
+or else `date` (`dateModified`), Tim as author, and the preview image when
 there is one. The homepage carries a `WebSite` and a `Person` for Tim, whose
 `sameAs` lists his profiles from `shared/src/social-links.ts`.
 

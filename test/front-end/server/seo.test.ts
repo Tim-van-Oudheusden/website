@@ -39,6 +39,23 @@ describe("renderSitemap", () => {
     expect(xml.trimEnd().endsWith("</urlset>")).toBe(true);
   });
 
+  test("dates each article and project by its updated day, else its publication date", () => {
+    const xml = renderSitemap("https://buildwithtim.dev", [
+      { ...ARTICLE, slug: "unchanged" },
+      { ...ARTICLE, slug: "rewritten", updated: "2026-10-26" },
+    ]);
+
+    expect(xml).toContain("<loc>https://buildwithtim.dev/articles/unchanged</loc><lastmod>2026-09-01</lastmod>");
+    expect(xml).toContain("<loc>https://buildwithtim.dev/articles/rewritten</loc><lastmod>2026-10-26</lastmod>");
+  });
+
+  test("gives the fixed pages no lastmod, having no date to report", () => {
+    const xml = renderSitemap("https://buildwithtim.dev", []);
+
+    expect(xml).toContain("<url><loc>https://buildwithtim.dev/</loc></url>");
+    expect(xml).not.toContain("<lastmod>");
+  });
+
   test("lists every fixed page, including every standalone page, even with no content", () => {
     const xml = renderSitemap("https://buildwithtim.dev", []);
 
@@ -125,6 +142,33 @@ describe("renderFeed", () => {
     expect(xml).toContain("<published>2026-01-15T00:00:00.000Z</published>");
     expect(xml).toContain("<updated>2026-01-15T00:00:00.000Z</updated>");
     expect(xml.indexOf("<updated>2026-08-20T00:00:00.000Z</updated>")).toBeLessThan(xml.indexOf("<entry>"));
+  });
+
+  test("stamps a rewritten entry's updated with its updated day, keeping its id and published date", () => {
+    const xml = renderFeed(ORIGIN, [{ ...ARTICLE, slug: "rewritten", date: "2026-06-10", updated: "2026-10-26" }]);
+    const entry = xml.slice(xml.indexOf("<entry>"));
+
+    expect(entry).toContain(`<id>${ORIGIN}/articles/rewritten</id>`);
+    expect(entry).toContain("<published>2026-06-10T00:00:00.000Z</published>");
+    expect(entry).toContain("<updated>2026-10-26T00:00:00.000Z</updated>");
+  });
+
+  test("keeps entries in publication order when an older entry was updated later", () => {
+    const xml = renderFeed(ORIGIN, [
+      { ...projectOn("launcher", "2026-06-10"), updated: "2026-11-05" },
+      { ...ARTICLE, slug: "newer", date: "2026-08-20" },
+    ]);
+
+    expect(entryIds(xml)).toEqual([`${ORIGIN}/articles/newer`, `${ORIGIN}/projects/launcher`]);
+  });
+
+  test("dates the feed by the newest change, even when it is to an older entry", () => {
+    const xml = renderFeed(ORIGIN, [
+      { ...projectOn("launcher", "2026-06-10"), updated: "2026-11-05" },
+      { ...ARTICLE, slug: "newer", date: "2026-08-20", updated: null },
+    ]);
+
+    expect(xml.slice(0, xml.indexOf("<entry>"))).toContain("<updated>2026-11-05T00:00:00.000Z</updated>");
   });
 
   test("drops an article whose date cannot be read rather than inventing one", () => {

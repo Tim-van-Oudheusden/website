@@ -280,6 +280,7 @@ describe("normalizeContentDocument", () => {
         title: "Minimal",
         description: "",
         date: "2026-01-01",
+        updated: null,
         tags: [],
         type: "project",
         draft: false,
@@ -296,6 +297,52 @@ describe("normalizeContentDocument", () => {
         links: [],
         info: null,
       },
+    });
+  });
+
+  test.each([
+    ["article", { type: "article", category: "Work" }],
+    ["project", { type: "project", coverImage: "/img.png", coverImageAlt: "img" }],
+  ])("emits an %s's updated day, which may equal date", (_type, fields) => {
+    const later = normalizeContentDocument("rewritten.md", { title: "Rewritten", date: "2026-06-10", updated: "2026-10-26", ...fields });
+    const sameDay = normalizeContentDocument("same.md", { title: "Same", date: "2026-06-10", updated: "2026-06-10", ...fields });
+
+    expect(later).toMatchObject({ ok: true, value: { date: "2026-06-10", updated: "2026-10-26" } });
+    expect(sameDay).toMatchObject({ ok: true, value: { updated: "2026-06-10" } });
+  });
+
+  test("emits updated as null on an article that leaves it out", () => {
+    const result = normalizeContentDocument("plain.md", { title: "Plain", date: "2026-01-01", category: "Work" });
+
+    expect(result).toMatchObject({ ok: true, value: { updated: null } });
+  });
+
+  // Same handling as a malformed date: the document is invalid and the checker names the field.
+  test.each(["2026-13-01", "2026-02-30", "2026-10-2", "soon"])("rejects an updated of %s like a malformed date", (value) => {
+    const result = normalizeContentDocument("bad-updated.md", {
+      title: "Bad updated",
+      date: "2026-01-01",
+      updated: value,
+      category: "Work",
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: { file: "bad-updated.md", field: "updated", message: "updated must be a YYYY-MM-DD calendar day", value },
+    });
+  });
+
+  test("rejects an updated day before the publication date", () => {
+    const result = normalizeContentDocument("backdated.md", {
+      title: "Backdated",
+      date: "2026-06-10",
+      updated: "2026-06-09",
+      category: "Work",
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: { file: "backdated.md", field: "updated", message: "updated must not be before date", value: "2026-06-09" },
     });
   });
 

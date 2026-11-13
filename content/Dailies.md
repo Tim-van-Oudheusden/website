@@ -2,6 +2,7 @@
 title: Dailies
 description: A GNOME app that gathers daily guessing games like Wordle, Connections and Worldle in one window, inspired by Cartridges and Bazaar.
 date: 2026-10-16
+updated: 2026-11-01
 tags:
   - Linux
   - GNOME

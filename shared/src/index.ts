@@ -161,6 +161,12 @@ interface BaseContentFrontmatter {
   description: string;
   /** ISO 8601 date string. */
   date: string;
+  /**
+   * `YYYY-MM-DD` day the content last changed, never before `date`; null when
+   * the frontmatter omits it. Optional so a hand-built item may leave it out;
+   * read it as `updated ?? date`.
+   */
+  updated?: string | null;
   tags: string[];
   draft: boolean;
   /** Derived from the filename when the frontmatter omits it. */

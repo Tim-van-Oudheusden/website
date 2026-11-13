@@ -149,6 +149,7 @@ describe("renderSocialMeta structured data", () => {
       "headline": "Apt-get out of my life, hello flatpak",
       "description": "Why I moved my desktop apps to Flatpak.",
       "datePublished": "2026-09-01",
+      "dateModified": "2026-09-01",
       "url": "https://buildwithtim.dev/articles/apt-get-out-of-my-life-hello-flatpak",
       "author": {
         "@type": "Person",
@@ -158,6 +159,12 @@ describe("renderSocialMeta structured data", () => {
       },
       "image": "https://buildwithtim.dev/content-assets/images/cover.png",
     });
+  });
+
+  test("gives dateModified as the updated day of a rewritten article, keeping datePublished", () => {
+    const data = headJsonLd(renderSocialMeta(INDEX_HTML, article({ updated: "2026-10-26" }), ORIGIN));
+
+    expect(data).toMatchObject({ datePublished: "2026-09-01", dateModified: "2026-10-26" });
   });
 
   test("keeps authored text inside the script block and leaves out image when there is none", () => {
@@ -217,6 +224,7 @@ describe("renderSocialMeta for a project", () => {
       "name": "Minimal Android Launcher",
       "description": "A distraction-free launcher for a keyboard phone.",
       "datePublished": "2026-06-10",
+      "dateModified": "2026-06-10",
       "url": "https://buildwithtim.dev/projects/minimal-android-launcher",
       "author": {
         "@type": "Person",
@@ -226,6 +234,20 @@ describe("renderSocialMeta for a project", () => {
       },
       "image": "https://buildwithtim.dev/images/projects/placeholder_phone_project.png",
     });
+  });
+});
+
+describe("renderSocialMeta for a rewritten project", () => {
+  test("gives dateModified as the updated day, keeping datePublished", () => {
+    const data = headJsonLd(renderSocialMeta(INDEX_HTML, project({ updated: "2026-10-26" }), ORIGIN));
+
+    expect(data).toMatchObject({ datePublished: "2026-06-10", dateModified: "2026-10-26" });
+  });
+
+  test("gives dateModified as the publication date when updated is null", () => {
+    const data = headJsonLd(renderSocialMeta(INDEX_HTML, project({ updated: null }), ORIGIN));
+
+    expect(data).toMatchObject({ datePublished: "2026-06-10", dateModified: "2026-06-10" });
   });
 });
 
