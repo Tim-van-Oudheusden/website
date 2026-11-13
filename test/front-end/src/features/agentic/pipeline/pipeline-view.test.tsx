@@ -89,6 +89,21 @@ describe("PipelineView", () => {
     expect(text).toContain("Open work 8");
   });
 
+  test("says the pull request data is missing in both repo stations, and keeps the Hive ones", () => {
+    const html = render(liveModel({ repo: null }));
+
+    function station(index: number): string {
+      return textOf(new RegExp(`<li class="pl-station" aria-labelledby="pl-station-${String(index)}"[\\s\\S]*?</li>`).exec(html)?.[0] ?? "");
+    }
+
+    expect(headings(html, 3)).toEqual(["Queue", "Agents", "Runs", "Pull requests", "Merged"]);
+    expect(station(4)).toContain(AGENTIC_COPY.missing.repo);
+    expect(station(4)).not.toContain("Time to merge");
+    expect(station(5)).toContain(AGENTIC_COPY.missing.repo);
+    expect(station(5)).not.toContain("Hive wrote");
+    expect(textOf(html)).toContain("Open work 8");
+  });
+
   test("shows one explanation instead of any station when nothing is available", () => {
     const html = render(modelOf({ state: "unavailable", fetchedAt: null, metrics: null }));
 
