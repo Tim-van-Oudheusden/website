@@ -14,6 +14,7 @@ function project(overrides: Partial<ProjectFrontmatter> = {}): ProjectFrontmatte
     title: "Project",
     description: "Description",
     date: "2026-01-01T00:00:00Z",
+    updated: null,
     tags: ["automation"],
     type: "project",
     draft: false,

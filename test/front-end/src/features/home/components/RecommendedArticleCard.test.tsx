@@ -31,6 +31,7 @@ function article(overrides: Partial<ArticleSummary> = {}): ArticleSummary {
     title: "Yoga Nidra, a way to be at peace in chaos",
     slug: "yoga-nidra-a-way-to-be-at-peace-in-chaos",
     date: "2025-01-17",
+    updated: null,
     tags: [],
     type: "article",
     socialImage: "images/cover.png",

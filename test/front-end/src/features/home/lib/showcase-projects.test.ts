@@ -9,6 +9,7 @@ function project(slug: string, overrides: Partial<ProjectFrontmatter> = {}): Pro
     title: slug,
     description: `About ${slug}.`,
     date: "2026-06-10",
+    updated: null,
     tags: [],
     type: "project",
     draft: false,

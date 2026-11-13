@@ -9,6 +9,7 @@ function article(slug: string, date: string, homeRecommended = false): ArticleSu
     title: slug,
     slug,
     date,
+    updated: null,
     tags: [],
     type: "article",
     socialImage: null,

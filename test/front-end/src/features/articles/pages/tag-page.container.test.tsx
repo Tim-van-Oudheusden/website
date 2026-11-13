@@ -30,6 +30,7 @@ function summary(slug: string, title: string, tags: string[], date: string): Art
     title,
     description: `About ${title}`,
     date,
+    updated: null,
     tags,
     type: "article",
     socialImage: null,

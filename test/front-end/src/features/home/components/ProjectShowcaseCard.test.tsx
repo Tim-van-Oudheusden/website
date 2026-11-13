@@ -14,6 +14,7 @@ function project(overrides: Partial<ProjectFrontmatter> = {}): ProjectFrontmatte
     title: "Pi Sandbox Automation",
     description: "Automation for running and testing sandboxed workloads.",
     date: "2026-06-10",
+    updated: null,
     tags: [],
     type: "project",
     draft: false,

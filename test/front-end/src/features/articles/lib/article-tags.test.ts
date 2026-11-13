@@ -9,6 +9,7 @@ function summary(slug: string, tags: string[], date: string): ArticleSummary {
     title: slug,
     description: `About ${slug}`,
     date,
+    updated: null,
     tags,
     type: "article",
     socialImage: null,

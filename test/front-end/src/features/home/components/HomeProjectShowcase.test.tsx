@@ -27,6 +27,7 @@ function project(slug: string, projectOrder: number, featured: boolean): Project
     title: slug,
     description: `About ${slug}.`,
     date: "2026-06-10",
+    updated: null,
     tags: [],
     type: "project",
     draft: false,
