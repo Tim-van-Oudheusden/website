@@ -27,6 +27,7 @@ function article(slug: string, date: string): ArticleData {
     title: slug,
     slug,
     date,
+    updated: null,
     tags: [],
     type: "article",
     socialImage: null,

@@ -13,6 +13,7 @@ const FIXTURE_ARTICLE: ArticleData = {
   title: "Introduction",
   description: "What this site is about.",
   date: "2026-02-08",
+  updated: null,
   tags: ["Introduction"],
   type: "article",
   socialImage: null,

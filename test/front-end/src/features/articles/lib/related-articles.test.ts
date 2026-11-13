@@ -10,6 +10,7 @@ function summary(slug: string, category: ArticleCategory, date: string): Article
     title: slug,
     description: `About ${slug}`,
     date,
+    updated: null,
     tags: [],
     type: "article",
     socialImage: null,

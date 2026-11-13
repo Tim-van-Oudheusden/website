@@ -23,6 +23,7 @@ const ARTICLE: ArticleFrontmatter & { body: string } = {
   title: "Yoga Nidra, a way to be at peace in chaos",
   description: "How I discovered Yoga Nidra.",
   date: "2026-09-01",
+  updated: null,
   tags: [],
   draft: false,
   homeRecommended: false,

@@ -2,6 +2,7 @@
 title: Minimal Android Launcher
 description: A minimal Android launcher for keyboard-centric phones from Zinwa, Clicks and Unihertz, inspired by MinUI and Cannoli.
 date: 2026-06-10
+updated: 2026-10-26
 tags:
   - Android
   - Launcher

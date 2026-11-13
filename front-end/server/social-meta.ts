@@ -30,6 +30,11 @@ export function contentPagePath(item: Pick<ContentFrontmatter, "slug" | "type">)
   return `${CONTENT_PAGE_PREFIX[item.type]}${encodeURIComponent(item.slug)}`;
 }
 
+/** The day an article or project last changed: its `updated` date, else its publication date. */
+export function lastModified(item: Pick<ContentFrontmatter, "date" | "updated">): string {
+  return item.updated ?? item.date;
+}
+
 /**
  * Mark the SPA shell sent with a 404 as not for search engines, so a dead or
  * mistyped URL never sits in an index as a thin "not found" page.
@@ -193,7 +198,8 @@ function renderHomeJsonLd(origin: string): string {
 
 /**
  * schema.org structured data, so search engines can show the title, author and
- * date as a rich result: a BlogPosting for an article, a CreativeWork for a project.
+ * dates as a rich result: a BlogPosting for an article, a CreativeWork for a project.
+ * `dateModified` is the `updated` date, else the publication date.
  */
 function renderJsonLd(
   item: ContentFrontmatter,
@@ -208,6 +214,7 @@ function renderJsonLd(
       : { "@type": "CreativeWork", "name": item.title }),
     "description": item.description,
     "datePublished": item.date,
+    "dateModified": lastModified(item),
     "url": pageUrl,
     "author": owner(origin),
     ...(imageUrl === null ? {} : { image: imageUrl }),

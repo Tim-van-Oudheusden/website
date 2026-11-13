@@ -174,6 +174,7 @@ function makeArticle(body: string): ArticleData {
     title: "Test article",
     description: "A test article.",
     date: "2026-01-01",
+    updated: null,
     tags: [],
     type: "article",
     socialImage: null,

@@ -232,7 +232,7 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
     return reject(file, "title", "Missing required title");
   }
 
-  for (const field of ["date", "publishDate"]) {
+  for (const field of ["date", "publishDate", "updated"]) {
     if (normalizeString(raw[field]) !== null && normalizeDate(raw[field]) === null) {
       return {
         ok: false,
@@ -245,6 +245,16 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
 
   if (date === null) {
     return reject(file, "date", "Missing required date or publishDate");
+  }
+
+  const updated = normalizeDate(raw["updated"]);
+
+  // Same-length YYYY-MM-DD days compare correctly as strings.
+  if (updated !== null && updated < date) {
+    return {
+      ok: false,
+      error: { file, field: "updated", message: "updated must not be before date", value: raw["updated"] },
+    };
   }
 
   const description = normalizeString(raw["description"]) ?? "";
@@ -291,6 +301,7 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
         title,
         description,
         date,
+        updated,
         tags,
         type,
         draft,
@@ -346,6 +357,7 @@ export function normalizeContentDocument(file: string, value: unknown): Normaliz
       title,
       description,
       date,
+      updated,
       tags,
       type,
       draft,
