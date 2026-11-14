@@ -70,6 +70,22 @@ describe.each([
   });
 });
 
+// Stryker runs four back-end suites at once, and on a slow runner a test that
+// takes 1.5 s alone can pass bun's 5 s per-test default. Every mutant's run then
+// fails and counts as killed: 0 survivors, a 100% score (#1264). A per-test
+// timeout above Stryker's own per-mutant one leaves the hang check to Stryker.
+test.each(["back-end", "back-end-content"])(
+  "stryker/%s gives each back-end test more than bun's 5 s default",
+  async (name) => {
+    const config = (await import(resolve(rootPath, `stryker/${name}.conf.mjs`))) as {
+      default: { commandRunner: { command: string } };
+    };
+    const timeout = /--timeout (\d+)/.exec(config.default.commandRunner.command)?.[1];
+
+    expect(Number(timeout)).toBeGreaterThan(5000);
+  },
+);
+
 // Each config only runs when the workflow's matrix names it: a config left out
 // of the matrix mutates nothing, and the split above would hide that.
 test("mutation-testing.yml runs every stryker config", () => {

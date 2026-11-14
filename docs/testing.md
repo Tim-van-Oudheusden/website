@@ -157,6 +157,11 @@ to put back the executable bit of `scripts/*.ts`.
 
 Stryker has no Bun test runner, so the configs use its `command` runner: every
 mutant runs the whole suite and is killed when the command exits non-zero.
+The back-end configs pass `--timeout 30000` to `bun test`. With four suites
+running at once on a slow runner, a test that takes 1.5 s alone can go over
+bun's 5 s per-test default. Then every mutant's run fails, and the job reports
+0 survivors and a 100% score (#1264). The higher per-test timeout leaves hang
+detection to Stryker's per-mutant timeout.
 Locally on 2 cores (October 2026), the back-end's 1486 mutants took 21
 minutes and the shared workspace's 60 took 3. On the 4-core runner the
 front-end's 4498 mutants took about 130 minutes (November 2026), past the job's
