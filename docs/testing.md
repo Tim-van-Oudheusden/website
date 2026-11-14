@@ -165,6 +165,14 @@ configs that run as separate jobs: `front-end-features` (about 2800 mutants)
 and `front-end` (about 1700), `back-end-content` (about 1300) and `back-end`
 (about 1000).
 
+Stryker times a mutant out after the dry run's time × 1.5 + 5 s, and counts
+a mutant as killed whenever the command fails. bun's own 5 s per-test timeout
+therefore must not fire first: the exhaustive YAML test in
+`frontmatter-yaml.test.ts` runs close to it, and on a slow runner with 4 suites
+at once it timed out on every mutant, so `back-end-content` reported a
+vacuous 100% (#1264). Every config that runs the back-end suite passes
+`--timeout 30000`, so Stryker alone decides when a mutant hangs.
+
 The `shared` job leaves out the rest of `test/shared` because those tests check
 repository tooling, and some of them (the typecheck run, for one) fail on any
 instrumented source.
