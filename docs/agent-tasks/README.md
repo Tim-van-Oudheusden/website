@@ -13,7 +13,7 @@ direction. The coordination rules behind it are in
 | Link | Carries the issue number as | Example | Enforced by |
 | --- | --- | --- | --- |
 | Issue | The task itself, filed by a person, an agent or a workflow; Hive's issues end with `— hive: agent=<name>` | #968 | — |
-| Claim | Assignee, or Hive's `hive/claimed-by-<agent>` label | `gh issue edit 968 --add-assignee @me` | Convention ([`multi-agent.md`](../multi-agent.md#the-hand-off-loop)) |
+| Claim | Assignee, or Hive's `hive/claimed-by-<agent>` or `hive/in-progress` label | `gh issue edit 968 --add-assignee @me` | Convention ([`multi-agent.md`](../multi-agent.md#the-hand-off-loop)) |
 | Branch | `<type>/<N>-<slug>` for local agents; `claude/issue-<N>-<timestamp>` for Claude Code in CI | `ci/968-strategy-report` | Convention |
 | Commit | `(#<N>)` at the end of the Conventional Commits subject | `ci: add weekly strategy report dashboard (#968)` | Convention |
 | Pull request | `Fixes #<N>` in the body (or `Closes`, `Resolves`, `Refs`); Hive's PRs also end with `— hive: agent=<name> … model=<model>` | #970 | `PR review rubric` check (`scripts/pr-review-check.sh`), required on `main` |

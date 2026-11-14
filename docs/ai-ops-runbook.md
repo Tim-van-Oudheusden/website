@@ -18,7 +18,7 @@ exception is a failing Nightly compliance run, which files an issue on its own
 | Question | Signal | Command |
 | --- | --- | --- |
 | What are agents working on? | Open PRs by head branch: `claude/*` (Claude Code in CI), `<agent>/…` or `<type>/<N>-…` (Hive, local agents), `dependabot/*` | `gh pr list --json number,title,headRefName,author,labels` |
-| Who holds an issue? | Assignee, or the `hive/claimed-by-<agent>` label | `gh issue view <N> --json assignees,labels` |
+| Who holds an issue? | Assignee, or the `hive/claimed-by-<agent>` or `hive/in-progress` label | `gh issue view <N> --json assignees,labels` |
 | What is queued for Claude Code? | Issues labelled `ai-fix-requested` | `gh issue list --label ai-fix-requested` |
 | Did Claude Code run, and how did it end? | `Claude Code` workflow runs | `gh run list --workflow claude.yml` |
 | Why is a PR not merging? | Merge queue runs and their `::notice` lines, the `hold` label, the merge state | `gh run list --workflow merge-queue.yml`, `gh pr view <N> --json mergeStateStatus,isDraft,labels` |
@@ -122,7 +122,7 @@ needed.
 ### Two agents worked the same issue
 
 Agents claim an issue by assigning it, or with Hive's
-`hive/claimed-by-<agent>` label (see [the hand-off loop](multi-agent.md#the-hand-off-loop)).
+`hive/claimed-by-<agent>` or `hive/in-progress` label (see [the hand-off loop](multi-agent.md#the-hand-off-loop)).
 Find the competing PRs with `gh pr list --state all --search "<N>"`, keep the
 one that came from the agent holding the claim, and close the other with a
 comment linking it. If an agent ignored a claim it could see, record that as
