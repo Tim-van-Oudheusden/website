@@ -46,9 +46,11 @@ flowchart LR
    is in [`agent-tasks/`](agent-tasks/README.md).
 2. **Claim before working.** A local or CI agent assigns the issue
    (`gh issue edit <number> --add-assignee @me`); Hive adds
-   `hive/claimed-by-<agent>`. Before starting, check the issue's assignees and
-   labels and `gh pr list --search "<number>"`; skip an issue someone else holds
-   or an open PR already covers (`stage/040-covered-by-pr`, `🐝 covered by PR`).
+   `hive/claimed-by-<agent>`, and `hive/in-progress` once it has started work.
+   Before starting, check the issue's assignees and labels and
+   `gh pr list --search "<number>"`; skip an issue someone else holds (an
+   assignee, `hive/claimed-by-<agent>` or `hive/in-progress`) or an open PR
+   already covers (`stage/040-covered-by-pr`, `🐝 covered by PR`).
 3. **One issue, one branch, one PR.** Pick work with `gh issue list`; a child
    or follow-up issue waits until its parent lands, whatever its number.
 4. **Same gates for every author.** CI, the coverage gate, the PR review
@@ -106,6 +108,7 @@ logic lives in `scripts/merge-queue.sh`.
 | `ai-fix-requested` | A triager, or Hive on issues it files | Hand the issue to Claude Code in CI. Only a person's label starts a run; on Hive's issues the job is skipped until a maintainer adds the label again |
 | `agent/<name>` | Hive | The Hive agent that filed the issue |
 | `hive/claimed-by-<agent>` | Hive | That Hive agent holds the issue |
+| `hive/in-progress` | Hive | Hive has started work on the issue; it is held, so skip it like a claimed one |
 | `stage/<NNN>-<name>` | Hive | Where the issue or PR is in Hive's pipeline, from `stage/010-actionable` to `stage/100-merge-queue`; the label descriptions on GitHub define each stage |
 | `hold` | Hive, the merge queue, or a person | Keeps the PR out of the merge queue until removed: Hive's hold-gated mode puts it on Hive's PRs, the queue on a PR that failed on the latest `main` |
 | `sentinel-alert` | Hive's sentinel sweep | The PR touches sensitive files or matches a suspicious pattern (a weakened CI gate, removed tests, an exposed secret, escalated permissions). Keeps it out of the merge queue and out of Hive's approval and auto-merge paths; a maintainer reviews the PR, removes the label, and the queue picks it up again |
