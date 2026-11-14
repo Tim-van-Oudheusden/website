@@ -82,3 +82,36 @@ test("mutation-testing.yml runs every stryker config", () => {
 
   expect(workflow.jobs.mutation.strategy.matrix.workspace.sort()).toEqual(configs.sort());
 });
+
+// Stryker counts a mutant as killed whenever the command fails, so bun's 5 s
+// per-test default must not fire before Stryker's own per-mutant timeout (dry
+// run × 1.5 + 5 s): on a slow runner it failed the exhaustive YAML test on every
+// mutant and back-end-content read a vacuous 100% (#1264).
+test("every stryker config that runs the back-end suite lifts bun's per-test timeout", async () => {
+  const configs = readdirSync(resolve(rootPath, "stryker")).filter((file) =>
+    file.endsWith(".conf.mjs"),
+  );
+  const backEndRuns = (
+    await Promise.all(
+      configs.map(async (file) => {
+        const config = (await import(resolve(rootPath, "stryker", file))) as {
+          default: { commandRunner: { command: string } };
+        };
+
+        return config.default.commandRunner.command
+          .split("&&")
+          .map((step) => step.trim())
+          .filter((step) => step.startsWith("bun run --filter back-end test"))
+          .map((step) => ({ file, timeout: Number(/--timeout (\d+)/.exec(step)?.[1] ?? 0) }));
+      }),
+    )
+  ).flat();
+
+  expect(backEndRuns.map(({ file }) => file).sort()).toEqual([
+    "back-end-content.conf.mjs",
+    "back-end.conf.mjs",
+    "shared.conf.mjs",
+  ]);
+
+  expect(backEndRuns.filter(({ timeout }) => timeout < 30_000)).toEqual([]);
+});
