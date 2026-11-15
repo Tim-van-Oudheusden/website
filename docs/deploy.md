@@ -430,8 +430,10 @@ the repo by hand (and `systemctl --user daemon-reload` for a unit).
 **Automatic:** `website-update.sh` already guards against this for the common
 case. Before pulling, it tags whatever image is currently running as a local
 `:rollback` reference; after replaying the pod on a digest change, it polls
-both containers' `/health` endpoints for ~20s. If the replay itself fails
-(`podman kube play` could not start a container) or either container never
+both containers' `/health` endpoints for ~20s. Each poll gives up after 5s, so
+a container that accepts connections but never answers fails the check within
+~70s. If the replay itself fails (`podman kube play` could not start a
+container) or either container never
 comes up healthy, it re-tags `:rollback` onto `:latest`, puts back the manifest
 it replaced (if it installed one this run, from
 `${XDG_STATE_HOME:-~/.local/state}/website-update/prod.yaml.previous`), replays

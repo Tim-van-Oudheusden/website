@@ -54,12 +54,16 @@ digest() {
 }
 
 # Polls a loopback /health endpoint, retrying for up to ~20s so a slow-starting
-# container isn't mistaken for a broken one.
+# container isn't mistaken for a broken one. Each poll gives up after 5s, the
+# liveness probe's timeoutSeconds in prod.yaml: curl has no time limit of its
+# own, so a container that accepts the connection but never answers would hold
+# the poll, and the rollback behind it, open with no end. A hanging endpoint
+# fails all ten polls in ~70s.
 wait_healthy() {
   local url="$1"
   local attempt
   for attempt in $(seq 1 10); do
-    if curl -fsS -o /dev/null "$url"; then
+    if curl -fsS --max-time 5 -o /dev/null "$url"; then
       return 0
     fi
     sleep 2

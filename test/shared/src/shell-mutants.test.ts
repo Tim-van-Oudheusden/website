@@ -92,6 +92,13 @@ const MUTANTS: readonly ShellMutant[] = [
     killedBy: UPDATE_TEST,
   },
   {
+    name: "each /health poll has a time limit, so a hanging endpoint cannot hold off the rollback (#1269)",
+    file: UPDATE_SCRIPT,
+    from: `curl -fsS --max-time 5 -o /dev/null "$url"`,
+    to: `curl -fsS -o /dev/null "$url"`,
+    killedBy: UPDATE_TEST,
+  },
+  {
     name: "a failed replay restarts the pod on the rolled-back images",
     file: UPDATE_SCRIPT,
     from: `echo "replaying podman-kube@website.service with rolled-back image(s)" >&2\nsystemctl --user restart podman-kube@website.service`,
