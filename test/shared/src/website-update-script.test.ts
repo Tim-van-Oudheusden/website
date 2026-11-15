@@ -80,19 +80,28 @@ interface ScriptRun {
 /**
  * `healthy`: the /health URLs that answer 200. `unstartable`: image digests the pod
  * cannot start on, so replaying it while one is on :latest fails like `kube play`'s
- * "failed to start N containers".
+ * "failed to start N containers". `hanging`: /health URLs that accept the connection but
+ * never answer.
  */
-function runScript(healthy: readonly string[], unstartable: readonly string[] = []): ScriptRun {
+function runScript(
+  healthy: readonly string[],
+  unstartable: readonly string[] = [],
+  hanging: readonly string[] = [],
+): ScriptRun {
   writeFileSync(callLog, "");
 
   const result = spawnSync("bash", [scriptPath], {
     cwd: rootPath,
     encoding: "utf8",
+    // A run left waiting on a hanging endpoint is killed, and its status is null.
+    killSignal: "SIGKILL",
+    timeout: 10_000,
     env: {
       ...process.env,
       PATH: `${stubDir}:${process.env["PATH"] ?? ""}`,
       STUB_HEALTHY: healthy.join(" "),
       STUB_UNSTARTABLE: unstartable.join(" "),
+      STUB_HANGING: hanging.join(" "),
       XDG_STATE_HOME: join(stubDir, "state"),
       XDG_CONFIG_HOME: configDir,
       WEBSITE_REPO: repoDir,
@@ -146,7 +155,18 @@ beforeEach(() => {
   );
 
   // Answers 200 only for URLs listed in STUB_HEALTHY; anything else fails like `curl -f` on a refused port.
-  writeStub("curl", `for url in $STUB_HEALTHY; do [ "$url" = "\${@: -1}" ] && exit 0; done; exit 7`);
+  // A URL in STUB_HANGING never answers: with a time limit curl gives up (exit 28), without one it waits.
+  writeStub(
+    "curl",
+    [
+      `for url in $STUB_HANGING; do`,
+      `  [ "$url" = "\${@: -1}" ] || continue`,
+      `  for arg in "$@"; do case "$arg" in --max-time|-m) exit 28;; esac; done`,
+      `  PATH=/usr/bin:/bin exec sleep 60 </dev/null >/dev/null 2>&1`,
+      `done`,
+      `for url in $STUB_HEALTHY; do [ "$url" = "\${@: -1}" ] && exit 0; done; exit 7`,
+    ].join("\n"),
+  );
 
   // Records the manifest each replay used, then fails the replay while an unstartable digest is
   // on :latest, as `kube play` does when a container won't start.
@@ -285,6 +305,19 @@ describe("deploy/systemd/website-update.sh", () => {
     // The front-end check fails first, so the back-end endpoint is never polled.
     expect(calls.filter((call) => call.startsWith("curl ") && call.endsWith(FRONT_HEALTH))).toHaveLength(10);
     expect(calls.filter((call) => call.startsWith("curl ") && call.endsWith(BACK_HEALTH))).toHaveLength(0);
+  });
+
+  test("rolls back when a /health accepts the connection but never answers, instead of waiting on it", () => {
+    setLocal(`${FRONT}:latest`, "sha256:front-a");
+    setLocal(`${BACK}:latest`, "sha256:back-a");
+    setRegistry(`${FRONT}:latest`, "sha256:front-b");
+    setRegistry(`${BACK}:latest`, "sha256:back-a");
+
+    const { status, calls } = runScript([BACK_HEALTH], [], [FRONT_HEALTH]);
+
+    expect(status).toBe(1);
+    expect(restarts(calls)).toBe(2);
+    expect(localDigest(`${FRONT}:latest`)).toBe("sha256:front-a");
   });
 
   test("on a first deploy with no local image, makes no rollback reference and still fails loudly", () => {
