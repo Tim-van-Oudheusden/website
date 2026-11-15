@@ -416,7 +416,7 @@ describe("real content directory sanity check", () => {
       },
     ]);
 
-    expect(project.projectOrder).toBe(10);
+    expect(project.projectOrder).toBe(17);
   });
 
   test("the Minimal Android Launcher shows the MinimalUI brand artwork from files in the repository", async () => {
@@ -451,16 +451,49 @@ describe("real content directory sanity check", () => {
     expect(standaloneVideoLinks).toEqual([{ title: "MinimalUI - Walkthrough", href: "https://youtu.be/pnP0TemZbZI" }]);
   });
 
-  test("lists the real projects in homepage order, newest first after the featured launcher", async () => {
+  test("lists the real projects in homepage order, newest first after the featured Pindu OS", async () => {
     const projects = (await listContent(REAL_CONTENT_DIR, { type: "project" })) as ProjectFrontmatter[];
     const byOrder = [...projects].sort((left, right) => left.projectOrder - right.projectOrder);
 
     expect(byOrder.map((project) => [project.slug, project.featured])).toEqual([
-      ["minimal-android-launcher", true],
+      ["pindu-os", true],
       ["pindu-launcher", false],
       ["dailies", false],
+      ["minimal-android-launcher", false],
       ["obsidian-content-pipeline", false],
     ]);
+  });
+
+  test("Pindu OS links to its source repository and its install guide", async () => {
+    const project = (await getContentBySlug("pindu-os", REAL_CONTENT_DIR)) as ProjectFrontmatter | null;
+
+    expect(project?.links).toEqual([
+      { type: "repo", label: "Source repository", href: "https://github.com/Tim-van-Oudheusden/pindu-os" },
+      {
+        type: "docs",
+        label: "Install guide",
+        href: "https://github.com/Tim-van-Oudheusden/pindu-os/blob/main/docs/install.md",
+      },
+    ]);
+  });
+
+  test("Pindu OS shows its banner and diagrams from files in the repository", async () => {
+    const project = (await getContentBySlug("pindu-os", REAL_CONTENT_DIR)) as ProjectFrontmatter & { body: string };
+    const bodyImages = [...project.body.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)].map((match) => match[1]);
+
+    expect(bodyImages).toEqual([
+      "/content-assets/images/pindu-os/readme-banner.webp",
+      "/content-assets/images/pindu-os/straight-to-your-games.webp",
+      "/content-assets/images/pindu-os/always-a-way-back.webp",
+      "/content-assets/images/pindu-os/built-in-the-open.webp",
+    ]);
+
+    const referenced = [project.coverImage, project.socialImage, ...bodyImages];
+    const missing = referenced.filter(
+      (imagePath) => imagePath === null || imagePath === undefined || !existsSync(repositoryFileFor(imagePath)),
+    );
+
+    expect(missing).toEqual([]);
   });
 
   test("Pindu launcher links to its source repository", async () => {
