@@ -138,6 +138,7 @@ The Obsidian settings, image syntax, frontmatter reference and link previews are
 | Document | Covers |
 | --- | --- |
 | [`docs/content-authoring.md`](docs/content-authoring.md) | Writing articles and projects: Obsidian, frontmatter, the content check |
+| [`docs/roadmap.md`](docs/roadmap.md) | Where the site is heading: the writing backlog, keeping living pages current, home page growth |
 | [`docs/testing.md`](docs/testing.md) | Unit and E2E tests, quality reports, the prod-asset check |
 | [`docs/deploy.md`](docs/deploy.md) | Server runbook: pod, Cloudflare Tunnel, update timer, rollback |
 | [`docs/postmortems/README.md`](docs/postmortems/README.md) | Writing up a production incident or rollback |
