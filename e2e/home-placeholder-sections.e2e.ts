@@ -25,9 +25,10 @@ test.describe("Home placeholder sections implemented", () => {
     await expect(section.getByRole("heading", { level: 2, name: "Open-source projects" })).toBeVisible();
 
     await expect(section.getByRole("heading", { level: 3 })).toHaveText([
-      "Minimal Android Launcher",
+      "Pindu OS",
       "Pindu launcher",
       "Dailies",
+      "Minimal Android Launcher",
       "Obsidian Content Pipeline",
     ]);
 

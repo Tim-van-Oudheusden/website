@@ -12,8 +12,8 @@ slug: minimal-android-launcher
 coverImage: /images/projects/minimal-android-launcher.webp
 coverImageAlt: The MinimalUI wordmark, a cross and the hive logo on black fading into an amber honeycomb, with both project links and the tagline "A plain list of apps, driven by keys."
 socialImage: images/minimalui/social-preview.png
-featured: true
-projectOrder: 10
+featured: false
+projectOrder: 17
 status: In Progress
 role: Full-stack developer
 created: 2026
