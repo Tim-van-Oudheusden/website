@@ -35,7 +35,7 @@ function project(overrides: Partial<ProjectFrontmatter> = {}): ProjectFrontmatte
 }
 
 function cardElement(item: ProjectFrontmatter): ReactElement {
-  return createElement(MemoryRouter, null, createElement(ProjectShowcaseCard, { project: item, featured: false }));
+  return createElement(MemoryRouter, null, createElement(ProjectShowcaseCard, { project: item, size: "standard" }));
 }
 
 function links(html: string): string[] {

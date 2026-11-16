@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures";
 import { openHome } from "./home-page";
@@ -9,6 +9,43 @@ async function scrollToSection(page: Page, sectionId: string): Promise<void> {
 
     element?.scrollIntoView({ block: "start" });
   }, sectionId);
+}
+
+/** The home showcase with today's content, in rank order. */
+const SHOWCASE = [
+  { title: "Pindu OS", slug: "pindu-os" },
+  { title: "Pindu launcher", slug: "pindu-launcher" },
+  { title: "Dailies", slug: "dailies" },
+  { title: "Minimal Android Launcher", slug: "minimal-android-launcher" },
+  { title: "Obsidian Content Pipeline", slug: "obsidian-content-pipeline" },
+] as const;
+
+interface Box {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+async function boxOf(locator: Locator): Promise<Box> {
+  const box = await locator.boundingBox();
+
+  expect(box).not.toBeNull();
+
+  return box!;
+}
+
+/** Each showcase tile's box, in rank order. */
+async function tileBoxes(section: Locator): Promise<Box[]> {
+  return Promise.all(SHOWCASE.map(async ({ title }) => boxOf(section.getByRole("listitem").filter({
+    has: section.getByRole("heading", { level: 3, name: title, exact: true }),
+  }))));
+}
+
+/** `wide` spans two columns of the row that `standard` spans one of: two standard widths plus the gap. */
+function expectWideBesideStandard(wide: Box, standard: Box, gap: number): void {
+  expect(Math.abs(wide.y - standard.y)).toBeLessThanOrEqual(1);
+  expect(Math.abs(wide.width - (2 * standard.width + gap))).toBeLessThanOrEqual(1);
 }
 
 test.describe("Home placeholder sections implemented", () => {
@@ -24,23 +61,48 @@ test.describe("Home placeholder sections implemented", () => {
     await scrollToSection(page, "for-devs");
     await expect(section.getByRole("heading", { level: 2, name: "Open-source projects" })).toBeVisible();
 
-    await expect(section.getByRole("heading", { level: 3 })).toHaveText([
-      "Pindu OS",
-      "Pindu launcher",
-      "Dailies",
-      "Minimal Android Launcher",
-      "Obsidian Content Pipeline",
-    ]);
+    await expect(section.getByRole("heading", { level: 3 })).toHaveText(SHOWCASE.map(({ title }) => title));
 
-    const dailies = section.getByRole("link", { name: "Learn more: Dailies" });
+    for (const { title, slug } of SHOWCASE) {
+      await expect(section.getByRole("link", { name: `Learn more: ${title}`, exact: true })).toHaveAttribute(
+        "href",
+        `/projects/${slug}`,
+      );
+    }
 
-    await expect(dailies).toHaveAttribute("href", "/projects/dailies");
-    await expect(dailies).not.toHaveAttribute("target", "_blank");
+    await expect(section.getByRole("link", { name: "Learn more: Dailies" })).not.toHaveAttribute("target", "_blank");
 
-    await expect(section.getByRole("link", { name: "Learn more: Obsidian Content Pipeline" })).toHaveAttribute(
-      "href",
-      "/projects/obsidian-content-pipeline",
-    );
+    // Bento at 1440 wide: the lead's row, Pindu launcher (wide) beside Dailies, then Minimal beside Obsidian (wide).
+    const gap = await section.getByRole("list").evaluate((list) => Number.parseFloat(getComputedStyle(list).columnGap));
+    const [, launcher, dailies, minimal, obsidian] = await tileBoxes(section);
+
+    expectWideBesideStandard(launcher!, dailies!, gap);
+    expectWideBesideStandard(obsidian!, minimal!, gap);
+    expect(minimal!.y).toBeGreaterThan(launcher!.y + launcher!.height);
+    expect(obsidian!.x).toBeGreaterThan(minimal!.x);
+
+    const covers = section.getByRole("img").locator("..");
+
+    await expect(covers).toHaveCount(SHOWCASE.length);
+
+    for (const cover of await covers.all()) {
+      const { width, height } = await boxOf(cover);
+
+      expect(width / height).toBeCloseTo(1.6, 2);
+    }
+
+    // On a phone the tiles stack: one left edge, in rank order.
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    const stacked = await tileBoxes(section);
+
+    for (const [index, box] of stacked.entries()) {
+      expect(Math.abs(box.x - stacked[0]!.x)).toBeLessThanOrEqual(1);
+
+      if (index > 0) {
+        expect(box.y).toBeGreaterThan(stacked[index - 1]!.y);
+      }
+    }
   });
 
   test("renders the agentic teaser with the flow of work and a link to the Agentic tab", async ({ page }) => {
