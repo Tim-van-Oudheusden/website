@@ -35,10 +35,10 @@ async function boxOf(locator: Locator): Promise<Box> {
   return box!;
 }
 
-/** Each showcase tile's box, in rank order. */
+/** Each showcase tile's box, in rank order. The `has` locator is matched inside each item, so it starts at the page. */
 async function tileBoxes(section: Locator): Promise<Box[]> {
   return Promise.all(SHOWCASE.map(async ({ title }) => boxOf(section.getByRole("listitem").filter({
-    has: section.getByRole("heading", { level: 3, name: title, exact: true }),
+    has: section.page().getByRole("heading", { level: 3, name: title, exact: true }),
   }))));
 }
 
