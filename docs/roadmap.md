@@ -48,8 +48,9 @@ point at.
 
 The home page research (`research/buildwithtim_homepage_benchmark.md`) recommends moving to a bento
 grid of projects "once there are ≥5 projects with covers". There are five since 2026-11-16 (Pindu OS,
-Pindu launcher, Dailies, Minimal Android Launcher, Obsidian Content Pipeline), so the next step is an
-issue to plan the bento layout from that research.
+Pindu launcher, Dailies, Minimal Android Launcher, Obsidian Content Pipeline), so the bento layout is
+now being planned from that research in
+[#1276](https://github.com/Tim-van-Oudheusden/website/issues/1276).
 
 ## Out of scope for now
 
