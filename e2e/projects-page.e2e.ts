@@ -1,8 +1,8 @@
 import { expect, test } from "./fixtures";
 
-// Expectations come from the project entries in content/: "Minimal Android
-// Launcher" is the only `featured: true` project, the other three fill the
-// gallery in `projectOrder`.
+// Expectations come from the project entries in content/: "Pindu OS" is the
+// only `featured: true` project, the other four fill the gallery in
+// `projectOrder`.
 test.describe("Projects page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/projects", { waitUntil: "domcontentloaded" });
@@ -12,7 +12,8 @@ test.describe("Projects page", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Projects" })).toBeVisible();
 
     const cards = [
-      { region: "Featured project", title: "Minimal Android Launcher", href: "/projects/minimal-android-launcher" },
+      { region: "Featured project", title: "Pindu OS", href: "/projects/pindu-os" },
+      { region: "More projects", title: "Minimal Android Launcher", href: "/projects/minimal-android-launcher" },
       { region: "More projects", title: "Pindu launcher", href: "/projects/pindu-launcher" },
       { region: "More projects", title: "Dailies", href: "/projects/dailies" },
       { region: "More projects", title: "Obsidian Content Pipeline", href: "/projects/obsidian-content-pipeline" },

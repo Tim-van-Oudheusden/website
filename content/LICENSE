@@ -28,6 +28,14 @@ the SIL Open Font License 1.1. The game art in the screenshots stays
 under each game's own licence, as listed in data/screenshots/CREDITS.md
 in that repository.
 
+And except: the images in content/images/pindu-os/ and the cover
+public/images/projects/pindu-os.webp show the Pindu OS icon and banner
+from https://github.com/Tim-van-Oudheusden/pindu-os/tree/main/docs/brand;
+the cover and content/images/pindu-os/social-preview.png are rendered
+from the brand source in that folder. They are licensed under the GNU
+General Public License v3.0 or later (GPL-3.0-or-later). Their text is
+set in Inter, under the SIL Open Font License 1.1.
+
 The full legal code follows.
 
 =======================================================================

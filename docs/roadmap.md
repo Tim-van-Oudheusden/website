@@ -11,7 +11,8 @@ so a reader can check whether it still holds.
 
 - **Writing has stopped.** The newest article is `content/Introduction.md` (published 2026-02-08), and the
   other four are from 2025. The projects meanwhile keep shipping: Dailies is at 0.3.2 and MinimalUI at
-  v0.1.5 (both released 2026-11-14), and the Pindu launcher page went up on 2026-11-05.
+  v0.1.5 (both released 2026-11-14), the Pindu launcher page went up on 2026-11-05, and the Pindu OS
+  page went up on 2026-11-15 as the new featured project.
 - **The site itself is mature.** It has RSS with projects in the feed, link previews, an updated date
   in the feed, sitemap and JSON-LD, the Agentic tab, and coverage and mutation gates. Most recent
   changes to `main` are tests and CI, not anything a reader sees.
@@ -33,7 +34,8 @@ first-person article by Tim, written in Obsidian as described in
 | Self-hosting this site with rootless Podman and a Cloudflare Tunnel | [`deploy.md`](deploy.md) and the architecture diagram in the README. This follows on from the existing container-OS article. |
 | What mutation testing caught that coverage did not | The `stryker/` configs here, and the mutant tables and PIT baseline in the Dailies and MinimalUI repositories |
 
-Pindu launcher is in early development; it gets an article once it has a release to point at.
+Pindu launcher and Pindu OS are in early development; each gets an article once it has a release to
+point at.
 
 ## Ongoing: keep the living pages current
 
@@ -45,9 +47,10 @@ Pindu launcher is in early development; it gets an article once it has a release
 ## Mid term: let the home page grow with the projects
 
 The home page research (`research/buildwithtim_homepage_benchmark.md`) recommends moving to a bento
-grid of projects "once there are ≥5 projects with covers". There are four today (Minimal Android
-Launcher, Dailies, Obsidian Content Pipeline, Pindu launcher). When a fifth project page with a cover
-lands, open an issue to plan the bento layout from that research.
+grid of projects "once there are ≥5 projects with covers". There are five today (Pindu OS, Minimal
+Android Launcher, Pindu launcher, Dailies, Obsidian Content Pipeline), so the bento layout is now
+being planned from that research in
+[#1276](https://github.com/Tim-van-Oudheusden/website/issues/1276).
 
 ## Out of scope for now
 
