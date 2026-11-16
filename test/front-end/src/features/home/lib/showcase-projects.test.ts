@@ -2,7 +2,12 @@ import { describe, expect, test } from "bun:test";
 
 import type { ProjectFrontmatter } from "shared";
 
-import { projectCaption, selectShowcaseProjects } from "../../../../../../front-end/src/features/home/lib/showcase-projects";
+import type { ShowcaseTileSize } from "../../../../../../front-end/src/features/home/lib/showcase-projects";
+import {
+  projectCaption,
+  selectShowcaseProjects,
+  showcaseTileSizes,
+} from "../../../../../../front-end/src/features/home/lib/showcase-projects";
 
 function project(slug: string, overrides: Partial<ProjectFrontmatter> = {}): ProjectFrontmatter {
   return {
@@ -68,6 +73,21 @@ describe("selectShowcaseProjects", () => {
     ];
 
     expect(slugs(selectShowcaseProjects(projects))).toEqual(["slot-1", "slot-2", "slot-3", "first-in-order"]);
+  });
+});
+
+describe("showcaseTileSizes", () => {
+  const sizesByCount: [number, ShowcaseTileSize[]][] = [
+    [0, []],
+    [1, ["full"]],
+    [2, ["full", "full"]],
+    [3, ["full", "wide", "standard"]],
+    [4, ["full", "wide", "standard", "full"]],
+    [5, ["full", "wide", "standard", "standard", "wide"]],
+  ];
+
+  test.each(sizesByCount)("sizes %i tiles: the lead full, then rows of two alternating, a lone last tile full", (count, sizes) => {
+    expect(showcaseTileSizes(count)).toEqual(sizes);
   });
 });
 

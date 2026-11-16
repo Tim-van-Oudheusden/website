@@ -7,13 +7,24 @@ import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import type { ContentLoader } from "@/shared/lib/content-loader";
 
 import { headingIdFor } from "../config/home-sections";
-import { selectShowcaseProjects } from "../lib/showcase-projects";
+import type { ShowcaseTileSize } from "../lib/showcase-projects";
+import { selectShowcaseProjects, showcaseTileSizes } from "../lib/showcase-projects";
 import type { HomeProjectsSection } from "../types/home-section";
 
 import { HomeLoadSlot } from "./home-load-slot";
 import { HomeSectionHeading } from "./home-section-heading";
 import { HOME_SECTION_FRAME_CLASSES, HomeSectionFrame } from "./home-section-shell";
 import { ProjectShowcaseCard } from "./project-showcase-card";
+
+/**
+ * A tile's span on the 12-column track: one column below a 42rem grid, two from 42rem, three from 64rem. Spans of 6
+ * and 4 columns keep the DOM order the reading order; a wide tile is two standard tiles plus the gap between them.
+ */
+const TILE_SPAN_CLASSES: Record<ShowcaseTileSize, string> = {
+  full: "col-span-full",
+  wide: "col-span-full @2xl/grid:col-span-6 @5xl/grid:col-span-8",
+  standard: "col-span-full @2xl/grid:col-span-6 @5xl/grid:col-span-4",
+};
 
 /** The slot below the heading: loading note, error note, or the project grid. */
 function ShowcaseContent({
@@ -30,16 +41,24 @@ function ShowcaseContent({
       errorMessage="Projects could not be loaded right now. Please try again later."
       loadingMessage="Loading projects..."
     >
-      {(loaded) => (
-        // The layout follows the grid's own width (container query), not the viewport.
-        <ul className="@container/grid grid grid-cols-12 gap-6">
-          {loaded.map((project, index) => (
-            <li key={project.slug} className={index === 0 ? "col-span-full" : "col-span-full @2xl/grid:col-span-6"}>
-              <ProjectShowcaseCard project={project} featured={index === 0} />
-            </li>
-          ))}
-        </ul>
-      )}
+      {(loaded) => {
+        const sizes = showcaseTileSizes(loaded.length);
+
+        return (
+          // The layout follows the grid's own width (container query), not the viewport.
+          <ul className="@container/grid grid grid-cols-12 gap-6">
+            {loaded.map((project, index) => {
+              const size = sizes[index] ?? "standard";
+
+              return (
+                <li key={project.slug} className={TILE_SPAN_CLASSES[size]}>
+                  <ProjectShowcaseCard project={project} size={size} />
+                </li>
+              );
+            })}
+          </ul>
+        );
+      }}
     </HomeLoadSlot>
   );
 }

@@ -133,7 +133,7 @@ redesign epic (#576), with the Agentic teaser in place of About me since #1130:
 |---|---|---|
 | 1 | start | Slogan and hero line from §2, with a call to action into the page |
 | 2 | for you | Three recommended articles, each with its social image |
-| 3 | for devs | Showcase of open-source projects; each card's Learn more opens the project's page, which links to its source |
+| 3 | for devs | Showcase of open-source projects as a bento grid: the lead project across the full width, then tiles of mixed sizes by rank; each card's Learn more opens the project's page, which links to its source |
 | 4 | agentic | Teaser for the Agentic page: the agents' flow from issue to live site, with a call to action into `/agentic` |
 | 5 | what's new | The latest articles, pulled from `content/` |
 | 6 | experience | Work history as a vertical timeline |
