@@ -49,6 +49,26 @@ describe("selectShowcaseProjects", () => {
 
     expect(slugs(selectShowcaseProjects(projects))).toEqual(["p0", "p1", "p2", "p3", "p4"]);
   });
+
+  test("leads with the prioritySlot 1 project even when another project is featured", () => {
+    const projects = [
+      project("featured", { projectOrder: 10, featured: true }),
+      project("slotted", { projectOrder: 20, prioritySlot: 1 }),
+    ];
+
+    expect(slugs(selectShowcaseProjects(projects))).toEqual(["slotted", "featured"]);
+  });
+
+  test("follows slot 1 with slots 2 and 3 in slot order, ahead of a lower projectOrder", () => {
+    const projects = [
+      project("first-in-order", { projectOrder: 1 }),
+      project("slot-3", { projectOrder: 30, prioritySlot: 3 }),
+      project("slot-1", { projectOrder: 50, prioritySlot: 1 }),
+      project("slot-2", { projectOrder: 40, prioritySlot: 2 }),
+    ];
+
+    expect(slugs(selectShowcaseProjects(projects))).toEqual(["slot-1", "slot-2", "slot-3", "first-in-order"]);
+  });
 });
 
 describe("projectCaption", () => {
