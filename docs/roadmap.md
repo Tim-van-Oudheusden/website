@@ -50,8 +50,10 @@ The home page research (`research/buildwithtim_homepage_benchmark.md`) recommend
 grid of projects "once there are ≥5 projects with covers". There are five since 2026-11-16 (Pindu OS,
 Pindu launcher, Dailies, Minimal Android Launcher, Obsidian Content Pipeline). The layout is planned in
 [`superpowers/plans/2026-11-16-home-project-bento.md`](superpowers/plans/2026-11-16-home-project-bento.md)
-(#1276) and built in three issues: #1279 (the home lead follows `prioritySlot`), #1281 (the bento grid)
-and #1280 (Projects page covers at 16:10).
+(#1276). Two of its three issues shipped on 2026-11-16: the home lead follows `prioritySlot` (#1279), and
+the home showcase is a bento grid (#1281). The third, Projects page covers at 16:10 (#1280), was closed
+by #1284 without that change. #1284 re-rendered the Obsidian Content Pipeline cover to fit the 4:3 crop,
+so the Projects page gallery cards still crop covers to 4:3.
 
 ## Out of scope for now
 
