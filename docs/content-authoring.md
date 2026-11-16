@@ -185,8 +185,8 @@ the [content checker](#checking-content-before-pushing) before pushing.
 | `coverImage` | Yes | Non-empty image path or URL | Cover image on the project card and page. |
 | `coverImageAlt` | Yes | Non-empty string | Alt text for the cover image. |
 | `status` | No | `Planned`, `In Progress`, `Shipped`, `Archived` (exact case) | Status badge on the card. **Any other value rejects the file.** |
-| `prioritySlot` | No | `1`, `2` or `3` | Places the project in the top "Featured project" section, in slot order. **Any other value rejects the file.** |
-| `featured` | No | `true` or `false` (default `false`) | Leads the top section when no project sets `prioritySlot`. |
+| `prioritySlot` | No | `1`, `2` or `3` | Places the project in the top "Featured project" section, in slot order. Slotted projects also lead the home page's "Open-source projects" grid in the same order. **Any other value rejects the file.** |
+| `featured` | No | `true` or `false` (default `false`) | Leads the top section, and the home page's "Open-source projects" grid, when no project sets `prioritySlot`. |
 | `projectOrder` | No | Number (default `0`) | Sort order: lower first, ties broken by newest date. |
 | `role` | No | String | "Role" on the project page. |
 | `created` | No | String or number (e.g. `2026`) | Timeframe on the card and the project page. |

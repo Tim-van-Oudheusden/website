@@ -1,24 +1,19 @@
 import type { ProjectFrontmatter } from "shared";
 
-import { resolveFeaturedProject, sortProjectsForDisplay } from "@/features/projects/lib/project-display";
+import { resolveGalleryProjects, resolvePriorityProjects } from "@/features/projects/lib/project-display";
 
-/** The featured project plus at most this many others (Kent's flagship section shows five courses). */
+/** The lead project plus at most this many others (Kent's flagship section shows five courses). */
 const SHOWCASE_OTHERS_LIMIT = 4;
 
 /**
- * Projects for the for-devs showcase: the featured project first, then up to
- * four more in display order, each once.
+ * Projects for the for-devs showcase, ranked like the Projects page: its
+ * priority projects first (the `prioritySlot` projects in slot order, else the
+ * featured project), then the rest in display order, each once, five at most.
  */
 export function selectShowcaseProjects(projects: readonly ProjectFrontmatter[]): ProjectFrontmatter[] {
-  const featured = resolveFeaturedProject(projects);
+  const ranked = [...resolvePriorityProjects(projects), ...resolveGalleryProjects(projects)];
 
-  if (featured === null) {
-    return [];
-  }
-
-  const others = sortProjectsForDisplay(projects).filter((project) => project.slug !== featured.slug);
-
-  return [featured, ...others.slice(0, SHOWCASE_OTHERS_LIMIT)];
+  return ranked.slice(0, 1 + SHOWCASE_OTHERS_LIMIT);
 }
 
 /** The vertical caption beside a card's media: "Shipped · Developer". */
