@@ -57,6 +57,10 @@ interface PullRequest {
   labels?: string[];
   mergeStateStatus?: string;
   closingIssues?: number[];
+  /** What GitHub reports after a merge call; OPEN unless set. */
+  state?: string;
+  /** Overrides the head GitHub reports, which is the pushed pull ref unless set. */
+  headRefOid?: string;
 }
 
 interface Workflow {
@@ -144,7 +148,8 @@ function setUpRepository(mainFiles: Record<string, string>, pullRequests: PullRe
     JSON.stringify(
       pullRequests.map((pullRequest) => ({
         number: pullRequest.number,
-        headRefOid: heads.get(pullRequest.number),
+        headRefOid: pullRequest.headRefOid ?? heads.get(pullRequest.number),
+        state: pullRequest.state ?? "OPEN",
         isDraft: pullRequest.isDraft ?? false,
         isCrossRepository: pullRequest.isCrossRepository ?? false,
         labels: (pullRequest.labels ?? []).map((name) => ({ name })),
@@ -457,6 +462,39 @@ describe("scripts/merge-queue.sh land", () => {
     expect(status).toBe(1);
     expect(stdout).toContain("::error title=Merge queue::could not start merge-queue.yml");
     expect(calls.filter((call) => call === "workflow run merge-queue.yml --ref main")).toHaveLength(3);
+  });
+
+  // gh can fail after GitHub merged, when its answer is lost (`EOF`). Stopping
+  // there leaves the linked issues open, main's gates unrun and the queue idle.
+  test("carries on with a warning when gh fails but GitHub shows the verified head merged", () => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, closingIssues: [12], state: "MERGED" }]);
+
+    writeFileSync(join(workDir, "fail"), "pr merge 7");
+
+    const { status, stdout, calls } = runScript("land", "7", heads.get(7) ?? "", git(cloneDir, "rev-parse", "HEAD"));
+    const expectedRuns = [...mainPushWorkflows, "merge-queue.yml"].map((name) => `workflow run ${name} --ref main`);
+
+    expect(status).toBe(0);
+    expect(stdout).toContain("::warning title=Merge queue::gh failed merging #7");
+    expect(calls.filter((call) => call.startsWith("issue close https://github.com/owner/website/issues/12 "))).toHaveLength(1);
+    expect(calls.filter((call) => call.startsWith("workflow run ")).sort()).toEqual(expectedRuns.sort());
+    expect(calls.at(-1)).toBe("workflow run merge-queue.yml --ref main");
+  });
+
+  test.each<[string, Partial<PullRequest>]>([
+    ["still open", { state: "OPEN" }],
+    ["merged at another head", { state: "MERGED", headRefOid: "0".repeat(40) }],
+  ])("fails, closing nothing and starting nothing, when gh fails and GitHub shows the pull request %s", (_, change) => {
+    const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, closingIssues: [12], ...change }]);
+    const head = heads.get(7) ?? "";
+
+    writeFileSync(join(workDir, "fail"), "pr merge 7");
+
+    const { status, stdout, calls } = runScript("land", "7", head, git(cloneDir, "rev-parse", "HEAD"));
+
+    expect(status).toBe(1);
+    expect(stdout).toContain("::error title=Merge queue::gh failed merging #7");
+    expect(calls).toEqual([`pr merge 7 --merge --match-head-commit ${head}`]);
   });
 
   test("does not merge or close issues when main moved after verification, and queues a re-run against the new main", () => {

@@ -190,6 +190,27 @@ const MUTANTS: readonly ShellMutant[] = [
     killedBy: MERGE_QUEUE_TEST,
   },
   {
+    name: "a failed merge call carries on only if GitHub shows the pull request merged (#1291)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `--jq ".state == \\"MERGED\\" and .headRefOid`,
+    to: `--jq "true and .headRefOid`,
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
+    name: "a failed merge call carries on only if GitHub merged the verified head (#1291)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `.headRefOid == \\"\${head}\\""`,
+    to: `.headRefOid != \\"\${head}\\""`,
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
+    name: "a failed merge call GitHub does not show merged fails the run (#1291)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `; not landed"\n      return 1\n`,
+    to: `; not landed"\n      return 0\n`,
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
     name: "the draft leak guard fails instead of passing when grep cannot read the content directory (#1024)",
     file: "scripts/draft-leak-guard.sh",
     from: "    exit 2\n",
