@@ -1,4 +1,10 @@
+import { fileURLToPath } from "node:url";
+
 import type { Locator, Page } from "@playwright/test";
+
+import type { ArticleSummary } from "../shared/src/articles";
+import { compareArticles } from "../shared/src/articles";
+import { listContent } from "../back-end/src/features/content/content";
 
 import { expect, test } from "./fixtures";
 import { openHome } from "./home-page";
@@ -9,6 +15,24 @@ async function scrollToSection(page: Page, sectionId: string): Promise<void> {
 
     element?.scrollIntoView({ block: "start" });
   }, sectionId);
+}
+
+const CONTENT_DIR = fileURLToPath(new URL("../content", import.meta.url));
+
+/** Mirrors RECENT_POSTS_COUNT in the home recent-posts component. */
+const RECENT_POSTS_COUNT = 4;
+
+/**
+ * The newest articles in content/, as the app lists them in development (drafts included, which is what
+ * the e2e pod runs): same loader, same ordering, so publishing an article never needs a test edit.
+ */
+async function expectedRecentPosts(): Promise<ArticleSummary[]> {
+  const items = await listContent(CONTENT_DIR, { type: "article" });
+
+  return items
+    .filter((item): item is ArticleSummary => item.type === "article")
+    .sort(compareArticles)
+    .slice(0, RECENT_POSTS_COUNT);
 }
 
 /** The home showcase with today's content, in rank order. */
@@ -124,14 +148,26 @@ test.describe("Home placeholder sections implemented", () => {
 
     await scrollToSection(page, "whats-new");
     await expect(section.getByRole("heading", { name: "What's new from the blog" })).toBeVisible();
-    const introLink = section.getByRole("link", { name: /Introduction/ }).first();
+    const expected = await expectedRecentPosts();
 
-    await expect(introLink).toHaveAttribute("href", "/articles/introduction");
+    expect(expected).toHaveLength(RECENT_POSTS_COUNT);
 
-    await expect(section.getByRole("link", { name: /container image/ }).first()).toHaveAttribute(
-      "href",
-      "/articles/my-operating-system-is-a-container-image-yes-really",
-    );
+    const links = section.getByRole("listitem").getByRole("link");
+
+    await expect(links).toHaveCount(expected.length);
+
+    for (const [index, { title, slug }] of expected.entries()) {
+      const link = links.nth(index);
+
+      await expect(link).toContainText(title);
+      await expect(link).toHaveAttribute("href", `/articles/${slug}`);
+    }
+
+    const [first] = expected;
+
+    await links.first().click();
+    await expect(page).toHaveURL(new RegExp(`/articles/${first!.slug}$`));
+    await expect(page.getByRole("heading", { level: 1, name: first!.title, exact: true })).toBeVisible();
   });
 
   test("renders the experience timeline from the LinkedIn positions", async ({ page }) => {
