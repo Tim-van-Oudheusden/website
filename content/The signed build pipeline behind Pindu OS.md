@@ -4,8 +4,9 @@ slug: the-signed-build-pipeline-behind-pindu-os
 description: How a commit becomes a signed operating system image that a console will accept, with pins in one file, two channels and VM tests that boot, update and roll back.
 type: article
 category: Linux
-# TIM: set the publication date before merging.
-date: 2026-11-17
+# TIM: placeholder date, set the real one before merging. Local dev and the e2e pod show drafts, so a
+# newer date would put this draft on the home page's recent-posts strip and push published articles off it.
+date: 2025-01-01
 # TIM: drafts block the site's release job (docs/content-authoring.md); set false or remove before merging.
 draft: true
 tags:

@@ -4,8 +4,9 @@ slug: letting-ai-agents-work-in-my-repository
 description: How Pindu launcher lets AI agents open issues and pull requests, and what stops them from merging what they should not, from risk tiers and a merge queue to human-only work for Flathub.
 type: article
 category: Work
-# TIM: set the publication date before merging.
-date: 2026-11-17
+# TIM: placeholder date, set the real one before merging. Local dev and the e2e pod show drafts, so a
+# newer date would put this draft on the home page's recent-posts strip and push published articles off it.
+date: 2025-01-01
 # TIM: drafts block the site's release job (docs/content-authoring.md); set false or remove before merging.
 draft: true
 tags:
