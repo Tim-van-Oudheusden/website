@@ -118,20 +118,29 @@ test.describe("Home placeholder sections implemented", () => {
   });
 
   test("renders the recent-posts strip linked to real article pages", async ({ page }) => {
+    // The strip shows the newest articles in content/, so which ones it shows changes every time an
+    // article is published. Check its links against the article list the page loaded instead of naming
+    // articles; which posts and in what order is pinned by the HomeRecentPosts unit tests.
+    const listed = page.waitForResponse((response) => (
+      new URL(response.url()).searchParams.get("type") === "article"
+    ));
+
     await openHome(page, { theme: "light", content: ["article"] });
 
+    const articles = (await (await listed).json()) as { slug: string }[];
+    const articleHrefs = articles.map(({ slug }) => `/articles/${slug}`);
     const section = page.locator("section#whats-new");
 
     await scrollToSection(page, "whats-new");
     await expect(section.getByRole("heading", { name: "What's new from the blog" })).toBeVisible();
-    const introLink = section.getByRole("link", { name: /Introduction/ }).first();
 
-    await expect(introLink).toHaveAttribute("href", "/articles/introduction");
+    const links = section.getByRole("list").getByRole("link");
 
-    await expect(section.getByRole("link", { name: /container image/ }).first()).toHaveAttribute(
-      "href",
-      "/articles/my-operating-system-is-a-container-image-yes-really",
-    );
+    await expect(links.first()).toBeVisible();
+
+    for (const link of await links.all()) {
+      expect(articleHrefs).toContain(await link.getAttribute("href"));
+    }
   });
 
   test("renders the experience timeline from the LinkedIn positions", async ({ page }) => {
