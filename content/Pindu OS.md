@@ -11,7 +11,7 @@ type: project
 draft: false
 slug: pindu-os
 coverImage: /images/projects/pindu-os.webp
-coverImageAlt: The Pindu OS icon, a glowing blue fish whose body and stem form the letter P on a dark blue tile, above the name Pindu OS, the tagline "Boot straight into your games" and a link to the repository on a deep blue background.
+coverImageAlt: The Pindu OS icon, a glowing blue fish whose body and stem form the letter P on a dark blue tile, beside the name Pindu OS and above the tagline "Boot straight into your games", on a light blue background. Below them, a television shows Pindu launcher's fullscreen Home with a row of game tiles.
 socialImage: images/pindu-os/social-preview.png
 featured: true
 projectOrder: 5
@@ -30,7 +30,7 @@ info: A Linux that boots a PC straight into Pindu launcher and updates as one si
 
 # Pindu OS
 
-![Pindu OS banner: the fish icon, the name Pindu OS, the tagline "Boot straight into your games" and "An image-based Linux for the couch, built on Fedora bootc", beside a tilted screen with a row of game tiles](/content-assets/images/pindu-os/readme-banner.webp)
+![Pindu OS banner: the fish icon, the name Pindu OS, the tagline "Boot straight into your games" and "An image-based Linux for the couch, built on Fedora bootc", beside a television showing Pindu launcher's fullscreen Home](/content-assets/images/pindu-os/readme-banner.webp)
 
 A Linux for the couch that boots a PC straight into Pindu launcher and updates as one signed image, built on Fedora bootc and inspired by Universal Blue and Armada.
 
@@ -93,4 +93,4 @@ Progress is tracked in the [issues](https://github.com/Tim-van-Oudheusden/pindu-
 
 ## The artwork
 
-The icon is a glowing blue fish whose body and stem form a P, on a dark blue tile. It is the Pindu launcher fish in a glossier style. The icon, the banner and the code come from the [Pindu OS repository](https://github.com/Tim-van-Oudheusden/pindu-os) and are licensed under GPL-3.0-or-later. The text in the images is set in [Inter](https://github.com/rsms/inter), under the SIL Open Font License 1.1.
+The icon is a glowing blue fish whose body and stem form a P, on a dark blue tile. It is the Pindu launcher fish in a glossier style. The icon, the banner and the code come from the [Pindu OS repository](https://github.com/Tim-van-Oudheusden/pindu-os) and are licensed under GPL-3.0-or-later. The text in the images is set in [Inter](https://github.com/rsms/inter), under the SIL Open Font License 1.1. The television on the cover and the banner shows a screenshot of Pindu launcher with a real library, and the game art in it belongs to each game's publisher.
