@@ -4,6 +4,7 @@ slug: the-signed-build-pipeline-behind-my-own-os
 description: How a commit becomes a signed operating system image that a console will accept, with pins in one file, two channels and VM tests that boot, update and roll back.
 type: article
 category: Linux
+socialImage: images/signed-build-pipeline-social-image.png
 date: 2026-11-18
 draft: false
 tags:
