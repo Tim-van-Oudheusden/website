@@ -42,7 +42,10 @@ echo "| ----- | ------ |"
 # Remove an entry once a fix ships and the lockfile picks it up.
 #   GHSA-vfj7-8cjw-p6xm: braces <=3.0.3 stack-exhaustion DoS. Dev-only, via
 #     shadcn CLI › fast-glob › micromatch; no patched braces release exists.
-AUDIT_IGNORE=(GHSA-vfj7-8cjw-p6xm)
+#   GHSA-fc5q-39xc-vjpf: picomatch <=4.0.7 extglob ReDoS. Dev/build-only, via
+#     vite, shadcn, tinyglobby and the ESLint plugins, which match only
+#     repository-authored globs; 4.0.7 is the latest picomatch release.
+AUDIT_IGNORE=(GHSA-vfj7-8cjw-p6xm GHSA-fc5q-39xc-vjpf)
 bun audit --audit-level=high "${AUDIT_IGNORE[@]/#/--ignore=}" >&2
 row "Dependency audit (high+)" $?
 
