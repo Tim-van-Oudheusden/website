@@ -4,7 +4,6 @@ import { Children, isValidElement, memo, useMemo } from "react";
 import Markdown from "react-markdown";
 import type { Components, ExtraProps } from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
-import "highlight.js/styles/github.css";
 import remarkGfm from "remark-gfm";
 
 import type { TocHeadingDepth } from "@/shared/lib/markdown-headings";

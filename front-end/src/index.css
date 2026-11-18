@@ -12,6 +12,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* In base, ahead of the .hljs overrides below: an unlayered theme would beat every layered rule (#1309). */
+@import "highlight.js/styles/github.css" layer(base);
 
 @plugin "@tailwindcss/typography";
 
