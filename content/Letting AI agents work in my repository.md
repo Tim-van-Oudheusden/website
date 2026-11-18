@@ -4,6 +4,7 @@ slug: letting-ai-agents-work-in-my-repository
 description: How I let AI agents open issues and pull requests, and what stops them from merging what they should not, from risk tiers and a merge queue to human-only work for Flathub.
 type: article
 category: Work
+socialImage: images/ai-agents-in-my-repository-social-image.png
 date: 2026-11-17
 draft: false
 tags:
