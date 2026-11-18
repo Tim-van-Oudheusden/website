@@ -93,3 +93,54 @@ test.describe("Light-mode prose colours", () => {
     expect(actual).toEqual(expected);
   });
 });
+
+test.describe("Dark-mode code blocks", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route((url) => url.pathname.startsWith("/content-assets/"), async (route) => route.abort());
+
+    await page.addInitScript(() => {
+      localStorage.setItem("theme", "dark");
+    });
+  });
+
+  test("a highlighted code block shows the muted surface and the dark syntax colours", async ({ page }) => {
+    await page.goto("/articles/letting-ai-agents-work-in-my-repository", { waitUntil: "domcontentloaded" });
+
+    const prose = page.locator("main article .prose");
+
+    await expect(prose.locator("pre code.hljs").first()).toBeVisible();
+    await expect(page.locator("html")).toHaveClass(/\bdark\b/);
+
+    const { actual, expected } = await proseRoleColours(prose, {
+      code: { selector: "pre code.hljs", token: "--foreground", pseudoElement: null },
+    });
+
+    expect(actual).toEqual(expected);
+
+    // The code element paints nothing of its own, so the pre's --muted surface shows through,
+    // and a string token takes the Flexoki cyan-200 from index.css, not GitHub's dark blue.
+    const surface = await prose.evaluate((root) => {
+      const code = root.querySelector("pre code.hljs");
+      const string = code?.querySelector(".hljs-string");
+      const probe = document.createElement("span");
+
+      probe.style.backgroundColor = "var(--muted)";
+      root.append(probe);
+
+      const muted = getComputedStyle(probe).backgroundColor;
+
+      probe.remove();
+
+      return {
+        actual: {
+          codeBackground: code ? getComputedStyle(code).backgroundColor : "no code",
+          preBackground: code?.parentElement ? getComputedStyle(code.parentElement).backgroundColor : "no pre",
+          string: string ? getComputedStyle(string).color : "no .hljs-string",
+        },
+        expected: { codeBackground: "rgba(0, 0, 0, 0)", preBackground: muted, string: "rgb(135, 211, 195)" },
+      };
+    });
+
+    expect(surface.actual).toEqual(surface.expected);
+  });
+});
