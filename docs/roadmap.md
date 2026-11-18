@@ -9,12 +9,14 @@ so a reader can check whether it still holds.
 
 ## Where things stand (November 2026)
 
-- **Writing has stopped.** The newest article is `content/Introduction.md` (published 2026-02-08), and the
-  other four are from 2025. The projects meanwhile keep shipping: Dailies is at 0.3.2 and MinimalUI at
-  v0.1.5 (both released 2026-11-14), the Pindu launcher page went up on 2026-11-05, and the Pindu OS
-  page on 2026-11-16, as the new featured project. Pindu launcher has had release downloads since 0.3.0
-  (2026-11-07): Flatpak bundles and Fedora, Debian and Ubuntu packages. Its latest release is 0.4.1
-  (2026-11-17).
+- **Writing has started again.** Two articles came out after a nine-month gap:
+  `content/Letting AI agents work in my repository.md` (2026-11-17) and
+  `content/The signed build pipeline behind my own OS.md` (2026-11-18). The one before them was
+  `content/Introduction.md` (2026-02-08), and the other four are from 2025. The projects keep shipping:
+  Dailies is at 0.3.2 and MinimalUI at v0.1.5 (both released 2026-11-14), the Pindu launcher page went
+  up on 2026-11-05, and the Pindu OS page on 2026-11-16, as the new featured project. Pindu launcher has
+  had release downloads since 0.3.0 (2026-11-07): Flatpak bundles and Fedora, Debian and Ubuntu
+  packages. Its latest release is 0.5.0 (2026-11-18).
 - **The site itself is mature.** It has RSS with projects in the feed, link previews, an updated date
   in the feed, sitemap and JSON-LD, the Agentic tab, and coverage and mutation gates. Most recent
   changes to `main` are tests and CI, not anything a reader sees.
@@ -37,7 +39,10 @@ first-person article by Tim, written in Obsidian as described in
 | What mutation testing caught that coverage did not | The `stryker/` configs here, and the mutant tables and PIT baseline in the Dailies and MinimalUI repositories |
 | One library for every PC game on Linux | `content/Pindu launcher.md`, and the Pindu launcher repository's README and release notes. Reading Steam, Heroic, Lutris, Bottles and Faugus into one library, and shipping the same app as a Flatpak and as native packages for three distros, are the parts a project page cannot fit. |
 
-Pindu OS is in early development and gets an article once it has a stable release to point at.
+Two articles have shipped since this list was written. `The signed build pipeline behind my own OS`
+(2026-11-18) is the Pindu OS article. `Letting AI agents work in my repository` (2026-11-17) tells the agent
+story through the Pindu launcher repository and mentions this site's setup only in passing, so the first
+row, about this site and its `/agentic` page, stays a candidate.
 
 ## Ongoing: keep the living pages current
 
