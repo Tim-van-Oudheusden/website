@@ -105,8 +105,14 @@ export interface FakeElement extends FakeNode {
   /** Reflects the `id` attribute, as on real elements. */
   readonly id: string;
   getBoundingClientRect(): {
-    left: number; top: number; right: number; bottom: number;
-    width: number; height: number; x: number; y: number;
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+    width: number;
+    height: number;
+    x: number;
+    y: number;
   };
   focus(): void;
   blur(): void;
@@ -393,8 +399,14 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
   }
 
   getBoundingClientRect(): {
-    left: number; top: number; right: number; bottom: number;
-    width: number; height: number; x: number; y: number;
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+    width: number;
+    height: number;
+    x: number;
+    y: number;
   } {
     const { width, height } = this.rect;
 

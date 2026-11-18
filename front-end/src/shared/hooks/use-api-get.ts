@@ -10,10 +10,10 @@ export interface ApiGetState<T> {
   error: string | null;
 }
 
-export type ApiGetAction<T>
-  = | { type: "start" }
-    | { type: "success"; data: T }
-    | { type: "error"; error: string };
+export type ApiGetAction<T> =
+  | { type: "start" }
+  | { type: "success"; data: T }
+  | { type: "error"; error: string };
 
 export function initialApiGetState<T>(): ApiGetState<T> {
   return { status: "idle", data: null, error: null };

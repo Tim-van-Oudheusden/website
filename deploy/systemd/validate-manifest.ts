@@ -50,11 +50,33 @@ const SECURITY_KEYS = [
 // Every key this file reads. field() takes only these keys, so a read of a key
 // missing here fails the typecheck instead of leaving it refused by checkKeys.
 const CHECKED_KEYS = [
-  "kind", "metadata", "name", "annotations", "spec", "securityContext",
-  "hostNetwork", "hostPID", "hostIPC", "initContainers", "containers", "image",
-  "ports", "hostPort", "hostIP", "volumeMounts", "mountPropagation", "envFrom",
-  "env", "valueFrom", "secretKeyRef", "volumes", "emptyDir", "hostPath", "path",
-  "add", ...SECURITY_KEYS,
+  "kind",
+  "metadata",
+  "name",
+  "annotations",
+  "spec",
+  "securityContext",
+  "hostNetwork",
+  "hostPID",
+  "hostIPC",
+  "initContainers",
+  "containers",
+  "image",
+  "ports",
+  "hostPort",
+  "hostIP",
+  "volumeMounts",
+  "mountPropagation",
+  "envFrom",
+  "env",
+  "valueFrom",
+  "secretKeyRef",
+  "volumes",
+  "emptyDir",
+  "hostPath",
+  "path",
+  "add",
+  ...SECURITY_KEYS,
 ] as const;
 
 // Keys the prod manifest needs that this file has no rule for, because none of
@@ -62,10 +84,25 @@ const CHECKED_KEYS = [
 // after that has been checked: until then the manifest is refused and the
 // running one stays, and the host's hand-copied file needs the change too.
 const INERT_KEYS = [
-  "apiVersion", "labels", "app", "restartPolicy", "imagePullPolicy", "value",
-  "containerPort", "livenessProbe", "exec", "command", "initialDelaySeconds",
-  "periodSeconds", "timeoutSeconds", "failureThreshold", "mountPath", "type",
-  "key", "optional", "drop",
+  "apiVersion",
+  "labels",
+  "app",
+  "restartPolicy",
+  "imagePullPolicy",
+  "value",
+  "containerPort",
+  "livenessProbe",
+  "exec",
+  "command",
+  "initialDelaySeconds",
+  "periodSeconds",
+  "timeoutSeconds",
+  "failureThreshold",
+  "mountPath",
+  "type",
+  "key",
+  "optional",
+  "drop",
 ] as const;
 
 type CheckedKey = (typeof CHECKED_KEYS)[number];

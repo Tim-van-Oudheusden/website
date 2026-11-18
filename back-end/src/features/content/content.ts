@@ -90,9 +90,9 @@ function normalizePrioritySlot(value: unknown): 1 | 2 | 3 | null {
   return null;
 }
 
-type ProjectLinksResult
-  = | { ok: true; links: ProjectLink[] }
-    | { ok: false; message: string; value: unknown };
+type ProjectLinksResult =
+  | { ok: true; links: ProjectLink[] }
+  | { ok: false; message: string; value: unknown };
 
 /**
  * Read the `links:` list. Like an unknown `status`, a link the project page
@@ -148,9 +148,9 @@ export interface ContentError {
   value: unknown;
 }
 
-export type NormalizeResult
-  = | { ok: true; value: ContentFrontmatter }
-    | { ok: false; error: ContentError };
+export type NormalizeResult =
+  | { ok: true; value: ContentFrontmatter }
+  | { ok: false; error: ContentError };
 
 function reject(file: string, field: string | null, message: string): NormalizeResult {
   return { ok: false, error: { file, field, message, value: undefined } };
@@ -192,9 +192,9 @@ function rejectNonTextField(
   return null;
 }
 
-type MarkdownFileResult
-  = | { ok: true; parsed: ParseResult }
-    | { ok: false; error: ContentError };
+type MarkdownFileResult =
+  | { ok: true; parsed: ParseResult }
+  | { ok: false; error: ContentError };
 
 async function readMarkdownFile(contentDir: string, file: string): Promise<MarkdownFileResult> {
   const raw = await readFile(join(contentDir, file), "utf-8");
