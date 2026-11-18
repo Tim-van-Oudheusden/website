@@ -22,6 +22,18 @@ describe("attribute", () => {
     expect(attribute({ headRefName: "docs/6-readme", body: "quoting — hive: agent=quality" }).source).toBe("Other");
   });
 
+  test("parses a long signature with no key=value pairs in linear time", () => {
+    const started = performance.now();
+
+    expect(attribute({ headRefName: "fix/1-x", body: `— hive: ${"a".repeat(100_000)}` })).toEqual({
+      source: "Hive",
+      agent: "—",
+      model: "—",
+    });
+
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
+
   test("falls back to the branch prefix when the body carries no signature", () => {
     expect(attribute({ headRefName: "claude/issue-1-fix", body: "" })).toEqual({
       source: "Claude Code (CI)",

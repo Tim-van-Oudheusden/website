@@ -20,7 +20,15 @@ export function attribute(pr: { headRefName: string; body: string }): Attributio
   const signature = HIVE_SIGNATURE.exec(pr.body)?.[1];
 
   if (signature !== undefined) {
-    const fields = new Map([...signature.matchAll(/(\w+)=(\S+)/g)].map(([, key, value]) => [key, value]));
+    // Split on whitespace rather than matching /(\w+)=(\S+)/g: that regex
+    // backtracks quadratically on a long word with no "=" (CodeQL js/polynomial-redos).
+    const fields = new Map(
+      signature.split(/\s+/).flatMap((token) => {
+        const separator = token.indexOf("=");
+
+        return separator > 0 ? [[token.slice(0, separator), token.slice(separator + 1)] as const] : [];
+      }),
+    );
 
     return { source: "Hive", agent: fields.get("agent") ?? "—", model: fields.get("model") ?? "—" };
   }
