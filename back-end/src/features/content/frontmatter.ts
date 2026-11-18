@@ -99,9 +99,9 @@ const DOUBLE_QUOTED_ESCAPES: Record<string, string> = {
 const MAX_CODE_POINT = 0x10FFFF;
 const SURROGATES = { first: 0xD800, last: 0xDFFF };
 
-type ScalarRead
-  = | { ok: true; value: Scalar }
-    | { ok: false; problem: string; value: string };
+type ScalarRead =
+  | { ok: true; value: Scalar }
+  | { ok: false; problem: string; value: string };
 
 /** The character `match` escapes, or null when YAML rejects the escape. */
 function escapedCharacter(match: RegExpExecArray): string | null {
@@ -224,9 +224,9 @@ function indentOf(line: string): number {
   return INDENT_RE.exec(line)?.[0].length ?? 0;
 }
 
-type BlockRead
-  = | { ok: true; value: FrontmatterValue }
-    | { ok: false; problem: string; line: string };
+type BlockRead =
+  | { ok: true; value: FrontmatterValue }
+  | { ok: false; problem: string; line: string };
 
 const NOT_AN_ITEM = "has a line that is not a `- item`";
 
@@ -367,9 +367,9 @@ function parseBlockChildren(children: string[]): BlockRead {
   return { ok: true, value: items };
 }
 
-export type FrontmatterRead
-  = | { ok: true; result: ParseResult }
-    | { ok: false; reason: string };
+export type FrontmatterRead =
+  | { ok: true; result: ParseResult }
+  | { ok: false; reason: string };
 
 const BYTE_ORDER_MARK = "\uFEFF";
 

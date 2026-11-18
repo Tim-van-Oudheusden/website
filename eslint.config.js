@@ -177,6 +177,12 @@ export default tseslint.config(
         },
       ],
       "@stylistic/brace-style": ["error", "1tbs", { allowSingleLine: false }],
+      // v6 preset rule; calls are exempt so a hugged trailing callback keeps
+      // `fn((x) =>\n  …,\n)` instead of collapsing closers onto one line.
+      "@stylistic/list-style": [
+        "error",
+        { overrides: { "{}": { singleLine: { spacing: "always" } }, "CallExpression": "off" } },
+      ],
       curly: ["error", "all"],
       "@stylistic/max-len": [
         "error",

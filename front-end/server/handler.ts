@@ -40,10 +40,10 @@ export interface RequestHandlerOptions {
 export type BackendLookup = "content item" | "content list" | "page";
 
 /** The back-end's answer for a slug; `unavailable` when it could not say (down, rate-limited, …). */
-type ContentLookup
-  = | { status: "found"; item: ContentFrontmatter }
-    | { status: "missing" }
-    | { status: "unavailable" };
+type ContentLookup =
+  | { status: "found"; item: ContentFrontmatter }
+  | { status: "missing" }
+  | { status: "unavailable" };
 
 /** Article and project pages. Like React Router, it ignores case and a trailing slash. */
 const CONTENT_PATH = /^(\/(?:articles|projects)\/)([^/]+)\/?$/i;

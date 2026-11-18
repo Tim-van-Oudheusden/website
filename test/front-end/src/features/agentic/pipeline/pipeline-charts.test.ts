@@ -125,7 +125,13 @@ describe("pipeline charts", () => {
     };
 
     expect(data.filter((label, index) => axisLabel.interval(index, label))).toEqual([
-      "Fri 00:00", "Sat 00:00", "Sun 01:00", "Mon 00:00", "Tue 00:00", "Wed 00:00", "Thu 00:00",
+      "Fri 00:00",
+      "Sat 00:00",
+      "Sun 01:00",
+      "Mon 00:00",
+      "Tue 00:00",
+      "Wed 00:00",
+      "Thu 00:00",
     ]);
   });
 

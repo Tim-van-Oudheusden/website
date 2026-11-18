@@ -12,9 +12,9 @@ export interface PollingApiGetState<T> {
   stale: boolean;
 }
 
-export type PollingApiGetAction<T>
-  = | { type: "success"; data: T }
-    | { type: "error"; error: string };
+export type PollingApiGetAction<T> =
+  | { type: "success"; data: T }
+  | { type: "error"; error: string };
 
 export function initialPollingApiGetState<T>(): PollingApiGetState<T> {
   return { status: "loading", data: null, error: null, stale: false };

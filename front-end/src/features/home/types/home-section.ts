@@ -2,14 +2,14 @@ import type { SocialLink } from "shared/social-links";
 
 import type { ExperienceEntry } from "../config/experience";
 
-export type HomeSectionId
-  = | "start"
-    | "for-you"
-    | "for-devs"
-    | "agentic"
-    | "whats-new"
-    | "experience"
-    | "socials";
+export type HomeSectionId =
+  | "start"
+  | "for-you"
+  | "for-devs"
+  | "agentic"
+  | "whats-new"
+  | "experience"
+  | "socials";
 
 interface HomeSectionBase {
   id: HomeSectionId;
@@ -71,13 +71,13 @@ export interface HomeSocialsSection extends HomeSectionBase {
   links: SocialLink[];
 }
 
-export type HomeSectionDefinition
-  = | HomeStartSection
-    | HomeRecommendationsSection
-    | HomeProjectsSection
-    | HomeAgenticSection
-    | HomeRecentPostsSection
-    | HomeExperienceSection
-    | HomeSocialsSection;
+export type HomeSectionDefinition =
+  | HomeStartSection
+  | HomeRecommendationsSection
+  | HomeProjectsSection
+  | HomeAgenticSection
+  | HomeRecentPostsSection
+  | HomeExperienceSection
+  | HomeSocialsSection;
 
 export type HomeSectionVariant = HomeSectionDefinition["variant"];
