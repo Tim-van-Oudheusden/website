@@ -2,6 +2,7 @@
 title: Pindu launcher
 description: A native GNOME game library that gathers every PC game on your machine in one place, with a fullscreen mode for the couch, inspired by Cartridges and OpenGamepadUI.
 date: 2026-11-05
+updated: 2026-11-18
 tags:
   - Linux
   - GNOME
@@ -80,9 +81,9 @@ Pindu launcher is written in Rust with GTK 4 and libadwaita through gtk4-rs, and
 
 ## Trying it yourself
 
-Pindu launcher is in early development. Version 0.1.0 is tagged, but there is no release download and no Flathub listing yet. It runs on Linux as a Flatpak on the GNOME 51 runtime, and it is free and open source under GPL-3.0-or-later. For now, you either install the development bundle that every [CI run](https://github.com/Tim-van-Oudheusden/pindu-launcher/actions/workflows/ci.yml) uploads, or build it from source; the [installation steps](https://github.com/Tim-van-Oudheusden/pindu-launcher#installing) explain both.
+Pindu launcher is in early development, so releases are numbered 0.x. It runs on Linux, and it is free and open source under GPL-3.0-or-later. It isn't on Flathub yet, so you download it from the [releases page](https://github.com/Tim-van-Oudheusden/pindu-launcher/releases/latest) instead: there is a Flatpak bundle for x86_64 and one for aarch64, which needs the GNOME 51 runtime from Flathub, and native packages for Fedora 45, Debian testing and Ubuntu 26.10. Neither updates itself, so install the next release over the one you have. To try the latest code, install the development bundle that every [CI run](https://github.com/Tim-van-Oudheusden/pindu-launcher/actions/workflows/ci.yml) uploads, or build it from source. The [installation steps](https://github.com/Tim-van-Oudheusden/pindu-launcher#installing) explain each way.
 
-Store games start through their launcher and always work. Games that start as a program on your computer, like desktop entries, Flatpak games, Faugus games and native games added by hand, need you to give the app access to the host with a `flatpak override`. That access lets Pindu launcher run any command outside its sandbox, so the app never asks for it itself: until you grant it, those games explain what is missing, and Preferences shows the command. Progress is tracked in the [milestones](https://github.com/Tim-van-Oudheusden/pindu-launcher/milestones), and bug reports are welcome in the [issues](https://github.com/Tim-van-Oudheusden/pindu-launcher/issues).
+Store games start through their launcher and always work. In the Flatpak, games that start as a program on your computer, like desktop entries, Flatpak games, Faugus games and native games added by hand, need you to give the app access to the host with a `flatpak override`. That access lets Pindu launcher run any command outside its sandbox, so the app never asks for it itself: until you grant it, those games explain what is missing, and Preferences shows the command. Progress is tracked in the [milestones](https://github.com/Tim-van-Oudheusden/pindu-launcher/milestones), and bug reports are welcome in the [issues](https://github.com/Tim-van-Oudheusden/pindu-launcher/issues).
 
 ## The artwork
 

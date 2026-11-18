@@ -12,7 +12,9 @@ so a reader can check whether it still holds.
 - **Writing has stopped.** The newest article is `content/Introduction.md` (published 2026-02-08), and the
   other four are from 2025. The projects meanwhile keep shipping: Dailies is at 0.3.2 and MinimalUI at
   v0.1.5 (both released 2026-11-14), the Pindu launcher page went up on 2026-11-05, and the Pindu OS
-  page on 2026-11-16, as the new featured project.
+  page on 2026-11-16, as the new featured project. Pindu launcher has had release downloads since 0.3.0
+  (2026-11-07): Flatpak bundles and Fedora, Debian and Ubuntu packages. Its latest release is 0.4.1
+  (2026-11-17).
 - **The site itself is mature.** It has RSS with projects in the feed, link previews, an updated date
   in the feed, sitemap and JSON-LD, the Agentic tab, and coverage and mutation gates. Most recent
   changes to `main` are tests and CI, not anything a reader sees.
@@ -33,14 +35,18 @@ first-person article by Tim, written in Obsidian as described in
 | A launcher for keyboard phones | `content/Minimal Android Launcher.md`, and MinimalUI's `docs/usage.md` and `DEVICES.md`. Asking owners of each phone to report how it went is a story in itself. |
 | Self-hosting this site with rootless Podman and a Cloudflare Tunnel | [`deploy.md`](deploy.md) and the architecture diagram in the README. This follows on from the existing container-OS article. |
 | What mutation testing caught that coverage did not | The `stryker/` configs here, and the mutant tables and PIT baseline in the Dailies and MinimalUI repositories |
+| One library for every PC game on Linux | `content/Pindu launcher.md`, and the Pindu launcher repository's README and release notes. Reading Steam, Heroic, Lutris, Bottles and Faugus into one library, and shipping the same app as a Flatpak and as native packages for three distros, are the parts a project page cannot fit. |
 
-Pindu launcher and Pindu OS are in early development; each gets an article once it has a release to
-point at.
+Pindu OS is in early development and gets an article once it has a stable release to point at.
 
 ## Ongoing: keep the living pages current
 
 - **On a project release:** update that project page's `updated:` date and any version or install
   details in its body, and check its line on the Now page.
+- **Weekly:** compare each project's latest GitHub release with its page's `updated:` date (or `date:`
+  when there is none). A release newer than the page means the step above was missed: read the page
+  against the release notes. The projects release on their own schedules, so nothing here reminds
+  anyone when one ships.
 - **Monthly:** reread `content/pages/now.md` and `content/pages/uses.md`, and update their `updated:`
   dates when something changed. A Now page that names a past milestone as "next" reads as abandoned.
 
