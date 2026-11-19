@@ -186,7 +186,9 @@ repo. The back-end fetches, caches and trims the data; the browser never talks
 to Hive or GitHub. Design:
 [`2026-11-02-agentic-hive-metrics-design.md`](../superpowers/specs/2026-11-02-agentic-hive-metrics-design.md);
 the research behind it, with every Hive claim cited:
-[`research/hive_metrics_api.md`](../../research/hive_metrics_api.md).
+[`research/hive_metrics_api.md`](../../research/hive_metrics_api.md). The move
+from 7 to 30 days is researched in
+[`research/agentic_tab_monthly_window.md`](../../research/agentic_tab_monthly_window.md).
 
 Sources, all GET requests to fixed URLs with no visitor input:
 
@@ -196,13 +198,15 @@ Sources, all GET requests to fixed URLs with no visitor input:
   (`HIVE_WIDGET_TOKEN`), which authenticates that one route and nothing else.
 - **Anonymous Hive endpoints** — `/api/health` (online or not),
   `/api/contribute/metrics` (contributor-agent tasks done per hour and fleet
-  size, 7 days) and `/api/contribute/run-stats` (runs per backend: completed,
-  failed, abandoned, p50 and p95 run time, 7 days).
+  size; Hive keeps only the last 168 hours) and
+  `/api/contribute/run-stats?days=30` (runs per backend: completed, failed,
+  abandoned, p50 and p95 run time, 30 days).
 - **This repo's public GitHub PR list** — PRs opened, merged and closed
-  unmerged per day over 7 days, median and p90 time to merge, and merged PRs
-  per source. The source is decided by the same rule as the
+  unmerged per UTC day over 30 days, median and p90 time to merge, and merged
+  PRs per source. The source is decided by the same rule as the
   [AI audit trail](#ai-audit-trail) (`shared/src/pr-source.ts`), so the split is
-  by who wrote the PR, not who merged it.
+  by who wrote the PR, not who merged it. The window length is
+  `HIVE_METRICS_WINDOW_DAYS` in `shared/src/index.ts`.
 
 Refresh: the back-end caches health and the widget summary for 60 s and the
 contributor endpoints and GitHub for 180 s; the response carries
@@ -210,6 +214,13 @@ contributor endpoints and GitHub for 180 s; the response carries
 browser tab is visible. A change in Hive or GitHub reaches a visitor within
 150 s (widget data) or 270 s (contributor and GitHub data), always under 5
 minutes. Upstream load does not depend on visitor count.
+
+GitHub is called without a token, which allows 60 requests an hour. Once an
+hour the back-end pages the pull list (sorted by last update) back to the
+start of the 30-day window, at most 10 pages of 100. Every refresh in between
+fetches only the PRs updated since the newest one it already has, usually one
+page, and merges them in by PR number. That is about 25 requests an hour at
+this repo's busiest.
 
 The response `state` is:
 

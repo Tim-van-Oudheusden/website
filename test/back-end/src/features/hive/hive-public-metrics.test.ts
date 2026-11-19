@@ -82,15 +82,15 @@ describe("buildHivePublicMetrics allowlist", () => {
         ".contributors.collectedAt",
         ".contributors.tasksPerHour",
         ".contributors.fleetSize",
-        ".contributors.runs7d",
-        ".contributors.runs7d.total",
-        ".contributors.runs7d.backends",
-        ".contributors.runs7d.backends[].backend",
-        ".contributors.runs7d.backends[].completed",
-        ".contributors.runs7d.backends[].failed",
-        ".contributors.runs7d.backends[].abandoned",
-        ".contributors.runs7d.backends[].p50Seconds",
-        ".contributors.runs7d.backends[].p95Seconds",
+        ".contributors.runs",
+        ".contributors.runs.total",
+        ".contributors.runs.backends",
+        ".contributors.runs.backends[].backend",
+        ".contributors.runs.backends[].completed",
+        ".contributors.runs.backends[].failed",
+        ".contributors.runs.backends[].abandoned",
+        ".contributors.runs.backends[].p50Seconds",
+        ".contributors.runs.backends[].p95Seconds",
       ].sort(),
     );
   });
@@ -224,7 +224,7 @@ describe("buildHivePublicMetrics contributors", () => {
       collectedAt: "2026-11-02T13:00:00.000Z",
       tasksPerHour: [1, 1, 1, 0, 1, 0],
       fleetSize: [1, 1, 1, 1, 1, 1],
-      runs7d: {
+      runs: {
         total: 15,
         backends: [
           { backend: "omp", completed: 8, failed: 1, abandoned: 1, p50Seconds: 300.5, p95Seconds: 900.25 },
@@ -291,7 +291,7 @@ describe("buildHivePublicMetrics malformed upstream values", () => {
     expect(contributors({ ...metrics }, { ...runStats, total: -1 })).toBeNull();
     expect(contributors("metrics")).toBeNull();
 
-    expect(contributors(metrics, { ...runStats, backends: "omp" })?.runs7d.backends).toEqual([]);
+    expect(contributors(metrics, { ...runStats, backends: "omp" })?.runs.backends).toEqual([]);
 
     expect(
       contributors(metrics, {
@@ -303,7 +303,7 @@ describe("buildHivePublicMetrics malformed upstream values", () => {
           runStatsBackend({ failed: null }),
           null,
         ],
-      })?.runs7d.backends,
+      })?.runs.backends,
     ).toEqual([{ backend: "omp", completed: 8, failed: 1, abandoned: 1, p50Seconds: null, p95Seconds: null }]);
   });
 

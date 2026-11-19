@@ -44,9 +44,9 @@ describe("PipelineView", () => {
     expect(units).toEqual({
       "Issue": "issues open now",
       "Agent": "agents running",
-      "Pull request": "PRs opened in 7 days",
+      "Pull request": "PRs opened in 30 days",
       "Checks": "ready to merge now",
-      "Merge &amp; deploy": "merged in 7 days",
+      "Merge &amp; deploy": "merged in 30 days",
     });
   });
 
@@ -77,8 +77,8 @@ describe("PipelineView", () => {
     const text = textOf(render(liveModel()));
 
     expect(text).toContain("Hive wrote 6 of 8 merged PRs");
-    expect(text).toContain("Closed unmerged 1 pull request, 7 days");
-    expect(text).toContain("Opened 10 pull requests, 7 days");
+    expect(text).toContain("Closed unmerged 1 pull request, 30 days");
+    expect(text).toContain("Opened 10 pull requests, 30 days");
   });
 
   test("replaces only a missing part with its one line, and keeps the other stations", () => {
@@ -124,12 +124,12 @@ describe("PipelineView", () => {
       },
     })));
 
-    expect(text).toContain("No PRs were merged in the last 7 days");
+    expect(text).toContain("No PRs were merged in the last 30 days");
     expect(text).toContain("Time to merge no merges yet");
   });
 
   describe("when Hive's series were discarded as malformed", () => {
-    function withContributors(patch: { runs7d?: Partial<NonNullable<HivePublicMetrics["contributors"]>["runs7d"]>; blankHours?: boolean }): string {
+    function withContributors(patch: { runs?: Partial<NonNullable<HivePublicMetrics["contributors"]>["runs"]>; blankHours?: boolean }): string {
       const contributors = liveMetrics().contributors!;
 
       return textOf(render(liveModel({
@@ -137,24 +137,24 @@ describe("PipelineView", () => {
           ...contributors,
           tasksPerHour: patch.blankHours === true ? [] : contributors.tasksPerHour,
           fleetSize: patch.blankHours === true ? [] : contributors.fleetSize,
-          runs7d: { ...contributors.runs7d, ...patch.runs7d },
+          runs: { ...contributors.runs, ...patch.runs },
         },
       })));
     }
 
     test("reports the run total, not 'no runs', when the per-backend breakdown is blank", () => {
-      const text = withContributors({ runs7d: { total: 76, backends: [] } });
+      const text = withContributors({ runs: { total: 76, backends: [] } });
 
-      expect(text).toContain("76 runs in 7 days.");
+      expect(text).toContain("76 runs in 30 days.");
       expect(text).toContain(AGENTIC_COPY.notes.runsNoBreakdown);
-      expect(text).not.toContain("No runs in the last 7 days.");
+      expect(text).not.toContain("No runs in the last 30 days.");
       expect(text).not.toContain("0 completed, 0 failed, 0 abandoned");
     });
 
     test("still says 'no runs' when Hive counted none", () => {
-      const text = withContributors({ runs7d: { total: 0, backends: [] } });
+      const text = withContributors({ runs: { total: 0, backends: [] } });
 
-      expect(text).toContain("No runs in the last 7 days.");
+      expect(text).toContain("No runs in the last 30 days.");
       expect(text).not.toContain(AGENTIC_COPY.notes.runsNoBreakdown);
     });
 

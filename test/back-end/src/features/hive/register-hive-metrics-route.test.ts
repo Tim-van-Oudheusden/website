@@ -31,7 +31,7 @@ const FIXTURE_BY_URL: Readonly<Record<string, string>> = {
   [`${BASE_URL}/api/health`]: "health",
   [`${BASE_URL}/api/widget/summary`]: "widget-summary",
   [`${BASE_URL}/api/contribute/metrics`]: "contribute-metrics",
-  [`${BASE_URL}/api/contribute/run-stats`]: "run-stats",
+  [`${BASE_URL}/api/contribute/run-stats?days=30`]: "run-stats",
   [GITHUB_URL]: "github-pulls",
 };
 
@@ -176,7 +176,7 @@ describe("GET /api/hive/metrics upstream calls", () => {
       [`${BASE_URL}/api/health`]: null,
       [`${BASE_URL}/api/widget/summary`]: "widget-secret",
       [`${BASE_URL}/api/contribute/metrics`]: null,
-      [`${BASE_URL}/api/contribute/run-stats`]: null,
+      [`${BASE_URL}/api/contribute/run-stats?days=30`]: null,
       [GITHUB_URL]: null,
     });
   });
@@ -214,19 +214,29 @@ describe("GET /api/hive/metrics upstream calls", () => {
 describe("GET /api/hive/metrics GitHub paging", () => {
   const [template] = fixture("github-pulls") as Record<string, unknown>[];
 
-  /** A page of `size` pulls opened and updated inside the window ending at `NOW`. */
-  function page(size: number): Record<string, unknown>[] {
-    return Array.from({ length: size }, () => ({
+  /** An open pull numbered `number`, opened and last updated at `updated`. */
+  function pull(number: number, updated: string, overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
       ...template,
-      created_at: "2026-11-01T12:00:00Z",
-      updated_at: "2026-11-01T12:00:00Z",
-    }));
+      number,
+      created_at: updated,
+      updated_at: updated,
+      merged_at: null,
+      closed_at: null,
+      ...overrides,
+    };
   }
 
-  function githubPages(pages: readonly Record<string, unknown>[][]): (url: string) => Response {
+  /** A page of `size` pulls numbered from `first`, all last updated at `updated`. */
+  function page(size: number, updated = "2026-11-01T12:00:00Z", first = 1): Record<string, unknown>[] {
+    return Array.from({ length: size }, (_, index) => pull(first + index, updated));
+  }
+
+  /** Answers GitHub's page N with `pages()[N - 1]`, read at call time so a test can change what GitHub lists. */
+  function githubPages(pages: () => readonly Record<string, unknown>[][]): (url: string) => Response {
     return (url) => {
       const number = url === GITHUB_URL ? 1 : Number(url.replace(`${GITHUB_URL}&page=`, ""));
-      const answer = url.startsWith(GITHUB_URL) ? pages[number - 1] : undefined;
+      const answer = url.startsWith(GITHUB_URL) ? pages()[number - 1] : undefined;
 
       return answer === undefined ? recorded(url) : Response.json(answer);
     };
@@ -236,26 +246,77 @@ describe("GET /api/hive/metrics GitHub paging", () => {
     return upstream.calls.map(({ url }) => url).filter((url) => url.startsWith("https://api.github.com/"));
   }
 
-  test("follows full in-window pages, at most three", async () => {
-    const pages = [page(100), page(100), page(100), page(100)];
-    const upstream = fakeFetch(githubPages(pages));
+  function pageUrls(count: number): string[] {
+    return Array.from({ length: count }, (_, index) => (index === 0 ? GITHUB_URL : `${GITHUB_URL}&page=${String(index + 1)}`));
+  }
+
+  test("first follows full pages back to the start of the 30-day window, at most ten", async () => {
+    const pages = Array.from({ length: 11 }, (_, index) => page(100, "2026-10-04T00:00:00Z", index * 100 + 1));
+    const upstream = fakeFetch(githubPages(() => pages));
     const server = await start(CONFIGURED, upstream);
 
     const { body } = await getMetrics(server);
 
-    expect(githubUrls(upstream)).toEqual([GITHUB_URL, `${GITHUB_URL}&page=2`, `${GITHUB_URL}&page=3`]);
-    expect(body.metrics?.repo).toEqual(buildRepoPrActivity(pages.slice(0, 3).flat(), NOW));
+    expect(githubUrls(upstream)).toEqual(pageUrls(10));
+    expect(body.metrics?.repo).toEqual(buildRepoPrActivity(pages.slice(0, 10).flat(), NOW));
   });
 
-  test("stops at a page that is not full", async () => {
-    const pages = [page(100), page(40), page(100)];
-    const upstream = fakeFetch(githubPages(pages));
+  test.each([
+    ["is not full", [page(100), page(40, "2026-10-20T00:00:00Z", 101), page(100, "2026-10-10T00:00:00Z", 141)]],
+    ["reaches back before the window", [page(100), page(100, "2026-10-03T23:59:59Z", 101), page(100, "2026-10-01T00:00:00Z", 201)]],
+  ])("stops at a page that %s", async (_label, pages) => {
+    const upstream = fakeFetch(githubPages(() => pages));
     const server = await start(CONFIGURED, upstream);
 
     const { body } = await getMetrics(server);
 
-    expect(githubUrls(upstream)).toEqual([GITHUB_URL, `${GITHUB_URL}&page=2`]);
+    expect(githubUrls(upstream)).toEqual(pageUrls(2));
     expect(body.metrics?.repo).toEqual(buildRepoPrActivity(pages.slice(0, 2).flat(), NOW));
+  });
+
+  test("then fetches only the PRs updated since the newest one it has, keeping the rest", async () => {
+    const opened = pull(1, "2026-11-02T12:00:00Z");
+    const quiet = pull(2, "2026-10-20T08:00:00Z");
+    let pages = [[opened, quiet]];
+    const upstream = fakeFetch(githubPages(() => pages));
+    const clock = { t: NOW.getTime() };
+    const server = await start(CONFIGURED, upstream, clock);
+
+    await getMetrics(server);
+
+    const merged = pull(1, "2026-11-02T14:00:00Z", {
+      created_at: "2026-11-02T12:00:00Z",
+      merged_at: "2026-11-02T14:00:00Z",
+      closed_at: "2026-11-02T14:00:00Z",
+    });
+    // Newest first: a full page updated after the last sync, then one reaching back before it, both in the window.
+    const newer = [merged, ...page(99, "2026-11-02T13:00:00Z", 100)];
+    const older = page(100, "2026-11-01T00:00:00Z", 200);
+
+    pages = [newer, older, page(100, "2026-10-30T00:00:00Z", 300)];
+    clock.t += 180_000;
+    upstream.calls.length = 0;
+
+    const { body } = await getMetrics(server);
+
+    expect(githubUrls(upstream)).toEqual(pageUrls(2));
+    expect(body.metrics?.repo).toEqual(buildRepoPrActivity([...newer, ...older, quiet], new Date(clock.t)));
+  });
+
+  test("re-syncs the whole window an hour after the last full sync, dropping PRs GitHub no longer lists", async () => {
+    const kept = pull(1, "2026-11-01T12:00:00Z");
+    let pages = [[kept, pull(2, "2026-10-20T08:00:00Z")]];
+    const upstream = fakeFetch(githubPages(() => pages));
+    const clock = { t: NOW.getTime() };
+    const server = await start(CONFIGURED, upstream, clock);
+
+    await getMetrics(server);
+    pages = [[kept]];
+    clock.t += 3_600_000;
+
+    const { body } = await getMetrics(server);
+
+    expect(body.metrics?.repo).toEqual(buildRepoPrActivity([kept], new Date(clock.t)));
   });
 
   test.each([403, 429])("after a %i rate limit keeps the last value and waits for x-ratelimit-reset", async (status) => {

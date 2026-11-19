@@ -23,7 +23,7 @@ interface HistoryPoint {
 
 type ContributorsPart = HivePublicMetrics["contributors"];
 
-type RunsPart = NonNullable<ContributorsPart>["runs7d"];
+type RunsPart = NonNullable<ContributorsPart>["runs"];
 
 /** Hive's governor modes (hive `src/pkg/governor/governor.go`), keyed by the upper-case wire value. */
 const GOVERNOR_MODES: Readonly<Record<string, GovernorMode>> = {
@@ -159,7 +159,7 @@ function backendRuns(raw: unknown): RunsPart["backends"][number] | null {
   };
 }
 
-/** `runs7d` from `/api/contribute/run-stats`; null without a usable total. Malformed backends are skipped. */
+/** `runs` from `/api/contribute/run-stats`; null without a usable total. Malformed backends are skipped. */
 function buildRuns(runStats: unknown): RunsPart | null {
   const total = count(field(runStats, "total"));
   const backends = field(runStats, "backends");
@@ -181,9 +181,9 @@ function buildRuns(runStats: unknown): RunsPart | null {
 function buildContributors(contributeMetrics: unknown, runStats: unknown): ContributorsPart {
   const collected = field(contributeMetrics, "collected_at");
   const collectedMs = typeof collected === "string" ? Date.parse(collected) : Number.NaN;
-  const runs7d = buildRuns(runStats);
+  const runs = buildRuns(runStats);
 
-  if (!Number.isFinite(collectedMs) || runs7d === null) {
+  if (!Number.isFinite(collectedMs) || runs === null) {
     return null;
   }
 
@@ -195,7 +195,7 @@ function buildContributors(contributeMetrics: unknown, runStats: unknown): Contr
     collectedAt: new Date(collectedMs).toISOString(),
     tasksPerHour: aligned ? tasksPerHour : [],
     fleetSize: aligned ? fleetSize : [],
-    runs7d,
+    runs,
   };
 }
 

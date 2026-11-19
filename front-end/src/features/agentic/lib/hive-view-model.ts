@@ -54,7 +54,7 @@ export interface HiveWidgetView {
   modeShare: { mode: GovernorMode; points: number; share: number }[];
 }
 
-/** One backend's runs over the last 7 days; `p50`/`p95` are its own run-time percentiles ("5 min"), or null. */
+/** One backend's runs over the last 30 days; `p50`/`p95` are its own run-time percentiles ("5 min"), or null. */
 export interface BackendRunsView {
   name: string;
   runs: number;
@@ -67,7 +67,7 @@ export interface BackendRunsView {
   p95: string | null;
 }
 
-/** The contributor agents connected to this hive: tasks per hour and runs over the last 7 days. */
+/** The contributor agents connected to this hive: tasks per hour, and runs over the last 30 days. */
 export interface ContributorsView {
   tasksTotal: number;
   /** Contributor agents connected in the latest hour. */
@@ -100,7 +100,7 @@ export const MERGED_SOURCES: readonly { key: MergedSource; name: string }[] = [
   { key: "other", name: "other" },
 ];
 
-/** This repo's public pull requests over the last 7 UTC days; `label` is "Mon 27 Oct". */
+/** This repo's public pull requests over the last 30 UTC days; `label` is "Mon 27 Oct". */
 export interface RepoView {
   days: { t: string; label: string; opened: number; merged: number; closedUnmerged: number }[];
   totals: { opened: number; merged: number; closedUnmerged: number };
@@ -174,7 +174,7 @@ function buildHive(hive: NonNullable<HivePublicMetrics["hive"]>, timeZone: strin
 }
 
 function buildContributors(contributors: NonNullable<HivePublicMetrics["contributors"]>, timeZone: string | null): ContributorsView {
-  const { tasksPerHour, fleetSize, runs7d } = contributors;
+  const { tasksPerHour, fleetSize } = contributors;
   // The last bucket is the hour Hive collected the series in; the ones before it step back an hour each.
   const collected = Date.parse(contributors.collectedAt);
   const hours = tasksPerHour.map((tasks, index) => {
@@ -191,7 +191,7 @@ function buildContributors(contributors: NonNullable<HivePublicMetrics["contribu
     (best, hour) => (hour.tasks > (best?.tasks ?? 0) ? { label: hour.label, tasks: hour.tasks } : best),
     null,
   );
-  const backends = runs7d.backends.map((backend): BackendRunsView => {
+  const backends = contributors.runs.backends.map((backend): BackendRunsView => {
     const runs = backend.completed + backend.failed + backend.abandoned;
 
     return {
@@ -213,7 +213,7 @@ function buildContributors(contributors: NonNullable<HivePublicMetrics["contribu
     peak,
     span: formatHourSpan(hours.length),
     runs: {
-      total: runs7d.total,
+      total: contributors.runs.total,
       outcomes: {
         completed: backends.reduce((sum, backend) => sum + backend.completed, 0),
         failed: backends.reduce((sum, backend) => sum + backend.failed, 0),

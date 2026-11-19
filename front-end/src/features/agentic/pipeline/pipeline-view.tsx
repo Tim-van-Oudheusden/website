@@ -22,9 +22,9 @@ function readouts(model: HiveViewModel): Record<FlowStepId, Readout | null> {
     agent: hive === null
       ? null
       : { value: `${String(hive.agents.running)}/${String(hive.agents.total)}`, unit: "agents running" },
-    pullRequest: repo === null ? null : { value: String(repo.totals.opened), unit: "PRs opened in 7 days" },
+    pullRequest: repo === null ? null : { value: String(repo.totals.opened), unit: `PRs opened in ${AGENTIC_COPY.window}` },
     checks: hive === null ? null : { value: String(hive.work.mergeable), unit: "ready to merge now" },
-    merge: repo === null ? null : { value: String(repo.totals.merged), unit: "merged in 7 days" },
+    merge: repo === null ? null : { value: String(repo.totals.merged), unit: `merged in ${AGENTIC_COPY.window}` },
   };
 }
 

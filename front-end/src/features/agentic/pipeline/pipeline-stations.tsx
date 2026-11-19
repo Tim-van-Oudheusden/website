@@ -1,5 +1,7 @@
 import type { JSX } from "react";
 
+import { HIVE_METRICS_WINDOW_DAYS } from "shared";
+
 import { AGENTIC_COPY, AGENTIC_LINKS } from "../config/agentic-copy";
 import type { ContributorsView, HiveViewModel, HiveWidgetView, RepoView } from "../lib/hive-view-model";
 
@@ -189,7 +191,7 @@ function BackendCard({ backend }: { backend: ContributorsView["runs"]["backends"
 function RunsStation({ contributors }: { contributors: ContributorsView | null }): JSX.Element {
   if (contributors === null) {
     return (
-      <Station index={3} name="Runs" kicker="agent runs, last 7 days">
+      <Station index={3} name="Runs" kicker={`agent runs, last ${AGENTIC_COPY.window}`}>
         <Missing>{AGENTIC_COPY.missing.contributors}</Missing>
       </Station>
     );
@@ -198,13 +200,13 @@ function RunsStation({ contributors }: { contributors: ContributorsView | null }
   const { runs } = contributors;
 
   if (runs.backends.length === 0) {
-    // A positive total with no backends is a breakdown Hive sent in a shape we discarded, not an idle week.
+    // A positive total with no backends is a breakdown Hive sent in a shape we discarded, not an idle month.
     return (
-      <Station index={3} name="Runs" kicker="agent runs, last 7 days">
+      <Station index={3} name="Runs" kicker={`agent runs, last ${AGENTIC_COPY.window}`}>
         {runs.total === 0
           ? (
               <>
-                <p className="pl-empty">No runs in the last 7 days.</p>
+                <p className="pl-empty">{`No runs in the last ${AGENTIC_COPY.window}.`}</p>
                 <p className="pl-note">{AGENTIC_COPY.notes.runs}</p>
               </>
             )
@@ -212,7 +214,7 @@ function RunsStation({ contributors }: { contributors: ContributorsView | null }
               <>
                 <p className="pl-lede">
                   <strong>{plural(runs.total, "run", "runs")}</strong>
-                  {" in 7 days."}
+                  {` in ${AGENTIC_COPY.window}.`}
                 </p>
                 <p className="pl-note">{AGENTIC_COPY.notes.runsNoBreakdown}</p>
               </>
@@ -224,10 +226,10 @@ function RunsStation({ contributors }: { contributors: ContributorsView | null }
   const chart = runsChart(runs.backends);
 
   return (
-    <Station index={3} name="Runs" kicker="agent runs, last 7 days">
+    <Station index={3} name="Runs" kicker={`agent runs, last ${AGENTIC_COPY.window}`}>
       <p className="pl-lede">
         <strong>{plural(runs.total, "run", "runs")}</strong>
-        {` in 7 days: ${String(runs.outcomes.completed)} completed, ${String(runs.outcomes.failed)} failed, `
+        {` in ${AGENTIC_COPY.window}: ${String(runs.outcomes.completed)} completed, ${String(runs.outcomes.failed)} failed, `
           + `${String(runs.outcomes.abandoned)} abandoned.`}
       </p>
       <div className="pl-panels pl-panels--runs">
@@ -235,7 +237,7 @@ function RunsStation({ contributors }: { contributors: ContributorsView | null }
           {runs.backends.map((backend) => <BackendCard key={backend.name} backend={backend} />)}
         </ul>
         <ChartPanel
-          title="Run outcomes by backend, 7 days"
+          title={`Run outcomes by backend, ${AGENTIC_COPY.window}`}
           chart={chart}
           size={runs.backends.length > 2 ? "medium" : "short"}
         >
@@ -246,15 +248,15 @@ function RunsStation({ contributors }: { contributors: ContributorsView | null }
   );
 }
 
-/** The caption under a pull request count: "pull request, 7 days" when it is 1. */
-function weekOfPrs(count: number): string {
-  return `${count === 1 ? "pull request" : "pull requests"}, 7 days`;
+/** The caption under a pull request count: "pull request, 30 days" when it is 1. */
+function windowOfPrs(count: number): string {
+  return `${count === 1 ? "pull request" : "pull requests"}, ${AGENTIC_COPY.window}`;
 }
 
 function PullRequestsStation({ repo }: { repo: RepoView | null }): JSX.Element {
   if (repo === null) {
     return (
-      <Station index={4} name="Pull requests" kicker="7 UTC days">
+      <Station index={4} name="Pull requests" kicker={`${String(HIVE_METRICS_WINDOW_DAYS)} UTC days`}>
         <Missing>{AGENTIC_COPY.missing.repo}</Missing>
       </Station>
     );
@@ -263,11 +265,11 @@ function PullRequestsStation({ repo }: { repo: RepoView | null }): JSX.Element {
   const chart = pullRequestsChart(repo);
 
   return (
-    <Station index={4} name="Pull requests" kicker="7 UTC days">
+    <Station index={4} name="Pull requests" kicker={`${String(HIVE_METRICS_WINDOW_DAYS)} UTC days`}>
       <dl className="pl-gauges">
-        <Gauge label="Opened" value={repo.totals.opened} detail={weekOfPrs(repo.totals.opened)} />
-        <Gauge label="Merged" value={repo.totals.merged} detail={weekOfPrs(repo.totals.merged)} />
-        <Gauge label="Closed unmerged" value={repo.totals.closedUnmerged} detail={weekOfPrs(repo.totals.closedUnmerged)} />
+        <Gauge label="Opened" value={repo.totals.opened} detail={windowOfPrs(repo.totals.opened)} />
+        <Gauge label="Merged" value={repo.totals.merged} detail={windowOfPrs(repo.totals.merged)} />
+        <Gauge label="Closed unmerged" value={repo.totals.closedUnmerged} detail={windowOfPrs(repo.totals.closedUnmerged)} />
         <Gauge
           label="Time to merge"
           value={repo.timeToMerge.median ?? "no merges yet"}
@@ -305,7 +307,7 @@ function MergedStation({ repo }: { repo: RepoView | null }): JSX.Element {
   if (repo.merged === 0 || hive === undefined) {
     return (
       <Station index={5} name="Merged" kicker="who wrote it">
-        <p className="pl-headline">No PRs were merged in the last 7 days</p>
+        <p className="pl-headline">{`No PRs were merged in the last ${AGENTIC_COPY.window}`}</p>
         {attribution}
       </Station>
     );
@@ -331,7 +333,7 @@ function MergedStation({ repo }: { repo: RepoView | null }): JSX.Element {
       </ul>
       <div className="pl-panels pl-panels--halves">
         <ChartPanel title="Where finished PRs went" chart={sankey} size="tall">
-          <p>Finished PRs are merged plus closed unmerged, over 7 days.</p>
+          <p>{`Finished PRs are merged plus closed unmerged, over ${AGENTIC_COPY.window}.`}</p>
         </ChartPanel>
         <ChartPanel title="Merged per UTC day, by author" chart={authors} size="tall">
           <p>Each bar is one UTC day of merges.</p>

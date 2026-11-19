@@ -1,4 +1,5 @@
 import type { HivePublicMetrics } from "shared";
+import { HIVE_METRICS_WINDOW_DAYS } from "shared";
 import type { Attribution } from "shared/pr-source";
 import { attribute } from "shared/pr-source";
 
@@ -24,12 +25,9 @@ const SOURCE_KEYS: Readonly<Record<Attribution["source"], Exclude<keyof SourceCo
 
 const DAY_MS = 86_400_000;
 
-/** Days in the window; the last one is `now`'s UTC day. */
-const WINDOW_DAYS = 7;
-
-/** Start of the oldest window day: midnight UTC six days before `now`'s UTC day. */
-function windowStart(now: Date): number {
-  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - (WINDOW_DAYS - 1) * DAY_MS;
+/** Start of the oldest window day: midnight UTC `HIVE_METRICS_WINDOW_DAYS - 1` days before `now`'s UTC day. */
+export function windowStart(now: Date): number {
+  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - (HIVE_METRICS_WINDOW_DAYS - 1) * DAY_MS;
 }
 
 /** Reads `key` from an upstream object; anything else reads as absent. */
@@ -95,7 +93,10 @@ export function buildRepoPrActivity(pulls: unknown, now: Date): RepoPart {
   }
 
   const start = windowStart(now);
-  const dayStarts = Array.from({ length: WINDOW_DAYS }, (_, index) => new Date(start + index * DAY_MS).toISOString());
+  const dayStarts = Array.from(
+    { length: HIVE_METRICS_WINDOW_DAYS },
+    (_, index) => new Date(start + index * DAY_MS).toISOString(),
+  );
   const days = dayStarts.map((t) => ({ t, opened: 0, merged: 0, closedUnmerged: 0 }));
   const mergedBySource = dayStarts.map((t) => ({ t, hive: 0, claudeCode: 0, dependabot: 0, other: 0 }));
 
@@ -149,14 +150,28 @@ export const PAGE_SIZE = 100;
 
 /**
  * Whether to fetch the page after `pulls` (one page, sorted by `updated_at` descending): only when the page is full
- * and its oldest `updated_at` is still inside the window, since a PR with events in the window was updated in it.
+ * and its oldest `updated_at` is at or after `since` (epoch ms), so every PR updated since then gets fetched.
  */
-export function needsNextPage(pulls: unknown, now: Date): boolean {
+export function needsNextPage(pulls: unknown, since: number): boolean {
   if (!Array.isArray(pulls) || pulls.length !== PAGE_SIZE) {
     return false;
   }
 
   const oldest = Math.min(...pulls.map((raw) => timestamp(field(raw, "updated_at"))));
 
-  return oldest >= windowStart(now);
+  return oldest >= since;
+}
+
+/** A GitHub pull's number, or null when it has none. */
+export function pullNumber(raw: unknown): number | null {
+  const number = field(raw, "number");
+
+  return Number.isSafeInteger(number) ? number as number : null;
+}
+
+/** The newest `updated_at` among `pulls` (epoch ms); `-Infinity` without a readable one. */
+export function newestUpdate(pulls: Iterable<unknown>): number {
+  const updates = [...pulls].map((raw) => timestamp(field(raw, "updated_at"))).filter((ms) => !Number.isNaN(ms));
+
+  return Math.max(...updates);
 }

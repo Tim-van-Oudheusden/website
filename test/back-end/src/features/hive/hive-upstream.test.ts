@@ -82,7 +82,7 @@ describe("Hive upstream", () => {
     expect(answer.health).toBeNull();
 
     expect(answer.runStats).toEqual({
-      value: { url: "http://hive.test:3001/api/contribute/run-stats" },
+      value: { url: "http://hive.test:3001/api/contribute/run-stats?days=30" },
       fetchedAt: NOW,
     });
 

@@ -109,7 +109,7 @@ describe("buildHiveViewModel contributors", () => {
     collectedAt: "2026-11-02T01:00:00.000Z",
     tasksPerHour: [1, 0, 2],
     fleetSize: [1, 1, 2],
-    runs7d: {
+    runs: {
       total: 80,
       backends: [
         { backend: "omp", completed: 74, failed: 0, abandoned: 2, p50Seconds: 329, p95Seconds: 1092 },
