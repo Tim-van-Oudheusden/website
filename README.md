@@ -89,7 +89,7 @@ The host source is bind-mounted, so edits hot-reload without a rebuild.
 
 ### Back-end environment variables
 
-The back-end reads seven variables. None is required.
+The back-end reads eight variables. None is required.
 
 | Variable | Default | Effect |
 | --- | --- | --- |
@@ -98,6 +98,7 @@ The back-end reads seven variables. None is required.
 | `LOG_LEVEL` | `info` | Fastify log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` or `silent`. |
 | `CONTENT_DIR` | the repository's `content/` | Folder of articles and projects to serve. |
 | `VIEWS_DB_PATH` | `:memory:` | SQLite file for article and project view counts. With the default, counts live in memory and are lost when the back-end restarts; the dev pod and `bun run dev` use it. The prod manifest sets `/data/views.sqlite` (see [`docs/deploy.md`](docs/deploy.md#content-view-counts)). |
+| `HIVE_HISTORY_DB_PATH` | `:memory:` | SQLite file for Hive's contributor hours, kept past the 168 Hive holds so the Agentic tab can chart 30 days. With the default, the history restarts from Hive's last 168 hours on each back-end restart. The prod manifest sets `/data/hive-history.sqlite` (see [`docs/deploy.md`](docs/deploy.md#hive-contributor-history)). |
 | `HIVE_BASE_URL` | unset | Hive gateway origin for `GET /api/hive/metrics`, e.g. `http://host.containers.internal:3001`. Unset, development serves a checked-in fixture and production serves only the GitHub part. |
 | `HIVE_WIDGET_TOKEN` | unset | Read-only token sent as `X-Hive-Widget-Token`, only to Hive's `/api/widget/summary`. Unset, that call is skipped and `hive` is `null`. |
 

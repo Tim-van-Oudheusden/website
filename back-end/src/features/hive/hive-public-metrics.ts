@@ -1,11 +1,16 @@
 import type { GovernorMode, HivePublicMetrics } from "shared";
 
+import type { ContributorHour } from "./contributor-history";
+import { windowStart } from "./repo-pr-activity";
+
 /** Raw upstream payloads; `null` when that Hive call failed or is not configured. */
 export interface HiveUpstreamPayloads {
   health: unknown;
   widget: unknown;
   contributeMetrics: unknown;
   runStats: unknown;
+  /** Contributor hours stored from earlier answers, in any order; Hive's own series wins where they overlap. */
+  storedHours: readonly ContributorHour[];
 }
 
 type HivePart = HivePublicMetrics["hive"];
@@ -24,6 +29,12 @@ interface HistoryPoint {
 type ContributorsPart = HivePublicMetrics["contributors"];
 
 type RunsPart = NonNullable<ContributorsPart>["runs"];
+
+type ContributorDay = NonNullable<ContributorsPart>["days"][number];
+
+const HOUR_MS = 3_600_000;
+
+const DAY_MS = 86_400_000;
 
 /** Hive's governor modes (hive `src/pkg/governor/governor.go`), keyed by the upper-case wire value. */
 const GOVERNOR_MODES: Readonly<Record<string, GovernorMode>> = {
@@ -174,27 +185,88 @@ function buildRuns(runStats: unknown): RunsPart | null {
   };
 }
 
-/**
- * The `contributors` part from `/api/contribute/metrics` and `/api/contribute/run-stats`; null when either is
- * unusable. The hourly series are kept only while both are valid and aligned, else both are empty.
- */
-function buildContributors(contributeMetrics: unknown, runStats: unknown): ContributorsPart {
+/** The epoch ms of `collected_at`, else NaN. */
+function collectedAt(contributeMetrics: unknown): number {
   const collected = field(contributeMetrics, "collected_at");
-  const collectedMs = typeof collected === "string" ? Date.parse(collected) : Number.NaN;
+
+  return typeof collected === "string" ? Date.parse(collected) : Number.NaN;
+}
+
+/**
+ * Hive's hourly contributor series as hours, the last one the hour of `collected_at`; null unless `collected_at` is a
+ * date and both series are counts of one length.
+ */
+export function contributorHours(contributeMetrics: unknown): ContributorHour[] | null {
+  const collectedMs = collectedAt(contributeMetrics);
+  const tasks = counts(field(contributeMetrics, "tasks_done"));
+  const fleet = counts(field(contributeMetrics, "fleet_size"));
+
+  if (!Number.isFinite(collectedMs) || tasks === null || fleet?.length !== tasks.length) {
+    return null;
+  }
+
+  const lastHour = Math.floor(collectedMs / HOUR_MS) * HOUR_MS;
+
+  return tasks.map((count, index) => ({
+    hour: new Date(lastHour - (tasks.length - 1 - index) * HOUR_MS).toISOString(),
+    tasks: count,
+    fleet: fleet[index] ?? 0,
+  }));
+}
+
+/** `hours` per UTC day up to `collectedMs`'s day, as the contract's `contributors.days` describes. */
+function contributorDays(hours: readonly ContributorHour[], collectedMs: number): ContributorDay[] {
+  if (hours.length === 0) {
+    return [];
+  }
+
+  const today = Math.floor(collectedMs / DAY_MS) * DAY_MS;
+  // The oldest stored day is partial unless its midnight hour is stored; today is shown even when partial.
+  const firstWholeDay = Math.ceil(Math.min(...hours.map(({ hour }) => Date.parse(hour))) / DAY_MS) * DAY_MS;
+  const first = Math.max(windowStart(new Date(collectedMs)), Math.min(firstWholeDay, today));
+  const days = Array.from({ length: (today - first) / DAY_MS + 1 }, (_, index) => ({
+    t: new Date(first + index * DAY_MS).toISOString(),
+    tasks: 0,
+    fleet: 0,
+  }));
+
+  for (const { hour, tasks, fleet } of hours) {
+    const day = days[Math.floor((Date.parse(hour) - first) / DAY_MS)];
+
+    if (day !== undefined) {
+      day.tasks += tasks;
+      day.fleet = Math.max(day.fleet, fleet);
+    }
+  }
+
+  return days;
+}
+
+/**
+ * The `contributors` part from `/api/contribute/metrics`, `/api/contribute/run-stats` and the stored hours; null when
+ * either endpoint is unusable. A malformed hourly series adds no hours and leaves `fleet` at 0.
+ */
+function buildContributors(
+  contributeMetrics: unknown,
+  runStats: unknown,
+  storedHours: readonly ContributorHour[],
+): ContributorsPart {
+  const collectedMs = collectedAt(contributeMetrics);
   const runs = buildRuns(runStats);
 
   if (!Number.isFinite(collectedMs) || runs === null) {
     return null;
   }
 
-  const tasksPerHour = counts(field(contributeMetrics, "tasks_done"));
-  const fleetSize = counts(field(contributeMetrics, "fleet_size"));
-  const aligned = tasksPerHour !== null && fleetSize !== null && tasksPerHour.length === fleetSize.length;
+  const current = contributorHours(contributeMetrics) ?? [];
+  const hours = new Map([...storedHours, ...current].map((hour) => [hour.hour, hour]));
 
   return {
     collectedAt: new Date(collectedMs).toISOString(),
-    tasksPerHour: aligned ? tasksPerHour : [],
-    fleetSize: aligned ? fleetSize : [],
+    tasksPerHour: current.map(({ tasks }) => tasks),
+    fleetSize: current.map(({ fleet }) => fleet),
+    fleet: current.at(-1)?.fleet ?? 0,
+    days: contributorDays([...hours.values()], collectedMs),
     runs,
   };
 }
@@ -209,6 +281,6 @@ export function buildHivePublicMetrics(
   return {
     online: field(upstream.health, "status") === "ok",
     hive: buildHive(upstream.widget),
-    contributors: buildContributors(upstream.contributeMetrics, upstream.runStats),
+    contributors: buildContributors(upstream.contributeMetrics, upstream.runStats, upstream.storedHours),
   };
 }

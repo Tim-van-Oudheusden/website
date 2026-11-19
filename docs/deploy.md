@@ -176,9 +176,10 @@ curl -s http://127.0.0.1:8301/views   # [{"slug":"introduction","date":"2026-10-
 
 #### Backing up and restoring view counts
 
-`website-data/` holds the pod's only state, and nothing backs it up. It is
-git-ignored inside the checkout, so `git clean -fdx` there, or replacing the
-checkout with a fresh clone, deletes every count.
+`website-data/` holds the pod's only state (view counts, and the Hive
+contributor history below), and nothing backs it up. It is git-ignored inside
+the checkout, so `git clean -fdx` there, or replacing the checkout with a
+fresh clone, deletes every count.
 
 To back it up, take a copy from the running back-end. SQLite's `VACUUM INTO`
 writes a consistent copy while the back-end keeps counting, and refuses to
@@ -206,6 +207,17 @@ systemctl --user start podman-kube@website.service
 systemctl --user start website-update.timer
 curl -s http://127.0.0.1:8301/views   # the restored counts
 ```
+
+### Hive contributor history
+
+Hive keeps only the last 168 hours of contributor tasks and fleet size. So
+the Agentic tab can chart 30 days, the back-end stores each hour it fetches
+in SQLite at `HIVE_HISTORY_DB_PATH` (`/data/hive-history.sqlite` in the pod,
+on the same `hostPath` volume), and forgets hours older than the window. Only
+counts are stored. After a first deploy, or losing the file, the chart starts
+with Hive's 7 days and fills to 30 over the next 23 days; an outage longer than
+7 days leaves a gap that reads as zero. Back it up like the view counts, with
+`hive-history` in place of `views`.
 
 ### Request and process metrics
 

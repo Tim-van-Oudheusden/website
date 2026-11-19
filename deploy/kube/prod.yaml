@@ -61,6 +61,10 @@ spec:
         # pod reaches the host's *:3001 through pasta; nothing is published.
         - name: HIVE_BASE_URL
           value: http://host.containers.internal:3001
+        # Hive's contributor hours (SQLite), kept past the 168 Hive holds so
+        # the Agentic tab can chart 30 days (#1315). Same host volume as views.
+        - name: HIVE_HISTORY_DB_PATH
+          value: /data/hive-history.sqlite
         # Hive's read-only widget token, held only in the host's podman secret
         # hive-widget-token (a Kubernetes Secret with stringData.token; see
         # docs/deploy.md). optional: the pod still starts without the secret;

@@ -5,15 +5,12 @@ import type { PollingApiGetState } from "@/shared/hooks/use-polling-api-get";
 import {
   formatAgo,
   formatClock,
+  formatDaySpan,
   formatDuration,
-  formatHour,
   formatHours,
-  formatHourSpan,
   formatSpan,
   formatUtcDay,
 } from "./hive-metrics-format";
-
-const HOUR_MS = 3_600_000;
 
 /** Governor modes, coolest first: the governor rises with the size of the queue. */
 export const GOVERNOR_MODES: readonly GovernorMode[] = ["idle", "quiet", "busy", "surge"];
@@ -67,16 +64,16 @@ export interface BackendRunsView {
   p95: string | null;
 }
 
-/** The contributor agents connected to this hive: tasks per hour, and runs over the last 30 days. */
+/** The contributor agents connected to this hive: tasks per UTC day, and runs over the last 30 days. */
 export interface ContributorsView {
   tasksTotal: number;
-  /** Contributor agents connected in the latest hour. */
+  /** Contributor agents connected in the latest hour Hive measured. */
   fleet: number;
-  /** Hourly buckets, oldest first; `label` is "Mon 13:00". */
-  hours: { t: string; label: string; tasks: number; fleet: number }[];
-  /** The busiest hour, the earliest on a tie; null when no task was done. */
+  /** UTC days, oldest first; `label` is "Mon 2 Nov", `fleet` the most agents connected in any hour of it. */
+  days: { t: string; label: string; tasks: number; fleet: number }[];
+  /** The busiest day, the earliest on a tie; null when no task was done. */
   peak: { label: string; tasks: number } | null;
-  /** "last week": the span the hourly buckets cover. */
+  /** "last 12 days": the span the days cover. */
   span: string;
   /**
    * `total` is Hive's own count; `outcomes` adds up the backends' counts. Percentiles stay per backend: they are never
@@ -173,22 +170,10 @@ function buildHive(hive: NonNullable<HivePublicMetrics["hive"]>, timeZone: strin
   };
 }
 
-function buildContributors(contributors: NonNullable<HivePublicMetrics["contributors"]>, timeZone: string | null): ContributorsView {
-  const { tasksPerHour, fleetSize } = contributors;
-  // The last bucket is the hour Hive collected the series in; the ones before it step back an hour each.
-  const collected = Date.parse(contributors.collectedAt);
-  const hours = tasksPerHour.map((tasks, index) => {
-    const epochMs = collected - ((tasksPerHour.length - 1 - index) * HOUR_MS);
-
-    return {
-      t: new Date(epochMs).toISOString(),
-      label: formatHour(epochMs, timeZone),
-      tasks,
-      fleet: fleetSize[index] ?? 0,
-    };
-  });
-  const peak = hours.reduce<ContributorsView["peak"]>(
-    (best, hour) => (hour.tasks > (best?.tasks ?? 0) ? { label: hour.label, tasks: hour.tasks } : best),
+function buildContributors(contributors: NonNullable<HivePublicMetrics["contributors"]>): ContributorsView {
+  const days = contributors.days.map((day) => ({ ...day, label: formatUtcDay(day.t) }));
+  const peak = days.reduce<ContributorsView["peak"]>(
+    (best, day) => (day.tasks > (best?.tasks ?? 0) ? { label: day.label, tasks: day.tasks } : best),
     null,
   );
   const backends = contributors.runs.backends.map((backend): BackendRunsView => {
@@ -207,11 +192,11 @@ function buildContributors(contributors: NonNullable<HivePublicMetrics["contribu
   });
 
   return {
-    tasksTotal: tasksPerHour.reduce((sum, tasks) => sum + tasks, 0),
-    fleet: fleetSize.at(-1) ?? 0,
-    hours,
+    tasksTotal: days.reduce((sum, day) => sum + day.tasks, 0),
+    fleet: contributors.fleet,
+    days,
     peak,
-    span: formatHourSpan(hours.length),
+    span: formatDaySpan(days.length),
     runs: {
       total: contributors.runs.total,
       outcomes: {
@@ -264,7 +249,7 @@ export function buildHiveViewModel(poll: MetricsPoll, now: number, timeZone: str
   const metrics = poll.data?.state === "unavailable" ? null : poll.data?.metrics ?? null;
   const parts = metrics ?? { hive: null, contributors: null, repo: null };
   const hive = parts.hive === null ? null : buildHive(parts.hive, timeZone);
-  const contributors = parts.contributors === null ? null : buildContributors(parts.contributors, timeZone);
+  const contributors = parts.contributors === null ? null : buildContributors(parts.contributors);
   const repo = parts.repo === null ? null : buildRepo(parts.repo);
   const hasAnyPart = hive !== null || contributors !== null || repo !== null;
   let fallback: string | null = null;

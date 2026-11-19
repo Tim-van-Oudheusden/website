@@ -4,6 +4,7 @@ import { APP_NAME } from "shared";
 
 import { buildApp } from "./app";
 import { getHiveConfig, getServerConfig } from "./core/server-config";
+import { createContributorHistory } from "./features/hive/contributor-history";
 import { createViewStore } from "./features/views/view-store";
 
 const { host: HOST, port: PORT } = getServerConfig(process.env);
@@ -18,6 +19,7 @@ async function start(): Promise<void> {
     config: getHiveConfig(process.env),
     fetch,
     now: () => new Date(),
+    history: createContributorHistory(process.env["HIVE_HISTORY_DB_PATH"] ?? ":memory:"),
   });
 
   // In the container this process is PID 1, where the kernel ignores signals we

@@ -220,51 +220,28 @@ export function modeChart(hive: HiveWidgetView): PipelineChart {
   };
 }
 
-/** The weekday an hourly label ("Mon 00:30") falls on. */
-function weekday(label: string): string {
-  return label.slice(0, label.indexOf(" "));
-}
-
-/** Contributor tasks as one bar per hour, the peak hour marked; past a day, the axis names where each day starts. */
+/** Contributor tasks as one bar per UTC day, the busiest day marked. */
 export function tasksChart(contributors: ContributorsView): PipelineChart {
-  const { hours, peak, span } = contributors;
-  const days = hours.length > 24;
-
-  // A day starts where the weekday changes from the bar before; the clock reads 00:30 in zones off the whole hour.
-  function startsDay(index: number, label: string): boolean {
-    return index > 0 && weekday(label) !== weekday(hours[index - 1]?.label ?? label);
-  }
+  const { days, peak, span } = contributors;
 
   return {
-    label: `Tasks per hour, ${span}, by contributor agents`,
+    label: `Tasks per day, ${span}, by contributor agents`,
     table: {
-      caption: "Tasks per hour",
-      columns: ["Hour", "Tasks", "Contributor agents"],
-      rows: hours.map((hour) => [hour.label, hour.tasks, hour.fleet]),
+      caption: "Tasks per UTC day",
+      columns: ["Day", "Tasks", "Most contributor agents"],
+      rows: days.map((day) => [day.label, day.tasks, day.fleet]),
     },
     option: (css) => ({
       grid: { ...GRID, top: 14 },
       tooltip: { ...tooltip(css, "axis"), axisPointer: { type: "shadow" } },
-      xAxis: {
-        type: "category",
-        data: hours.map((hour) => hour.label),
-        axisLine: { lineStyle: { color: css("--pl-c-axis") } },
-        axisTick: days ? { interval: startsDay, lineStyle: { color: css("--pl-c-axis") } } : { show: false },
-        axisLabel: {
-          color: css("--pl-c-ink"),
-          fontSize: 11,
-          ...(days
-            ? { interval: startsDay, formatter: weekday }
-            : { hideOverlap: true }),
-        },
-      },
+      xAxis: dayAxis(css, days.map((day) => day.label)),
       yAxis: valueAxis(css),
       series: [
         {
           name: "Tasks",
           type: "bar",
-          barCategoryGap: "20%",
-          data: hours.map((hour) => hour.tasks),
+          barMaxWidth: 16,
+          data: days.map((day) => day.tasks),
           color: css("--pl-c-accent"),
           itemStyle: { borderRadius: [2, 2, 0, 0], shadowBlur: 8, shadowColor: alpha(css("--pl-c-glow"), 0.6) },
           ...(peak === null

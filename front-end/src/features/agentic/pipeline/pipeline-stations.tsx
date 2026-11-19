@@ -84,8 +84,8 @@ function QueueStation({ hive }: { hive: HiveWidgetView | null }): JSX.Element {
 }
 
 function AgentsStation({ hive, contributors }: Pick<HiveViewModel, "hive" | "contributors">): JSX.Element {
-  const tasks = contributors === null || contributors.hours.length === 0 ? null : tasksChart(contributors);
-  // Without hourly buckets the totals below would read a discarded series as measured zeros.
+  const tasks = contributors === null || contributors.days.length === 0 ? null : tasksChart(contributors);
+  // Without any day the totals below would read a discarded series as measured zeros.
   const contributorGauges = contributors !== null && tasks !== null ? contributors : null;
 
   return (
@@ -119,11 +119,11 @@ function AgentsStation({ hive, contributors }: Pick<HiveViewModel, "hive" | "con
                           + `${plural(contributorGauges.fleet, "contributor agent", "contributor agents")} connected`}
                       />
                       <Gauge
-                        label="Peak hour"
+                        label="Peak day"
                         value={contributorGauges.peak === null ? "—" : contributorGauges.peak.tasks}
                         detail={contributorGauges.peak === null
                           ? "no tasks done yet"
-                          : `${plural(contributorGauges.peak.tasks, "task", "tasks")} at ${contributorGauges.peak.label}`}
+                          : `${plural(contributorGauges.peak.tasks, "task", "tasks")} on ${contributorGauges.peak.label}`}
                       />
                     </>
                   )}
@@ -136,13 +136,13 @@ function AgentsStation({ hive, contributors }: Pick<HiveViewModel, "hive" | "con
               {tasks === null
                 ? (
                     <div className="pl-panel pl-panel--empty">
-                      <p className="pl-panel-title">Tasks per hour</p>
-                      <p className="pl-empty">No hourly series from Hive yet.</p>
+                      <p className="pl-panel-title">Tasks per day</p>
+                      <p className="pl-empty">No contributor tasks from Hive yet.</p>
                       <div className="pl-panel-notes"><p>{AGENTIC_COPY.notes.contributors}</p></div>
                     </div>
                   )
                 : (
-                    <ChartPanel title={`Tasks per hour, ${contributors.span}`} chart={tasks} size="tall">
+                    <ChartPanel title={`Tasks per day, ${contributors.span}`} chart={tasks} size="tall">
                       <p>{AGENTIC_COPY.notes.contributors}</p>
                     </ChartPanel>
                   )}

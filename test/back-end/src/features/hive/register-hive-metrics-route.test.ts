@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import type { FastifyInstance } from "fastify";
@@ -9,6 +11,8 @@ import { API_BASE, HIVE_METRICS_STALE_AFTER_MS, ROUTES } from "shared";
 
 import { buildApp } from "../../../../../back-end/src/app";
 import type { HiveConfig } from "../../../../../back-end/src/core/server-config";
+import type { ContributorHistory } from "../../../../../back-end/src/features/hive/contributor-history";
+import { createContributorHistory } from "../../../../../back-end/src/features/hive/contributor-history";
 import { buildHivePublicMetrics } from "../../../../../back-end/src/features/hive/hive-public-metrics";
 import type { FetchLike } from "../../../../../back-end/src/features/hive/hive-upstream";
 import type { HiveMetricsRouteOptions } from "../../../../../back-end/src/features/hive/register-hive-metrics-route";
@@ -46,6 +50,7 @@ const FIXTURE_METRICS = {
     widget: fixture("widget-summary"),
     contributeMetrics: fixture("contribute-metrics"),
     runStats: fixture("run-stats"),
+    storedHours: [],
   }),
   repo: buildRepoPrActivity(fixture("github-pulls"), NOW),
 };
@@ -96,8 +101,9 @@ async function start(
   config: HiveConfig,
   upstream: FakeUpstream,
   clock = { t: NOW.getTime() },
+  history: ContributorHistory = createContributorHistory(":memory:"),
 ): Promise<FastifyInstance> {
-  return startWith({ config, fetch: upstream.fetch, now: () => new Date(clock.t) });
+  return startWith({ config, fetch: upstream.fetch, now: () => new Date(clock.t), history });
 }
 
 async function getMetrics(
@@ -492,6 +498,7 @@ describe("GET /api/hive/metrics failure log", () => {
       config: CONFIGURED,
       fetch: upstream.fetch,
       now: () => NOW,
+      history: createContributorHistory(":memory:"),
     });
 
     const { status, body } = await getMetrics(app);
@@ -541,11 +548,70 @@ describe("GET /api/hive/metrics response", () => {
       now: () => {
         throw new Error("clock broke");
       },
+      history: createContributorHistory(":memory:"),
     });
 
     const { status, body } = await getMetrics(app);
 
     expect(status).toBe(200);
     expect(body).toEqual({ state: "unavailable", fetchedAt: null, metrics: null });
+  });
+});
+
+describe("GET /api/hive/metrics contributor history", () => {
+  /** Hive's contributor series, `tasks` per hour, ending at the hour of `collectedAt`, two agents connected. */
+  function series(collectedAt: string, tasks: number[]): Response {
+    return Response.json({ collected_at: collectedAt, tasks_done: tasks, fleet_size: tasks.map(() => 2) });
+  }
+
+  /** Recorded answers, except Hive's contributor series, read when it is fetched. */
+  function withSeries(current: () => Response): FakeUpstream {
+    return fakeFetch((url) => (url === `${BASE_URL}/api/contribute/metrics` ? current() : recorded(url)));
+  }
+
+  const midnightOn: [string, number[]] = ["2026-11-02T05:00:00Z", [1, 1, 1, 1, 1, 1]];
+  const twoDaysLater: [string, number[]] = ["2026-11-04T01:00:00Z", [2, 2]];
+
+  test("keeps counting the hours Hive no longer sends, one bar per UTC day", async () => {
+    let current = midnightOn;
+    const clock = { t: NOW.getTime() };
+    const server = await start(CONFIGURED, withSeries(() => series(...current)), clock);
+
+    await getMetrics(server);
+    current = twoDaysLater;
+    clock.t += 180_000;
+
+    const { body } = await getMetrics(server);
+
+    expect(body.metrics?.contributors?.days).toEqual([
+      { t: "2026-11-02T00:00:00.000Z", tasks: 6, fleet: 2 },
+      { t: "2026-11-03T00:00:00.000Z", tasks: 0, fleet: 0 },
+      { t: "2026-11-04T00:00:00.000Z", tasks: 4, fleet: 2 },
+    ]);
+  });
+
+  test("keeps the stored hours across a restart", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "hive-history-"));
+    const path = join(dir, "hive-history.sqlite");
+
+    try {
+      const first = withSeries(() => series(...midnightOn));
+      const second = withSeries(() => series(...twoDaysLater));
+
+      await getMetrics(await start(CONFIGURED, first, undefined, createContributorHistory(path)));
+      await app?.close();
+
+      const { body } = await getMetrics(await start(CONFIGURED, second, undefined, createContributorHistory(path)));
+
+      expect(body.metrics?.contributors?.days.map(({ t, tasks }) => [t.slice(0, 10), tasks])).toEqual([
+        ["2026-11-02", 6],
+        ["2026-11-03", 0],
+        ["2026-11-04", 4],
+      ]);
+    } finally {
+      await app?.close();
+      app = undefined;
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 });

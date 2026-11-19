@@ -43,13 +43,6 @@ export function formatUtcDay(iso: string): string {
     .replace(",", "");
 }
 
-/** "Mon 13:00" for an hourly bucket. */
-export function formatHour(epochMs: number, timeZone: string | null): string {
-  const options: Intl.DateTimeFormatOptions = { weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" };
-
-  return new Intl.DateTimeFormat("en-GB", { ...options, timeZone: timeZone ?? undefined }).format(epochMs).replace(",", "");
-}
-
 /** A run time: "90 s", "6 min", "1.5 h". */
 export function formatDuration(seconds: number): string {
   if (seconds < 120) {
@@ -76,9 +69,9 @@ function lastCount(count: number, unit: string): string {
   return count === 1 ? `last ${unit}` : `last ${String(count)} ${unit}s`;
 }
 
-/** The span of `count` hourly buckets: "last hour", "last 23 hours", or "last week" for a week of them. */
-export function formatHourSpan(count: number): string {
-  return count === 7 * 24 ? "last week" : lastCount(count, "hour");
+/** The span of `count` UTC days ending today: "today", or "last 12 days". */
+export function formatDaySpan(count: number): string {
+  return count === 1 ? "today" : lastCount(count, "day");
 }
 
 /**

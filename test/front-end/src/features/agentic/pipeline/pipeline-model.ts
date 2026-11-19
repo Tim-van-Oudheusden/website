@@ -5,7 +5,7 @@ import { buildHiveViewModel } from "../../../../../../front-end/src/features/age
 
 export const NOW = Date.parse("2026-11-02T14:15:00.000Z");
 
-/** Live metrics with every part present: two days of hourly tasks, two backends, one week of PRs. */
+/** Live metrics with every part present: three days of contributor tasks, two backends, two days of PRs. */
 export function liveMetrics(overrides: Partial<HivePublicMetrics> = {}): HivePublicMetrics {
   return {
     online: true,
@@ -23,6 +23,12 @@ export function liveMetrics(overrides: Partial<HivePublicMetrics> = {}): HivePub
       collectedAt: "2026-11-02T01:00:00.000Z",
       tasksPerHour: [1, 0, 4],
       fleetSize: [1, 1, 2],
+      fleet: 2,
+      days: [
+        { t: "2026-10-31T00:00:00.000Z", tasks: 1, fleet: 1 },
+        { t: "2026-11-01T00:00:00.000Z", tasks: 0, fleet: 1 },
+        { t: "2026-11-02T00:00:00.000Z", tasks: 4, fleet: 2 },
+      ],
       runs: {
         total: 80,
         backends: [

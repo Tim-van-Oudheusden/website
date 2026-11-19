@@ -18,6 +18,7 @@ function fixtureUpstream(): HiveUpstreamPayloads {
     widget: fixture("widget-summary"),
     contributeMetrics: fixture("contribute-metrics"),
     runStats: fixture("run-stats"),
+    storedHours: [],
   };
 }
 
@@ -82,6 +83,11 @@ describe("buildHivePublicMetrics allowlist", () => {
         ".contributors.collectedAt",
         ".contributors.tasksPerHour",
         ".contributors.fleetSize",
+        ".contributors.fleet",
+        ".contributors.days",
+        ".contributors.days[].t",
+        ".contributors.days[].tasks",
+        ".contributors.days[].fleet",
         ".contributors.runs",
         ".contributors.runs.total",
         ".contributors.runs.backends",
@@ -217,13 +223,15 @@ describe("buildHivePublicMetrics contributors", () => {
       ],
       models: [{ model: "CANARY-MODEL", runs: 15 }],
       total: 15,
-      window_days: 7,
+      window_days: 30,
     };
 
     expect(buildHivePublicMetrics({ ...fixtureUpstream(), runStats }).contributors).toEqual({
       collectedAt: "2026-11-02T13:00:00.000Z",
       tasksPerHour: [1, 1, 1, 0, 1, 0],
       fleetSize: [1, 1, 1, 1, 1, 1],
+      fleet: 1,
+      days: [{ t: "2026-11-02T00:00:00.000Z", tasks: 4, fleet: 1 }],
       runs: {
         total: 15,
         backends: [
@@ -232,6 +240,34 @@ describe("buildHivePublicMetrics contributors", () => {
         ],
       },
     });
+  });
+
+  test("sums stored hours per UTC day with each day's peak fleet, from the first whole day, zero for missing hours", () => {
+    const storedHours = [
+      { hour: "2026-10-30T22:00:00.000Z", tasks: 5, fleet: 9 },
+      { hour: "2026-10-31T00:00:00.000Z", tasks: 2, fleet: 1 },
+      { hour: "2026-10-31T13:00:00.000Z", tasks: 3, fleet: 4 },
+      { hour: "2026-11-02T08:00:00.000Z", tasks: 50, fleet: 50 },
+    ];
+
+    // Hive's own series (2026-11-02 08:00–13:00) replaces the stored hours it covers.
+    expect(buildHivePublicMetrics({ ...fixtureUpstream(), storedHours }).contributors?.days).toEqual([
+      { t: "2026-10-31T00:00:00.000Z", tasks: 5, fleet: 4 },
+      { t: "2026-11-01T00:00:00.000Z", tasks: 0, fleet: 0 },
+      { t: "2026-11-02T00:00:00.000Z", tasks: 4, fleet: 1 },
+    ]);
+  });
+
+  test("keeps at most the 30 UTC days ending on the collection day", () => {
+    const storedHours = Array.from({ length: 40 }, (_, index) => ({
+      hour: new Date(Date.UTC(2026, 8, 24 + index)).toISOString(),
+      tasks: 1,
+      fleet: 1,
+    }));
+    const days = buildHivePublicMetrics({ ...fixtureUpstream(), storedHours }).contributors?.days;
+
+    expect(days).toHaveLength(30);
+    expect(days?.[0]).toEqual({ t: "2026-10-04T00:00:00.000Z", tasks: 1, fleet: 1 });
   });
 
   test("is null when either contributor endpoint is unavailable, while hive still builds", () => {
@@ -281,10 +317,12 @@ describe("buildHivePublicMetrics malformed upstream values", () => {
 
     const unaligned = contributors({ ...metrics, fleet_size: [1, 2] });
 
+    expect(unaligned?.days).toEqual([]);
     expect(unaligned?.tasksPerHour).toEqual([]);
     expect(unaligned?.fleetSize).toEqual([]);
-    expect(contributors({ ...metrics, tasks_done: [1, Number.NaN, 1, 0, 1, 0] })?.tasksPerHour).toEqual([]);
-    expect(contributors({ ...metrics, fleet_size: undefined })?.fleetSize).toEqual([]);
+    expect(unaligned?.fleet).toBe(0);
+    expect(contributors({ ...metrics, tasks_done: [1, Number.NaN, 1, 0, 1, 0] })?.days).toEqual([]);
+    expect(contributors({ ...metrics, fleet_size: undefined })?.days).toEqual([]);
 
     expect(contributors({ ...metrics, collected_at: "yesterday" })).toBeNull();
     expect(contributors({ ...metrics, collected_at: 1793628805040 })).toBeNull();
@@ -309,9 +347,9 @@ describe("buildHivePublicMetrics malformed upstream values", () => {
 
   test("never throws for unusable payloads", () => {
     for (const junk of [undefined, null, 0, "x", [], {}, [[]]]) {
-      expect(
-        buildHivePublicMetrics({ health: junk, widget: junk, contributeMetrics: junk, runStats: junk }),
-      ).toEqual({ online: false, hive: null, contributors: null });
+      const upstream = { health: junk, widget: junk, contributeMetrics: junk, runStats: junk, storedHours: [] };
+
+      expect(buildHivePublicMetrics(upstream)).toEqual({ online: false, hive: null, contributors: null });
     }
   });
 });
