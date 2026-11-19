@@ -367,3 +367,40 @@ describe("prod pod Hive metrics config", () => {
     expect(published).toEqual(["front-end:8300", "back-end:8301"]);
   });
 });
+
+describe("prod pod SQLite stores", () => {
+  interface Container {
+    name: string;
+    env?: { name: string; value?: string }[];
+    volumeMounts?: { name: string; mountPath: string }[];
+  }
+
+  interface Pod {
+    spec: { containers: Container[]; volumes?: { name: string; hostPath?: { path: string } }[] };
+  }
+
+  /** Where the back-end's hostPath volumes are mounted: the only places a file outlives the pod. */
+  function persistedDirs(pod: Pod, container: Container): string[] {
+    const hostPathVolumes = new Set(
+      (pod.spec.volumes ?? []).filter((v) => v.hostPath !== undefined).map((v) => v.name),
+    );
+
+    return (container.volumeMounts ?? []).filter((m) => hostPathVolumes.has(m.name)).map((m) => m.mountPath);
+  }
+
+  // Why: the back-end falls back to an in-memory database when either variable
+  // is missing, so a dropped or mis-pathed entry would silently reset view
+  // counts and the Agentic tab's 30-day contributor history on every replay.
+  test.each(["VIEWS_DB_PATH", "HIVE_HISTORY_DB_PATH"])(
+    "the back-end keeps %s on a hostPath volume",
+    (name) => {
+      const pod = Bun.YAML.parse(readDeploy("deploy/kube/prod.yaml")) as Pod;
+      const backEnd = pod.spec.containers.find((c) => c.name === "back-end");
+      const path = backEnd?.env?.find((e) => e.name === name)?.value;
+      const dirs = backEnd === undefined ? [] : persistedDirs(pod, backEnd);
+
+      expect(path).toBeString();
+      expect(dirs.some((dir) => path?.startsWith(`${dir}/`))).toBe(true);
+    },
+  );
+});
