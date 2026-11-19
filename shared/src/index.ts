@@ -295,12 +295,15 @@ export interface HivePublicMetrics {
   /** From /api/contribute/*; null when unavailable. */
   contributors: {
     collectedAt: string;
+    /** Contributor agents connected in the latest hour Hive measured; 0 without a usable hourly series. */
+    fleet: number;
     /**
-     * Hourly buckets, oldest first, as many as Hive sends (168 today). Same length as `fleetSize`; both are empty
-     * when either series is missing or malformed, or their lengths differ.
+     * UTC days, oldest first, the last one the day Hive collected in: tasks done, summed, and the most contributor
+     * agents connected in any hour. Built from the hours the back-end has stored, since Hive keeps only the last 168:
+     * from the first whole day stored, at most `HIVE_METRICS_WINDOW_DAYS`. A day without stored hours counts zero.
+     * Empty without any usable hour.
      */
-    tasksPerHour: number[];
-    fleetSize: number[];
+    days: { t: string; tasks: number; fleet: number }[];
     /** Agent runs over the last `HIVE_METRICS_WINDOW_DAYS` days. */
     runs: {
       total: number;

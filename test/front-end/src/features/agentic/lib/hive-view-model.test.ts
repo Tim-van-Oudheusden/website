@@ -107,8 +107,12 @@ describe("buildHiveViewModel hive", () => {
 describe("buildHiveViewModel contributors", () => {
   const contributors: NonNullable<HivePublicMetrics["contributors"]> = {
     collectedAt: "2026-11-02T01:00:00.000Z",
-    tasksPerHour: [1, 0, 2],
-    fleetSize: [1, 1, 2],
+    fleet: 2,
+    days: [
+      { t: "2026-10-31T00:00:00.000Z", tasks: 1, fleet: 1 },
+      { t: "2026-11-01T00:00:00.000Z", tasks: 0, fleet: 1 },
+      { t: "2026-11-02T00:00:00.000Z", tasks: 2, fleet: 3 },
+    ],
     runs: {
       total: 80,
       backends: [
@@ -118,22 +122,31 @@ describe("buildHiveViewModel contributors", () => {
     },
   };
 
-  test("dates each hourly bucket back from the collection hour, and names the span the buckets cover", () => {
+  test("labels each UTC day, finds the busiest one, and names the span the days cover", () => {
     const view = buildHiveViewModel(poll(live(metrics({ contributors }))), NOW, "UTC").contributors;
 
     expect(view?.tasksTotal).toBe(3);
     expect(view?.fleet).toBe(2);
-    expect(view?.hours.map((hour) => hour.label)).toEqual(["Sun 23:00", "Mon 00:00", "Mon 01:00"]);
-    expect(view?.peak).toEqual({ label: "Mon 01:00", tasks: 2 });
-    expect(view?.span).toBe("last 3 hours");
+
+    expect(view?.days.map((day) => [day.label, day.tasks, day.fleet])).toEqual([
+      ["Sat 31 Oct", 1, 1],
+      ["Sun 1 Nov", 0, 1],
+      ["Mon 2 Nov", 2, 3],
+    ]);
+
+    expect(view?.peak).toEqual({ label: "Mon 2 Nov", tasks: 2 });
+    expect(view?.span).toBe("last 3 days");
   });
 
-  test.each([[168, "last week"], [1, "last hour"]] as const)("calls %i hourly buckets the %s", (hours, span) => {
-    const tasksPerHour = Array<number>(hours).fill(0);
-    const week = { ...contributors, tasksPerHour, fleetSize: tasksPerHour.map(() => 1) };
-    const view = buildHiveViewModel(poll(live(metrics({ contributors: week }))), NOW, "UTC").contributors;
+  test.each([[30, "last 30 days"], [1, "today"]] as const)("calls %i days the %s", (count, span) => {
+    const days = Array.from({ length: count }, (_, index) => ({
+      t: new Date(Date.UTC(2026, 9, 4 + index)).toISOString(),
+      tasks: 0,
+      fleet: 1,
+    }));
+    const view = buildHiveViewModel(poll(live(metrics({ contributors: { ...contributors, days } }))), NOW, "UTC");
 
-    expect(view?.span).toBe(span);
+    expect(view.contributors?.span).toBe(span);
   });
 
   test("rates runs per backend with its own percentiles, and adds up only the counts across backends", () => {

@@ -198,9 +198,13 @@ Sources, all GET requests to fixed URLs with no visitor input:
   (`HIVE_WIDGET_TOKEN`), which authenticates that one route and nothing else.
 - **Anonymous Hive endpoints** — `/api/health` (online or not),
   `/api/contribute/metrics` (contributor-agent tasks done per hour and fleet
-  size; Hive keeps only the last 168 hours) and
-  `/api/contribute/run-stats?days=30` (runs per backend: completed, failed,
-  abandoned, p50 and p95 run time, 30 days).
+  size) and `/api/contribute/run-stats?days=30` (runs per backend: completed,
+  failed, abandoned, p50 and p95 run time, 30 days). Hive keeps only the last
+  168 contributor hours, so the back-end stores each hour it fetches
+  (`HIVE_HISTORY_DB_PATH`, see
+  [`docs/deploy.md`](../deploy.md#hive-contributor-history)) and serves them
+  as up to 30 UTC days: tasks summed, fleet size the day's peak. It starts from
+  Hive's 7 days and reaches 30 about 23 days after the history starts.
 - **This repo's public GitHub PR list** — PRs opened, merged and closed
   unmerged per UTC day over 30 days, median and p90 time to merge, and merged
   PRs per source. The source is decided by the same rule as the
@@ -236,7 +240,7 @@ widget token only the Hive part is blank.
 In the browser, one view model
 (`front-end/src/features/agentic/lib/hive-view-model.ts`) derives and formats
 everything the page shows from the response: totals, shares, the span the
-hourly tasks cover and the status line. Hive's widget repeats each governor
+contributor days cover and the status line. Hive's widget repeats each governor
 evaluation in its history; the view model keeps one point per timestamp.
 
 Deliberately excluded: the builder copies allowlisted counts, durations, modes

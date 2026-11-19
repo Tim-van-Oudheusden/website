@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
 
-import { buildHiveViewModel } from "../../../../../../front-end/src/features/agentic/lib/hive-view-model";
 import {
   authorsChart,
   modeChart,
@@ -12,7 +11,7 @@ import {
 } from "../../../../../../front-end/src/features/agentic/pipeline/pipeline-charts";
 import type { PipelineChart } from "../../../../../../front-end/src/features/agentic/pipeline/pipeline-charts";
 
-import { liveMetrics, liveModel, NOW } from "./pipeline-model";
+import { liveMetrics, liveModel } from "./pipeline-model";
 
 function css(): string {
   return "#100f0f";
@@ -50,99 +49,23 @@ describe("pipeline charts", () => {
     expect(queueChart(hive).table.caption).toBe("Queue, last 2 hours");
   });
 
-  test("draw one bar per hour and mark the busiest one", () => {
+  test("draw one bar per day and mark the busiest one", () => {
     const [tasks] = seriesOf(tasksChart(contributors));
 
     expect(tasks?.type).toBe("bar");
     expect(tasks?.data).toEqual([1, 0, 4]);
     expect(tasks?.markPoint?.data).toEqual([{ type: "max", name: "Peak" }]);
-    expect(tasksChart(contributors).label).toBe("Tasks per hour, last 3 hours, by contributor agents");
-  });
-
-  test("label a span longer than a day only where each day starts, by its weekday", () => {
-    const twoDays = liveModel({
-      contributors: {
-        collectedAt: "2026-11-02T01:00:00.000Z",
-        tasksPerHour: Array<number>(48).fill(1),
-        fleetSize: Array<number>(48).fill(1),
-        runs: { total: 0, backends: [] },
-      },
-    }).contributors!;
-    const xAxis = tasksChart(twoDays).option(css).xAxis as {
-      data: string[];
-      axisLabel: { interval: (index: number, value: string) => boolean; formatter: (value: string) => string };
-    };
-    const shown = xAxis.data.filter((label, index) => xAxis.axisLabel.interval(index, label));
-
-    expect(shown).toEqual(["Sun 00:00", "Mon 00:00"]);
-    expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual(["Sun", "Mon"]);
-  });
-
-  test("label and tick where each day starts in a zone whose offset is not a whole hour", () => {
-    const twoDays = liveMetrics({
-      contributors: {
-        collectedAt: "2026-11-02T01:00:00.000Z",
-        tasksPerHour: Array<number>(48).fill(1),
-        fleetSize: Array<number>(48).fill(1),
-        runs: { total: 0, backends: [] },
-      },
-    });
-    const { contributors: kolkata } = buildHiveViewModel(
-      { status: "success", data: { state: "live", fetchedAt: "2026-11-02T14:14:20.000Z", metrics: twoDays }, error: null, stale: false },
-      NOW,
-      "Asia/Kolkata",
-    );
-    const xAxis = tasksChart(kolkata!).option(css).xAxis as {
-      data: string[];
-      axisTick: { interval: (index: number, value: string) => boolean };
-      axisLabel: { interval: (index: number, value: string) => boolean; formatter: (value: string) => string };
-    };
-    const shown = xAxis.data.filter((label, index) => xAxis.axisLabel.interval(index, label));
-    const ticked = xAxis.data.filter((label, index) => xAxis.axisTick.interval(index, label));
-
-    expect(shown).toEqual(["Sun 00:30", "Mon 00:30"]);
-    expect(ticked).toEqual(shown);
-    expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual(["Sun", "Mon"]);
-  });
-
-  test("label the day whose midnight a daylight saving change skips", () => {
-    // Havana goes from 00:00 to 01:00 on Sunday 2026-03-08. The first bucket is Thu 23:00, so the second opens a day.
-    const week = liveMetrics({
-      contributors: {
-        collectedAt: "2026-03-13T03:00:00.000Z",
-        tasksPerHour: Array<number>(168).fill(1),
-        fleetSize: Array<number>(168).fill(1),
-        runs: { total: 0, backends: [] },
-      },
-    });
-    const { contributors: havana } = buildHiveViewModel(
-      { status: "success", data: { state: "live", fetchedAt: "2026-03-13T03:00:20.000Z", metrics: week }, error: null, stale: false },
-      NOW,
-      "America/Havana",
-    );
-    const { data, axisLabel } = tasksChart(havana!).option(css).xAxis as {
-      data: string[];
-      axisLabel: { interval: (index: number, value: string) => boolean };
-    };
-
-    expect(data.filter((label, index) => axisLabel.interval(index, label))).toEqual([
-      "Fri 00:00",
-      "Sat 00:00",
-      "Sun 01:00",
-      "Mon 00:00",
-      "Tue 00:00",
-      "Wed 00:00",
-      "Thu 00:00",
-    ]);
+    expect(tasksChart(contributors).label).toBe("Tasks per day, last 3 days, by contributor agents");
   });
 
   test("leave out the peak mark when no task was done", () => {
     const quiet = liveModel({
       contributors: {
-        collectedAt: "2026-11-02T01:00:00.000Z",
-        tasksPerHour: [0, 0],
-        fleetSize: [1, 1],
-        runs: { total: 0, backends: [] },
+        ...liveMetrics().contributors!,
+        days: [
+          { t: "2026-11-01T00:00:00.000Z", tasks: 0, fleet: 1 },
+          { t: "2026-11-02T00:00:00.000Z", tasks: 0, fleet: 1 },
+        ],
       },
     });
 
@@ -178,18 +101,19 @@ describe("pipeline charts", () => {
     ]);
   });
 
-  test("label and tick 30 days of PRs once a week, back from today, by date", () => {
+  test("label and tick 30 days once a week, back from today, by date", () => {
     const dayStarts = Array.from({ length: 30 }, (_, index) => new Date(Date.UTC(2026, 9, 4 + index)).toISOString());
     const month = liveModel({
+      contributors: { ...liveMetrics().contributors!, days: dayStarts.map((t) => ({ t, tasks: 1, fleet: 1 })) },
       repo: {
         ...liveMetrics().repo!,
         from: "2026-10-04T00:00:00.000Z",
         days: dayStarts.map((t) => ({ t, opened: 1, merged: 1, closedUnmerged: 0 })),
         mergedBySource: dayStarts.map((t) => ({ t, hive: 1, claudeCode: 0, dependabot: 0, other: 0 })),
       },
-    }).repo!;
+    });
 
-    for (const chart of [pullRequestsChart(month), authorsChart(month)]) {
+    for (const chart of [pullRequestsChart(month.repo!), authorsChart(month.repo!), tasksChart(month.contributors!)]) {
       const xAxis = chart.option(css).xAxis as {
         data: string[];
         axisTick: { interval: (index: number, value: string) => boolean };

@@ -55,7 +55,7 @@ describe("PipelineView", () => {
     const agents = /<li class="pl-station" aria-labelledby="pl-station-2"[\s\S]*?<\/li>/.exec(html)?.[0] ?? "";
     const titles = [...agents.matchAll(/<figcaption class="pl-panel-title">([^<]*)</g)].map((match) => match[1]);
 
-    expect(titles).toEqual(["Tasks per hour, last 3 hours"]);
+    expect(titles).toEqual(["Tasks per day, last 3 days"]);
   });
 
   test("announces only the status word, and dates the update it describes", () => {
@@ -129,14 +129,14 @@ describe("PipelineView", () => {
   });
 
   describe("when Hive's series were discarded as malformed", () => {
-    function withContributors(patch: { runs?: Partial<NonNullable<HivePublicMetrics["contributors"]>["runs"]>; blankHours?: boolean }): string {
+    function withContributors(patch: { runs?: Partial<NonNullable<HivePublicMetrics["contributors"]>["runs"]>; blankDays?: boolean }): string {
       const contributors = liveMetrics().contributors!;
 
       return textOf(render(liveModel({
         contributors: {
           ...contributors,
-          tasksPerHour: patch.blankHours === true ? [] : contributors.tasksPerHour,
-          fleetSize: patch.blankHours === true ? [] : contributors.fleetSize,
+          fleet: patch.blankDays === true ? 0 : contributors.fleet,
+          days: patch.blankDays === true ? [] : contributors.days,
           runs: { ...contributors.runs, ...patch.runs },
         },
       })));
@@ -158,33 +158,34 @@ describe("PipelineView", () => {
       expect(text).not.toContain(AGENTIC_COPY.notes.runsNoBreakdown);
     });
 
-    test("draws no contributor gauges for an empty hourly series, and keeps the empty-series panel", () => {
-      const text = withContributors({ blankHours: true });
+    test("draws no contributor gauges without any day of tasks, and keeps the empty panel", () => {
+      const text = withContributors({ blankDays: true });
 
       expect(text).not.toContain("Contributor tasks");
-      expect(text).not.toContain("Peak hour");
+      expect(text).not.toContain("Peak day");
       expect(text).not.toContain("0 contributor agents connected");
-      expect(text).toContain("No hourly series from Hive yet.");
+      expect(text).toContain("No contributor tasks from Hive yet.");
       expect(text).toContain("Agents running 14 / 16");
     });
 
-    test("emits no empty gauge list in the Agents station when neither Hive nor the hours are there", () => {
+    test("emits no empty gauge list in the Agents station when neither Hive nor the days are there", () => {
       const contributors = liveMetrics().contributors!;
       const html = render(liveModel({
         hive: null,
-        contributors: { ...contributors, tasksPerHour: [], fleetSize: [] },
+        contributors: { ...contributors, fleet: 0, days: [] },
       }));
       const agents = /<li class="pl-station" aria-labelledby="pl-station-2"[\s\S]*?<\/li>/.exec(html)?.[0] ?? "";
 
-      expect(agents).toContain("No hourly series from Hive yet.");
+      expect(agents).toContain("No contributor tasks from Hive yet.");
       expect(agents).not.toContain("pl-gauges");
     });
 
-    test("draws both contributor gauges when the hourly series is present", () => {
+    test("draws both contributor gauges when there are days of tasks", () => {
       const text = textOf(render(liveModel()));
 
       expect(text).toContain("Contributor tasks 5");
-      expect(text).toContain("Peak hour 4");
+      expect(text).toContain("Peak day 4");
+      expect(text).toContain("4 tasks on Mon 2 Nov");
     });
   });
 });

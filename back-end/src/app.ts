@@ -13,6 +13,7 @@ import {
 } from "./features/content/content-routes";
 import { registerHealthRoute } from "./features/health/register-health-route";
 import { registerHelloRoute } from "./features/hello/register-hello-route";
+import { createContributorHistory } from "./features/hive/contributor-history";
 import type { HiveMetricsRouteOptions } from "./features/hive/register-hive-metrics-route";
 import { registerHiveMetricsRoute } from "./features/hive/register-hive-metrics-route";
 import { registerPageRoutes } from "./features/pages/page-routes";
@@ -28,21 +29,25 @@ interface BuildAppOptions {
 }
 
 /** No Hive configured, outside production: the metrics route serves its development fixture. */
-const DEVELOPMENT_HIVE: HiveMetricsRouteOptions = {
-  config: { baseUrl: null, widgetToken: null, production: false },
-  fetch,
-  now: () => new Date(),
-};
+function developmentHive(): HiveMetricsRouteOptions {
+  return {
+    config: { baseUrl: null, widgetToken: null, production: false },
+    fetch,
+    now: () => new Date(),
+    history: createContributorHistory(":memory:"),
+  };
+}
 
 /**
  * @param viewStore Per-slug (article and project) view counts; defaults to an in-memory store
  *   (not persisted). The app closes it on shutdown.
- * @param hive Hive metrics upstream settings, network and clock; defaults to no Hive, outside production.
+ * @param hive Hive metrics upstream settings, network, clock and contributor history; defaults to no Hive, outside
+ *   production, with an in-memory history.
  */
 export async function buildApp(
   options: BuildAppOptions,
   viewStore: ViewStore = createViewStore(":memory:"),
-  hive: HiveMetricsRouteOptions = DEVELOPMENT_HIVE,
+  hive: HiveMetricsRouteOptions = developmentHive(),
 ): Promise<FastifyInstance> {
   const app = Fastify({
     logger: options.logger,
