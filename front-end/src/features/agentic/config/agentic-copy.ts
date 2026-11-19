@@ -1,6 +1,6 @@
 /** The words of the Agentic page, kept apart from its layout; the home teaser reuses `flow`. */
 
-import { AGENTIC_INTRO } from "shared";
+import { AGENTIC_INTRO, HIVE_METRICS_WINDOW_DAYS } from "shared";
 
 const REPO_URL = "https://github.com/Tim-van-Oudheusden/website";
 
@@ -23,6 +23,8 @@ export const AGENTIC_COPY = {
   hiveHeading: "The hive, live",
   hiveIntro: "Hive is the agent system that files, claims and lands work in this repo. These numbers come from the "
     + "instance running on this server and from this repo's public pull requests.",
+  /** The span the pull request and run numbers cover, as in "merged in 30 days". */
+  window: `${String(HIVE_METRICS_WINDOW_DAYS)} days`,
   /** One line in place of a part whose upstream is missing. */
   missing: {
     hive: "Live queue data is not connected right now.",

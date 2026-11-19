@@ -52,40 +52,44 @@ describe("buildRepoPrActivity allowlist", () => {
   });
 });
 
+interface Day { t: string; opened: number; merged: number; closedUnmerged: number }
+
+/** The days with any count, as `[day, opened, merged, closedUnmerged]`. */
+function busyDays(days: Day[] | undefined): unknown[] {
+  return (days ?? [])
+    .filter(({ opened, merged, closedUnmerged }) => opened + merged + closedUnmerged > 0)
+    .map(({ t, opened, merged, closedUnmerged }) => [t.slice(0, 10), opened, merged, closedUnmerged]);
+}
+
 describe("buildRepoPrActivity days", () => {
-  test("counts opened, merged and closed-unmerged PRs per UTC day over the 7 days ending today, oldest first", () => {
+  test("counts opened, merged and closed-unmerged PRs per UTC day over the 30 days ending today, oldest first", () => {
     const repo = buildRepoPrActivity(PULLS, NOW);
 
-    expect(repo?.from).toBe("2026-10-27T00:00:00.000Z");
+    expect(repo?.from).toBe("2026-10-04T00:00:00.000Z");
     expect(repo?.to).toBe("2026-11-02T15:00:00.000Z");
+    expect(repo?.days).toHaveLength(30);
+    expect(repo?.days[0]?.t).toBe("2026-10-04T00:00:00.000Z");
+    expect(repo?.days.at(-1)?.t).toBe("2026-11-02T00:00:00.000Z");
 
-    expect(repo?.days).toEqual([
-      { t: "2026-10-27T00:00:00.000Z", opened: 0, merged: 0, closedUnmerged: 0 },
-      { t: "2026-10-28T00:00:00.000Z", opened: 1, merged: 1, closedUnmerged: 0 },
-      { t: "2026-10-29T00:00:00.000Z", opened: 1, merged: 0, closedUnmerged: 1 },
-      { t: "2026-10-30T00:00:00.000Z", opened: 1, merged: 1, closedUnmerged: 0 },
-      { t: "2026-10-31T00:00:00.000Z", opened: 0, merged: 0, closedUnmerged: 0 },
-      { t: "2026-11-01T00:00:00.000Z", opened: 2, merged: 0, closedUnmerged: 0 },
-      { t: "2026-11-02T00:00:00.000Z", opened: 1, merged: 2, closedUnmerged: 0 },
+    expect(busyDays(repo?.days)).toEqual([
+      ["2026-10-21", 1, 1, 0],
+      ["2026-10-28", 1, 1, 0],
+      ["2026-10-29", 1, 0, 1],
+      ["2026-10-30", 1, 1, 0],
+      ["2026-11-01", 2, 0, 0],
+      ["2026-11-02", 1, 2, 0],
     ]);
   });
 
   test("ignores events outside the window, counting each event on its own day", () => {
     const repo = buildRepoPrActivity([
-      pr({ created_at: "2026-10-26T23:59:59Z", closed_at: "2026-10-27T00:00:00Z", merged_at: "2026-10-27T00:00:00Z" }),
-      pr({ created_at: "2026-10-20T08:00:00Z", closed_at: "2026-10-26T23:59:59Z", merged_at: null }),
+      pr({ created_at: "2026-10-03T23:59:59Z", closed_at: "2026-10-04T00:00:00Z", merged_at: "2026-10-04T00:00:00Z" }),
+      pr({ created_at: "2026-09-20T08:00:00Z", closed_at: "2026-10-03T23:59:59Z", merged_at: null }),
       pr({ created_at: "2026-11-03T00:00:00Z", closed_at: "2026-11-03T01:00:00Z", merged_at: null }),
     ], NOW);
 
-    expect(repo?.days.map(({ opened, merged, closedUnmerged }) => [opened, merged, closedUnmerged])).toEqual([
-      [0, 1, 0],
-      [0, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0],
-    ]);
+    expect(repo?.days).toHaveLength(30);
+    expect(busyDays(repo?.days)).toEqual([["2026-10-04", 0, 1, 0]]);
   });
 });
 
@@ -93,13 +97,14 @@ describe("buildRepoPrActivity mergedBySource", () => {
   test("splits each day's merged PRs by the repo's attribution rule", () => {
     const repo = buildRepoPrActivity(PULLS, NOW);
 
-    expect(repo?.mergedBySource).toEqual([
-      { t: "2026-10-27T00:00:00.000Z", hive: 0, claudeCode: 0, dependabot: 0, other: 0 },
+    expect(repo?.mergedBySource).toHaveLength(30);
+
+    const merges = repo?.mergedBySource.filter((day) => day.hive + day.claudeCode + day.dependabot + day.other > 0);
+
+    expect(merges).toEqual([
+      { t: "2026-10-21T00:00:00.000Z", hive: 0, claudeCode: 0, dependabot: 1, other: 0 },
       { t: "2026-10-28T00:00:00.000Z", hive: 0, claudeCode: 0, dependabot: 1, other: 0 },
-      { t: "2026-10-29T00:00:00.000Z", hive: 0, claudeCode: 0, dependabot: 0, other: 0 },
       { t: "2026-10-30T00:00:00.000Z", hive: 0, claudeCode: 1, dependabot: 0, other: 0 },
-      { t: "2026-10-31T00:00:00.000Z", hive: 0, claudeCode: 0, dependabot: 0, other: 0 },
-      { t: "2026-11-01T00:00:00.000Z", hive: 0, claudeCode: 0, dependabot: 0, other: 0 },
       { t: "2026-11-02T00:00:00.000Z", hive: 1, claudeCode: 0, dependabot: 0, other: 1 },
     ]);
   });
@@ -115,7 +120,7 @@ describe("buildRepoPrActivity hours to merge", () => {
         closed_at: "2026-11-01T12:00:00Z",
         merged_at: "2026-11-01T12:00:00Z",
       })),
-      pr({ created_at: "2026-10-20T00:00:00Z", closed_at: "2026-10-26T12:00:00Z", merged_at: "2026-10-26T12:00:00Z" }),
+      pr({ created_at: "2026-09-20T00:00:00Z", closed_at: "2026-10-03T12:00:00Z", merged_at: "2026-10-03T12:00:00Z" }),
     ], NOW);
 
     expect(repo?.medianHoursToMerge).toBe(5);
@@ -125,7 +130,7 @@ describe("buildRepoPrActivity hours to merge", () => {
   test("is null when nothing merged in the window", () => {
     const repo = buildRepoPrActivity([
       pr({ created_at: "2026-11-01T08:00:00Z", closed_at: "2026-11-01T09:00:00Z", merged_at: null }),
-      pr({ created_at: "2026-10-20T00:00:00Z", closed_at: "2026-10-26T12:00:00Z", merged_at: "2026-10-26T12:00:00Z" }),
+      pr({ created_at: "2026-09-20T00:00:00Z", closed_at: "2026-10-03T12:00:00Z", merged_at: "2026-10-03T12:00:00Z" }),
     ], NOW);
 
     expect(repo?.medianHoursToMerge).toBeNull();
@@ -173,9 +178,11 @@ describe("needsNextPage", () => {
     }));
   }
 
-  test("asks for the next page only while a full page still ends inside the window", () => {
-    expect(needsNextPage(page(100, "2026-10-27T00:00:00Z"), NOW)).toBe(true);
-    expect(needsNextPage(page(100, "2026-10-26T23:59:59Z"), NOW)).toBe(false);
-    expect(needsNextPage(page(99, "2026-10-28T00:00:00Z"), NOW)).toBe(false);
+  test("asks for the next page only while a full page still ends at or after `since`", () => {
+    const since = Date.parse("2026-10-04T00:00:00Z");
+
+    expect(needsNextPage(page(100, "2026-10-04T00:00:00Z"), since)).toBe(true);
+    expect(needsNextPage(page(100, "2026-10-03T23:59:59Z"), since)).toBe(false);
+    expect(needsNextPage(page(99, "2026-10-05T00:00:00Z"), since)).toBe(false);
   });
 });

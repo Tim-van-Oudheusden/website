@@ -77,6 +77,12 @@ export const ROUTES = {
 export const HIVE_METRICS_STALE_AFTER_MS = 600_000;
 
 /**
+ * Days the Hive metrics' pull requests and runs cover, ending today (UTC).
+ * The back-end asks Hive and GitHub for this window; the page names it.
+ */
+export const HIVE_METRICS_WINDOW_DAYS = 30;
+
+/**
  * URL path under which the back-end serves content images (content/images/*).
  * Used by the back-end route, its Obsidian embed rewriter, and the front-end
  * server's link-preview tags, so a prefix change lands in one place.
@@ -295,7 +301,8 @@ export interface HivePublicMetrics {
      */
     tasksPerHour: number[];
     fleetSize: number[];
-    runs7d: {
+    /** Agent runs over the last `HIVE_METRICS_WINDOW_DAYS` days. */
+    runs: {
       total: number;
       backends: {
         backend: string;
@@ -307,11 +314,11 @@ export interface HivePublicMetrics {
       }[];
     };
   } | null;
-  /** This repo's public GitHub PRs over the last 7 days; null when unavailable. */
+  /** This repo's public GitHub PRs over the last `HIVE_METRICS_WINDOW_DAYS` UTC days; null when unavailable. */
   repo: {
     from: string;
     to: string;
-    /** 7 UTC days, oldest first. */
+    /** `HIVE_METRICS_WINDOW_DAYS` UTC days, oldest first, the last one today. */
     days: { t: string; opened: number; merged: number; closedUnmerged: number }[];
     mergedBySource: { t: string; hive: number; claudeCode: number; dependabot: number; other: number }[];
     /** PRs merged in the window, created → merged. */

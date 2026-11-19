@@ -21,6 +21,7 @@ function css(): string {
 interface DrawnSeries {
   name?: string;
   type?: string;
+  stack?: string;
   data: unknown[];
   links?: { source: string; target: string; value: number }[];
   label?: { formatter: (params: unknown) => string };
@@ -64,7 +65,7 @@ describe("pipeline charts", () => {
         collectedAt: "2026-11-02T01:00:00.000Z",
         tasksPerHour: Array<number>(48).fill(1),
         fleetSize: Array<number>(48).fill(1),
-        runs7d: { total: 0, backends: [] },
+        runs: { total: 0, backends: [] },
       },
     }).contributors!;
     const xAxis = tasksChart(twoDays).option(css).xAxis as {
@@ -83,7 +84,7 @@ describe("pipeline charts", () => {
         collectedAt: "2026-11-02T01:00:00.000Z",
         tasksPerHour: Array<number>(48).fill(1),
         fleetSize: Array<number>(48).fill(1),
-        runs7d: { total: 0, backends: [] },
+        runs: { total: 0, backends: [] },
       },
     });
     const { contributors: kolkata } = buildHiveViewModel(
@@ -111,7 +112,7 @@ describe("pipeline charts", () => {
         collectedAt: "2026-03-13T03:00:00.000Z",
         tasksPerHour: Array<number>(168).fill(1),
         fleetSize: Array<number>(168).fill(1),
-        runs7d: { total: 0, backends: [] },
+        runs: { total: 0, backends: [] },
       },
     });
     const { contributors: havana } = buildHiveViewModel(
@@ -141,7 +142,7 @@ describe("pipeline charts", () => {
         collectedAt: "2026-11-02T01:00:00.000Z",
         tasksPerHour: [0, 0],
         fleetSize: [1, 1],
-        runs7d: { total: 0, backends: [] },
+        runs: { total: 0, backends: [] },
       },
     });
 
@@ -161,11 +162,13 @@ describe("pipeline charts", () => {
     expect(series[1]?.label?.formatter({ value: 1 })).toBe("1");
   });
 
-  test("draw opened, merged and closed PRs per day, and merged PRs per day only for authors who merged", () => {
-    expect(seriesOf(pullRequestsChart(repo)).map((series) => [series.name, series.data])).toEqual([
-      ["Opened", [6, 4]],
-      ["Merged", [5, 3]],
-      ["Closed unmerged", [1, 0]],
+  test("draw finished PRs per day as merged and closed stacked bars under an opened line, and merges by author", () => {
+    const drawn = seriesOf(pullRequestsChart(repo)).map(({ name, type, stack, data }) => [name, type, stack, data]);
+
+    expect(drawn).toEqual([
+      ["Opened", "line", undefined, [6, 4]],
+      ["Merged", "bar", "finished", [5, 3]],
+      ["Closed unmerged", "bar", "finished", [1, 0]],
     ]);
 
     expect(seriesOf(authorsChart(repo)).map((series) => [series.name, series.data])).toEqual([
@@ -173,6 +176,31 @@ describe("pipeline charts", () => {
       ["Claude Code", [1, 0]],
       ["Dependabot", [1, 0]],
     ]);
+  });
+
+  test("label and tick 30 days of PRs once a week, back from today, by date", () => {
+    const dayStarts = Array.from({ length: 30 }, (_, index) => new Date(Date.UTC(2026, 9, 4 + index)).toISOString());
+    const month = liveModel({
+      repo: {
+        ...liveMetrics().repo!,
+        from: "2026-10-04T00:00:00.000Z",
+        days: dayStarts.map((t) => ({ t, opened: 1, merged: 1, closedUnmerged: 0 })),
+        mergedBySource: dayStarts.map((t) => ({ t, hive: 1, claudeCode: 0, dependabot: 0, other: 0 })),
+      },
+    }).repo!;
+
+    for (const chart of [pullRequestsChart(month), authorsChart(month)]) {
+      const xAxis = chart.option(css).xAxis as {
+        data: string[];
+        axisTick: { interval: (index: number, value: string) => boolean };
+        axisLabel: { interval: (index: number, value: string) => boolean; formatter: (value: string) => string };
+      };
+      const shown = xAxis.data.filter((label, index) => xAxis.axisLabel.interval(index, label));
+
+      expect(shown).toEqual(["Mon 5 Oct", "Mon 12 Oct", "Mon 19 Oct", "Mon 26 Oct", "Mon 2 Nov"]);
+      expect(xAxis.data.filter((label, index) => xAxis.axisTick.interval(index, label))).toEqual(shown);
+      expect(shown.map((label) => xAxis.axisLabel.formatter(label))).toEqual(["5 Oct", "12 Oct", "19 Oct", "26 Oct", "2 Nov"]);
+    }
   });
 
   test("flow finished PRs into merged or closed, then merged PRs into their authors, labelled with counts", () => {

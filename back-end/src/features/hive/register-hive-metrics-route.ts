@@ -50,7 +50,7 @@ function respond(readings: UpstreamReadings, now: Date): HiveMetricsResponse {
         contributeMetrics: readings.contributeMetrics?.value ?? null,
         runStats: readings.runStats?.value ?? null,
       }),
-      // The 7-day window ends when the pull list was fetched, so a kept answer is not shifted into a later window.
+      // The PR window ends when the pull list was fetched, so a kept answer is not shifted into a later window.
       repo: readings.pulls ? buildRepoPrActivity(readings.pulls.value, readings.pulls.fetchedAt) : null,
     },
   };

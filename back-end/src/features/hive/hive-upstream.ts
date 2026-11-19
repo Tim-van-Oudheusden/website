@@ -1,6 +1,8 @@
+import { HIVE_METRICS_WINDOW_DAYS } from "shared";
+
 import type { HiveConfig } from "../../core/server-config";
 
-import { needsNextPage, PAGE_SIZE } from "./repo-pr-activity";
+import { needsNextPage, newestUpdate, PAGE_SIZE, pullNumber, windowStart } from "./repo-pr-activity";
 
 export type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
 
@@ -13,8 +15,15 @@ const PR_STATS_REPOSITORY = "Tim-van-Oudheusden/website";
 const GITHUB_PULLS_URL
   = `https://api.github.com/repos/${PR_STATS_REPOSITORY}/pulls?state=all&sort=updated&direction=desc&per_page=${String(PAGE_SIZE)}`;
 
-/** Most GitHub pages fetched per refresh. */
-const MAX_GITHUB_PAGES = 3;
+/** Most GitHub pages fetched per refresh: 1,000 PRs, far above the busiest 30 days seen (340). */
+const MAX_GITHUB_PAGES = 10;
+
+/**
+ * How often the pull list is fetched back to the window start. Between these full syncs a refresh fetches only the
+ * PRs updated since the newest one kept, usually one page, which keeps unauthenticated GitHub calls well under 60 an
+ * hour. The full sync also drops PRs GitHub no longer lists.
+ */
+const FULL_PULL_SYNC_MS = 3_600_000;
 
 /** GitHub's REST headers; it rejects requests without a User-Agent. */
 const GITHUB_HEADERS: Readonly<Record<string, string>> = {
@@ -164,9 +173,20 @@ export function createHiveUpstream(options: HiveUpstreamOptions): HiveUpstream {
     });
   }
 
-  /** The pull pages concatenated, following `needsNextPage`; a failed page fails the whole list. */
+  /** Kept pulls by number, as GitHub sent them; refreshed from the newest updates, replaced by each full sync. */
+  let keptPulls = new Map<number, unknown>();
+  let fullPullSyncAt = Number.NEGATIVE_INFINITY;
+
+  /**
+   * Syncs the kept pulls, following `needsNextPage` back to `since`: the window start on a full sync, else the newest
+   * kept update (GitHub's clock, not ours). A failed page fails the whole sync and keeps the pulls as they were.
+   */
   async function loadPulls(): Promise<Loaded> {
-    const pulls: unknown[] = [];
+    const syncAt = now();
+    const start = windowStart(syncAt);
+    const isFull = syncAt.getTime() - fullPullSyncAt >= FULL_PULL_SYNC_MS;
+    const since = isFull ? start : Math.max(start, newestUpdate(keptPulls.values()));
+    const fetched: unknown[] = [];
 
     for (let page = 1; page <= MAX_GITHUB_PAGES; page += 1) {
       const url = page === 1 ? GITHUB_PULLS_URL : `${GITHUB_PULLS_URL}&page=${page}`;
@@ -178,14 +198,27 @@ export function createHiveUpstream(options: HiveUpstreamOptions): HiveUpstream {
 
       const pagePulls = answer.value as unknown[];
 
-      pulls.push(...pagePulls);
+      fetched.push(...pagePulls);
 
-      if (!needsNextPage(pagePulls, now())) {
+      if (!needsNextPage(pagePulls, since)) {
         break;
       }
     }
 
-    return { value: pulls, retryAt: null, failure: null };
+    if (isFull) {
+      keptPulls = new Map();
+      fullPullSyncAt = syncAt.getTime();
+    }
+
+    for (const raw of fetched) {
+      const number = pullNumber(raw);
+
+      if (number !== null) {
+        keptPulls.set(number, raw);
+      }
+    }
+
+    return { value: [...keptPulls.values()], retryAt: null, failure: null };
   }
 
   const parts: Partial<Record<PartName, CachedPart>> = { pulls: cached("pulls", SLOW_TTL_MS, loadPulls) };
@@ -193,7 +226,12 @@ export function createHiveUpstream(options: HiveUpstreamOptions): HiveUpstream {
   if (config.baseUrl !== null) {
     parts.health = cached("health", FAST_TTL_MS, load(`${config.baseUrl}/api/health`));
     parts.contributeMetrics = cached("contributeMetrics", SLOW_TTL_MS, load(`${config.baseUrl}/api/contribute/metrics`));
-    parts.runStats = cached("runStats", SLOW_TTL_MS, load(`${config.baseUrl}/api/contribute/run-stats`));
+
+    parts.runStats = cached(
+      "runStats",
+      SLOW_TTL_MS,
+      load(`${config.baseUrl}/api/contribute/run-stats?days=${String(HIVE_METRICS_WINDOW_DAYS)}`),
+    );
 
     if (config.widgetToken !== null) {
       const headers = { "X-Hive-Widget-Token": config.widgetToken };

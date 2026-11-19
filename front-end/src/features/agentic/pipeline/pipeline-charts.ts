@@ -3,6 +3,7 @@ import type { SankeySeriesOption } from "echarts/charts";
 import type { LinearGradientObject } from "echarts/core";
 
 import type { ChartOption, ChartTable, CssReader } from "../components/echart";
+import { AGENTIC_COPY } from "../config/agentic-copy";
 import type { BackendRunsView, ContributorsView, HiveWidgetView, MergedSource, RepoView } from "../lib/hive-view-model";
 import { GOVERNOR_MODES } from "../lib/hive-view-model";
 
@@ -70,14 +71,37 @@ function legend(css: CssReader): LegendComponentOption {
   };
 }
 
-function categoryAxis(css: CssReader, data: string[], bars = false): XAXisComponentOption {
+function categoryAxis(css: CssReader, data: string[]): XAXisComponentOption {
   return {
     type: "category",
     data,
-    boundaryGap: bars || data.length < 3,
+    boundaryGap: data.length < 3,
     axisLine: { lineStyle: { color: css("--pl-c-axis") } },
     axisTick: { show: false },
     axisLabel: { color: css("--pl-c-ink"), hideOverlap: true, fontSize: 11 },
+  };
+}
+
+/**
+ * One bar per UTC day ("Mon 2 Nov"), labelled and ticked once a week counting back from today, by date ("2 Nov");
+ * the tooltip keeps the weekday.
+ */
+function dayAxis(css: CssReader, labels: string[]): XAXisComponentOption {
+  function weekly(index: number): boolean {
+    return (labels.length - 1 - index) % 7 === 0;
+  }
+
+  return {
+    type: "category",
+    data: labels,
+    axisLine: { lineStyle: { color: css("--pl-c-axis") } },
+    axisTick: { interval: weekly, alignWithLabel: true, lineStyle: { color: css("--pl-c-axis") } },
+    axisLabel: {
+      color: css("--pl-c-ink"),
+      fontSize: 11,
+      interval: weekly,
+      formatter: (label: string) => label.slice(label.indexOf(" ") + 1),
+    },
   };
 }
 
@@ -277,9 +301,9 @@ export function runsChart(backends: BackendRunsView[]): PipelineChart {
   ];
 
   return {
-    label: "Runs by backend over the last 7 days: completed, failed and abandoned",
+    label: `Runs by backend over the last ${AGENTIC_COPY.window}: completed, failed and abandoned`,
     table: {
-      caption: "Runs by backend, last 7 days",
+      caption: `Runs by backend, last ${AGENTIC_COPY.window}`,
       columns: ["Backend", "Completed", "Failed", "Abandoned", "p50", "p95"],
       rows: backends.map((backend) => [
         backend.name,
@@ -335,10 +359,9 @@ export function runsChart(backends: BackendRunsView[]): PipelineChart {
   };
 }
 
-/** Opened, merged and closed-unmerged pull requests per UTC day. */
+/** Finished pull requests per UTC day, merged and closed unmerged stacked, under a line of the ones opened. */
 export function pullRequestsChart(repo: RepoView): PipelineChart {
-  const series = [
-    { name: "Opened", token: "--pl-c-opened", pick: (day: RepoView["days"][number]): number => day.opened },
+  const finished = [
     { name: "Merged", token: "--pl-c-accent", pick: (day: RepoView["days"][number]): number => day.merged },
     {
       name: "Closed unmerged",
@@ -348,7 +371,7 @@ export function pullRequestsChart(repo: RepoView): PipelineChart {
   ];
 
   return {
-    label: "Pull requests per UTC day, last 7 days: opened, merged and closed unmerged",
+    label: `Pull requests per UTC day, last ${AGENTIC_COPY.window}: opened, merged and closed unmerged`,
     table: {
       caption: "Pull requests per UTC day",
       columns: ["Day", "Opened", "Merged", "Closed unmerged"],
@@ -358,20 +381,32 @@ export function pullRequestsChart(repo: RepoView): PipelineChart {
       grid: GRID,
       legend: legend(css),
       tooltip: { ...tooltip(css, "axis"), axisPointer: { type: "shadow" } },
-      xAxis: categoryAxis(css, repo.days.map((day) => day.label), true),
+      xAxis: dayAxis(css, repo.days.map((day) => day.label)),
       yAxis: valueAxis(css),
-      series: series.map((entry) => ({
-        name: entry.name,
-        type: "bar",
-        barGap: "15%",
-        barMaxWidth: 16,
-        data: repo.days.map(entry.pick),
-        color: css(entry.token),
-        itemStyle: {
-          borderRadius: [4, 4, 0, 0],
-          ...(entry.token === "--pl-c-accent" ? { shadowBlur: 12, shadowColor: alpha(css("--pl-c-glow"), 0.75) } : {}),
+      series: [
+        {
+          name: "Opened",
+          type: "line",
+          z: 3,
+          data: repo.days.map((day) => day.opened),
+          color: css("--pl-c-opened"),
+          symbol: "circle",
+          symbolSize: 5,
+          lineStyle: { width: 2 },
         },
-      })),
+        ...finished.map((entry, index) => ({
+          name: entry.name,
+          type: "bar" as const,
+          stack: "finished",
+          barMaxWidth: 16,
+          data: repo.days.map(entry.pick),
+          color: css(entry.token),
+          itemStyle: {
+            borderRadius: index === finished.length - 1 ? [3, 3, 0, 0] : 0,
+            ...(entry.token === "--pl-c-accent" ? { shadowBlur: 12, shadowColor: alpha(css("--pl-c-glow"), 0.75) } : {}),
+          },
+        })),
+      ],
     }),
   };
 }
@@ -394,10 +429,10 @@ export function outcomesSankey(repo: RepoView): PipelineChart {
   ].filter((link) => link.value > 0);
 
   return {
-    label: "Pull request outcomes over 7 days: finished pull requests into merged or closed unmerged, "
+    label: `Pull request outcomes over ${AGENTIC_COPY.window}: finished pull requests into merged or closed unmerged, `
       + "and merged pull requests by author",
     table: {
-      caption: "Pull request outcomes and authors, last 7 days",
+      caption: `Pull request outcomes and authors, last ${AGENTIC_COPY.window}`,
       columns: ["From", "To", "Pull requests"],
       rows: links.map((link) => [link.source, link.target, link.value]),
     },
@@ -463,7 +498,7 @@ export function authorsChart(repo: RepoView): PipelineChart {
   const authors = repo.sources.filter((source) => source.merged > 0);
 
   return {
-    label: "Merged pull requests per UTC day by author, last 7 days",
+    label: `Merged pull requests per UTC day by author, last ${AGENTIC_COPY.window}`,
     table: {
       caption: "Merged pull requests per UTC day by author",
       columns: ["Day", ...authors.map((author) => author.name)],
@@ -473,13 +508,13 @@ export function authorsChart(repo: RepoView): PipelineChart {
       grid: GRID,
       legend: legend(css),
       tooltip: { ...tooltip(css, "axis"), axisPointer: { type: "shadow" } },
-      xAxis: categoryAxis(css, repo.mergedBySource.map((day) => day.label), true),
+      xAxis: dayAxis(css, repo.mergedBySource.map((day) => day.label)),
       yAxis: valueAxis(css),
       series: authors.map((author, index) => ({
         name: author.name,
         type: "bar",
         stack: "authors",
-        barMaxWidth: 28,
+        barMaxWidth: 16,
         data: repo.mergedBySource.map((day) => day[author.key]),
         color: css(SOURCE_TOKENS[author.key]),
         itemStyle: {
