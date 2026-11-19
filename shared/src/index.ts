@@ -295,12 +295,6 @@ export interface HivePublicMetrics {
   /** From /api/contribute/*; null when unavailable. */
   contributors: {
     collectedAt: string;
-    /**
-     * Hive's own hourly series, oldest first, as many as Hive sends (168), both empty when it is unusable. Kept so a
-     * page loaded before the daily contract still renders after a deploy; the page now reads `fleet` and `days`.
-     */
-    tasksPerHour: number[];
-    fleetSize: number[];
     /** Contributor agents connected in the latest hour Hive measured; 0 without a usable hourly series. */
     fleet: number;
     /**

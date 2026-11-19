@@ -263,8 +263,6 @@ function buildContributors(
 
   return {
     collectedAt: new Date(collectedMs).toISOString(),
-    tasksPerHour: current.map(({ tasks }) => tasks),
-    fleetSize: current.map(({ fleet }) => fleet),
     fleet: current.at(-1)?.fleet ?? 0,
     days: contributorDays([...hours.values()], collectedMs),
     runs,
