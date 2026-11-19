@@ -46,6 +46,8 @@ export const DEV_HIVE_METRICS: HivePublicMetrics = {
   },
   contributors: {
     collectedAt: "2026-11-02T13:00:00.000Z",
+    tasksPerHour: [1, 1, 1, 0, 1, 0],
+    fleetSize: [1, 1, 1, 1, 1, 1],
     fleet: 1,
     days: [
       { t: "2026-11-02T00:00:00.000Z", tasks: 4, fleet: 1 },
