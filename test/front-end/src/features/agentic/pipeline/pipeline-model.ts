@@ -21,8 +21,6 @@ export function liveMetrics(overrides: Partial<HivePublicMetrics> = {}): HivePub
     },
     contributors: {
       collectedAt: "2026-11-02T01:00:00.000Z",
-      tasksPerHour: [1, 0, 4],
-      fleetSize: [1, 1, 2],
       fleet: 2,
       days: [
         { t: "2026-10-31T00:00:00.000Z", tasks: 1, fleet: 1 },

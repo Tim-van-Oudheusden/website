@@ -81,8 +81,6 @@ describe("buildHivePublicMetrics allowlist", () => {
         ".hive.history[].held",
         ".contributors",
         ".contributors.collectedAt",
-        ".contributors.tasksPerHour",
-        ".contributors.fleetSize",
         ".contributors.fleet",
         ".contributors.days",
         ".contributors.days[].t",
@@ -228,8 +226,6 @@ describe("buildHivePublicMetrics contributors", () => {
 
     expect(buildHivePublicMetrics({ ...fixtureUpstream(), runStats }).contributors).toEqual({
       collectedAt: "2026-11-02T13:00:00.000Z",
-      tasksPerHour: [1, 1, 1, 0, 1, 0],
-      fleetSize: [1, 1, 1, 1, 1, 1],
       fleet: 1,
       days: [{ t: "2026-11-02T00:00:00.000Z", tasks: 4, fleet: 1 }],
       runs: {
@@ -318,8 +314,6 @@ describe("buildHivePublicMetrics malformed upstream values", () => {
     const unaligned = contributors({ ...metrics, fleet_size: [1, 2] });
 
     expect(unaligned?.days).toEqual([]);
-    expect(unaligned?.tasksPerHour).toEqual([]);
-    expect(unaligned?.fleetSize).toEqual([]);
     expect(unaligned?.fleet).toBe(0);
     expect(contributors({ ...metrics, tasks_done: [1, Number.NaN, 1, 0, 1, 0] })?.days).toEqual([]);
     expect(contributors({ ...metrics, fleet_size: undefined })?.days).toEqual([]);

@@ -107,8 +107,6 @@ describe("buildHiveViewModel hive", () => {
 describe("buildHiveViewModel contributors", () => {
   const contributors: NonNullable<HivePublicMetrics["contributors"]> = {
     collectedAt: "2026-11-02T01:00:00.000Z",
-    tasksPerHour: [1, 0, 2],
-    fleetSize: [1, 1, 3],
     fleet: 2,
     days: [
       { t: "2026-10-31T00:00:00.000Z", tasks: 1, fleet: 1 },
