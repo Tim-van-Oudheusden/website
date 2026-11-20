@@ -2,7 +2,7 @@
 title: Dailies
 description: A GNOME app that gathers daily guessing games like Wordle, Connections and Worldle in one window, inspired by Cartridges and Bazaar.
 date: 2026-10-16
-updated: 2026-11-01
+updated: 2026-11-20
 tags:
   - Linux
   - GNOME
@@ -78,7 +78,15 @@ Missing a game? The [Add a game](https://github.com/Tim-van-Oudheusden/Dailies/i
 
 ## Trying it yourself
 
-Dailies is still early, so releases are numbered 0.x. It is free and open source under GPL-3.0-or-later, available in English and Dutch, and runs on Linux as a Flatpak. It isn't on Flathub yet, so you download it from the [releases page](https://github.com/Tim-van-Oudheusden/Dailies/releases/latest) instead: there is a bundle for x86_64 and one for aarch64. The bundle needs the GNOME runtime from Flathub, and the [installation steps](https://github.com/Tim-van-Oudheusden/Dailies#installing) explain how to add it.
+Dailies is still early, so releases are numbered 0.x. It is free and open source under GPL-3.0-or-later, available in English and Dutch, and runs on Linux as a Flatpak. The easiest way to install it is from [FlatPark](https://flatpark.org/apps/io.github.tim_van_oudheusden.Dailies/), which picks up every new release by itself, so `flatpak update` keeps Dailies current. The GNOME runtime comes from Flathub, so add both remotes and install:
+
+```sh
+flatpak --user remote-add --if-not-exists flatpark https://dl.flatpark.org/flatpark.flatpakrepo
+flatpak --user remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak --user install flatpark io.github.tim_van_oudheusden.Dailies
+```
+
+Each release also has a bundle for x86_64 and one for aarch64 on the [releases page](https://github.com/Tim-van-Oudheusden/Dailies/releases/latest). A bundle doesn't update itself; the [installation steps](https://github.com/Tim-van-Oudheusden/Dailies#installing) explain both ways. Dailies isn't on Flathub.
 
 ## The artwork
 
