@@ -12,11 +12,14 @@ so a reader can check whether it still holds.
 - **Writing has started again.** Two articles came out after a nine-month gap:
   `content/Letting AI agents work in my repository.md` (2026-11-17) and
   `content/The signed build pipeline behind my own OS.md` (2026-11-18). The one before them was
-  `content/Introduction.md` (2026-02-08), and the other four are from 2025. The projects keep shipping:
-  Dailies is at 0.3.2 and MinimalUI at v0.1.5 (both released 2026-11-14), the Pindu launcher page went
-  up on 2026-11-05, and the Pindu OS page on 2026-11-16, as the new featured project. Pindu launcher has
-  had release downloads since 0.3.0 (2026-11-07): Flatpak bundles and Fedora, Debian and Ubuntu
-  packages. Its latest release is 0.5.0 (2026-11-18).
+  `content/Introduction.md` (2026-02-08), and the other four are from 2025. The projects keep shipping,
+  each on its own schedule. Their current versions are on their release pages, so this file does not
+  repeat them: [Dailies](https://github.com/Tim-van-Oudheusden/Dailies/releases/latest),
+  [MinimalUI](https://github.com/Tim-van-Oudheusden/MinimalUI/releases/latest) and
+  [Pindu launcher](https://github.com/Tim-van-Oudheusden/pindu-launcher/releases/latest). Dailies also
+  installs from FlatPark, which picks up each release by itself. Each Pindu launcher release has Flatpak
+  bundles and Fedora, Debian and Ubuntu packages. The Pindu launcher page went up on 2026-11-05, and
+  the Pindu OS page on 2026-11-16, as the new featured project.
 - **The site itself is mature.** It has RSS with projects in the feed, link previews, an updated date
   in the feed, sitemap and JSON-LD, the Agentic tab, and coverage and mutation gates. Most recent
   changes to `main` are tests and CI, not anything a reader sees.
