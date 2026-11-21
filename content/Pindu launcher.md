@@ -2,7 +2,7 @@
 title: Pindu launcher
 description: A native GNOME game library that gathers every PC game on your machine in one place, with a fullscreen mode for the couch, inspired by Cartridges and OpenGamepadUI.
 date: 2026-11-05
-updated: 2026-11-18
+updated: 2026-11-21
 tags:
   - Linux
   - GNOME
@@ -37,7 +37,7 @@ Play all your games. That is the whole idea behind Pindu launcher. On Linux, you
 
 ## Every launcher, one library
 
-Pindu launcher reads the games from Steam, Heroic, Lutris, Bottles and Faugus Launcher, native or as a Flatpak, and lists them side by side with games installed as apps, Flatpaks included, and games you add by hand. From Heroic that means your Epic Games, GOG, Amazon and sideloaded games, installed or not. When a launcher's files change, the library resyncs on its own.
+Pindu launcher reads the games from Steam, Heroic, Lutris, Bottles and Faugus Launcher, native or as a Flatpak, and from the itch app and the standalone Legendary command-line tool. It lists them side by side with games installed as apps, Flatpaks included, and games you add by hand. From Heroic that means your Epic Games, GOG, Amazon and sideloaded games, installed or not. When a launcher's files change, the library resyncs on its own.
 
 The launchers stay in charge. A store game starts through its own launcher, which keeps its settings, its updates and its playtime. Pindu launcher only reads the launchers' files, never writes to them and never reads their credentials.
 
@@ -63,7 +63,7 @@ Covers, banners and logos come from your launchers or from your own files. If yo
 
 Press `F11`, start the app with `--fullscreen`, or turn on Start in Fullscreen Mode in Preferences, and Pindu launcher becomes a controller-first game library with a Home, the library and game pages. Move with the D-pad or the left stick, open with A and go back with B. The hint bar at the bottom names the buttons that work on each screen, drawn with glyphs for the controller you hold. Search has an on-screen keyboard, and moving around plays navigation sounds.
 
-Quick Access, behind a click of the right stick or the Steam Deck's "…" button, switches the design. Panorama and Ribbon ship with the app, and you can add your own CSS on top. For a real couch setup, the fullscreen mode runs inside [gamescope](https://github.com/ValveSoftware/gamescope): a game takes over the screen when it opens, and Pindu launcher comes back when the game quits.
+Quick Access, behind a click of the right stick or the Steam Deck's "…" button, switches the design. Lobby, Marquee and Shelves ship with the app, with Lobby as the default, and you can add your own CSS on top. For a real couch setup, the fullscreen mode runs inside [gamescope](https://github.com/ValveSoftware/gamescope): a game takes over the screen when it opens, and Pindu launcher comes back when the game quits.
 
 Both modes are views over the same library, so nothing has to be set up twice.
 
@@ -71,7 +71,7 @@ Both modes are views over the same library, so nothing has to be set up twice.
 
 Pindu launcher is built from stock GTK 4 and libadwaita widgets, so it looks and behaves like the rest of GNOME, in the light or the dark style. You don't even need to open it to start a game: type the game's name in the Activities overview of GNOME Shell.
 
-It is offline and private as well. The library works without a network, and Pindu launcher only goes online for the artwork and the Proton builds you ask for. Your collections, favourites, hidden games, games added by hand and tracked playtime can be exported to a file as a backup, and imported again.
+It is offline and private as well. The library works without a network, and Pindu launcher only goes online for the artwork, metadata and Proton builds you ask for. Your collections, favourites, hidden games, games added by hand and tracked playtime can be exported to a file as a backup, and imported again.
 
 ![At home on GNOME: the Hedgewars game page in the dark style, with its banner, a Play button and its launcher, playtime and dates, next to the promises Offline and private and Backups](/content-assets/images/pindu-launcher/at-home-on-gnome.webp)
 
@@ -83,7 +83,7 @@ Pindu launcher is written in Rust with GTK 4 and libadwaita through gtk4-rs, and
 
 Pindu launcher is in early development, so releases are numbered 0.x. It runs on Linux, and it is free and open source under GPL-3.0-or-later. It isn't on Flathub yet, so you download it from the [releases page](https://github.com/Tim-van-Oudheusden/pindu-launcher/releases/latest) instead: there is a Flatpak bundle for x86_64 and one for aarch64, which needs the GNOME 51 runtime from Flathub, and native packages for Fedora 45, Debian testing and Ubuntu 26.10. Neither updates itself, so install the next release over the one you have. To try the latest code, install the development bundle that every [CI run](https://github.com/Tim-van-Oudheusden/pindu-launcher/actions/workflows/ci.yml) uploads, or build it from source. The [installation steps](https://github.com/Tim-van-Oudheusden/pindu-launcher#installing) explain each way.
 
-Store games start through their launcher and always work. In the Flatpak, games that start as a program on your computer, like desktop entries, Flatpak games, Faugus games and native games added by hand, need you to give the app access to the host with a `flatpak override`. That access lets Pindu launcher run any command outside its sandbox, so the app never asks for it itself: until you grant it, those games explain what is missing, and Preferences shows the command. Progress is tracked in the [milestones](https://github.com/Tim-van-Oudheusden/pindu-launcher/milestones), and bug reports are welcome in the [issues](https://github.com/Tim-van-Oudheusden/pindu-launcher/issues).
+Games from Steam, Heroic, Lutris, Bottles and the itch app start through their launcher and always work. In the Flatpak, games that start as a program on your computer, like desktop entries, Flatpak games, Faugus and Legendary games and native games added by hand, need you to give the app access to the host with a `flatpak override`. That access lets Pindu launcher run any command outside its sandbox, so the app never asks for it itself: until you grant it, those games explain what is missing, and Preferences shows the command. Progress is tracked in the [milestones](https://github.com/Tim-van-Oudheusden/pindu-launcher/milestones), and bug reports are welcome in the [issues](https://github.com/Tim-van-Oudheusden/pindu-launcher/issues).
 
 ## The artwork
 
