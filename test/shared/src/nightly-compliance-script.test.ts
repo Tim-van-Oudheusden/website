@@ -11,6 +11,8 @@ let workDir: string;
 let stubDir: string;
 let contentDir: string;
 let argsLog: string;
+let releasesDir: string;
+let curlLog: string;
 
 // Stub `bun`: `bun audit` prints an advisory and exits 1 when STUB_AUDIT_FAIL=1,
 // or when it is not run from the repository root, whose lockfile it reads.
@@ -37,6 +39,75 @@ exit 0
   chmodSync(stubPath, 0o755);
 }
 
+// Stub `curl`: answers a GitHub "latest release" request from
+// $STUB_RELEASES/<owner>/<repo>.status (an HTTP code, or `unreachable` to fail
+// like a network error) and <repo>.json (the body). A repository with no
+// .status file answers 404, as GitHub does for one without releases. Every
+// requested URL is appended to $STUB_CURL_LOG.
+function writeCurlStub(): void {
+  const stubPath = join(stubDir, "curl");
+
+  writeFileSync(
+    stubPath,
+    `#!/usr/bin/env bash
+out=""
+url=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -o) out="$2"; shift 2 ;;
+    -w|-H|--max-time) shift 2 ;;
+    -*) shift ;;
+    *) url="$1"; shift ;;
+  esac
+done
+printf '%s\\n' "$url" >> "$STUB_CURL_LOG"
+repo="\${url#https://api.github.com/repos/}"
+repo="\${repo%/releases/latest}"
+status_file="$STUB_RELEASES/$repo.status"
+if [ ! -f "$status_file" ]; then
+  echo '{"message":"Not Found"}' > "$out"
+  printf 404
+  exit 0
+fi
+status="$(cat "$status_file")"
+if [ "$status" = unreachable ]; then
+  echo "curl: (6) Could not resolve host: api.github.com" >&2
+  exit 6
+fi
+cp "$STUB_RELEASES/$repo.json" "$out"
+printf '%s' "$status"
+`,
+  );
+
+  chmodSync(stubPath, 0o755);
+}
+
+function stubRelease(repo: string, status: number | "unreachable", body: object = {}): void {
+  mkdirSync(join(releasesDir, repo, ".."), { recursive: true });
+  writeFileSync(join(releasesDir, `${repo}.status`), String(status));
+  writeFileSync(join(releasesDir, `${repo}.json`), JSON.stringify(body));
+}
+
+function writeProjectPage(file: string, repo: string, dates: string): void {
+  writeFileSync(
+    join(contentDir, file),
+    [
+      "---",
+      `title: ${file}`,
+      dates,
+      "type: project",
+      "links:",
+      "  - type: repo",
+      "    label: Source repository",
+      `    href: https://github.com/${repo}`,
+      "---",
+      "",
+      "Hello.",
+      "",
+    ].join("\n"),
+  );
+}
+
 function runScript(env: Record<string, string> = {}): { status: number | null; report: string; log: string } {
   const result = spawnSync("bash", [scriptPath], {
     cwd: workDir,
@@ -47,6 +118,8 @@ function runScript(env: Record<string, string> = {}): { status: number | null; r
       CONTENT_DIR: contentDir,
       GITHUB_SHA: "abc1234",
       STUB_ARGS_LOG: argsLog,
+      STUB_RELEASES: releasesDir,
+      STUB_CURL_LOG: curlLog,
       ...env,
     },
   });
@@ -59,10 +132,14 @@ beforeEach(() => {
   stubDir = join(workDir, "bin");
   contentDir = join(workDir, "content");
   argsLog = join(workDir, "bun-args.log");
+  releasesDir = join(workDir, "releases");
+  curlLog = join(workDir, "curl-urls.log");
   mkdirSync(stubDir);
   mkdirSync(contentDir);
   writeFileSync(join(contentDir, "Published.md"), "---\ntitle: Published\n---\n\nHello.\n");
+  writeFileSync(curlLog, "");
   writeBunStub();
+  writeCurlStub();
 });
 
 afterEach(() => {
@@ -85,6 +162,8 @@ describe("scripts/nightly-compliance.sh", () => {
         "| ----- | ------ |",
         "| Dependency audit (high+) | ✅ pass |",
         "| Draft leak guard | ✅ pass |",
+        "| Project pages current with releases | ✅ pass |",
+        "| Project release lookup | ✅ pass |",
         "",
       ].join("\n"),
     );
@@ -170,6 +249,131 @@ describe("scripts/nightly-compliance.sh", () => {
     expect(status).toBe(1);
     expect(report).toMatch(/Dependency audit.*fail/);
     expect(report).toMatch(/Draft leak guard.*fail/);
+  });
+
+  describe("project pages against their latest GitHub release", () => {
+    const repo = "Tim-van-Oudheusden/MinimalUI";
+    const release = { tag_name: "v0.1.5", published_at: "2026-11-14T10:11:56Z" };
+
+    test("fails and names the page, its date and the newer release", () => {
+      writeProjectPage("Minimal Android Launcher.md", repo, "date: 2026-06-10\nupdated: 2026-10-26");
+      stubRelease(repo, 200, release);
+
+      const { status, report } = runScript();
+
+      expect(status).toBe(1);
+      expect(report).toMatch(/Project pages current with releases \| ❌ fail/);
+      expect(report).toMatch(/Project release lookup \| ✅ pass/);
+
+      expect(report).toContain(
+        "`Minimal Android Launcher.md` is dated 2026-10-26, but Tim-van-Oudheusden/MinimalUI released v0.1.5 on 2026-11-14",
+      );
+
+      expect(readFileSync(curlLog, "utf8")).toBe(
+        "https://api.github.com/repos/Tim-van-Oudheusden/MinimalUI/releases/latest\n",
+      );
+    });
+
+    // The page date is `updated:`, or `date:` when there is none; a release on
+    // the page's own day counts as covered.
+    test.each([
+      ["a release on the day of updated:", "date: 2026-06-10\nupdated: 2026-11-14", 0],
+      ["updated: after the release", "date: 2026-06-10\nupdated: 2026-11-15", 0],
+      ["updated: before the release, date: after it", "updated: 2026-11-13\ndate: 2026-11-20", 1],
+      ["only date:, on the day of the release", "date: 2026-11-14", 0],
+      ["only date:, before the release", "date: 2026-11-13", 1],
+      ["only publishDate:, on the day of the release", "publishDate: 2026-11-14", 0],
+    ])("compares the release day with the page: %s", (_name, dates, expected) => {
+      writeProjectPage("Page.md", repo, dates);
+      stubRelease(repo, 200, release);
+
+      const { status, report } = runScript();
+
+      expect(status).toBe(expected);
+
+      expect(report).toMatch(
+        expected === 0 ? /Project pages current with releases \| ✅ pass/ : /Project pages current with releases \| ❌ fail/,
+      );
+    });
+
+    test("passes a repository with no releases", () => {
+      writeProjectPage("Website.md", "Tim-van-Oudheusden/website", "date: 2026-06-10");
+
+      const { status, report } = runScript();
+
+      expect(status).toBe(0);
+      expect(report).toMatch(/Project pages current with releases \| ✅ pass/);
+      expect(report).toMatch(/Project release lookup \| ✅ pass/);
+      expect(readFileSync(curlLog, "utf8")).toContain("/repos/Tim-van-Oudheusden/website/releases/latest");
+    });
+
+    // A lookup that fails says nothing about the page, so it must not read as
+    // a stale page, nor as a pass.
+    test.each([
+      ["the network is unreachable", "unreachable" as const, {}],
+      ["the API refuses the request", 403, { message: "API rate limit exceeded" }],
+      ["the release has no publish date", 200, { tag_name: "v0.1.5" }],
+    ])("fails the lookup row, not the page row, when %s", (_name, httpStatus, body) => {
+      writeProjectPage("Minimal Android Launcher.md", repo, "date: 2026-06-10\nupdated: 2026-10-26");
+      stubRelease(repo, httpStatus, body);
+
+      const { status, report } = runScript();
+
+      expect(status).toBe(1);
+      expect(report).toMatch(/Project release lookup \| ❌ fail/);
+      expect(report).toMatch(/Project pages current with releases \| ✅ pass/);
+      expect(report).toContain("could not read the latest release of Tim-van-Oudheusden/MinimalUI");
+    });
+
+    test("checks every project page even after one fails", () => {
+      writeProjectPage("A.md", repo, "date: 2026-10-26");
+      writeProjectPage("B.md", "Tim-van-Oudheusden/Dailies", "date: 2026-10-26");
+      stubRelease(repo, "unreachable");
+      stubRelease("Tim-van-Oudheusden/Dailies", 200, { tag_name: "v0.3.3", published_at: "2026-11-18T22:41:53Z" });
+
+      const { report } = runScript();
+
+      expect(report).toContain("`B.md` is dated 2026-10-26, but Tim-van-Oudheusden/Dailies released v0.3.3 on 2026-11-18");
+    });
+
+    test("only looks up the first github.com repo link of a project page", () => {
+      writeFileSync(
+        join(contentDir, "Article.md"),
+        `---\ntitle: Article\ndate: 2026-01-01\nlinks:\n  - type: repo\n    href: https://github.com/${repo}\n---\n`,
+      );
+
+      writeFileSync(
+        join(contentDir, "Elsewhere.md"),
+        "---\ntitle: Elsewhere\ndate: 2026-01-01\ntype: project\nlinks:\n  - type: repo\n    href: https://gitlab.com/someone/thing\n---\n",
+      );
+
+      writeFileSync(
+        join(contentDir, "Two links.md"),
+        [
+          "---",
+          "title: Two links",
+          "date: 2026-01-01",
+          "type: project",
+          "links:",
+          "- label: Install guide",
+          "  href: https://github.com/Tim-van-Oudheusden/pindu-os/blob/main/docs/install.md",
+          "  type: docs",
+          "- label: Source",
+          '  href: "https://github.com/Tim-van-Oudheusden/pindu-os/"',
+          "  type: repo # the code",
+          "- type: repo",
+          "  href: https://github.com/Tim-van-Oudheusden/other",
+          "---",
+          "",
+        ].join("\n"),
+      );
+
+      runScript();
+
+      expect(readFileSync(curlLog, "utf8")).toBe(
+        "https://api.github.com/repos/Tim-van-Oudheusden/pindu-os/releases/latest\n",
+      );
+    });
   });
 });
 

@@ -51,10 +51,12 @@ row, about this site and its `/agentic` page, stays a candidate.
 
 - **On a project release:** update that project page's `updated:` date and any version or install
   details in its body, and check its line on the Now page.
-- **Weekly:** compare each project's latest GitHub release with its page's `updated:` date (or `date:`
-  when there is none). A release newer than the page means the step above was missed: read the page
-  against the release notes. The projects release on their own schedules, so nothing here reminds
-  anyone when one ships.
+- **When a release outdates a page:** the nightly compliance run (`scripts/nightly-compliance.sh`)
+  compares each project's latest GitHub release with its page's `updated:` date (or `date:` when
+  there is none). A release newer than the page fails the run, which opens or comments on the
+  **Nightly compliance failing** issue naming the page, the release and its date. The person's step
+  is the one above: read the page against the release notes and update it, in a PR that closes
+  the issue with `Fixes #<number>`.
 - **Monthly:** reread `content/pages/now.md` and `content/pages/uses.md`, and update their `updated:`
   dates when something changed. A Now page that names a past milestone as "next" reads as abandoned.
 

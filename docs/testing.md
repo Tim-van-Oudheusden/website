@@ -10,7 +10,7 @@
 | `scripts/e2e.sh`                | Playwright E2E suite against the dev pod              | yes          |
 | `scripts/prod-assets.sh`        | Prod front-end image serves every `public/` file      | yes          |
 | `scripts/quality-report.sh`     | Markdown report of all gates + coverage per workspace | no           |
-| `scripts/nightly-compliance.sh` | Markdown report of dependency audit + draft guard     | no           |
+| `scripts/nightly-compliance.sh` | Markdown report of dependency audit, draft guard and project release check | no |
 | `scripts/draft-leak-guard.sh <dir>` | Lists files with `draft: true` front matter; fails if any, or if it cannot read `<dir>` | no |
 | `bun scripts/auto-qa-tuner.ts` | Propose ratcheted coverage floors from a quality report | no           |
 | `bun x stryker run stryker/<workspace>.conf.mjs` | Mutation testing of one workspace (StrykerJS) | no |
@@ -63,7 +63,7 @@ change:
 
 - **Lockfile drift** — the workflow's `bun install --frozen-lockfile` step fails
   if `bun.lock` no longer matches `package.json`. It runs first, so drift stops
-  the job before the two checks below.
+  the job before the checks below.
 - **Dependency audit** — `bun audit --audit-level=high` fails on any high or
   critical advisory in the locked dependency tree. Advisories with no patched
   release upstream are listed in `AUDIT_IGNORE` in the script, each with the
@@ -73,10 +73,22 @@ change:
   not, with or without a trailing `# comment`. It also fails (exit 2) when it
   cannot read `content/` or a file in it, such as a dangling symlink. The
   `release` job in `ci.yml` runs the same script.
+- **Project pages current with releases** — for each `type: project` page in
+  `content/` whose first `type: repo` link is a github.com repository, the
+  script reads `https://api.github.com/repos/<owner>/<repo>/releases/latest`
+  (pre-releases excluded) and fails if the release's `published_at` day is
+  after the page's `updated:` (else `date:`, else `publishDate:`). The report
+  lists each page behind, with its date and the release tag and date. A
+  repository with no release passes.
+- **Project release lookup** — fails when one of those requests fails (network
+  error, an HTTP status other than 200 or 404, or a response without a tag and
+  publish date), and the report names the repository. A failed lookup does not
+  fail the row above, because it says nothing about the page.
 
-`scripts/nightly-compliance.sh` runs the audit and the draft guard and writes
-the report, published as the run's job summary and as the `nightly-compliance`
-artifact. Both run even if the first fails, and the job fails if either failed.
+`scripts/nightly-compliance.sh` runs the audit, the draft guard and the release
+check and writes the report, published as the run's job summary and as the
+`nightly-compliance` artifact. Every check runs even if an earlier one fails,
+and the job fails if any failed.
 Run it locally with `scripts/nightly-compliance.sh > nightly-compliance.md`. It
 does not check the lockfile: to reproduce drift, run
 `bun install --frozen-lockfile`.
