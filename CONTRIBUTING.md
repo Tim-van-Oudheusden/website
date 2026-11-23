@@ -34,7 +34,7 @@ back-end/src/
   app.ts, index.ts     app assembly and process entry
 front-end/
   src/features/<name>/ one folder per area (agentic, articles, home, projects, standalone-pages), split into components/ hooks/ lib/ pages/ as needed
-  src/shared/          code used across features: components (shadcn primitives in components/ui/), config, hooks, lib
+  src/shared/          code used across features: components (shadcn primitives in components/ui/), hooks, lib
   server/              production server for the built app (link-preview tags)
 shared/src/            types, route constants and helpers imported by both apps
 test/<workspace>/      unit tests, one tree per workspace (see below)
@@ -98,7 +98,7 @@ CI (`.github/workflows/ci.yml`) runs lint, copy-paste detection, typecheck, unit
 
 Coverage shows that a branch ran, not that a test asserts on it. `.github/workflows/mutation-testing.yml` runs StrykerJS mutation testing on the TypeScript workspaces and the TypeScript tools in `scripts/` nightly, report-only. Shell scripts have a table of hand mutants instead (`test/shared/src/shell-mutants.test.ts`), which `bun run test` runs: when a hand mutation of a script survives, add the test that kills it and the mutant as a row. See [`docs/testing.md`](docs/testing.md#mutation-testing).
 
-Some docs list things the code also defines: the feature folders in the layout above, the back-end environment variables and the root `package.json` scripts in `README.md`, the frontmatter keys in `docs/content-authoring.md`, and the `E2E_*` variables in `docs/testing.md`. `test/shared/src/doc-claims.test.ts` reads each list from the code and fails `bun run test` when the doc names a different set, so update the doc in the same pull request as the code.
+Some docs list things the code also defines: the feature folders and the `front-end/src/shared/` folders in the layout above, the back-end environment variables and the root `package.json` scripts in `README.md`, the frontmatter keys in `docs/content-authoring.md`, and the `E2E_*` variables in `docs/testing.md`. `test/shared/src/doc-claims.test.ts` reads each list from the code and fails `bun run test` when the doc names a different set, so update the doc in the same pull request as the code.
 
 Some values are written out in files that cannot read each other: a label list in a workflow expression and in a shell script, say. When you give a value a second copy like that, add a row to `test/shared/src/shared-literals.test.ts` that names the value and reads each copy. `bun run test` fails when the copies differ, or when a reader no longer finds its copy exactly once. Add a row there rather than a new one-off parity test.
 

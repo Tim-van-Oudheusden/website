@@ -134,6 +134,23 @@ describe("CONTRIBUTING.md project layout", () => {
   test("lists every front-end area under front-end/src/features/", () => {
     expect(layoutList("src/features/<name>/")).toEqual(directoryNames("front-end/src/features"));
   });
+
+  test("lists every folder under front-end/src/shared/", () => {
+    const layout = section(readRootFile("CONTRIBUTING.md"), "## Project layout");
+    const line = layout.split("\n").find((candidate) => candidate.trimStart().startsWith("src/shared/"));
+    const list = /code used across features: (.+)$/.exec(line ?? "")?.[1];
+
+    if (list === undefined) {
+      throw new Error('no "code used across features: …" list on the CONTRIBUTING layout line for src/shared/');
+    }
+
+    const named = list
+      .replace(/\([^)]*\)/g, "")
+      .split(",")
+      .map((name) => name.trim());
+
+    expect(sorted(named)).toEqual(directoryNames("front-end/src/shared"));
+  });
 });
 
 describe("README.md back-end environment variables", () => {
