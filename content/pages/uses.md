@@ -1,7 +1,7 @@
 ---
 title: Uses
 description: The hardware, operating systems and tools I use day to day.
-updated: 2026-10-08
+updated: 2026-11-23
 ---
 What I actually run, day to day. Most of it has a longer write-up, linked below.
 
@@ -22,6 +22,14 @@ Both machines run images from [Universal Blue](https://universal-blue.org/): Fed
 - **[Flatpak](https://flatpak.org/)** for applications, installed through the [Bazaar](https://github.com/kolunmi/bazaar) app store. More in [Apt-get out of my life, hello flatpak](/articles/apt-get-out-of-my-life-hello-flatpak).
 - **[Distrobox](https://distrobox.it/)** for software that is not available as a Flatpak, and for trying out anything more advanced.
 - **[Devcontainers](https://containers.dev/)** for development toolchains, instead of layering packages onto the OS.
+
+## AI agents
+
+AI agents open issues and pull requests in my repositories, and the repository itself decides what they may do. More in [Letting AI agents work in my repository](/articles/letting-ai-agents-work-in-my-repository). The [Agentic](/agentic) page shows how they help build this site, with live Hive numbers.
+
+- **CLI agents** (Pi, OMP and Claude Code) in local sessions I start myself, opening pull requests for the issues I point them at.
+- **Claude Code in CI**, a GitHub Actions workflow that opens pull requests for issues labelled `ai-fix-requested` or when I mention `@claude` in an issue or pull request.
+- **[Hive](https://github.com/Tim-van-Oudheusden/pindu-launcher/issues/249)**, which works through a repository's issues on its own and opens issues and pull requests through the `hive-worker-bee` GitHub App.
 
 ## Notes and writing
 
