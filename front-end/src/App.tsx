@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import type { JSX, ReactNode } from "react";
 import { BrowserRouter, Route, Routes } from "react-router";
 
 import { AGENTIC_PAGE_PATH, STANDALONE_PAGE_SLUGS } from "shared";
@@ -10,7 +10,9 @@ import { HomePage } from "@/features/home/pages/home-page";
 import { ProjectPage } from "@/features/projects/pages/project-page";
 import { ProjectsPage } from "@/features/projects/pages/projects-page";
 import { StandalonePage } from "@/features/standalone-pages/pages/standalone-page";
+import { ErrorBoundary } from "@/shared/components/error-boundary";
 import { NotFoundPage } from "@/shared/components/not-found-page";
+import { RouteErrorPage } from "@/shared/components/route-error-page";
 import { SkipLink } from "@/shared/components/skip-link";
 import { TopBar } from "@/shared/components/top-bar";
 
@@ -33,14 +35,29 @@ export function AppRoutes(): JSX.Element {
   );
 }
 
+export interface AppShellProps {
+  children: ReactNode;
+}
+
+/** Site chrome (skip link, top bar) around the routed page. A page that throws while rendering leaves the chrome up. */
+export function AppShell({ children }: AppShellProps): JSX.Element {
+  return (
+    <div className="flex min-h-svh flex-col">
+      <SkipLink />
+      <TopBar />
+      <ErrorBoundary fallback={(retry) => <RouteErrorPage retry={retry} />}>
+        {children}
+      </ErrorBoundary>
+    </div>
+  );
+}
+
 export function App(): JSX.Element {
   return (
     <BrowserRouter>
-      <div className="flex min-h-svh flex-col">
-        <SkipLink />
-        <TopBar />
+      <AppShell>
         <AppRoutes />
-      </div>
+      </AppShell>
     </BrowserRouter>
   );
 }
