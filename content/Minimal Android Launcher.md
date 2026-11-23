@@ -2,7 +2,7 @@
 title: Minimal Android Launcher
 description: A minimal Android launcher for keyboard-centric phones from Zinwa, Clicks and Unihertz, inspired by MinUI and Cannoli.
 date: 2026-06-10
-updated: 2026-10-26
+updated: 2026-11-23
 tags:
   - Android
   - Launcher
@@ -50,7 +50,7 @@ On a phone with a real keyboard, the fastest way to find an app is to start typi
 
 ## One key away
 
-The menu key opens the menu of the selected app: App info, Uninstall, Add to favourites, Add to collection, Add to group, Rename and Hide, and, when there are recently used apps, Remove from recently used and Clear recently used. Make an app a favourite and it rises to the top of the list, marked with a star; on a favourite the menu offers Remove from favourites instead, and on a hidden app Unhide.
+The Menu key opens the menu of the selected app, and so does holding Enter, Space or the D-pad centre, for phones without a Menu key, or a long press on the touchscreen. It offers App info, Uninstall, Add to favourites, Add to collection, Add to group, Rename and Hide, and, when there are recently used apps, Remove from recently used and Clear recently used. Make an app a favourite and it rises to the top of the list, marked with a star; on a favourite the menu offers Remove from favourites instead, and on a hidden app Unhide.
 
 ## Groups sort themselves
 
@@ -77,6 +77,8 @@ Export setup saves your favourites, collections, groups, renames, hidden apps, r
 ## Trying it yourself
 
 MinimalUI is still in alpha. It runs on Android 9 or newer, and it is free and open source under GPL-3.0. Releases are published as APK files on the [releases page](https://github.com/Tim-van-Oudheusden/MinimalUI/releases), and after installing you pick MinimalUI as your default home app in Android's settings. A newer release installs over the one you have and keeps your setup, but switching between a debug build and a release needs an uninstall, which erases it, and a new phone starts empty too, so use Export setup first and Import setup once MinimalUI is installed again. No phone is officially supported until someone has tested it on one, so if you try it on yours, the [devices list](https://github.com/Tim-van-Oudheusden/MinimalUI/blob/main/DEVICES.md) explains how to report how it went.
+
+MinimalUI has no internet permission, so it can't tell you when a new release is out. To hear about one, watch the repository on GitHub (Watch, then Custom, then Releases), or follow the [releases feed](https://github.com/Tim-van-Oudheusden/MinimalUI/releases.atom) in a feed reader, which needs no account. Every release so far is signed with the same certificate, and [Check the download](https://github.com/Tim-van-Oudheusden/MinimalUI#check-the-download) in the README gives its SHA-256 digest and the `apksigner` command that checks a downloaded APK against it.
 
 ## The artwork
 
