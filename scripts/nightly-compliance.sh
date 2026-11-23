@@ -11,8 +11,12 @@
 #   - Draft leak guard: scripts/draft-leak-guard.sh finds no `draft: true` front
 #     matter in content/ (CONTENT_DIR overrides the directory), the same check
 #     the release job runs.
-# Check output goes to stderr so stdout stays a clean report. Every check runs
-# even when an earlier one fails; the script exits non-zero if any failed.
+#   - Project pages current with releases: scripts/release-page-check.sh finds
+#     no project page in content/ dated before its repository's latest GitHub
+#     release. The pages it lists, stale or unchecked, follow the table, so the
+#     issue auto-issues.yml files for a failed run says what to update.
+# Other check output goes to stderr so stdout stays a clean report. Every check
+# runs even when an earlier one fails; the script exits non-zero if any failed.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -51,5 +55,17 @@ row "Dependency audit (high+)" $?
 
 "$ROOT/scripts/draft-leak-guard.sh" "$content_dir" >&2
 row "Draft leak guard" $?
+
+release_pages="$("$ROOT/scripts/release-page-check.sh" "$content_dir")"
+row "Project pages current with releases" $?
+
+if [ -n "$release_pages" ]; then
+  echo
+  echo "## Project pages behind their releases"
+  echo
+  echo "Read each page against its release notes, then update it and its \`updated:\` date."
+  echo
+  printf '%s\n' "$release_pages" | sed 's/^/- /'
+fi
 
 exit "$failed"

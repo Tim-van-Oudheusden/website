@@ -11,6 +11,8 @@ let workDir: string;
 let stubDir: string;
 let contentDir: string;
 let argsLog: string;
+let releasesDir: string;
+let curlLog: string;
 
 // Stub `bun`: `bun audit` prints an advisory and exits 1 when STUB_AUDIT_FAIL=1,
 // or when it is not run from the repository root, whose lockfile it reads.
@@ -37,6 +39,78 @@ exit 0
   chmodSync(stubPath, 0o755);
 }
 
+// Stub `curl` as the GitHub API: a request for /repos/<owner>/<repo>/releases/latest
+// answers 200 with $STUB_RELEASES/<owner>__<repo>.json, the HTTP status in
+// <owner>__<repo>.status with an error body, or 404 (no release) when neither
+// exists. STUB_CURL_FAIL=1 fails like a network error. Every URL is appended to
+// $STUB_CURL_LOG.
+function writeCurlStub(): void {
+  const stubPath = join(stubDir, "curl");
+
+  writeFileSync(
+    stubPath,
+    `#!/usr/bin/env bash
+out=""
+url=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -o) out="$2"; shift 2 ;;
+    -H|-w|--max-time) shift 2 ;;
+    http*) url="$1"; shift ;;
+    *) shift ;;
+  esac
+done
+printf '%s\\n' "$url" >> "$STUB_CURL_LOG"
+if [ "\${STUB_CURL_FAIL:-0}" = 1 ]; then
+  echo "curl: (6) Could not resolve host: api.github.com" >&2
+  exit 6
+fi
+repo="\${url#https://api.github.com/repos/}"
+repo="\${repo%/releases/latest}"
+fixture="$STUB_RELEASES/\${repo//\\//__}"
+if [ -f "$fixture.json" ]; then
+  cat "$fixture.json" > "$out"
+  printf 200
+elif [ -f "$fixture.status" ]; then
+  echo '{"message":"API rate limit exceeded"}' > "$out"
+  cat "$fixture.status"
+else
+  echo '{"message":"Not Found"}' > "$out"
+  printf 404
+fi
+`,
+  );
+
+  chmodSync(stubPath, 0o755);
+}
+
+/** A project page whose repo link points at github.com/<repo>. */
+function writeProjectPage(name: string, repo: string, dates: string): void {
+  writeFileSync(
+    join(contentDir, `${name}.md`),
+    [
+      "---",
+      `title: ${name}`,
+      dates,
+      "type: project",
+      "links:",
+      "  - type: repo",
+      "    label: Source repository",
+      `    href: https://github.com/${repo}`,
+      "---",
+      "",
+    ].join("\n"),
+  );
+}
+
+/** The latest release of <repo> as the GitHub API returns it. */
+function writeRelease(repo: string, tag: string, publishedAt: string): void {
+  writeFileSync(
+    join(releasesDir, `${repo.replace("/", "__")}.json`),
+    JSON.stringify({ tag_name: tag, name: tag, draft: false, prerelease: false, published_at: publishedAt }),
+  );
+}
+
 function runScript(env: Record<string, string> = {}): { status: number | null; report: string; log: string } {
   const result = spawnSync("bash", [scriptPath], {
     cwd: workDir,
@@ -47,6 +121,8 @@ function runScript(env: Record<string, string> = {}): { status: number | null; r
       CONTENT_DIR: contentDir,
       GITHUB_SHA: "abc1234",
       STUB_ARGS_LOG: argsLog,
+      STUB_RELEASES: releasesDir,
+      STUB_CURL_LOG: curlLog,
       ...env,
     },
   });
@@ -59,10 +135,14 @@ beforeEach(() => {
   stubDir = join(workDir, "bin");
   contentDir = join(workDir, "content");
   argsLog = join(workDir, "bun-args.log");
+  releasesDir = join(workDir, "releases");
+  curlLog = join(workDir, "curl.log");
   mkdirSync(stubDir);
   mkdirSync(contentDir);
+  mkdirSync(releasesDir);
   writeFileSync(join(contentDir, "Published.md"), "---\ntitle: Published\n---\n\nHello.\n");
   writeBunStub();
+  writeCurlStub();
 });
 
 afterEach(() => {
@@ -85,6 +165,7 @@ describe("scripts/nightly-compliance.sh", () => {
         "| ----- | ------ |",
         "| Dependency audit (high+) | ✅ pass |",
         "| Draft leak guard | ✅ pass |",
+        "| Project pages current with releases | ✅ pass |",
         "",
       ].join("\n"),
     );
@@ -170,6 +251,89 @@ describe("scripts/nightly-compliance.sh", () => {
     expect(status).toBe(1);
     expect(report).toMatch(/Dependency audit.*fail/);
     expect(report).toMatch(/Draft leak guard.*fail/);
+  });
+
+  test("fails and says what to update when a project's latest release is newer than its page", () => {
+    writeProjectPage("Launcher", "owner/launcher", "date: 2026-06-10\nupdated: 2026-10-26");
+    writeRelease("owner/launcher", "v0.1.5", "2026-11-14T09:30:00Z");
+
+    const { status, report } = runScript();
+
+    expect(status).toBe(1);
+    expect(report).toMatch(/Project pages current with releases.*fail/);
+    expect(report).toContain("- `Launcher.md` is dated 2026-10-26; owner/launcher v0.1.5 was released 2026-11-14");
+    expect(readFileSync(curlLog, "utf8")).toBe("https://api.github.com/repos/owner/launcher/releases/latest\n");
+  });
+
+  test("compares the release with date: when the page has no updated:", () => {
+    writeProjectPage("Launcher", "owner/launcher", "date: 2026-11-01");
+    writeRelease("owner/launcher", "v1.0.0", "2026-11-02T00:10:00Z");
+
+    const { status, report } = runScript();
+
+    expect(status).toBe(1);
+    expect(report).toContain("- `Launcher.md` is dated 2026-11-01; owner/launcher v1.0.0 was released 2026-11-02");
+  });
+
+  // Release day against page day: a page updated the day of the release is current.
+  test.each([
+    ["updated the day of the release", "date: 2026-06-10\nupdated: 2026-11-14", "2026-11-14T23:59:59Z"],
+    ["updated after the release", "date: 2026-06-10\nupdated: '2026-11-20'", "2026-11-14T09:30:00Z"],
+    ["whose updated: is newer than its date:", "date: 2026-11-01\nupdated: 2026-11-20 # notes read", "2026-11-14T09:30:00Z"],
+  ])("passes a project page %s", (_, dates, publishedAt) => {
+    writeProjectPage("Launcher", "owner/launcher", dates);
+    writeRelease("owner/launcher", "v0.1.5", publishedAt);
+
+    const { status, report } = runScript();
+
+    expect(status).toBe(0);
+    expect(report).toMatch(/Project pages current with releases.*pass/);
+    expect(report).not.toContain("Launcher.md");
+  });
+
+  test("passes a project whose repository has no release", () => {
+    writeProjectPage("Operating system", "owner/os", "date: 2026-11-16");
+
+    const { status, report } = runScript();
+
+    expect(status).toBe(0);
+    expect(report).toMatch(/Project pages current with releases.*pass/);
+    expect(readFileSync(curlLog, "utf8")).toBe("https://api.github.com/repos/owner/os/releases/latest\n");
+  });
+
+  test("looks up only the repo link of project pages", () => {
+    writeFileSync(
+      join(contentDir, "Article.md"),
+      "---\ntitle: Article\ndate: 2026-01-01\ntype: article\nlinks:\n  - type: repo\n    href: https://github.com/owner/article\n---\n",
+    );
+
+    writeFileSync(
+      join(contentDir, "Docs.md"),
+      "---\ntitle: Docs\ndate: 2026-01-01\ntype: project\nlinks:\n  - type: docs\n    href: https://github.com/owner/docs\n  - type: repo\n    href: https://github.com/owner/code\n---\n",
+    );
+
+    runScript();
+
+    expect(readFileSync(curlLog, "utf8")).toBe("https://api.github.com/repos/owner/code/releases/latest\n");
+  });
+
+  // An unanswered lookup says nothing about the page, so it must not read as stale.
+  test.each([
+    ["an API error", "403", {}, "HTTP 403"],
+    ["a network error", null, { STUB_CURL_FAIL: "1" }, "curl exit 6"],
+  ])("fails as a lookup failure, not a stale page, on %s", (_, httpStatus, env, reason) => {
+    writeProjectPage("Launcher", "owner/launcher", "date: 2026-11-01");
+
+    if (httpStatus !== null) {
+      writeFileSync(join(releasesDir, "owner__launcher.status"), httpStatus);
+    }
+
+    const { status, report } = runScript(env);
+
+    expect(status).toBe(1);
+    expect(report).toMatch(/Project pages current with releases.*fail/);
+    expect(report).toContain(`- \`Launcher.md\`: could not look up the latest release of owner/launcher (${reason})`);
+    expect(report).not.toContain("is dated");
   });
 });
 

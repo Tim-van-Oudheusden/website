@@ -10,8 +10,9 @@
 | `scripts/e2e.sh`                | Playwright E2E suite against the dev pod              | yes          |
 | `scripts/prod-assets.sh`        | Prod front-end image serves every `public/` file      | yes          |
 | `scripts/quality-report.sh`     | Markdown report of all gates + coverage per workspace | no           |
-| `scripts/nightly-compliance.sh` | Markdown report of dependency audit + draft guard     | no           |
+| `scripts/nightly-compliance.sh` | Markdown report of dependency audit + draft guard + release check | no |
 | `scripts/draft-leak-guard.sh <dir>` | Lists files with `draft: true` front matter; fails if any, or if it cannot read `<dir>` | no |
+| `scripts/release-page-check.sh <dir>` | Lists project pages dated before their repository's latest GitHub release; fails if any, or if it cannot look one up | no |
 | `bun scripts/auto-qa-tuner.ts` | Propose ratcheted coverage floors from a quality report | no           |
 | `bun x stryker run stryker/<workspace>.conf.mjs` | Mutation testing of one workspace (StrykerJS) | no |
 | `bun run screenshots:readme`    | README screenshots + social preview from the dev pod | yes          |
@@ -63,7 +64,7 @@ change:
 
 - **Lockfile drift** — the workflow's `bun install --frozen-lockfile` step fails
   if `bun.lock` no longer matches `package.json`. It runs first, so drift stops
-  the job before the two checks below.
+  the job before the checks below.
 - **Dependency audit** — `bun audit --audit-level=high` fails on any high or
   critical advisory in the locked dependency tree. Advisories with no patched
   release upstream are listed in `AUDIT_IGNORE` in the script, each with the
@@ -73,13 +74,23 @@ change:
   not, with or without a trailing `# comment`. It also fails (exit 2) when it
   cannot read `content/` or a file in it, such as a dangling symlink. The
   `release` job in `ci.yml` runs the same script.
+- **Project pages current with releases** — `scripts/release-page-check.sh`
+  looks up, for every `content/` page with `type: project` and a `links` entry
+  of `type: repo` on github.com, the repository's latest GitHub release
+  (unauthenticated REST API; pre-releases never count) and fails when it was
+  published on a later day (UTC) than the page's `updated:` date, or `date:`
+  when there is none. A repository with no release passes. A network or API
+  error fails it too (exit 2), listed as "could not look up", never as a stale
+  page. The report lists each page after the table, so the issue below says
+  what to update. It needs curl and jq, and turns the nightly red from the day
+  a project releases until its page is updated.
 
-`scripts/nightly-compliance.sh` runs the audit and the draft guard and writes
-the report, published as the run's job summary and as the `nightly-compliance`
-artifact. Both run even if the first fails, and the job fails if either failed.
-Run it locally with `scripts/nightly-compliance.sh > nightly-compliance.md`. It
-does not check the lockfile: to reproduce drift, run
-`bun install --frozen-lockfile`.
+`scripts/nightly-compliance.sh` runs the audit, the draft guard and the release
+check and writes the report, published as the run's job summary and as the
+`nightly-compliance` artifact. Each runs even if an earlier one fails, and the
+job fails if any failed. Run it locally with
+`scripts/nightly-compliance.sh > nightly-compliance.md`. It does not check the
+lockfile: to reproduce drift, run `bun install --frozen-lockfile`.
 
 A failed nightly run on `main` becomes an issue: `.github/workflows/auto-issues.yml`
 runs after it, downloads the report, and calls `scripts/auto-issue.sh`, which

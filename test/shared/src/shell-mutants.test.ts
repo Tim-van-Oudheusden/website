@@ -38,6 +38,7 @@ const QUALITY_SCRIPT = "scripts/quality-report.sh";
 const QUALITY_TEST = "test/shared/src/quality-report-script.test.ts";
 const NIGHTLY_SCRIPT = "scripts/nightly-compliance.sh";
 const NIGHTLY_TEST = "test/shared/src/nightly-compliance-script.test.ts";
+const RELEASE_PAGE_SCRIPT = "scripts/release-page-check.sh";
 const AUTO_ISSUE_SCRIPT = "scripts/auto-issue.sh";
 const AUTO_ISSUE_TEST = "test/shared/src/auto-issue-script.test.ts";
 const APPLY_SCRIPT = "scripts/apply-review-suggestions.sh";
@@ -431,6 +432,48 @@ const MUTANTS: readonly ShellMutant[] = [
     name: "the report table keeps the header Markdown needs",
     file: NIGHTLY_SCRIPT,
     from: `echo "| ----- | ------ |"\n`,
+    to: "",
+    killedBy: NIGHTLY_TEST,
+  },
+  {
+    name: "a page updated after the release is current, not stale (#1329)",
+    file: RELEASE_PAGE_SCRIPT,
+    from: `if [[ "$published" > "$day" ]]; then`,
+    to: `if [[ "$published" != "$day" ]]; then`,
+    killedBy: NIGHTLY_TEST,
+  },
+  {
+    name: "a page's updated: date wins over its date: (#1329)",
+    file: RELEASE_PAGE_SCRIPT,
+    from: `day = updated != "" ? updated : date`,
+    to: `day = date != "" ? date : updated`,
+    killedBy: NIGHTLY_TEST,
+  },
+  {
+    name: "a repository with no release passes (#1329)",
+    file: RELEASE_PAGE_SCRIPT,
+    from: "404) continue ;; # no release yet",
+    to: "404) ;;",
+    killedBy: NIGHTLY_TEST,
+  },
+  {
+    name: "a network error is reported as one, not as an HTTP status (#1329)",
+    file: RELEASE_PAGE_SCRIPT,
+    from: `if [ "$curl_exit" -ne 0 ]; then`,
+    to: "if false; then",
+    killedBy: NIGHTLY_TEST,
+  },
+  {
+    name: "only project pages are looked up (#1329)",
+    file: RELEASE_PAGE_SCRIPT,
+    from: `[ "$type" != project ] || `,
+    to: "",
+    killedBy: NIGHTLY_TEST,
+  },
+  {
+    name: "only a links item of type repo names the repository (#1329)",
+    file: RELEASE_PAGE_SCRIPT,
+    from: `item_type == "repo" && `,
     to: "",
     killedBy: NIGHTLY_TEST,
   },
