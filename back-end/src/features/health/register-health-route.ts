@@ -12,14 +12,19 @@ import { APP_NAME, ROUTES } from "shared";
  * while every real request 404s or 500s on a missing/unmounted directory.
  * This checks the directory is readable and fails the probe (503) when it
  * is not, so orchestrators and the CI/e2e wait loops see the real state.
+ * The errno code goes to the log, not the response: the liveness probe
+ * restarts the container on this 503, and the journal should say why.
  */
 export function registerHealthRoute(app: FastifyInstance, contentDir: string): void {
-  app.get(ROUTES.HEALTH, async (_request, reply: FastifyReply): Promise<HealthCheckResponse> => {
+  app.get(ROUTES.HEALTH, async (request, reply: FastifyReply): Promise<HealthCheckResponse> => {
     const uptime = Math.round(process.uptime());
 
     try {
       await access(contentDir, constants.R_OK);
-    } catch {
+    } catch (error) {
+      const code = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "unknown";
+
+      request.log.warn({ code, contentDir }, "content directory is not accessible");
       reply.code(503);
 
       return {

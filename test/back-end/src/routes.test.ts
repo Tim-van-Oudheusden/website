@@ -294,6 +294,32 @@ describe(`GET ${ROUTES.HEALTH} reflects content directory availability`, () => {
     }
   });
 
+  test("warns with the error code when contentDir is missing, keeping it out of the response", async () => {
+    const lines: string[] = [];
+    const logger = { level: "warn", stream: { write: (line: string) => lines.push(line) } };
+    const contentDir = resolve(import.meta.dir, "../../../content-does-not-exist");
+    const app = await buildApp({ logger, contentDir });
+
+    await app.ready();
+
+    try {
+      const res = await app.inject({ method: "GET", url: ROUTES.HEALTH });
+
+      expect(res.statusCode).toBe(503);
+      expect(res.body).not.toContain("ENOENT");
+      expect(lines).toHaveLength(1);
+
+      expect(JSON.parse(lines[0] ?? "")).toMatchObject({
+        level: 40,
+        code: "ENOENT",
+        contentDir,
+        msg: "content directory is not accessible",
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
   test("returns 503 when contentDir exists but cannot be read", async () => {
     const unreadableDir = await mkdtemp(join(tmpdir(), "health-unreadable-"));
 
