@@ -21,7 +21,7 @@ reviewed like code.
 | [Unit-test coverage](#unit-test-coverage) | Function and line coverage per workspace | `scripts/quality-report.sh` via `quality-report.yml` | Same as above | Job summary + `quality-report` artifact |
 | [Coverage floors](#coverage-floors) | Minimum coverage each workspace must keep | `.github/auto-qa-tuning.json`, enforced by `coverage-gate.yml` | Every PR and push to `main` | Check result; proposed floors as `auto-qa-tuning` artifact |
 | [PR acceptance rate](#pr-acceptance-rate) | Merged vs. closed-unmerged PRs per source (Hive, Claude Code in CI, Dependabot, other) | `scripts/pr-metrics.ts` via `pr-metrics.yml` | Weekly (Mon 06:17 UTC), manual | Job summary |
-| [Nightly compliance](#nightly-compliance) | Dependency advisories, draft-content leaks, lockfile drift | `scripts/nightly-compliance.sh` via `nightly-compliance.yml` | Nightly (03:23 UTC), manual | Job summary + `nightly-compliance` artifact; a failure on `main` opens or comments on the **Nightly compliance failing** issue (`auto-issues.yml`) |
+| [Nightly compliance](#nightly-compliance) | Dependency advisories, draft-content leaks, project pages behind their releases, lockfile drift | `scripts/nightly-compliance.sh` via `nightly-compliance.yml` | Nightly (03:23 UTC), manual | Job summary + `nightly-compliance` artifact; a failure on `main` opens or comments on the **Nightly compliance failing** issue (`auto-issues.yml`) |
 | [Risk tier](#risk-tier) | Review risk of each PR from the paths it changes | `scripts/tier-classify.sh` via `tier-classifier.yml` | Every PR | Job summary |
 | [Mutation score](#mutation-score) | Share of mutants the unit tests kill, per workspace | StrykerJS (`stryker/<workspace>.conf.mjs`) and `scripts/mutation-summary.ts` via `mutation-testing.yml` | Nightly (02:47 UTC), manual | Job summary + `mutation-<workspace>` artifact |
 | [Strategy report](#strategy-report) | Issue and PR flow, open backlog per pipeline stage, ACMM gaps per level | `scripts/strategy-report.ts` via `strategy-report.yml` | Weekly (Mon 06:17 UTC), manual | Job summary |
@@ -84,13 +84,14 @@ bun scripts/pr-metrics.ts "$since" prs.json
 
 Checks that can go stale without a code change: `bun audit` reports no high or
 critical advisories (except those listed in the script's `AUDIT_IGNORE`), no `draft: true` front matter in
-`content/`, and a frozen-lockfile install succeeds.
+`content/`, no project page older than its repository's latest GitHub release,
+and a frozen-lockfile install succeeds.
 
 ```bash
 scripts/nightly-compliance.sh > nightly-compliance.md
 ```
 
-The script runs the audit and the draft check. The lockfile check is the
+The script runs the audit, the draft check and the release check. The lockfile check is the
 workflow's install step, which stops the job before the script runs; see
 [Nightly compliance](../testing.md#nightly-compliance).
 
