@@ -133,8 +133,10 @@ land() {
     return 0
   fi
 
-  ready="$(HOLD="$HOLD_LABEL" SENTINEL="$SENTINEL_LABEL" gh pr view "$number" --json isDraft,labels \
-    --jq '(.isDraft | not) and all(.labels[]; .name != env.HOLD and .name != env.SENTINEL)')"
+  # A pull request closed unmerged during verification still reads CLEAN. One merged
+  # meanwhile goes on to the merged-at-the-verified-head check below.
+  ready="$(HOLD="$HOLD_LABEL" SENTINEL="$SENTINEL_LABEL" gh pr view "$number" --json state,isDraft,labels \
+    --jq '(.state != "CLOSED") and (.isDraft | not) and all(.labels[]; .name != env.HOLD and .name != env.SENTINEL)')"
   state="$(merge_state "$number")"
   if [ "$ready" != true ] || [ "$state" != CLEAN ]; then
     echo "::notice title=Merge queue::#${number} stopped being ready during verification; skipped"
