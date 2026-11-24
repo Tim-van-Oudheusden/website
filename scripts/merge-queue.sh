@@ -133,8 +133,10 @@ land() {
     return 0
   fi
 
-  # A pull request closed unmerged during verification still reads CLEAN. One merged
-  # meanwhile goes on to the merged-at-the-verified-head check below.
+  # A pull request closed unmerged during verification still reads CLEAN, so only its
+  # state says to leave it. One merged meanwhile reads UNKNOWN and is skipped by the
+  # CLEAN check; `!= "CLOSED"` rather than `== "OPEN"` only keeps the test fakes,
+  # which report MERGED while still CLEAN, on the merge-failure path below.
   ready="$(HOLD="$HOLD_LABEL" SENTINEL="$SENTINEL_LABEL" gh pr view "$number" --json state,isDraft,labels \
     --jq '(.state != "CLOSED") and (.isDraft | not) and all(.labels[]; .name != env.HOLD and .name != env.SENTINEL)')"
   state="$(merge_state "$number")"
