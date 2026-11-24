@@ -211,6 +211,13 @@ const MUTANTS: readonly ShellMutant[] = [
     killedBy: MERGE_QUEUE_TEST,
   },
   {
+    name: "land skips a PR closed unmerged during verification (#1342)",
+    file: MERGE_QUEUE_SCRIPT,
+    from: `(.state != "CLOSED") and `,
+    to: ``,
+    killedBy: MERGE_QUEUE_TEST,
+  },
+  {
     name: "the draft leak guard fails instead of passing when grep cannot read the content directory (#1024)",
     file: "scripts/draft-leak-guard.sh",
     from: "    exit 2\n",

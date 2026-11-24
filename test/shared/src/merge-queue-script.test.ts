@@ -57,7 +57,7 @@ interface PullRequest {
   labels?: string[];
   mergeStateStatus?: string;
   closingIssues?: number[];
-  /** What GitHub reports after a merge call; OPEN unless set. */
+  /** OPEN unless set; CLOSED for one closed unmerged, MERGED for what GitHub reports after a merge call. */
   state?: string;
   /** Overrides the head GitHub reports, which is the pushed pull ref unless set. */
   headRefOid?: string;
@@ -526,6 +526,8 @@ describe("scripts/merge-queue.sh land", () => {
     ["put on hold", { labels: ["hold"] }],
     ["flagged by Hive's sentinel", { labels: ["sentinel-alert"] }],
     ["turned back into a draft", { isDraft: true }],
+    // Closed unmerged still reads CLEAN, so only its state tells land to leave it.
+    ["closed unmerged", { state: "CLOSED" }],
     ["no longer passing its required checks", { mergeStateStatus: "BLOCKED" }],
   ])("does not merge a pull request %s during verification, or close its issues", (_, change) => {
     const heads = setUpRepository({ "README.md": "site\n" }, [{ number: 7, closingIssues: [12], ...change }]);
