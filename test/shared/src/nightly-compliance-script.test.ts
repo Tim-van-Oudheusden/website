@@ -309,11 +309,13 @@ describe("scripts/nightly-compliance.sh", () => {
 
     // A lookup that fails says nothing about the page, so it must not read as
     // a stale page, nor as a pass.
+    // The reason in the note is what tells a rate limit from an outage.
     test.each([
-      ["the network is unreachable", "unreachable" as const, {}],
-      ["the API refuses the request", 403, { message: "API rate limit exceeded" }],
-      ["the release has no publish date", 200, { tag_name: "v0.1.5" }],
-    ])("fails the lookup row, not the page row, when %s", (_name, httpStatus, body) => {
+      ["the network is unreachable", "unreachable" as const, {}, "curl exited 6"],
+      ["the API refuses the request", 403, { message: "API rate limit exceeded" }, "HTTP 403"],
+      ["the release has no publish date", 200, { tag_name: "v0.1.5" }, "no tag or publish date in the response"],
+      ["the release has no tag", 200, { published_at: "2026-11-14T10:11:56Z" }, "no tag or publish date in the response"],
+    ])("fails the lookup row, not the page row, when %s", (_name, httpStatus, body, reason) => {
       writeProjectPage("Minimal Android Launcher.md", repo, "date: 2026-06-10\nupdated: 2026-10-26");
       stubRelease(repo, httpStatus, body);
 
@@ -322,7 +324,7 @@ describe("scripts/nightly-compliance.sh", () => {
       expect(status).toBe(1);
       expect(report).toMatch(/Project release lookup \| ❌ fail/);
       expect(report).toMatch(/Project pages current with releases \| ✅ pass/);
-      expect(report).toContain("could not read the latest release of Tim-van-Oudheusden/MinimalUI");
+      expect(report).toContain(`could not read the latest release of Tim-van-Oudheusden/MinimalUI (${reason})`);
     });
 
     test("checks every project page even after one fails", () => {
@@ -373,6 +375,43 @@ describe("scripts/nightly-compliance.sh", () => {
       expect(readFileSync(curlLog, "utf8")).toBe(
         "https://api.github.com/repos/Tim-van-Oudheusden/pindu-os/releases/latest\n",
       );
+    });
+
+    // GitHub answers 404 for `<repo>.git`, which reads as "no releases": the
+    // page would pass without ever being compared.
+    test("looks up a repo link that ends in .git without the suffix", () => {
+      writeProjectPage("Minimal Android Launcher.md", `${repo}.git`, "date: 2026-06-10\nupdated: 2026-10-26");
+      stubRelease(repo, 200, release);
+
+      const { status, report } = runScript();
+
+      expect(status).toBe(1);
+      expect(report).toMatch(/Project pages current with releases \| ❌ fail/);
+      expect(readFileSync(curlLog, "utf8")).toBe(`https://api.github.com/repos/${repo}/releases/latest\n`);
+    });
+
+    test("skips github.com links that are not a repo link to a repository's root", () => {
+      writeFileSync(
+        join(contentDir, "Not a repo.md"),
+        [
+          "---",
+          "title: Not a repo",
+          "date: 2026-01-01",
+          "type: project",
+          "links:",
+          "  - type: docs",
+          "    href: https://github.com/Tim-van-Oudheusden/handbook",
+          "  - type: repo",
+          "    href: https://github.com/Tim-van-Oudheusden/website/tree/main/content",
+          "---",
+          "",
+        ].join("\n"),
+      );
+
+      const { status } = runScript();
+
+      expect(status).toBe(0);
+      expect(readFileSync(curlLog, "utf8")).toBe("");
     });
   });
 });
