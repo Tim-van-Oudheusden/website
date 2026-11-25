@@ -7,10 +7,10 @@
 // Usage:
 //   bun scripts/ai-audit-report.ts <since YYYY-MM-DD> <prs.json>
 //
-// <prs.json> is `gh pr list --state merged --json
-// number,title,author,headRefName,mergedAt,mergedBy,body`. The window runs from
-// <since> (UTC midnight) to now. Exits 1 if the input can't be read, 2 on bad
-// usage.
+// <prs.json> is `gh pr list --state merged --limit 1000 --search
+// "merged:>=<since>" --json number,title,author,headRefName,mergedAt,mergedBy,body`
+// (gh lists only 30 without --limit). The window runs from <since> (UTC
+// midnight) to now. Exits 1 if the input can't be read, 2 on bad usage.
 import { readFileSync } from "node:fs";
 
 import type { Attribution } from "../shared/src/pr-source";

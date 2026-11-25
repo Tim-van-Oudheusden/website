@@ -6,9 +6,10 @@
 // Usage:
 //   bun scripts/strategy-report.ts <since YYYY-MM-DD> <issues.json> <prs.json>
 //
-// <issues.json> is `gh issue list --state all --json
+// <issues.json> is `gh issue list --state all --limit 10000 --json
 // number,title,state,labels,createdAt,closedAt`; <prs.json> is `gh pr list
-// --state merged --json mergedAt`. The window runs from <since> (UTC midnight)
+// --state merged --limit 1000 --search "merged:>=<since>" --json mergedAt` (gh
+// lists only 30 without --limit). The window runs from <since> (UTC midnight)
 // to now. Exits 1 if an input can't be read, 2 on bad usage.
 import { readFileSync } from "node:fs";
 
