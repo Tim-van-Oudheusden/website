@@ -46,9 +46,11 @@ Claude runs and steer them, so it needs a change to this policy first.
   `0600` files and are never copied into the workspace.
 - Agents must not read `.env*` files. `.claude/settings.json` denies these
   reads.
-- Tokens such as `GITHUB_TOKEN` exist only in the shell environment
-  (`export GITHUB_TOKEN="$(gh auth token)"`). Never echo, log, commit, or paste
-  them into a prompt, issue, PR, or comment.
+- Local GitHub access goes through `gh`, which keeps its token in the system
+  keyring. Don't export a token such as `GITHUB_TOKEN` into the shell
+  environment: every agent and child process started from that shell inherits
+  it. Never echo, log, commit, or paste a token into a prompt, issue, PR, or
+  comment.
 - If an agent exposes a secret, rotate it right away, then record what happened
   (see [Reporting](#reporting)).
 
