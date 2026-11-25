@@ -7,9 +7,10 @@
 // Usage:
 //   bun scripts/pr-metrics.ts <since YYYY-MM-DD> <prs.json>
 //
-// <prs.json> is `gh pr list --state closed --search "closed:>=<since>" --json
-// headRefName,mergedAt,body`; <since> only labels the report. Exits 1 if
-// the input can't be read, 2 on bad usage.
+// <prs.json> is `gh pr list --state closed --limit 1000 --search
+// "closed:>=<since>" --json headRefName,mergedAt,body` (gh lists only 30
+// without --limit); <since> only labels the report. Exits 1 if the input can't
+// be read, 2 on bad usage.
 import { readFileSync } from "node:fs";
 
 import { attribute, SOURCES } from "../shared/src/pr-source";
