@@ -5,7 +5,11 @@ import { act, createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import type { ObservedSectionEntry } from "../../../../../../front-end/src/features/home/hooks/use-active-home-section";
-import { selectActiveSectionId, useActiveHomeSection } from "../../../../../../front-end/src/features/home/hooks/use-active-home-section";
+import {
+  sectionsInBand,
+  selectActiveSectionId,
+  useActiveHomeSection,
+} from "../../../../../../front-end/src/features/home/hooks/use-active-home-section";
 import type { HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
 import type { FakeMount } from "../../../../src/test/dom-harness";
 import { findBySlot, initFakeDomHarness, mountIntoBody, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
@@ -22,41 +26,39 @@ afterAll(() => {
 
 const VALID_IDS: readonly HomeSectionId[] = ["start", "for-you", "socials"];
 
-function entry(id: string, ratio: number, isIntersecting = true): ObservedSectionEntry {
-  return { id, intersectionRatio: ratio, isIntersecting };
+function entry(id: string, isIntersecting: boolean): ObservedSectionEntry {
+  return { id, isIntersecting };
 }
 
-describe("selectActiveSectionId", () => {
-  test("selects the highest-ratio intersecting valid section", () => {
-    expect(selectActiveSectionId(
-      [entry("start", 0.2), entry("for-you", 0.8)], VALID_IDS, "start",
-    )).toBe("for-you");
+describe("sectionsInBand", () => {
+  test("adds sections that enter the band and drops those that leave it", () => {
+    expect(sectionsInBand(new Set(["start"]), [entry("start", false), entry("for-you", true)])).toEqual(new Set(["for-you"]));
   });
 
-  test("ignores non-intersecting entries", () => {
-    expect(selectActiveSectionId(
-      [entry("start", 0.9, false), entry("for-you", 0.5)], VALID_IDS, "start",
-    )).toBe("for-you");
+  test("keeps sections no entry reports on", () => {
+    expect(sectionsInBand(new Set(["start"]), [entry("for-you", true)])).toEqual(new Set(["start", "for-you"]));
+  });
+
+  test("applies a section's entries in order, so its latest report wins", () => {
+    expect(sectionsInBand(new Set(), [entry("for-you", true), entry("for-you", false)])).toEqual(new Set());
+  });
+});
+
+describe("selectActiveSectionId", () => {
+  test("selects the section in the band", () => {
+    expect(selectActiveSectionId(new Set(["for-you"]), VALID_IDS, "start")).toBe("for-you");
+  });
+
+  test("selects the later section in page order when two share the band", () => {
+    expect(selectActiveSectionId(new Set(["socials", "start"]), VALID_IDS, "for-you")).toBe("socials");
   });
 
   test("ignores ids outside the valid section set", () => {
-    expect(selectActiveSectionId(
-      [entry("unknown", 1), entry("start", 0.3)], VALID_IDS, "for-you",
-    )).toBe("start");
+    expect(selectActiveSectionId(new Set(["start", "unknown"]), VALID_IDS, "for-you")).toBe("start");
   });
 
-  test("keeps the current section when no entry competes", () => {
-    expect(selectActiveSectionId([], VALID_IDS, "for-you")).toBe("for-you");
-
-    expect(selectActiveSectionId(
-      [entry("start", 0, true)], VALID_IDS, "for-you",
-    )).toBe("for-you");
-  });
-
-  test("prefers the first strictly greater ratio on ties", () => {
-    expect(selectActiveSectionId(
-      [entry("start", 0.5), entry("for-you", 0.5)], VALID_IDS, "socials",
-    )).toBe("start");
+  test("keeps the current section when the band holds no section", () => {
+    expect(selectActiveSectionId(new Set(), VALID_IDS, "for-you")).toBe("for-you");
   });
 });
 
@@ -106,7 +108,7 @@ describe("useActiveHomeSection", () => {
     }
   });
 
-  test("follows the most visible section as intersection reports arrive", () => {
+  test("follows the section in the activation band as intersection reports arrive", () => {
     const mount = mountProbe();
 
     try {
@@ -127,6 +129,45 @@ describe("useActiveHomeSection", () => {
       });
 
       expect(activeSection(mount)).toBe("socials");
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("makes the later section current when two share the band, however little of each is visible", () => {
+    const mount = mountProbe();
+
+    try {
+      // A tall section shows a far smaller share of itself in the band than a short one does.
+      act(() => {
+        triggerFakeIntersections([
+          { target: section("start"), intersectionRatio: 0.005 },
+          { target: section("for-you"), intersectionRatio: 0.001 },
+        ]);
+      });
+
+      expect(activeSection(mount)).toBe("for-you");
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("returns to the section still in the band when the later one leaves it", () => {
+    const mount = mountProbe();
+
+    try {
+      act(() => {
+        triggerFakeIntersections([
+          { target: section("start"), intersectionRatio: 0.01 },
+          { target: section("for-you"), intersectionRatio: 0.01 },
+        ]);
+      });
+
+      act(() => {
+        triggerFakeIntersections([{ target: section("for-you"), intersectionRatio: 0 }]);
+      });
+
+      expect(activeSection(mount)).toBe("start");
     } finally {
       unmountFakeDomRoot(mount);
     }
