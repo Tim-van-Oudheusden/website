@@ -99,8 +99,40 @@ function scriptKeepOutLabels(fn: string): (text: string) => string[] {
   };
 }
 
+/** The value of the `export const name = "..." as const;` line of a TypeScript module. */
+function constString(name: string): (text: string) => string {
+  return (text) => only(text, new RegExp(`^export const ${name} = "([^"]*)" as const;$`, "gm"), `${name} constant`)[0] ?? "";
+}
+
+/** The content of the `theme-color` meta tag scoped to the given `prefers-color-scheme`. */
+function themeColorMeta(scheme: "light" | "dark"): (text: string) => string {
+  return (text) => only(
+    text,
+    new RegExp(`<meta name="theme-color" media="\\(prefers-color-scheme: ${scheme}\\)" content="([^"]*)" />`, "g"),
+    `${scheme} theme-color meta tag`,
+  )[0] ?? "";
+}
+
+/** The value of `variable` inside the top-level CSS rule whose selector line is `selectorPattern {`. */
+function cssRuleVariable(selectorPattern: string, variable: string): (text: string) => string {
+  return (text) => {
+    const [body = ""] = only(text, new RegExp(`^${selectorPattern} \\{\\n([\\s\\S]*?)^\\}$`, "gm"), "rule");
+
+    return only(body, new RegExp(`^\\s*${variable}: ([^;]*);`, "gm"), `${variable} declaration`)[0] ?? "";
+  };
+}
+
+/** The string at top-level `key` of the JSON document `text`. */
+function jsonString(key: string): (text: string) => unknown {
+  return (text) => (JSON.parse(text) as Record<string, unknown>)[key];
+}
+
 const MERGE_QUEUE_SCRIPT = "scripts/merge-queue.sh";
 const MERGE_QUEUE_WORKFLOW = ".github/workflows/merge-queue.yml";
+const SHARED_CONSTANTS = "shared/src/index.ts";
+const INDEX_HTML = "front-end/index.html";
+const INDEX_CSS = "front-end/src/index.css";
+const MANIFEST = "public/manifest.webmanifest";
 
 const SHARED_LITERALS: readonly SharedLiteral[] = [
   {
@@ -113,6 +145,26 @@ const SHARED_LITERALS: readonly SharedLiteral[] = [
       { file: MERGE_QUEUE_SCRIPT, where: "land(): still-ready filter", read: scriptKeepOutLabels("land") },
       { file: MERGE_QUEUE_WORKFLOW, where: "concurrency.group", read: workflowLabelList(["concurrency", "group"]) },
       { file: MERGE_QUEUE_WORKFLOW, where: "jobs.pick.if", read: workflowLabelList(["jobs", "pick", "if"]) },
+    ],
+  },
+  {
+    name:
+      "light page colour: the browser chrome and the installed app's splash match the light page, so the address"
+      + " bar and the page above the fold are one colour (#1360)",
+    copies: [
+      { file: SHARED_CONSTANTS, where: "PAGE_COLOR_LIGHT", read: constString("PAGE_COLOR_LIGHT") },
+      { file: INDEX_CSS, where: ":root --site-page-bg", read: cssRuleVariable(":root", "--site-page-bg") },
+      { file: INDEX_HTML, where: "light theme-color meta tag", read: themeColorMeta("light") },
+      { file: MANIFEST, where: "theme_color", read: jsonString("theme_color") },
+      { file: MANIFEST, where: "background_color", read: jsonString("background_color") },
+    ],
+  },
+  {
+    name: "dark page colour: the browser chrome matches the dark page (#1360)",
+    copies: [
+      { file: SHARED_CONSTANTS, where: "PAGE_COLOR_DARK", read: constString("PAGE_COLOR_DARK") },
+      { file: INDEX_CSS, where: ".dark --site-page-bg", read: cssRuleVariable("\\.dark", "--site-page-bg") },
+      { file: INDEX_HTML, where: "dark theme-color meta tag", read: themeColorMeta("dark") },
     ],
   },
 ];
@@ -227,5 +279,24 @@ describe("reading copies", () => {
     ],
   ])("fails, naming the copy, when %s", (_case, file, from, to, message) => {
     expect(() => readCopies(keepOut, withReplaced(file, [[from, to]]))).toThrow(message);
+  });
+});
+
+describe("reading page colour copies", () => {
+  const [, lightPage, darkPage] = SHARED_LITERALS;
+
+  test("a dark --site-page-bg that drifts reads a different value from the meta tag", () => {
+    const readFile = withReplaced(INDEX_CSS, [
+      ["  --site-page-bg: #1c1b1a; /* Flexoki base-950 */", "  --site-page-bg: #100f0f;"],
+    ]);
+
+    expect(readCopies(darkPage!, readFile).map(({ value }) => value)).toEqual(["#1c1b1a", "#100f0f", "#1c1b1a"]);
+  });
+
+  test("a light theme-color meta tag that drifts reads a different value from the CSS", () => {
+    const readFile = withReplaced(INDEX_HTML, [['content="#f3efe5"', 'content="#3584e4"']]);
+
+    expect(readCopies(lightPage!, readFile).map(({ value }) => value))
+      .toEqual(["#f3efe5", "#f3efe5", "#3584e4", "#f3efe5", "#f3efe5"]);
   });
 });

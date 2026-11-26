@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { BRAND_COLOR, FEED_PATH, SITE_NAME } from "shared";
+import { FEED_PATH, PAGE_COLOR_DARK, PAGE_COLOR_LIGHT, SITE_NAME } from "shared";
 
 describe("index.html", () => {
   test("titles the browser tab with the site name", () => {
@@ -47,6 +47,13 @@ describe("index.html", () => {
       '<link rel="manifest" href="/manifest.webmanifest" />',
     ]);
 
-    expect(html).toContain(`<meta name="theme-color" content="${BRAND_COLOR}" />`);
+    const themeColors = [...html.matchAll(/<meta\b[^>]*>/g)]
+      .map(([tag]) => tag)
+      .filter((tag) => /\bname="theme-color"/.test(tag));
+
+    expect(themeColors).toEqual([
+      `<meta name="theme-color" media="(prefers-color-scheme: light)" content="${PAGE_COLOR_LIGHT}" />`,
+      `<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${PAGE_COLOR_DARK}" />`,
+    ]);
   });
 });

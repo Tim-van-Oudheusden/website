@@ -114,7 +114,10 @@ shade and backdrop colours were unused and are gone.
 [`public/favicon.svg`](public/favicon.svg) is the source mark. The PNG icons in `public/` are renders of it:
 `apple-touch-icon.png` (180 px, square corners, because iOS rounds them itself) and `icon-192.png` and `icon-512.png`
 (listed in [`public/manifest.webmanifest`](public/manifest.webmanifest)). When the mark changes, re-render all three.
-The manifest and `theme-color` in `front-end/index.html` use the mark's blue, `#3584e4`.
+The icons, `--primary` and `--chart-1` keep the mark's blue, `#3584e4`. The browser chrome follows the page instead:
+`front-end/index.html` has a `theme-color` tag per colour scheme with the page colour (`--site-page-bg`: `#f3efe5`
+light, `#1c1b1a` dark), the theme menu sets both to the chosen theme's colour, and the manifest's `theme_color` and
+`background_color` are the light page colour, so the address bar and an installed app's splash match the page.
 
 ### Design references
 
