@@ -36,7 +36,7 @@ const ROW_LAYOUT_CLASSES: Record<ShowcaseTileSize, RowLayoutClasses> = {
 };
 
 /** Outline pill; an icon-only 44px circle while the card is narrower than 32rem. */
-const CTA_CLASSES = "size-11 flex-none rounded-full border-(--paper-3) bg-(--paper-2) text-(--ink-5) shadow-none transition-all duration-300 hover:border-(--ink-1) hover:bg-(--paper-1) dark:border-(--ink-2) dark:bg-(--popover) dark:text-(--paper-1) dark:hover:border-(--paper-3) dark:hover:bg-white/10 @lg/card:h-12 @lg/card:w-auto @lg/card:gap-2 @lg/card:pr-4 @lg/card:pl-6 @lg/card:text-base motion-reduce:transition-none";
+const CTA_CLASSES = "size-11 flex-none rounded-full border-(--paper-3) bg-(--paper-2) text-(--ink-5) shadow-none transition-colors duration-150 hover:border-(--ink-1) hover:bg-(--paper-1) dark:border-(--ink-2) dark:bg-(--popover) dark:text-(--paper-1) dark:hover:border-(--paper-3) dark:hover:bg-white/10 @lg/card:h-12 @lg/card:w-auto @lg/card:gap-2 @lg/card:pr-4 @lg/card:pl-6 @lg/card:text-base motion-reduce:transition-none";
 
 const CTA_LABEL = "Learn more";
 
