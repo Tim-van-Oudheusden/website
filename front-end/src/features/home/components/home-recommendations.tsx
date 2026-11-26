@@ -7,15 +7,39 @@ import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import type { ContentLoader } from "@/shared/lib/content-loader";
 
 import { headingIdFor } from "../config/home-sections";
-import { resolveRecommendedPool, selectRecommendedArticles } from "../lib/recommended-articles";
+import {
+  RECOMMENDED_ARTICLES_COUNT,
+  resolveRecommendedPool,
+  selectRecommendedArticles,
+} from "../lib/recommended-articles";
 import type { HomeRecommendationsSection } from "../types/home-section";
 
 import { HomeLoadSlot } from "./home-load-slot";
 import { HomeSectionHeading } from "./home-section-heading";
 import { HOME_SECTION_FRAME_CLASSES, HomeSectionFrame } from "./home-section-shell";
-import { RecommendedArticleCard } from "./recommended-article-card";
+import { RecommendedArticleCard, RecommendedArticleCardSkeleton } from "./recommended-article-card";
 
-/** The slot below the heading: loading note, error note, or the card grid. */
+const CARD_GRID_CLASSES = "grid grid-cols-1 gap-x-4 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-6";
+
+/** Like Kent's layout, the third card only shows once three columns fit. */
+function cardItemClasses(index: number): string | undefined {
+  return index >= 2 ? "hidden lg:block" : undefined;
+}
+
+/** The card grid at its loaded size, a placeholder card per recommendation. */
+function RecommendationsSkeleton(): JSX.Element {
+  return (
+    <ul className={CARD_GRID_CLASSES}>
+      {Array.from({ length: RECOMMENDED_ARTICLES_COUNT }, (_, index) => (
+        <li key={index} className={cardItemClasses(index)}>
+          <RecommendedArticleCardSkeleton />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** The slot below the heading: loading skeleton, error note, or the card grid. */
 function RecommendationsContent({
   articles,
   loadError,
@@ -29,12 +53,12 @@ function RecommendationsContent({
       loadError={loadError}
       errorMessage="Recommendations could not be loaded right now. Please try again later."
       loadingMessage="Loading recommendations..."
+      skeleton={<RecommendationsSkeleton />}
     >
       {(loaded) => (
-        <ul className="grid grid-cols-1 gap-x-4 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-6">
+        <ul className={CARD_GRID_CLASSES}>
           {loaded.map((article, index) => (
-            // Like Kent's layout, the third card only shows once three columns fit.
-            <li key={article.slug} className={index >= 2 ? "hidden lg:block" : undefined}>
+            <li key={article.slug} className={cardItemClasses(index)}>
               <RecommendedArticleCard article={article} />
             </li>
           ))}

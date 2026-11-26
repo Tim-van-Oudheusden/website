@@ -13,6 +13,7 @@ import { createMemoryContentLoader } from "../../../../../../front-end/src/share
 import type { FakeMount } from "../../../../src/test/dom-harness";
 import { initFakeDomHarness, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
+import { elementWithText, isAriaHidden, isScreenReaderOnly, listLayouts } from "../../../../src/test/list-layout";
 
 beforeAll(async () => {
   await initFakeDomHarness();
@@ -76,6 +77,30 @@ describe("HomeRecommendations", () => {
       expect(mount.container.textContent).not.toContain("Loading recommendations...");
       expect(headings(mount, "H2")).toEqual(["For you"]);
       expect(headings(mount, "H3")).toHaveLength(3);
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("holds the card grid with three placeholders while loading, the note for screen readers only", async () => {
+    const mount = mountRecommendations(createMemoryContentLoader([
+      article("one", "2025-01-01"),
+      article("two", "2025-02-01"),
+      article("three", "2025-03-01"),
+    ]));
+
+    try {
+      const loading = listLayouts(mount.container);
+
+      expect(isScreenReaderOnly(elementWithText(mount.container, "Loading recommendations..."))).toBe(true);
+      expect(loading.map((layout) => layout.items.length)).toEqual([3]);
+      expect(queryFakeElements(mount.container, (el) => el.nodeName === "UL").every(isAriaHidden)).toBe(true);
+
+      await act(async () => {
+        await settleMicrotasks();
+      });
+
+      expect(listLayouts(mount.container)).toEqual(loading);
     } finally {
       unmountFakeDomRoot(mount);
     }
