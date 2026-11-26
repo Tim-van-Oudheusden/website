@@ -128,6 +128,23 @@ describe("ArticleLocationTrail", () => {
     expect(separatorCount).toBe(2);
     expect(html).toContain("text-foreground truncate font-medium");
   });
+
+  test("pads the 16px home icon to a 44px hit area without shifting the trail", () => {
+    const html = renderToStaticMarkup(createElement(
+      MemoryRouter,
+      null,
+      createElement(ArticleLocationTrail, {
+        articleTitle: "article-under-test",
+        onArticlesActivate: () => undefined,
+      }),
+    ));
+    const homeLinkClasses = /<a [^>]*class="([^"]*)"[^>]*aria-label="Home"|<a [^>]*aria-label="Home"[^>]*class="([^"]*)"/.exec(html);
+    const classes = (homeLinkClasses?.[1] ?? homeLinkClasses?.[2] ?? "").split(" ");
+
+    expect(classes).toContain("p-3.5");
+    expect(classes).toContain("-m-3.5");
+    expect(html).toMatch(/<svg[^>]*class="[^"]*\bsize-4\b/);
+  });
 });
 
 describe("extractArticleTableOfContents", () => {

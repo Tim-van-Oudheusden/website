@@ -119,7 +119,7 @@ export function TopBar(): JSX.Element {
                   <Button
                     key={link.href}
                     variant="ghost"
-                    className="justify-start text-[18px] font-medium"
+                    className="min-h-11 justify-start text-[18px] font-medium"
                     asChild
                     onClick={() => {
                       setOpen(false);

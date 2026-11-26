@@ -261,6 +261,15 @@
   * {
     @apply border-border outline-ring;
   }
+  /* Touch baseline: no grey tap flash over the site's own press states, no text inflation on rotate. Zoom stays free. */
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+  /* Disables double-tap-to-zoom on controls only, so a tap fires without the double-tap wait. */
+  a, button {
+    touch-action: manipulation;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: "Source Sans 3", "Source Sans Pro", "Segoe UI", "Helvetica Neue", Arial, sans-serif;

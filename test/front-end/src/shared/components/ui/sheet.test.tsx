@@ -168,6 +168,25 @@ describe("sheet interaction", () => {
     }
   });
 
+  test("the built-in close button keeps its 16px icon inside a 44px hit area", () => {
+    const sheet = mountSheet();
+
+    try {
+      const [closeButton] = queryFakeElements(openSheet(sheet), (el) => el.nodeName === "BUTTON");
+
+      if (closeButton === undefined) {
+        throw new Error("Expected the built-in close button");
+      }
+
+      const [icon] = queryFakeElements(closeButton, (el) => el.nodeName.toLowerCase() === "svg");
+
+      expect(closeButton.getAttribute("class")?.split(" ")).toContain("size-11");
+      expect(icon?.getAttribute("class")?.split(" ")).toContain("size-4");
+    } finally {
+      unmountFakeDomRoot(sheet.mount);
+    }
+  });
+
   test("controlled open renders the sheet without any trigger click", () => {
     const sheet = mountSheet({}, true);
     const doc = document as unknown as FakeDocument;
