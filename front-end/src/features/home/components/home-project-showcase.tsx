@@ -8,13 +8,13 @@ import type { ContentLoader } from "@/shared/lib/content-loader";
 
 import { headingIdFor } from "../config/home-sections";
 import type { ShowcaseTileSize } from "../lib/showcase-projects";
-import { selectShowcaseProjects, showcaseTileSizes } from "../lib/showcase-projects";
+import { selectShowcaseProjects, SHOWCASE_PROJECTS_LIMIT, showcaseTileSizes } from "../lib/showcase-projects";
 import type { HomeProjectsSection } from "../types/home-section";
 
 import { HomeLoadSlot } from "./home-load-slot";
 import { HomeSectionHeading } from "./home-section-heading";
 import { HOME_SECTION_FRAME_CLASSES, HomeSectionFrame } from "./home-section-shell";
-import { ProjectShowcaseCard } from "./project-showcase-card";
+import { ProjectShowcaseCard, ProjectShowcaseCardSkeleton } from "./project-showcase-card";
 
 /**
  * A tile's span on the 12-column track: one column below a 42rem grid, two from 42rem, three from 64rem. Spans of 6
@@ -26,7 +26,30 @@ const TILE_SPAN_CLASSES: Record<ShowcaseTileSize, string> = {
   standard: "col-span-full @2xl/grid:col-span-6 @5xl/grid:col-span-4",
 };
 
-/** The slot below the heading: loading note, error note, or the project grid. */
+/** The layout follows the grid's own width (container query), not the viewport. */
+const SHOWCASE_GRID_CLASSES = "@container/grid grid grid-cols-12 gap-6";
+
+/** The bento grid at its loaded size: a placeholder tile, sized as the showcase sizes it, per possible project. */
+function ShowcaseSkeleton(): JSX.Element {
+  const sizes = showcaseTileSizes(SHOWCASE_PROJECTS_LIMIT);
+
+  return (
+    <ul className={SHOWCASE_GRID_CLASSES}>
+      {Array.from({ length: SHOWCASE_PROJECTS_LIMIT }, (_, position) => {
+        const size = sizes[position] ?? "standard";
+
+        return (
+          // Placeholder tiles have no identity beyond their position.
+          <li key={position} className={TILE_SPAN_CLASSES[size]}>
+            <ProjectShowcaseCardSkeleton size={size} />
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** The slot below the heading: loading skeleton, error note, or the project grid. */
 function ShowcaseContent({
   projects,
   loadError,
@@ -40,13 +63,13 @@ function ShowcaseContent({
       loadError={loadError}
       errorMessage="Projects could not be loaded right now. Please try again later."
       loadingMessage="Loading projects..."
+      skeleton={<ShowcaseSkeleton />}
     >
       {(loaded) => {
         const sizes = showcaseTileSizes(loaded.length);
 
         return (
-          // The layout follows the grid's own width (container query), not the viewport.
-          <ul className="@container/grid grid grid-cols-12 gap-6">
+          <ul className={SHOWCASE_GRID_CLASSES}>
             {loaded.map((project, index) => {
               const size = sizes[index] ?? "standard";
 

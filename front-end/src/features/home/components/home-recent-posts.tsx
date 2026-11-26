@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import type { JSX } from "react";
 import { useCallback } from "react";
 import { Link } from "react-router";
@@ -13,8 +14,22 @@ import type { HomeRecentPostsSection } from "../types/home-section";
 
 import { HomeLoadSlot } from "./home-load-slot";
 import { HomeHeadedSectionShell } from "./home-section-shell";
+import { SkeletonText } from "./home-skeleton";
 
 export const RECENT_POSTS_COUNT = 4;
+
+const POSTS_GRID_CLASSES = "grid gap-4 sm:grid-cols-2";
+
+const POST_CARD_CLASSES = "flex flex-col gap-2 rounded-xl border border-(--ink-5)/10 bg-(--site-section-well-bg) px-5 py-4 dark:border-(--paper-1)/15";
+
+/** Hover, keyboard focus and press feedback; only the real card, which is a link, gets these. */
+const POST_CARD_INTERACTION_CLASSES = "transition-[border-color,scale] duration-150 ease-out hover:border-(--ink-5)/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--site-accent) active:scale-[0.99] motion-reduce:transition-none dark:hover:border-(--paper-1)/40";
+
+const POST_META_CLASSES = "text-sm";
+
+const POST_TITLE_CLASSES = "font-semibold tracking-tight";
+
+const POST_DESCRIPTION_CLASSES = "text-sm";
 
 /** Pick the N most recent articles, newest first. */
 export function selectRecentPosts(
@@ -27,20 +42,17 @@ export function selectRecentPosts(
 /** A compact grid of recent posts, each linked to its real article page. */
 export function RecentPostsList({ posts }: { posts: ArticleSummary[] }): JSX.Element {
   return (
-    <ul className="grid gap-4 sm:grid-cols-2">
+    <ul className={POSTS_GRID_CLASSES}>
       {posts.map((post) => (
         <li key={post.slug}>
-          <Link
-            to={`/articles/${post.slug}`}
-            className="group flex flex-col gap-2 rounded-xl border border-(--ink-5)/10 bg-(--site-section-well-bg) px-5 py-4 transition-[border-color,scale] duration-150 ease-out hover:border-(--ink-5)/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--site-accent) active:scale-[0.99] motion-reduce:transition-none dark:border-(--paper-1)/15 dark:hover:border-(--paper-1)/40"
-          >
-            <time dateTime={post.date} className="text-sm text-(--ink-5)/60 dark:text-white/70">
+          <Link to={`/articles/${post.slug}`} className={cn("group", POST_CARD_CLASSES, POST_CARD_INTERACTION_CLASSES)}>
+            <time dateTime={post.date} className={cn(POST_META_CLASSES, "text-(--ink-5)/60 dark:text-white/70")}>
               {formatArticleDate(post.date)}
             </time>
-            <span className="font-semibold tracking-tight text-(--ink-5) dark:text-(--paper-1)">
+            <span className={cn(POST_TITLE_CLASSES, "text-(--ink-5) dark:text-(--paper-1)")}>
               {post.title}
             </span>
-            <span className="text-sm text-(--ink-5)/60 dark:text-white/70">
+            <span className={cn(POST_DESCRIPTION_CLASSES, "text-(--ink-5)/60 dark:text-white/70")}>
               {post.description}
             </span>
           </Link>
@@ -50,7 +62,30 @@ export function RecentPostsList({ posts }: { posts: ArticleSummary[] }): JSX.Ele
   );
 }
 
-/** The content slot below the section heading: loading, error note, or list. */
+/** The post grid at its loaded size: an outlined card with a date, a title and a description per recent post. */
+function RecentPostsSkeleton(): JSX.Element {
+  return (
+    <ul className={POSTS_GRID_CLASSES}>
+      {Array.from({ length: RECENT_POSTS_COUNT }, (_, index) => (
+        <li key={index}>
+          <div className={POST_CARD_CLASSES}>
+            <div className={POST_META_CLASSES}>
+              <SkeletonText lines={1} />
+            </div>
+            <div className={POST_TITLE_CLASSES}>
+              <SkeletonText lines={1} />
+            </div>
+            <div className={POST_DESCRIPTION_CLASSES}>
+              <SkeletonText lines={2} />
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** The content slot below the section heading: loading skeleton, error note, or list. */
 export function RecentPostsContent({
   posts,
   loadError,
@@ -64,6 +99,7 @@ export function RecentPostsContent({
       loadError={loadError}
       errorMessage="Recent posts could not be loaded right now. Please try again later."
       loadingMessage="Loading recent posts..."
+      skeleton={<RecentPostsSkeleton />}
     >
       {(loaded) => <RecentPostsList posts={loaded} />}
     </HomeLoadSlot>

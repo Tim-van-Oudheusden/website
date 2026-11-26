@@ -13,6 +13,7 @@ import { createMemoryContentLoader } from "../../../../../../front-end/src/share
 import type { FakeMount } from "../../../../src/test/dom-harness";
 import { initFakeDomHarness, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
+import { elementWithText, isAriaHidden, isScreenReaderOnly, listLayouts } from "../../../../src/test/list-layout";
 
 beforeAll(async () => {
   await initFakeDomHarness();
@@ -80,6 +81,32 @@ describe("HomeProjectShowcase", () => {
 
       expect(texts(mount, "H3")).toEqual(["launcher", "pipeline", "sandbox"]);
       expect(mount.container.textContent).toContain("Start with launcher,");
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("holds the bento grid with the showcase's tile sizes while loading, the note for screen readers only", async () => {
+    const mount = mountShowcase(createMemoryContentLoader([
+      project("launcher", 10, true),
+      project("pipeline", 20, false),
+      project("sandbox", 30, false),
+      project("harbor", 40, false),
+      project("lantern", 50, false),
+    ]));
+
+    try {
+      const loading = listLayouts(mount.container);
+
+      expect(isScreenReaderOnly(elementWithText(mount.container, "Loading projects..."))).toBe(true);
+      expect(loading.map((layout) => layout.items.length)).toEqual([5]);
+      expect(queryFakeElements(mount.container, (el) => el.nodeName === "UL").every(isAriaHidden)).toBe(true);
+
+      await act(async () => {
+        await settleMicrotasks();
+      });
+
+      expect(listLayouts(mount.container)).toEqual(loading);
     } finally {
       unmountFakeDomRoot(mount);
     }

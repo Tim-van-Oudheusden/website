@@ -14,6 +14,7 @@ import { createMemoryContentLoader } from "../../../../../../front-end/src/share
 import type { FakeMount } from "../../../../src/test/dom-harness";
 import { initFakeDomHarness, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
+import { elementWithText, isAriaHidden, isScreenReaderOnly, listLayouts } from "../../../../src/test/list-layout";
 
 beforeAll(async () => {
   await initFakeDomHarness();
@@ -236,6 +237,69 @@ describe("HomeRecentPosts", () => {
       ]);
 
       expect(mount.container.textContent).not.toContain("Loading recent posts...");
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("holds the two-column grid with four outlines while loading, the note for screen readers only", async () => {
+    if (RECENT_POSTS_SECTION === undefined) {
+      throw new Error("Expected a whats-new home section");
+    }
+
+    const fourth = FIXTURE_POSTS.slice(0, 1).map((post) => ({ ...post, slug: "fourth", title: "Fourth" }));
+    const posts = [...FIXTURE_POSTS, ...fourth];
+    const mount = mountIntoBody(
+      createElement(MemoryRouter, null, createElement(HomeRecentPosts, {
+        section: RECENT_POSTS_SECTION,
+        loader: createMemoryContentLoader(posts.map((post) => ({ ...post, body: "" }))),
+      })),
+    );
+
+    try {
+      const loading = listLayouts(mount.container);
+
+      expect(isScreenReaderOnly(elementWithText(mount.container, "Loading recent posts..."))).toBe(true);
+      expect(loading.map((layout) => layout.items.length)).toEqual([4]);
+      expect(queryFakeElements(mount.container, (el) => el.nodeName === "UL").every(isAriaHidden)).toBe(true);
+
+      await act(async () => {
+        await settleMicrotasks();
+      });
+
+      expect(listLayouts(mount.container)).toEqual(loading);
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("gives each loading outline the loaded card's rows: date, title and description", async () => {
+    if (RECENT_POSTS_SECTION === undefined) {
+      throw new Error("Expected a whats-new home section");
+    }
+
+    const mount = mountIntoBody(
+      createElement(MemoryRouter, null, createElement(HomeRecentPosts, {
+        section: RECENT_POSTS_SECTION,
+        loader: createMemoryContentLoader(FIXTURE_POSTS.map((post) => ({ ...post, body: "" }))),
+      })),
+    );
+
+    function cardRows(): number[] {
+      return queryFakeElements(mount.container, (el) => el.nodeName === "LI").map((item) => item.children[0]?.children.length ?? 0);
+    }
+
+    try {
+      const loading = cardRows();
+
+      await act(async () => {
+        await settleMicrotasks();
+      });
+
+      const loaded = cardRows();
+
+      expect(loaded).toEqual(FIXTURE_POSTS.map(() => 3));
+      expect(new Set(loading)).toEqual(new Set(loaded));
     } finally {
       unmountFakeDomRoot(mount);
     }

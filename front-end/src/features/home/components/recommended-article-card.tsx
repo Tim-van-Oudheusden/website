@@ -10,6 +10,8 @@ import { resolveSocialImagePath } from "shared/social-image";
 import { formatArticleDate } from "@/features/articles/lib/article-date";
 import { Button } from "@/shared/components/ui/button";
 
+import { SKELETON_FILL_CLASSES, SkeletonText } from "./home-skeleton";
+
 type CopyStatus = "idle" | "copied" | "failed";
 
 /** How long "Copied to clipboard" (or the failure note) shows before the label resets. */
@@ -91,6 +93,15 @@ function CopyArticleLinkButton({ path }: { path: string }): JSX.Element {
   );
 }
 
+/** The image frame's footprint: the 1200x630 social-image ratio at the card's full width. */
+const IMAGE_FRAME_SIZE_CLASSES = "aspect-[1200/630] w-full rounded-lg";
+
+/** The date and category line's box and type; the right padding keeps the text clear of the copy button. */
+const META_CLASSES = "mt-8 pr-12 text-[1.375rem] leading-[1.5] font-medium";
+
+/** The title's box and type. */
+const TITLE_CLASSES = "mt-4 text-[1.5625rem] leading-[1.33] font-medium sm:text-[1.875rem] sm:leading-[1.2]";
+
 interface RecommendedArticleCardProps {
   article: ArticleSummary;
 }
@@ -113,7 +124,7 @@ export function RecommendedArticleCard({ article }: RecommendedArticleCardProps)
         aria-describedby={metaId}
         className="group block focus-visible:outline-none"
       >
-        <div className="aspect-[1200/630] w-full rounded-lg ring-(--site-accent) ring-offset-4 ring-offset-(--site-page-bg) transition-shadow duration-300 group-hover:ring-2 group-focus-visible:ring-2 motion-reduce:transition-none">
+        <div className={cn(IMAGE_FRAME_SIZE_CLASSES, "ring-(--site-accent) ring-offset-4 ring-offset-(--site-page-bg) transition-shadow duration-300 group-hover:ring-2 group-focus-visible:ring-2 motion-reduce:transition-none")}>
           {imagePath === null
             ? (
                 <div
@@ -129,19 +140,37 @@ export function RecommendedArticleCard({ article }: RecommendedArticleCardProps)
                 <img src={imagePath} alt="" loading="lazy" className="size-full rounded-lg object-cover" />
               )}
         </div>
-        <p id={metaId} className="mt-8 pr-12 text-[1.375rem] leading-[1.5] font-medium text-(--ink-2) dark:text-(--paper-5)">
+        <p id={metaId} className={cn(META_CLASSES, "text-(--ink-2) dark:text-(--paper-5)")}>
           {formatArticleDate(article.date)}
           {" — "}
           {article.category}
         </p>
         <h3
           id={titleId}
-          className="mt-4 text-[1.5625rem] leading-[1.33] font-medium sm:text-[1.875rem] sm:leading-[1.2] text-(--ink-5) dark:text-(--paper-1)"
+          className={cn(TITLE_CLASSES, "text-(--ink-5) dark:text-(--paper-1)")}
         >
           {article.title}
         </h3>
       </Link>
       <CopyArticleLinkButton path={`/articles/${article.slug}`} />
+    </div>
+  );
+}
+
+/**
+ * A for-you card that has not loaded yet, at the loaded card's size: the image frame, the date line and two title
+ * lines in the card's own type.
+ */
+export function RecommendedArticleCardSkeleton(): JSX.Element {
+  return (
+    <div>
+      <div className={cn(SKELETON_FILL_CLASSES, IMAGE_FRAME_SIZE_CLASSES)} />
+      <div className={META_CLASSES}>
+        <SkeletonText lines={1} />
+      </div>
+      <div className={TITLE_CLASSES}>
+        <SkeletonText lines={2} />
+      </div>
     </div>
   );
 }

@@ -2,8 +2,8 @@ import type { ProjectFrontmatter } from "shared";
 
 import { resolveGalleryProjects, resolvePriorityProjects } from "@/features/projects/lib/project-display";
 
-/** The lead project plus at most this many others (Kent's flagship section shows five courses). */
-const SHOWCASE_OTHERS_LIMIT = 4;
+/** The lead project plus at most four others (Kent's flagship section shows five courses). */
+export const SHOWCASE_PROJECTS_LIMIT = 5;
 
 /**
  * Projects for the for-devs showcase, ranked like the Projects page: its
@@ -13,7 +13,7 @@ const SHOWCASE_OTHERS_LIMIT = 4;
 export function selectShowcaseProjects(projects: readonly ProjectFrontmatter[]): ProjectFrontmatter[] {
   const ranked = [...resolvePriorityProjects(projects), ...resolveGalleryProjects(projects)];
 
-  return ranked.slice(0, 1 + SHOWCASE_OTHERS_LIMIT);
+  return ranked.slice(0, SHOWCASE_PROJECTS_LIMIT);
 }
 
 /** A showcase tile's footprint in the bento grid: the whole row, two of three columns, or one. */

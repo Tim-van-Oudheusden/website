@@ -6,16 +6,20 @@ interface HomeLoadSlotProps<T> {
   loadError: boolean;
   /** Announced through `role="alert"` when the load failed. */
   errorMessage: string;
+  /** Read to screen readers while the load is pending. */
   loadingMessage: string;
+  /** Shown while the load is pending, at the loaded content's size so nothing below it moves when it resolves. */
+  skeleton: JSX.Element;
   children: (data: T) => JSX.Element;
 }
 
-/** The slot below a home section heading that loads content: error note, loading note, or the loaded content. */
+/** The slot below a home section heading that loads content: error note, loading skeleton, or the loaded content. */
 export function HomeLoadSlot<T>({
   data,
   loadError,
   errorMessage,
   loadingMessage,
+  skeleton,
   children,
 }: HomeLoadSlotProps<T>): JSX.Element {
   if (loadError) {
@@ -27,7 +31,12 @@ export function HomeLoadSlot<T>({
   }
 
   if (data === null) {
-    return <p className="text-sm text-(--ink-5)/60 dark:text-white/60">{loadingMessage}</p>;
+    return (
+      <div>
+        <p className="sr-only">{loadingMessage}</p>
+        <div aria-hidden="true">{skeleton}</div>
+      </div>
+    );
   }
 
   return children(data);
