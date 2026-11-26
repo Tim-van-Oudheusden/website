@@ -1,6 +1,5 @@
 import { cn } from "cn";
 import type { JSX } from "react";
-import { useRef } from "react";
 import { Link } from "react-router";
 
 import { FEED_PATH } from "shared";
@@ -76,8 +75,7 @@ function RelatedArticles({ article, articles }: RelatedArticlesProps): JSX.Eleme
 
 /** Title block, cover, and body of one article; mounted per article so its motion starts fresh. */
 function ArticleBody({ article, articles, toc }: ArticleBodyProps): JSX.Element {
-  const proseContainerRef = useRef<HTMLDivElement>(null);
-  const motion = useArticleMotion(proseContainerRef);
+  const motion = useArticleMotion();
   const coverPath = resolveSocialImagePath(article.socialImage);
 
   return (
@@ -109,10 +107,7 @@ function ArticleBody({ article, articles, toc }: ArticleBodyProps): JSX.Element 
         </div>
       )}
       {toc.tocItems.length > 0 && <ArticleInlineToc {...toc} />}
-      <div
-        ref={proseContainerRef}
-        className={cn(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleProse, ARTICLES_PAGE_MOTION_CLASSES.revealBlocks)}
-      >
+      <div className={ARTICLES_PAGE_TYPOGRAPHY_CLASSES.articleProse}>
         <ErrorBoundary fallback={renderErrorFallback}>
           <MarkdownRenderer content={article.body} headingLevelOffset={1} />
         </ErrorBoundary>

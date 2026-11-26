@@ -62,17 +62,10 @@ export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
 } as const;
 
 // Motion. Everything sits behind `motion-safe:` so `prefers-reduced-motion:
-// reduce` never hides or moves content, even before any script runs. Only
-// opacity and translate change, so nothing shifts layout.
+// reduce` never moves content, even before any script runs. Only opacity and
+// translate change, so nothing shifts layout.
 export const ARTICLES_PAGE_MOTION_CLASSES = {
-  pageEnter: "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-700 motion-safe:ease-[cubic-bezier(.17,.67,.2,1)]",
-  // On the MarkdownRenderer wrapper: body blocks marked `data-reveal="pending"`
-  // (below the fold, set by useArticleMotion) wait hidden; `shown` fades them in.
-  revealBlocks: [
-    "motion-safe:[&>.prose>[data-reveal=pending]]:opacity-0 motion-safe:[&>.prose>[data-reveal=pending]]:translate-y-4",
-    "motion-safe:[&>.prose>[data-reveal=shown]]:transition-[opacity,translate] motion-safe:[&>.prose>[data-reveal=shown]]:duration-700 motion-safe:[&>.prose>[data-reveal=shown]]:ease-[cubic-bezier(.17,.67,.2,1)]",
-    "print:[&>.prose>*]:opacity-100! print:[&>.prose>*]:translate-none!",
-  ].join(" "),
+  pageEnter: "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-300 motion-safe:ease-[cubic-bezier(.17,.67,.2,1)]",
 } as const;
 
 export const ARTICLES_PAGE_TEXT = {
