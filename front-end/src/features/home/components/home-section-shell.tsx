@@ -5,7 +5,7 @@ import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionDefinition } from "../types/home-section";
 
 export const HOME_SECTION_FRAME_CLASSES
-  = "flex min-h-svh items-center justify-center px-6 py-12 sm:px-10 sm:py-16 lg:px-6";
+  = "flex min-h-[calc(100svh-var(--site-top-bar-height))] scroll-mt-(--site-top-bar-height) items-center justify-center px-6 py-12 sm:px-10 sm:py-16 lg:px-6";
 
 export type HomeSectionFrameElement = "section" | "footer";
 

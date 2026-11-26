@@ -138,6 +138,7 @@
  * - https://github.com/kepano/flexoki/blob/main/css/flexoki.css
  */
 :root {
+  color-scheme: light;
   --radius: 0.625rem;
 
   /* Neutral ramp (light values; .dark swaps in the Flexoki ramp) */
@@ -205,6 +206,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   /* Flexoki base ramp in place of the light neutrals, matched by lightness. */
   --paper-1: #fffcf0; /* paper */
   --paper-2: #f2f0e5; /* base-50 */
