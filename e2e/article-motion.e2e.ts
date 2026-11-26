@@ -108,46 +108,53 @@ test.describe("Article motion", () => {
         headingOpacity: visibleOpacity(element),
         contentOpacity: content === null ? null : visibleOpacity(content),
         held: Array.from(document.querySelectorAll("[data-reveal]")).length,
+        // The title entrance runs on the article column (the title block's parent).
+        entranceAnimations: document.querySelector("main article h1")?.closest("header")?.parentElement?.getAnimations().length ?? -1,
       };
     });
 
-    expect(target).toEqual({ headingOpacity: 1, contentOpacity: 1, held: 0 });
+    expect(target).toEqual({ headingOpacity: 1, contentOpacity: 1, held: 0, entranceAnimations: 0 });
 
     for (const block of await bodyBlockStates(page, true)) {
       expect(block.opacity).toBe(1);
     }
   });
 
-  test("never leaves content hidden: in view on load, and revealed once scrolled to", async ({ page }) => {
+  test("shows every body block on load, at any scroll position, with nothing held back", async ({ page }) => {
     await page.goto(ARTICLE_PATH, { waitUntil: "networkidle" });
     await expect(page.locator("main article .prose h2").first()).toBeVisible();
 
-    // Blocks in the first viewport are never held back.
-    for (const block of await bodyBlockStates(page, true)) {
-      expect(block.reveal).toBeNull();
-    }
-
-    // Below-the-fold blocks may wait, but every block the reader reaches ends up fully visible.
-    await page.evaluate(() => {
-      window.scrollTo(0, document.documentElement.scrollHeight);
-    });
-
-    await expect.poll(async () => (await bodyBlockStates(page, true)).every((block) => block.opacity === 1)).toBe(true);
-  });
-
-  test("prints every body block fully visible, even ones still waiting to reveal", async ({ page }) => {
-    await page.goto(ARTICLE_PATH, { waitUntil: "networkidle" });
-    await expect(page.locator("main article .prose [data-reveal=pending]").first()).toBeAttached();
-
-    // Let the page-enter fade finish so only the reveal hold could lower opacity.
+    // Let the title entrance finish: it fades the whole article column once.
     await page.evaluate(async () => {
       await Promise.all(document.getAnimations().map(async (animation) => animation.finished));
     });
 
-    await page.emulateMedia({ media: "print" });
+    expect(await page.locator("[data-reveal]").count()).toBe(0);
 
-    for (const block of await bodyBlockStates(page, false)) {
+    for (const block of await bodyBlockStates(page, true)) {
       expect(block.opacity).toBe(1);
     }
+
+    // Jump to the end and sample at once: nothing is waiting to fade in.
+    await page.evaluate(() => {
+      window.scrollTo(0, document.documentElement.scrollHeight);
+    });
+
+    for (const block of await bodyBlockStates(page, true)) {
+      expect(block).toMatchObject({ opacity: 1, reveal: null, runningAnimations: 0 });
+    }
+  });
+
+  test("the title entrance lasts 300ms", async ({ page }) => {
+    await page.goto(ARTICLE_PATH, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("main article h1")).toBeVisible();
+
+    const durations = await page.locator("main article h1").evaluate((title) => {
+      const column = title.closest("header")?.parentElement;
+
+      return column?.getAnimations().map((animation) => animation.effect?.getComputedTiming().duration) ?? [];
+    });
+
+    expect(durations).toEqual([300]);
   });
 });
