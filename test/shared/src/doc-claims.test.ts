@@ -239,6 +239,17 @@ describe("BRANDING.md home page map", () => {
   });
 });
 
+describe("BRANDING.md motion rules", () => {
+  test("name every easing token in front-end/src/index.css, with its value, and no other", () => {
+    const easing = /`(--ease-[\w-]+: cubic-bezier\([^)]*\))`/g;
+    const motion = section(readRootFile("BRANDING.md"), "### Motion");
+    const tokens = matchAll(readRootFile("front-end/src/index.css"), /^\s*(--ease-[\w-]+: cubic-bezier\([^)]*\));/gm);
+
+    expect(tokens).not.toHaveLength(0);
+    expect(sorted(matchAll(motion, easing))).toEqual(sorted(tokens));
+  });
+});
+
 describe("quality-gate lists", () => {
   const gates = sorted(bunRunScripts(".github/workflows/ci.yml", "check"));
   const agentBullet = bulletReader("Quality gates after any change:");

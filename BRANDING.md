@@ -109,6 +109,28 @@ shade and backdrop colours were unused and are gone.
   rules in `front-end/src/index.css`.
 - **Fallback stack:** `"Source Sans Pro", "Segoe UI", "Helvetica Neue", Arial, sans-serif` (the `--font-sans` token).
 
+### Motion
+
+Motion confirms what the visitor did and shows where something went; it never decorates the text they came to read.
+The curves are tokens in the `@theme inline` block of [`front-end/src/index.css`](front-end/src/index.css), so the
+Tailwind `ease-out`, `ease-in-out` and `ease-drawer` utilities use them.
+
+- **Curves:** `--ease-out: cubic-bezier(0.23, 1, 0.32, 1)` for entering, exiting and press;
+  `--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1)` for movement on screen;
+  `--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1)` for sheets. Never `ease-in`.
+- **Durations:** press 100 to 160ms; hover colour up to 150ms; dropdowns 150 to 250ms; sheets 200 to 500ms, closing
+  faster than opening; everything else under 300ms.
+- **Properties:** `transform` and `opacity`; `clip-path` and measured height are the exceptions. Never
+  `transition-all`, never from `scale(0)`.
+- **Press:** every pressable element has a pressed state.
+- **Restraint:** no scroll reveals on content people read, and no animation on core navigation.
+- **Reduced motion** means a fade, not nothing. Hover rules in hand-written CSS sit inside
+  `@media (hover: hover) and (pointer: fine)`.
+- **Loops:** a looping animation only where it explains something or shows state.
+
+The rules come from a design review against Emil Kowalski's skills, which agents can load from `.claude/skills/`
+(see [`.claude/skills/UPSTREAM.md`](.claude/skills/UPSTREAM.md)).
+
 ### Icons
 
 [`public/favicon.svg`](public/favicon.svg) is the source mark. The PNG icons in `public/` are renders of it:
