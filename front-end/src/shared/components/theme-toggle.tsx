@@ -25,8 +25,8 @@ export function ThemeToggle({ triggerClassName, iconClassName }: ThemeToggleProp
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className={triggerClassName}>
-          <SunIcon className={cn("scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90", iconClassName)} />
-          <MoonIcon className={cn("absolute scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0", iconClassName)} />
+          <SunIcon className={cn("opacity-100 scale-100 rotate-0 transition-[opacity,scale,rotate] duration-200 ease-out dark:opacity-0 dark:scale-90 dark:-rotate-90", iconClassName)} />
+          <MoonIcon className={cn("absolute opacity-0 scale-90 rotate-90 transition-[opacity,scale,rotate] duration-200 ease-out dark:opacity-100 dark:scale-100 dark:rotate-0", iconClassName)} />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>

@@ -63,6 +63,26 @@ describe("ThemeToggle (SSR)", () => {
     expect(html).toContain("trigger-tint");
     expect(html).toContain("icon-tint");
   });
+
+  test("hides the inactive icon by fading it out at 90% scale, never collapsing it to zero", () => {
+    const html = renderToStaticMarkup(createElement(ThemeToggle));
+    const iconClasses = [...html.matchAll(/<svg[^>]*class="([^"]*)"/g)].map((match) => match[1]!.split(" "));
+
+    expect(iconClasses).toHaveLength(2);
+
+    for (const tokens of iconClasses) {
+      expect(tokens.some((token) => /(^|:)scale-0$/.test(token))).toBe(false);
+      expect(tokens).toContain("transition-[opacity,scale,rotate]");
+      expect(tokens).toContain("duration-200");
+      expect(tokens).toContain("ease-out");
+    }
+
+    const [sun, moon] = iconClasses;
+
+    // Sun shows in light and hides in dark; the moon does the reverse.
+    expect(sun).toEqual(expect.arrayContaining(["opacity-100", "scale-100", "dark:opacity-0", "dark:scale-90"]));
+    expect(moon).toEqual(expect.arrayContaining(["opacity-0", "scale-90", "dark:opacity-100", "dark:scale-100"]));
+  });
 });
 
 describe("ThemeToggle interaction (with ThemeProvider)", () => {
