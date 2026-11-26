@@ -2,12 +2,12 @@ import { cn } from "cn";
 import type { LucideIcon } from "lucide-react";
 import { AtSign, Bot, BriefcaseBusiness, CodeXml, House, Newspaper, UserRound } from "lucide-react";
 import type { CSSProperties, JSX, MouseEvent } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { Badge } from "@/shared/components/ui/badge";
 
-import type { IndicatorMetrics } from "../lib/home-floating-nav-indicator";
-import { calculateIndicatorMetrics } from "../lib/home-floating-nav-indicator";
+import type { IndicatorInsets } from "../lib/home-floating-nav-indicator";
+import { calculateIndicatorInsets, indicatorClipPath } from "../lib/home-floating-nav-indicator";
 import type { HomeSectionDefinition, HomeSectionId } from "../types/home-section";
 
 interface HomeFloatingNavProps {
@@ -26,6 +26,18 @@ const HOME_NAV_ICONS: Record<HomeSectionId, LucideIcon> = {
   "socials": AtSign,
 };
 
+/** Row layout shared by the list and its overlay copy, so each copied label sits exactly over its link. */
+const NAV_ROW_CLASSES = "flex gap-2 p-3";
+
+/** Label box shared by each link and its overlay copy. */
+const NAV_LABEL_CLASSES = "px-4 py-2 text-base uppercase tracking-[0.08em]";
+
+interface IndicatorState {
+  insets: IndicatorInsets | null;
+  /** Only a move to another section slides; first paint and re-measures (resize, font swap) jump. */
+  animate: boolean;
+}
+
 export function HomeFloatingNav({
   sections,
   activeSectionId,
@@ -33,56 +45,77 @@ export function HomeFloatingNav({
 }: HomeFloatingNavProps): JSX.Element {
   const navListRef = useRef<HTMLUListElement | null>(null);
   const navItemsRef = useRef<Partial<Record<HomeSectionId, HTMLAnchorElement | null>>>({});
-  const [indicatorMetrics, setIndicatorMetrics] = useState<IndicatorMetrics | null>(null);
+  const measuredSectionIdRef = useRef(activeSectionId);
+  const [indicator, setIndicator] = useState<IndicatorState>({ insets: null, animate: false });
 
-  const updateIndicatorMetrics = useCallback(() => {
+  const measureIndicator = useCallback((animate: boolean) => {
     const navListElement = navListRef.current;
-    const activeNavItemElement = navItemsRef.current[activeSectionId];
+    const activeNavItemElement = navItemsRef.current[measuredSectionIdRef.current];
 
     if (navListElement === null || activeNavItemElement === null || activeNavItemElement === undefined) {
-      setIndicatorMetrics(null);
+      setIndicator({ insets: null, animate: false });
 
       return;
     }
 
-    setIndicatorMetrics(
-      calculateIndicatorMetrics(
-        navListElement.getBoundingClientRect(),
-        activeNavItemElement.getBoundingClientRect(),
-      ),
+    const listRect = navListElement.getBoundingClientRect();
+    const insets = calculateIndicatorInsets(
+      {
+        left: listRect.left,
+        top: listRect.top,
+        width: listRect.width,
+        height: listRect.height,
+        clientLeft: navListElement.clientLeft,
+        clientTop: navListElement.clientTop,
+        clientWidth: navListElement.clientWidth,
+        clientHeight: navListElement.clientHeight,
+        offsetWidth: navListElement.offsetWidth,
+        offsetHeight: navListElement.offsetHeight,
+      },
+      activeNavItemElement.getBoundingClientRect(),
     );
-  }, [activeSectionId]);
+
+    setIndicator((previous) => ({ insets, animate: animate && previous.insets !== null }));
+  }, []);
+
+  // Measured before paint, so the highlight is in place on the first frame.
+  useLayoutEffect(() => {
+    const moved = measuredSectionIdRef.current !== activeSectionId;
+
+    measuredSectionIdRef.current = activeSectionId;
+    measureIndicator(moved);
+  }, [activeSectionId, sections, measureIndicator]);
 
   useEffect(() => {
-    updateIndicatorMetrics();
+    const navListElement = navListRef.current;
+    let disposed = false;
 
-    const animationFrameId = window.requestAnimationFrame(updateIndicatorMetrics);
-
-    function handleResize(): void {
-      updateIndicatorMetrics();
+    function remeasure(): void {
+      if (!disposed) {
+        measureIndicator(false);
+      }
     }
 
-    window.addEventListener("resize", handleResize);
+    const resizeObserver = new ResizeObserver(remeasure);
+
+    if (navListElement !== null) {
+      resizeObserver.observe(navListElement);
+    }
+
+    window.addEventListener("resize", remeasure);
+    // Labels narrow when the web fonts swap in (`font-display: swap`).
+    void document.fonts.ready.then(remeasure);
 
     return () => {
-      window.cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("resize", handleResize);
+      disposed = true;
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", remeasure);
     };
-  }, [updateIndicatorMetrics]);
+  }, [measureIndicator]);
 
-  const indicatorStyle: CSSProperties = indicatorMetrics === null
-    ? {
-        opacity: 0,
-        transform: "translate3d(0px, 0px, 0px)",
-        width: "0px",
-        height: "0px",
-      }
-    : {
-        opacity: 1,
-        transform: `translate3d(${indicatorMetrics.translateX}px, ${indicatorMetrics.translateY}px, 0px)`,
-        width: `${indicatorMetrics.width}px`,
-        height: `${indicatorMetrics.height}px`,
-      };
+  const indicatorStyle: CSSProperties = indicator.insets === null
+    ? { opacity: 0 }
+    : { opacity: 1, clipPath: indicatorClipPath(indicator.insets) };
 
   return (
     <nav
@@ -91,28 +124,23 @@ export function HomeFloatingNav({
     >
       <ul
         ref={navListRef}
-        className="relative flex gap-2 rounded-2xl border border-(--paper-4) dark:border-(--ink-2) bg-background dark:bg-(--site-section-well-bg) p-3 shadow-lg backdrop-blur-md"
+        className={cn(
+          "relative",
+          NAV_ROW_CLASSES,
+          "rounded-2xl border border-(--paper-4) dark:border-(--ink-2) bg-background dark:bg-(--site-section-well-bg) shadow-lg backdrop-blur-md",
+        )}
       >
-        <span
-          aria-hidden="true"
-          data-slot="active-indicator"
-          className="pointer-events-none absolute top-0 left-0 rounded-full bg-(--ink-5) dark:bg-(--paper-1) transition-[transform,width] duration-300 ease-out motion-reduce:transition-none"
-          style={indicatorStyle}
-        />
         {sections.map((section) => {
-          const isActive = section.id === activeSectionId;
           const Icon = HOME_NAV_ICONS[section.id];
 
           return (
-            <li key={section.id} className="relative z-10">
+            <li key={section.id}>
               <Badge
                 asChild
                 variant="ghost"
                 className={cn(
-                  "px-4 py-2 text-base uppercase tracking-[0.08em] transition-colors [a&]:hover:bg-transparent",
-                  isActive
-                    ? "text-white dark:text-(--ink-5) [a&]:hover:text-white dark:[a&]:hover:text-(--ink-5)"
-                    : "bg-transparent text-(--popover-foreground) [a&]:hover:text-(--popover-foreground)",
+                  NAV_LABEL_CLASSES,
+                  "bg-transparent text-(--popover-foreground) transition-colors [a&]:hover:bg-transparent [a&]:hover:text-(--popover-foreground)",
                 )}
               >
                 <a
@@ -120,7 +148,7 @@ export function HomeFloatingNav({
                   ref={(element) => {
                     navItemsRef.current[section.id] = element;
                   }}
-                  aria-current={isActive ? "location" : undefined}
+                  aria-current={section.id === activeSectionId ? "location" : undefined}
                   onClick={(event) => {
                     onAnchorActivate(section.id, event);
                   }}
@@ -132,6 +160,31 @@ export function HomeFloatingNav({
             </li>
           );
         })}
+        {/* The highlight: the labels in the active colours, clipped to the active item; fill and text move as one. */}
+        <span
+          aria-hidden="true"
+          data-slot="active-indicator"
+          className={cn(
+            "pointer-events-none absolute inset-0 z-10 select-none",
+            NAV_ROW_CLASSES,
+            "bg-(--ink-5) dark:bg-(--paper-1) text-white dark:text-(--ink-5)",
+            indicator.animate && "transition-[clip-path] duration-250 ease-in-out motion-reduce:transition-none",
+          )}
+          style={indicatorStyle}
+        >
+          {sections.map((section) => {
+            const Icon = HOME_NAV_ICONS[section.id];
+
+            return (
+              <span key={section.id} className="block">
+                <Badge variant="ghost" className={NAV_LABEL_CLASSES}>
+                  <Icon className="size-4" aria-hidden="true" />
+                  {section.label}
+                </Badge>
+              </span>
+            );
+          })}
+        </span>
       </ul>
     </nav>
   );

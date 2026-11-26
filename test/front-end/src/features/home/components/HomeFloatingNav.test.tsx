@@ -7,9 +7,16 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { HomeFloatingNav } from "../../../../../../front-end/src/features/home/components/home-floating-nav";
 import { HOME_SECTIONS } from "../../../../../../front-end/src/features/home/config/home-sections";
 import type { HomeSectionDefinition, HomeSectionId } from "../../../../../../front-end/src/features/home/types/home-section";
+import type { FakeMount } from "../../../../src/test/dom-harness";
 import { findBySlot, initFakeDomHarness, mountIntoBody, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import type { FakeElement } from "../../../../src/test/fake-dom";
-import { queryFakeElements, triggerWindowEvent, uninstallFakeDom } from "../../../../src/test/fake-dom";
+import {
+  deferFakeFontsReady,
+  queryFakeElements,
+  triggerFakeResizeObservers,
+  triggerWindowEvent,
+  uninstallFakeDom,
+} from "../../../../src/test/fake-dom";
 
 beforeAll(async () => {
   await initFakeDomHarness();
@@ -36,6 +43,51 @@ function navAnchor(root: FakeElement, sectionId: HomeSectionId): FakeElement {
 
 function renderFloatingNav(): string {
   return renderToStaticMarkup(floatingNav(HOME_SECTIONS, "start"));
+}
+
+function navList(root: FakeElement): FakeElement {
+  const [list] = queryFakeElements(root, (el) => el.nodeName === "UL");
+
+  if (list === undefined) {
+    throw new Error("Expected the nav list");
+  }
+
+  return list;
+}
+
+/** The clip path of the item at `index` once `layOutNav` has run: 100px wide items, 110px apart, 12px in. */
+function expectedClipPath(index: number): string {
+  const left = 12 + index * 110;
+
+  return `inset(12px ${800 - left - 100}px 12px ${left}px round 9999px)`;
+}
+
+/**
+ * Lays the nav out like the browser would: a list at (100, 500) with a 1px border around an 800x64
+ * padding box, and its items 100x40, 12px inside the padding box, 110px apart.
+ */
+function layOutNav(root: FakeElement): void {
+  const list = navList(root);
+
+  list.rect = { left: 100, top: 500, width: 802, height: 66 };
+  list.clientLeft = 1;
+  list.clientTop = 1;
+  list.clientWidth = 800;
+  list.clientHeight = 64;
+  list.offsetWidth = 802;
+  list.offsetHeight = 66;
+
+  HOME_SECTIONS.forEach((section, index) => {
+    navAnchor(root, section.id).rect = { left: 113 + index * 110, top: 513, width: 100, height: 40 };
+  });
+}
+
+function indicatorOf(mount: FakeMount): FakeElement {
+  return findBySlot(mount.container, "active-indicator");
+}
+
+function classesOf(element: FakeElement): string {
+  return element.getAttribute("class") ?? "";
 }
 
 describe("HomeFloatingNav", () => {
@@ -88,41 +140,174 @@ describe("HomeFloatingNav", () => {
     expect(anchor).toContain("lucide-at-sign");
     expect(anchor).toContain("socials");
   });
+
+  test("animates no layout property: width is in no transition list", () => {
+    expect(renderFloatingNav()).not.toMatch(/transition-\[[^\]]*width/);
+  });
 });
 
-describe("HomeFloatingNav active indicator", () => {
-  test("re-measures the active item on window resize", () => {
+describe("HomeFloatingNav label overlay", () => {
+  test("paints every link in the inactive colours, the current one included", () => {
     const mount = mountIntoBody(floatingNav(HOME_SECTIONS, "start"));
 
     try {
-      navAnchor(mount.container, "start").rect = { width: 96, height: 40 };
+      const current = navAnchor(mount.container, "start");
 
-      act(() => {
-        triggerWindowEvent("resize");
-      });
-
-      const indicator = findBySlot(mount.container, "active-indicator");
-
-      expect(indicator.style.getPropertyValue("opacity")).toBe("1");
-      expect(indicator.style.getPropertyValue("width")).toBe("96px");
-      expect(indicator.style.getPropertyValue("height")).toBe("40px");
+      expect(current.getAttribute("aria-current")).toBe("location");
+      expect(classesOf(current)).toBe(classesOf(navAnchor(mount.container, "agentic")));
+      expect(classesOf(current)).not.toContain("text-white");
     } finally {
       unmountFakeDomRoot(mount);
     }
   });
 
-  test("follows the active section to its nav item", () => {
+  test("copies every label onto the highlight in the active colours", () => {
     const mount = mountIntoBody(floatingNav(HOME_SECTIONS, "start"));
 
     try {
-      navAnchor(mount.container, "start").rect = { width: 96, height: 40 };
-      navAnchor(mount.container, "agentic").rect = { width: 150, height: 40 };
+      const overlay = indicatorOf(mount);
+
+      expect(classesOf(overlay)).toContain("text-white");
+      expect(classesOf(overlay)).toContain("dark:text-(--ink-5)");
+
+      for (const section of HOME_SECTIONS) {
+        expect(overlay.textContent).toContain(section.label);
+      }
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("hides the copy from assistive technology and gives it nothing to focus or click", () => {
+    const mount = mountIntoBody(floatingNav(HOME_SECTIONS, "start"));
+
+    try {
+      const overlay = indicatorOf(mount);
+      const interactive = queryFakeElements(overlay, (el) =>
+        el !== overlay && (["A", "BUTTON", "INPUT"].includes(el.nodeName) || el.hasAttribute("tabindex")));
+
+      expect(overlay.getAttribute("aria-hidden")).toBe("true");
+      expect(classesOf(overlay)).toContain("pointer-events-none");
+      expect(interactive).toEqual([]);
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+});
+
+describe("HomeFloatingNav active indicator", () => {
+  test("clips the highlight to the active item on window resize", () => {
+    const mount = mountIntoBody(floatingNav(HOME_SECTIONS, "start"));
+
+    try {
+      layOutNav(mount.container);
+
+      act(() => {
+        triggerWindowEvent("resize");
+      });
+
+      expect(indicatorOf(mount).style.getPropertyValue("opacity")).toBe("1");
+      expect(indicatorOf(mount).style.getPropertyValue("clipPath")).toBe(expectedClipPath(0));
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("re-measures when the list resizes", () => {
+    const mount = mountIntoBody(floatingNav(HOME_SECTIONS, "start"));
+
+    try {
+      layOutNav(mount.container);
+
+      act(() => {
+        triggerFakeResizeObservers();
+      });
+
+      expect(indicatorOf(mount).style.getPropertyValue("clipPath")).toBe(expectedClipPath(0));
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("re-measures once the web fonts have loaded", async () => {
+    const resolveFonts = deferFakeFontsReady();
+    const mount = mountIntoBody(floatingNav(HOME_SECTIONS, "start"));
+
+    try {
+      layOutNav(mount.container);
+
+      await act(async () => {
+        resolveFonts();
+        await Promise.resolve();
+      });
+
+      expect(indicatorOf(mount).style.getPropertyValue("clipPath")).toBe(expectedClipPath(0));
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("puts the highlight in place without a transition on first render and on re-measures", () => {
+    const mount = mountIntoBody(floatingNav(HOME_SECTIONS, "start"));
+
+    try {
+      expect(classesOf(indicatorOf(mount))).not.toContain("transition");
+
+      layOutNav(mount.container);
+
+      act(() => {
+        triggerFakeResizeObservers();
+        triggerWindowEvent("resize");
+      });
+
+      expect(indicatorOf(mount).style.getPropertyValue("clipPath")).toBe(expectedClipPath(0));
+      expect(classesOf(indicatorOf(mount))).not.toContain("transition");
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("slides the highlight to the newly active item with a 250ms ease-in-out clip-path transition", () => {
+    const mount = mountIntoBody(floatingNav(HOME_SECTIONS, "start"));
+
+    try {
+      layOutNav(mount.container);
+
+      act(() => {
+        triggerWindowEvent("resize");
+      });
 
       act(() => {
         mount.root.render(floatingNav(HOME_SECTIONS, "agentic"));
       });
 
-      expect(findBySlot(mount.container, "active-indicator").style.getPropertyValue("width")).toBe("150px");
+      const agenticIndex = HOME_SECTIONS.findIndex((section) => section.id === "agentic");
+      const classes = classesOf(indicatorOf(mount)).split(" ");
+
+      expect(indicatorOf(mount).style.getPropertyValue("clipPath")).toBe(expectedClipPath(agenticIndex));
+      expect(classes).toContain("transition-[clip-path]");
+      expect(classes).toContain("duration-250");
+      expect(classes).toContain("ease-in-out");
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
+  test("jumps to the newly active item without a transition when reduced motion is preferred", () => {
+    const mount = mountIntoBody(floatingNav(HOME_SECTIONS, "start"));
+
+    try {
+      layOutNav(mount.container);
+
+      act(() => {
+        triggerWindowEvent("resize");
+      });
+
+      act(() => {
+        mount.root.render(floatingNav(HOME_SECTIONS, "agentic"));
+      });
+
+      expect(classesOf(indicatorOf(mount)).split(" ")).toContain("motion-reduce:transition-none");
     } finally {
       unmountFakeDomRoot(mount);
     }
@@ -132,15 +317,13 @@ describe("HomeFloatingNav active indicator", () => {
     const mount = mountIntoBody(floatingNav(HOME_SECTIONS, "start"));
 
     try {
-      navAnchor(mount.container, "start").rect = { width: 96, height: 40 };
+      layOutNav(mount.container);
 
       act(() => {
         triggerWindowEvent("resize");
       });
 
-      const indicator = findBySlot(mount.container, "active-indicator");
-
-      expect(indicator.style.getPropertyValue("opacity")).toBe("1");
+      expect(indicatorOf(mount).style.getPropertyValue("opacity")).toBe("1");
 
       const withoutAgentic = HOME_SECTIONS.filter((section) => section.id !== "agentic");
 
@@ -148,8 +331,7 @@ describe("HomeFloatingNav active indicator", () => {
         mount.root.render(floatingNav(withoutAgentic, "agentic"));
       });
 
-      expect(indicator.style.getPropertyValue("opacity")).toBe("0");
-      expect(indicator.style.getPropertyValue("width")).toBe("0px");
+      expect(indicatorOf(mount).style.getPropertyValue("opacity")).toBe("0");
     } finally {
       unmountFakeDomRoot(mount);
     }
