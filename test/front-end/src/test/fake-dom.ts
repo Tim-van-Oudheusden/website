@@ -78,6 +78,8 @@ export interface FakeElement extends FakeNode {
   nodeName: string;
   tagName: string;
   namespaceURI: string;
+  clientLeft: number;
+  clientTop: number;
   clientWidth: number;
   clientHeight: number;
   offsetWidth: number;
@@ -96,8 +98,8 @@ export interface FakeElement extends FakeNode {
     removeProperty(name: string): void;
     getPropertyValue(name: string): string;
   };
-  /** Settable bounds used by `getBoundingClientRect` (test-side input). */
-  rect: { width: number; height: number };
+  /** Settable bounds used by `getBoundingClientRect` (test-side input); `left`/`top` default to 0. */
+  rect: { width: number; height: number; left?: number; top?: number };
   setAttribute(name: string, value: string): void;
   removeAttribute(name: string): void;
   getAttribute(name: string): string | null;
@@ -158,6 +160,8 @@ export interface FakeDocument {
   defaultView: object | null;
   /** Page Visibility state; `setFakeDocumentVisibility` changes it and fires `visibilitychange`. */
   visibilityState: "visible" | "hidden";
+  /** Font loading; `deferFakeFontsReady` swaps in a pending `ready` promise. */
+  fonts: { ready: Promise<unknown> };
   createElement(tagName: string): FakeElement;
   createElementNS(namespaceURI: string, tagName: string): FakeElement;
   createTextNode(value: string): FakeNode;
@@ -339,6 +343,8 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
   tagName = "";
   namespaceURI = "http://www.w3.org/1999/xhtml";
   private readonly classNames = new Set<string>();
+  clientLeft = 0;
+  clientTop = 0;
   clientWidth = 0;
   clientHeight = 0;
   tabIndex = 0;
@@ -353,7 +359,7 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
   scrollHeight = 0;
   scrollCalls: { left?: number; top?: number; behavior?: string }[] = [];
   scrollIntoViewCalls: { behavior?: string; block?: string }[] = [];
-  rect = { width: 0, height: 0 };
+  rect: FakeElement["rect"] = { width: 0, height: 0 };
   private attributes = new Map<string, string>();
   style: FakeElement["style"] = {
     setProperty(name, value) {
@@ -408,9 +414,9 @@ class FakeElementImpl extends FakeNodeImpl implements FakeElement {
     x: number;
     y: number;
   } {
-    const { width, height } = this.rect;
+    const { width, height, left = 0, top = 0 } = this.rect;
 
-    return { left: 0, top: 0, right: width, bottom: height, width, height, x: 0, y: 0 };
+    return { left, top, right: left + width, bottom: top + height, width, height, x: left, y: top };
   }
 
   focus = (): void => undefined;
@@ -650,6 +656,7 @@ function makeDocument(): FakeDocument {
     activeElement: null,
     defaultView: null,
     visibilityState: "visible",
+    fonts: { ready: Promise.resolve() },
     createElement: (tagName) => new FakeElementImpl(tagName, document),
     createElementNS: (namespaceURI, tagName) => new FakeElementImpl(tagName, document, namespaceURI),
     createTextNode: (value) => new FakeTextImpl(value, document),
@@ -1169,4 +1176,16 @@ export function setFakeDocumentVisibility(state: "visible" | "hidden"): void {
 
   doc.visibilityState = state;
   doc.dispatchEvent({ type: "visibilitychange" });
+}
+
+/** Replace `document.fonts.ready` with a pending promise; the returned function resolves it (fonts have loaded). */
+export function deferFakeFontsReady(): () => void {
+  const doc = globalThis.document as unknown as FakeDocument;
+  const { promise, resolve } = Promise.withResolvers<unknown>();
+
+  doc.fonts = { ready: promise };
+
+  return () => {
+    resolve(undefined);
+  };
 }

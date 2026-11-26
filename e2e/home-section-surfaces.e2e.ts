@@ -94,15 +94,12 @@ test.describe("Home section surfaces", () => {
       expect(lowContrastTexts(cta)).toEqual([]);
 
       const nav = page.getByRole("navigation", { name: "Page sections" });
+      // The indicator carries its own copy of the labels, the current one showing through its clip.
       const indicator = await sampleSurface(nav.locator('[data-slot="active-indicator"]'));
-      const current = await sampleSurface(nav.locator("a[aria-current]"));
 
       expect(contrastRatio(indicator.backdrop, indicator.surround)).toBeGreaterThanOrEqual(AA_NON_TEXT_CONTRAST);
-      expect(current.texts.length).toBeGreaterThan(0);
-      // The current label is painted on the indicator, so measure it against the indicator's fill.
-      const onIndicator = current.texts.map((text) => ({ ...text, backdrop: indicator.backdrop }));
-
-      expect(lowContrastTexts({ ...current, texts: onIndicator })).toEqual([]);
+      expect(indicator.texts.length).toBeGreaterThan(0);
+      expect(lowContrastTexts(indicator)).toEqual([]);
     });
 
     test("keeps role titles on the experience panels readable while hovered or focused", async ({ page }) => {
