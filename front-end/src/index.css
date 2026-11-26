@@ -18,6 +18,8 @@
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
+/* Floating chrome drops its translucent fill for people who asked for less transparency. */
+@custom-variant reduced-transparency (@media (prefers-reduced-transparency: reduce));
 
 /* Self-hosted Source Sans 3 (variable, wght 400-700; SIL OFL 1.1, see public/fonts/OFL.txt). */
 @font-face {

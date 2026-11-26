@@ -39,7 +39,14 @@ export function HomeSocials({ section }: HomeSocialsProps): JSX.Element {
   const currentYear = new Date().getFullYear();
 
   return (
-    <HomeHeadedSectionShell as="footer" section={section} heading={section.heading} body={section.body} headingAlign="center">
+    <HomeHeadedSectionShell
+      as="footer"
+      section={section}
+      heading={section.heading}
+      subheading={section.body}
+      link={null}
+      headingAlign="center"
+    >
       <div className="flex flex-col items-center gap-10">
         <ul className="flex flex-wrap justify-center gap-3">
           {section.links.map((link) => {

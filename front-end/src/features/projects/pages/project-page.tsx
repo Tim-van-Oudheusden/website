@@ -14,6 +14,7 @@ import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import { useRecordView } from "@/shared/hooks/use-record-view";
 import { ApiError } from "@/shared/lib/api";
+import { SITE_CONTENT_GUTTER_CLASSES } from "@/shared/lib/content-edge";
 import { httpContentLoader } from "@/shared/lib/content-loader";
 import { STATUS_PILL_CLASSES } from "@/shared/lib/status-pill";
 import { TAG_PILL_CLASSES } from "@/shared/lib/tag-pill";
@@ -38,7 +39,7 @@ async function loadProjectOrNull(slug: string): Promise<ProjectData | null> {
 }
 
 export const PROJECT_PAGE_LAYOUT_CLASSES = {
-  main: "w-full flex-1 bg-[var(--site-page-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8",
+  main: `w-full flex-1 bg-[var(--site-page-bg)] py-8 sm:py-10 ${SITE_CONTENT_GUTTER_CLASSES}`,
   articleMeasure: "mx-auto w-full max-w-[75ch]",
   coverFrame: "mb-8 aspect-[16/10] overflow-hidden rounded-[2rem] bg-[var(--site-section-well-bg)] shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)]",
   metadataPanel: "mb-8 mt-8 rounded-[2rem] bg-[var(--site-section-well-bg)] p-5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:p-6",

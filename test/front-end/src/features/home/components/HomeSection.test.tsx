@@ -148,4 +148,26 @@ describe("HomeSection", () => {
       expect(frameTag).not.toMatch(/\bmin-h-svh\b/);
     }
   });
+
+  test("renders the hero heading as an h1", () => {
+    expect(renderSection("start")).toMatch(/<h1 id="start-heading"[^>]*>Build with Tim\.<\/h1>/);
+  });
+
+  test("gives the five plain sections one heading: the same h2 and the same muted second line", () => {
+    const plainSections: HomeSectionId[] = ["for-you", "for-devs", "whats-new", "experience", "socials"];
+    const headings = plainSections.map((sectionId) => {
+      const heading = new RegExp(`<h2 id="${headingIdFor(sectionId)}"([^>]*)>[^<]*</h2><p([^>]*)>`).exec(renderSection(sectionId));
+
+      return { heading: heading?.[1], secondLine: heading?.[2] };
+    });
+
+    const [first] = headings;
+
+    expect(first?.heading).toBeDefined();
+    expect(first?.secondLine).toBeDefined();
+
+    for (const heading of headings) {
+      expect(heading).toEqual({ heading: first?.heading, secondLine: first?.secondLine });
+    }
+  });
 });

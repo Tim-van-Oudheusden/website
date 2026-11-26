@@ -10,6 +10,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
+import { SITE_CONTENT_CONTAINER_CLASSES } from "@/shared/lib/content-edge";
 import { httpContentLoader } from "@/shared/lib/content-loader";
 import { STATUS_PILL_CLASSES } from "@/shared/lib/status-pill";
 import { TAG_PILL_CLASSES } from "@/shared/lib/tag-pill";
@@ -17,8 +18,8 @@ import { TAG_PILL_CLASSES } from "@/shared/lib/tag-pill";
 import { resolveGalleryProjects, resolvePriorityProjects } from "../lib/project-display";
 
 export const PROJECTS_PAGE_LAYOUT_CLASSES = {
-  main: "w-full flex-1 bg-[var(--site-page-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8",
-  inner: "mx-auto flex w-full max-w-screen-xl flex-col gap-8",
+  main: "w-full flex-1 bg-[var(--site-page-bg)] py-8 sm:py-10",
+  inner: `${SITE_CONTENT_CONTAINER_CLASSES} flex flex-col gap-8`,
   heroWell: "rounded-[2rem] bg-[var(--site-section-well-bg)] px-5 py-8 shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] sm:px-8 sm:py-10 lg:px-10",
   featuredGrid: "grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-stretch",
   galleryGrid: "grid gap-4 sm:grid-cols-2 xl:grid-cols-3",

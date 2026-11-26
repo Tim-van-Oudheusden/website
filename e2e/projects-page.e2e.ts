@@ -27,6 +27,18 @@ test.describe("Projects page", () => {
     }
   });
 
+  test("starts the hero well on the top bar logo's left edge", async ({ page }) => {
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+
+      // The logo is the top bar's first link home; the desktop nav's "Home" link follows it.
+      const logo = await page.getByRole("banner").locator('a[href="/"]').first().boundingBox();
+      const hero = await page.getByRole("region", { name: "Projects", exact: true }).boundingBox();
+
+      expect(hero?.x, `at ${String(width)}px`).toBeCloseTo(logo?.x ?? Number.NaN, 0);
+    }
+  });
+
   test("opens a project's page from its card", async ({ page }) => {
     await page
       .getByRole("region", { name: "More projects" })

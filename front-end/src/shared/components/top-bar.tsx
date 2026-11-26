@@ -16,6 +16,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
+import { SITE_CONTENT_CONTAINER_CLASSES } from "@/shared/lib/content-edge";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -59,7 +60,7 @@ export function TopBar(): JSX.Element {
       data-scrolled={String(scrolled)}
       data-transparent={String(transparent)}
     >
-      <div className="mx-auto flex h-(--site-top-bar-height) max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className={cn("flex h-(--site-top-bar-height) items-center justify-between", SITE_CONTENT_CONTAINER_CLASSES)}>
         <Link to="/" className="shrink-0">
           <SiteLogo />
         </Link>

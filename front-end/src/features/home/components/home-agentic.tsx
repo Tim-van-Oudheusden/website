@@ -2,11 +2,13 @@ import "@/features/agentic/flexoki.css";
 
 import "./home-agentic.css";
 
+import { cn } from "cn";
 import { ArrowRight } from "lucide-react";
 import type { JSX } from "react";
 import { Link } from "react-router";
 
 import { AGENTIC_COPY } from "@/features/agentic/config/agentic-copy";
+import { SITE_WELL_BLEED_CLASSES } from "@/shared/lib/content-edge";
 
 import { headingIdFor } from "../config/home-sections";
 import type { HomeAgenticSection } from "../types/home-section";
@@ -69,7 +71,8 @@ interface HomeAgenticProps {
 export function HomeAgentic({ section }: HomeAgenticProps): JSX.Element {
   return (
     <HomeSectionFrame section={section} as="section" className={HOME_SECTION_FRAME_CLASSES}>
-      <div className="home-agentic w-full max-w-6xl rounded-[2rem] lg:max-w-332">
+      {/* The well reaches past the content edge by the fixed well bleed and pads its copy back onto it. */}
+      <div className={cn("home-agentic rounded-[2rem]", SITE_WELL_BLEED_CLASSES)}>
         <Honeycomb />
         <div className="ha-body">
           <p className="ha-eyebrow" aria-hidden="true">

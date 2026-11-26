@@ -127,7 +127,12 @@ export function HomeFloatingNav({
         className={cn(
           "relative",
           NAV_ROW_CLASSES,
-          "rounded-2xl border border-(--paper-4) dark:border-(--ink-2) bg-background dark:bg-(--site-section-well-bg) shadow-lg backdrop-blur-md",
+          // A translucent fill lets the blur show the content passing beneath; a ring in the shadow replaces the
+          // border. Dark mode needs 80% for its labels to stay at 4.5:1 over white content; opaque again for
+          // people who ask for less transparency.
+          "rounded-2xl bg-background/75 dark:bg-(--site-section-well-bg)/80 backdrop-blur-md",
+          "shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_10px_30px_-10px_rgb(0_0_0/0.2)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.1),0_10px_30px_-10px_rgb(0_0_0/0.6)]",
+          "reduced-transparency:bg-background dark:reduced-transparency:bg-(--site-section-well-bg)",
         )}
       >
         {sections.map((section) => {

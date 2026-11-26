@@ -1,11 +1,16 @@
-import { cn } from "cn";
 import type { JSX, ReactNode } from "react";
+
+import { SITE_CONTENT_CONTAINER_CLASSES } from "@/shared/lib/content-edge";
 
 import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionDefinition } from "../types/home-section";
 
+import type { HomeSectionLink } from "./home-section-heading";
+import { HomeSectionHeading } from "./home-section-heading";
+
+/** The frame's height and vertical rhythm; inline padding belongs to the content column inside it. */
 export const HOME_SECTION_FRAME_CLASSES
-  = "flex min-h-[calc(100svh-var(--site-top-bar-height))] scroll-mt-(--site-top-bar-height) items-center justify-center px-6 py-12 sm:px-10 sm:py-16 lg:px-6";
+  = "flex min-h-[calc(100svh-var(--site-top-bar-height))] scroll-mt-(--site-top-bar-height) items-center justify-center py-12 sm:py-16";
 
 export type HomeSectionFrameElement = "section" | "footer";
 
@@ -19,9 +24,11 @@ interface HomeSectionFrameProps {
 
 /**
  * Single section frame for every variant: owns the section id, `aria-labelledby`
- * (single-sourced from `headingIdFor`), and the bgColor surface. Variants that
- * render their own heading markup use the frame directly; the rest go through
- * `HomeHeadedSectionShell` so the shared heading markup lives in one place.
+ * (single-sourced from `headingIdFor`), the bgColor surface and the content
+ * column, whose inline padding puts every section on the site's one content
+ * edge, the top bar's logo included. Variants that render their own heading
+ * markup use the frame directly; the rest go through `HomeHeadedSectionShell`,
+ * which renders the shared heading.
  */
 export function HomeSectionFrame({ section, as, className, children }: HomeSectionFrameProps): JSX.Element {
   const frameProps = {
@@ -30,13 +37,14 @@ export function HomeSectionFrame({ section, as, className, children }: HomeSecti
     className,
     "style": { backgroundColor: section.bgColor },
   };
+  const content = <div className={SITE_CONTENT_CONTAINER_CLASSES}>{children}</div>;
 
   return as === "footer"
     ? (
-        <footer {...frameProps}>{children}</footer>
+        <footer {...frameProps}>{content}</footer>
       )
     : (
-        <section {...frameProps}>{children}</section>
+        <section {...frameProps}>{content}</section>
       );
 }
 
@@ -44,38 +52,35 @@ interface HomeHeadedSectionShellProps {
   section: HomeSectionDefinition;
   as: HomeSectionFrameElement;
   heading: string;
-  body: string;
-  /** Horizontal alignment of the heading/body block only; variants align their own content. */
+  /** Muted second line of the heading. */
+  subheading: string;
+  link: HomeSectionLink | null;
+  /** Alignment of the heading block only; variants align their own content. */
   headingAlign: "start" | "center";
   children: ReactNode;
 }
 
-/** Section frame with the shared heading/body block rendered above the variant content. */
+/** Section frame with the shared section heading rendered above the variant content. */
 export function HomeHeadedSectionShell({
   section,
   as,
   heading,
-  body,
+  subheading,
+  link,
   headingAlign,
   children,
 }: HomeHeadedSectionShellProps): JSX.Element {
   return (
     <HomeSectionFrame section={section} as={as} className={HOME_SECTION_FRAME_CLASSES}>
-      <div className="w-full">
-        <div className="mx-auto flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296">
-          <div className={cn("flex flex-1 flex-col gap-5", headingAlign === "center" && "items-center text-center")}>
-            <h2
-              id={headingIdFor(section.id)}
-              className="font-semibold tracking-tight text-(--ink-5) dark:text-(--paper-1) text-[1.75rem] sm:text-[2rem]"
-            >
-              {heading}
-            </h2>
-            <p className="max-w-[65ch] text-base sm:text-lg leading-relaxed text-(--ink-5) dark:text-white/80">
-              {body}
-            </p>
-          </div>
-          {children}
-        </div>
+      <div className="flex flex-col gap-10 lg:gap-12">
+        <HomeSectionHeading
+          headingId={headingIdFor(section.id)}
+          heading={heading}
+          subheading={subheading}
+          link={link}
+          align={headingAlign}
+        />
+        {children}
       </div>
     </HomeSectionFrame>
   );
