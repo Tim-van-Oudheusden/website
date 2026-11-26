@@ -138,4 +138,14 @@ describe("HomeSection", () => {
       expect(countOccurrences(html, `id="${headingId}"`)).toBe(1);
     }
   });
+
+  test("frames every section below the sticky top bar so its anchor lands under the bar", () => {
+    for (const section of HOME_SECTIONS) {
+      const frameTag = new RegExp(`<(?:section|footer) [^>]*id="${section.id}"[^>]*>`).exec(renderSection(section.id))?.[0];
+
+      expect(frameTag).toContain("scroll-mt-(--site-top-bar-height)");
+      expect(frameTag).toContain("min-h-[calc(100svh-var(--site-top-bar-height))]");
+      expect(frameTag).not.toMatch(/\bmin-h-svh\b/);
+    }
+  });
 });
