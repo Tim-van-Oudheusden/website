@@ -5,35 +5,41 @@ import type { HomeSectionId } from "../types/home-section";
 export interface ObservedSectionEntry {
   id: string;
   isIntersecting: boolean;
-  intersectionRatio: number;
 }
 
+/** The sections inside the activation band after one batch of observer reports, applied in the order they came. */
+export function sectionsInBand(previous: ReadonlySet<string>, entries: readonly ObservedSectionEntry[]): Set<string> {
+  const next = new Set(previous);
+
+  for (const entry of entries) {
+    if (entry.isIntersecting) {
+      next.add(entry.id);
+    } else {
+      next.delete(entry.id);
+    }
+  }
+
+  return next;
+}
+
+/**
+ * The current section: the one in the activation band, or the later one in page order while a boundary between two
+ * sits in it. With no section in the band the current one stays.
+ */
 export function selectActiveSectionId(
-  entries: ObservedSectionEntry[],
+  inBand: ReadonlySet<string>,
   validSectionIds: readonly HomeSectionId[],
   currentActiveSectionId: HomeSectionId,
 ): HomeSectionId {
-  let candidateId = currentActiveSectionId;
-  let candidateRatio = 0;
+  for (let index = validSectionIds.length - 1; index >= 0; index--) {
+    const id = validSectionIds[index];
 
-  for (const entry of entries) {
-    if (!entry.isIntersecting) {
-      continue;
+    if (id !== undefined && inBand.has(id)) {
+      return id;
     }
-
-    if (!validSectionIds.includes(entry.id as HomeSectionId)) {
-      continue;
-    }
-
-    if (entry.intersectionRatio <= candidateRatio) {
-      continue;
-    }
-
-    candidateRatio = entry.intersectionRatio;
-    candidateId = entry.id as HomeSectionId;
   }
 
-  return candidateId;
+  return currentActiveSectionId;
 }
 
 export function useActiveHomeSection(sectionIds: readonly HomeSectionId[]): HomeSectionId {
@@ -51,21 +57,24 @@ export function useActiveHomeSection(sectionIds: readonly HomeSectionId[]): Home
     }
 
     const observedElements: Element[] = [];
+    let inBand = new Set<string>();
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const normalizedEntries: ObservedSectionEntry[] = entries.map((entry) => ({
-          id: entry.target.id,
-          isIntersecting: entry.isIntersecting,
-          intersectionRatio: entry.intersectionRatio,
-        }));
+        const reports = entries.map((entry) => ({ id: entry.target.id, isIntersecting: entry.isIntersecting }));
+        const band = sectionsInBand(inBand, reports);
 
-        setActiveSectionId((current) => selectActiveSectionId(normalizedEntries, sectionIds, current));
+        inBand = band;
+
+        setActiveSectionId((current) => selectActiveSectionId(band, sectionIds, current));
       },
+      // A 1%-high band 40% down the viewport: the section crossing it is current. Ratio thresholds of the whole
+      // section would never fire for a section several screens tall, and sections tile the page, so one always
+      // holds the band.
       {
         root: null,
-        rootMargin: "-96px 0px -40% 0px",
-        threshold: [0.2, 0.4, 0.6, 0.8],
+        rootMargin: "-40% 0px -59% 0px",
+        threshold: 0,
       },
     );
 
