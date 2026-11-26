@@ -188,6 +188,34 @@ describe("TopBar mobile menu", () => {
     }
   });
 
+  test("gives every menu link a hit area at least 44px tall", () => {
+    const fakeDocument = document as unknown as FakeDocument;
+    const mount = mountIntoBody(createElement(MemoryRouter, null, createElement(TopBar)));
+
+    try {
+      const [menuButton] = queryFakeElements(
+        mount.container,
+        (el) => el.nodeName === "BUTTON" && el.textContent.includes("Open menu"),
+      );
+
+      if (menuButton === undefined) {
+        throw new Error("Expected the mobile menu button");
+      }
+
+      fireFakePointer(menuButton, "click");
+
+      const menuLinks = queryFakeElements(findBySlot(fakeDocument.body, "sheet-content"), (el) => el.nodeName === "A");
+
+      expect(menuLinks).toHaveLength(4);
+
+      for (const link of menuLinks) {
+        expect(link.getAttribute("class")?.split(" ")).toContain("min-h-11");
+      }
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
+
   test("marks the current page in the menu, so Agentic is current on /agentic", () => {
     const fakeDocument = document as unknown as FakeDocument;
     const mount = mountIntoBody(

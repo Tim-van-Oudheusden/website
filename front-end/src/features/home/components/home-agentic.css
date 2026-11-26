@@ -312,11 +312,18 @@
       background-color 200ms ease,
       box-shadow 200ms ease;
 
-    &:hover {
-      background: var(--ha-cta-hover);
-      box-shadow:
-        0 0 0 7px var(--ha-glow-soft),
-        0 10px 36px -4px var(--ha-glow);
+    /* Hover only where a pointer can hover: on touch a tapped button would keep its fill and lift. */
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: var(--ha-cta-hover);
+        box-shadow:
+          0 0 0 7px var(--ha-glow-soft),
+          0 10px 36px -4px var(--ha-glow);
+      }
+    }
+
+    &:active {
+      scale: 0.97;
     }
 
     &:focus-visible {
@@ -332,10 +339,13 @@
       transition:
         background-color 200ms ease,
         box-shadow 200ms ease,
-        translate 200ms ease;
+        translate 200ms ease,
+        scale 150ms ease-out;
 
-      &:hover {
-        translate: 0 -2px;
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          translate: 0 -2px;
+        }
       }
     }
 
@@ -343,8 +353,10 @@
       transition: translate 200ms ease;
     }
 
-    & .ha-cta:hover .ha-cta-arrow {
-      translate: 4px 0;
+    @media (hover: hover) and (pointer: fine) {
+      & .ha-cta:hover .ha-cta-arrow {
+        translate: 4px 0;
+      }
     }
 
     & .ha-eyebrow-flow::after {

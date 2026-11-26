@@ -20,7 +20,9 @@ export function ArticleLocationTrail({
       aria-label="Current location"
       className="text-muted-foreground mb-4 flex items-center gap-2 text-sm"
     >
-      <Link to="/" aria-label="Home">
+      {/* 14px padding grows the 16px icon to a 44px hit area;
+          the matching negative margin keeps the trail where it was. */}
+      <Link to="/" aria-label="Home" className="-m-3.5 p-3.5">
         <House className="size-4" />
       </Link>
       <span aria-hidden="true">&gt;</span>

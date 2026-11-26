@@ -105,6 +105,20 @@ describe("RecommendedArticleCard", () => {
 });
 
 describe("RecommendedArticleCard copy link", () => {
+  test("is a 44px icon button beside the link, visible at every width and never hover-gated", () => {
+    const html = renderCard(article());
+    const button = /<button [^>]*class="([^"]*)"[^>]*>(.*?)<\/button>/.exec(html);
+    const buttonClasses = (button?.[1] ?? "").split(" ");
+    const buttonBody = button?.[2] ?? "";
+
+    expect(html.indexOf("<button")).toBeGreaterThan(html.indexOf("</a>"));
+    expect(buttonClasses).toContain("size-11");
+    expect(buttonClasses.filter((name) => /(^|:)opacity-0$/.test(name) || name.startsWith("lg:"))).toEqual([]);
+    expect(buttonBody).toMatch(/<svg[^>]*aria-hidden="true"/);
+    expect(buttonBody).not.toContain("lg:");
+    expect(buttonBody).toContain('<span class="sr-only">Copy link</span>');
+  });
+
   test("copies the absolute article URL and announces it, then resets after two seconds", async () => {
     const written: string[] = [];
 

@@ -27,9 +27,9 @@ const COPY_ANNOUNCEMENTS: Record<CopyStatus, string> = {
 };
 
 /**
- * Copies the article's absolute URL. Icon-only below `lg`; from `lg` a text pill
- * that appears when the card is hovered or holds focus. The outcome is announced
- * through a polite live region.
+ * Copies the article's absolute URL: an always-visible icon button with a 44px
+ * hit area at the end of the card's date row. The outcome is announced through
+ * a polite live region.
  */
 function CopyArticleLinkButton({ path }: { path: string }): JSX.Element {
   const [status, setStatus] = useState<CopyStatus>("idle");
@@ -64,15 +64,17 @@ function CopyArticleLinkButton({ path }: { path: string }): JSX.Element {
 
   return (
     <>
+      {/* Sits on the date row: the cover is 52.5cqw tall (1200x630), the row starts 2rem
+          below it, and the 44px box centres on the row's first 1.5-leading line. */}
       <Button
         type="button"
-        variant="secondary"
+        variant="ghost"
         size="icon"
         onClick={copyLink}
-        className="absolute top-6 left-6 z-10 size-12 rounded-lg bg-(--paper-1) text-(--ink-5) shadow transition hover:bg-(--paper-1) hover:shadow-md dark:bg-(--popover) dark:text-(--paper-1) dark:hover:bg-(--popover) lg:size-auto lg:px-8 lg:py-4 lg:text-lg lg:opacity-0 lg:group-hover/card:opacity-100 lg:group-focus-within/card:opacity-100 motion-reduce:transition-none"
+        className="absolute top-[calc(52.5cqw_+_2rem_+_(1.375rem_*_1.5_-_2.75rem)_/_2)] right-0 size-11 text-(--ink-2) dark:text-(--paper-5)"
       >
-        {status === "copied" ? <Check aria-hidden="true" className="size-6 lg:hidden" /> : <Copy aria-hidden="true" className="size-6 lg:hidden" />}
-        <span className="sr-only lg:not-sr-only">{COPY_LABELS[status]}</span>
+        {status === "copied" ? <Check aria-hidden="true" className="size-5" /> : <Copy aria-hidden="true" className="size-5" />}
+        <span className="sr-only">{COPY_LABELS[status]}</span>
       </Button>
       <span aria-live="polite" className="sr-only">{COPY_ANNOUNCEMENTS[status]}</span>
     </>
@@ -94,7 +96,7 @@ export function RecommendedArticleCard({ article }: RecommendedArticleCardProps)
   const imagePath = resolveSocialImagePath(article.socialImage);
 
   return (
-    <div className="group/card relative">
+    <div className="@container group/card relative">
       <Link
         to={`/articles/${article.slug}`}
         aria-labelledby={titleId}
@@ -117,7 +119,7 @@ export function RecommendedArticleCard({ article }: RecommendedArticleCardProps)
                 <img src={imagePath} alt="" loading="lazy" className="size-full rounded-lg object-cover" />
               )}
         </div>
-        <p id={metaId} className="mt-8 text-[1.375rem] font-medium text-(--ink-2) dark:text-(--paper-5)">
+        <p id={metaId} className="mt-8 pr-12 text-[1.375rem] leading-[1.5] font-medium text-(--ink-2) dark:text-(--paper-5)">
           {formatArticleDate(article.date)}
           {" — "}
           {article.category}
