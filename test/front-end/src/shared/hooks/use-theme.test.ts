@@ -2,6 +2,8 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } fr
 
 import { act, createElement } from "react";
 
+import { PAGE_COLOR_DARK, PAGE_COLOR_LIGHT } from "shared";
+
 import type * as UseThemeModule from "../../../../../front-end/src/shared/hooks/use-theme";
 import type { FakeMount } from "../../../src/test/dom-harness";
 import { initFakeDomHarness, mountIntoBody, unmountFakeDomRoot } from "../../../src/test/dom-harness";
@@ -136,6 +138,36 @@ describe("applyTheme", () => {
     triggerFakeMediaPreferenceChange(false);
     applyTheme("system");
     expect(doc.documentElement.classList.contains("dark")).toBe(false);
+  });
+
+  test("sets both theme-color meta tags to the resolved theme's page colour", () => {
+    const doc = document as unknown as FakeDocument;
+    const metas = ["light", "dark"].map((scheme) => {
+      const meta = doc.createElement("meta");
+
+      meta.setAttribute("name", "theme-color");
+      meta.setAttribute("media", `(prefers-color-scheme: ${scheme})`);
+      meta.setAttribute("content", "#000000");
+      doc.head.appendChild(meta);
+
+      return meta;
+    });
+
+    try {
+      applyTheme("dark");
+      expect(metas.map((meta) => meta.getAttribute("content"))).toEqual([PAGE_COLOR_DARK, PAGE_COLOR_DARK]);
+
+      applyTheme("light");
+      expect(metas.map((meta) => meta.getAttribute("content"))).toEqual([PAGE_COLOR_LIGHT, PAGE_COLOR_LIGHT]);
+
+      triggerFakeMediaPreferenceChange(true);
+      applyTheme("system");
+      expect(metas.map((meta) => meta.getAttribute("content"))).toEqual([PAGE_COLOR_DARK, PAGE_COLOR_DARK]);
+    } finally {
+      for (const meta of metas) {
+        meta.remove();
+      }
+    }
   });
 });
 

@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { BRAND_COLOR, SITE_NAME } from "shared";
+import { BRAND_COLOR, PAGE_COLOR_LIGHT, SITE_NAME } from "shared";
 
 const publicDir = resolve(import.meta.dir, "../../../public");
 const cssPath = resolve(import.meta.dir, "../../../front-end/src/index.css");
@@ -46,9 +46,9 @@ describe("public/manifest.webmanifest", () => {
     expect(manifest.display).toBe("minimal-ui");
   });
 
-  test("uses the brand blue of the favicon for the browser chrome", () => {
-    expect(manifest.theme_color).toBe(BRAND_COLOR);
-    expect(manifest.background_color).toBe(BRAND_COLOR);
+  test("uses the light page colour for the browser chrome and splash, keeping the brand blue for the icon", () => {
+    expect(manifest.theme_color).toBe(PAGE_COLOR_LIGHT);
+    expect(manifest.background_color).toBe(PAGE_COLOR_LIGHT);
     expect(readFileSync(resolve(publicDir, "favicon.svg"), "utf-8")).toContain(`fill="${BRAND_COLOR}"`);
   });
 

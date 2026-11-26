@@ -120,13 +120,25 @@ export const PROJECTS_DESCRIPTION = "A curated set of projects that show how I b
   + "across content, automation, and web experiences.";
 
 /**
- * The mark's blue (see `BRANDING.md`). Hand-copied into `front-end/index.html`'s
- * `theme-color` meta tag, `public/manifest.webmanifest`, `public/favicon.svg`'s
- * fill, and `front-end/src/index.css`'s `--primary`/`--chart-1` tokens — those
+ * The mark's blue (see `BRANDING.md`). Hand-copied into `public/favicon.svg`'s
+ * fill and `front-end/src/index.css`'s `--primary`/`--chart-1` tokens — those
  * static files can't import this constant, but their tests assert against it
- * so the five copies can't silently drift apart.
+ * so the copies can't silently drift apart. The browser chrome does not use
+ * it: `theme-color` and the manifest follow the page colour below.
  */
 export const BRAND_COLOR = "#3584e4" as const;
+
+/**
+ * The page colour, `--site-page-bg` in `front-end/src/index.css`, of the light
+ * and the dark theme. The browser chrome matches the top of the page:
+ * `front-end/index.html` has one `theme-color` meta tag per scheme for the
+ * first paint, `applyTheme` sets both to the chosen theme's colour, and
+ * `public/manifest.webmanifest` uses the light one for `theme_color` and
+ * `background_color`. `test/shared/src/shared-literals.test.ts` reads every
+ * copy so they can't drift apart.
+ */
+export const PAGE_COLOR_LIGHT = "#f3efe5" as const;
+export const PAGE_COLOR_DARK = "#1c1b1a" as const;
 
 /**
  * Request header carrying the visitor's real IP behind Cloudflare Tunnel.

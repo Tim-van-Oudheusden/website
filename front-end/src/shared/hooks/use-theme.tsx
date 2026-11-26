@@ -1,6 +1,8 @@
 import type { JSX, ReactNode } from "react";
 import { createContext, use, useCallback, useEffect, useMemo, useState } from "react";
 
+import { PAGE_COLOR_DARK, PAGE_COLOR_LIGHT } from "shared";
+
 type Theme = "light" | "dark" | "system";
 
 const STORAGE_KEY = "theme";
@@ -16,7 +18,11 @@ const ThemeContext = createContext<{
   setTheme: () => {},
 });
 
-/** Toggle the document-level theme class for the given theme selection. */
+/**
+ * Toggle the document-level theme class for the given theme selection, and
+ * point both `theme-color` meta tags at the resolved theme's page colour so the
+ * browser chrome follows a manual Light or Dark choice, not just the system.
+ */
 export function applyTheme(theme: Theme): void {
   const root = document.documentElement;
   const isDark
@@ -24,6 +30,10 @@ export function applyTheme(theme: Theme): void {
       || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
   root.classList.toggle("dark", isDark);
+
+  for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
+    meta.setAttribute("content", isDark ? PAGE_COLOR_DARK : PAGE_COLOR_LIGHT);
+  }
 }
 
 // Storage can be denied (blocked cookies, sandboxed iframe, policy), and the
