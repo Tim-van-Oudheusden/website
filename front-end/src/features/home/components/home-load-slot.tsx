@@ -20,7 +20,7 @@ export function HomeLoadSlot<T>({
 }: HomeLoadSlotProps<T>): JSX.Element {
   if (loadError) {
     return (
-      <p role="alert" className="text-sm text-red-600 dark:text-destructive">
+      <p role="alert" className="text-sm text-destructive">
         {errorMessage}
       </p>
     );

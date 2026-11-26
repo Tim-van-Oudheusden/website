@@ -19,7 +19,7 @@ export const ARTICLES_PAGE_LAYOUT_CLASSES = {
 export const ARTICLES_PAGE_TYPOGRAPHY_CLASSES = {
   pageTitle: "text-[1.75rem] sm:text-[2rem] font-semibold tracking-tight",
   sidebarTriggerLabel: "truncate text-sm font-medium",
-  sidebarArticleButton: "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium transition-colors [&>svg]:size-4 [&>svg]:shrink-0",
+  sidebarArticleButton: "hover:bg-accent hover:text-accent-foreground flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium transition-colors [&>svg]:size-4 [&>svg]:shrink-0",
   sidebarSelectedArticleState: "bg-[var(--ink-5)] text-[var(--paper-1)] dark:bg-[var(--paper-1)] dark:text-[var(--ink-5)] shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.5)]",
   articleEyebrow: "text-muted-foreground text-sm font-semibold uppercase tracking-[0.12em]",
   articleTitle: "mt-3 text-[2.125rem] leading-[1.12] sm:text-[2.75rem] xl:text-[3.25rem] font-semibold tracking-tight text-balance",

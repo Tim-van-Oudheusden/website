@@ -59,7 +59,7 @@ export const HOME_SECTIONS: HomeSectionDefinition[] = [
     id: "whats-new",
     label: "what's new",
     heading: "What's new from the blog",
-    body: "A handful of the real articles on this site, pulled from the content you can read and linked straight to their pages.",
+    body: "The latest articles, newest first.",
     bgColor: "var(--site-page-bg)",
     variant: "recent-posts",
   },

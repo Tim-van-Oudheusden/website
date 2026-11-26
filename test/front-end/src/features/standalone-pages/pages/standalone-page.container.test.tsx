@@ -7,7 +7,7 @@ import type { PageData } from "shared";
 
 import type * as StandalonePageModule from "../../../../../../front-end/src/features/standalone-pages/pages/standalone-page";
 import type { FakeMount } from "../../../../src/test/dom-harness";
-import { initFakeDomHarness, jsonResponse, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
+import { fireFakePointer, initFakeDomHarness, jsonResponse, mountIntoBody, settleMicrotasks, unmountFakeDomRoot } from "../../../../src/test/dom-harness";
 import { queryFakeElements, uninstallFakeDom } from "../../../../src/test/fake-dom";
 
 // Module-loading boundary: react-dom captures `canUseDOM` at module load, so it
@@ -112,15 +112,47 @@ describe("StandalonePage", () => {
     }
   });
 
-  test("surfaces the message of a non-404 failure", async () => {
-    stubFetch(jsonResponse({}, 500));
+  test("says in a plain sentence that the page failed to load, without the transport error", async () => {
+    stubFetch(jsonResponse({ error: "Too Many Requests" }, 429));
     const page = mountPage("now");
 
     try {
       await settle();
 
-      expect(page.container.textContent).toContain("Request failed");
-      expect(page.container.textContent).not.toContain("Page not found");
+      const text = page.container.textContent;
+
+      expect(text).toContain("This page could not be loaded right now.");
+      expect(text).not.toContain("Request failed");
+      expect(text).not.toContain("Too Many Requests");
+      expect(text).not.toContain("Page not found");
+    } finally {
+      unmountFakeDomRoot(page);
+    }
+  });
+
+  test("loads the page again on Try again after a failed load", async () => {
+    const responses = [jsonResponse({}, 500), jsonResponse(nowPage())];
+    const fetchMock: ReturnType<typeof mock> = mock(() => Promise.resolve(responses.shift() ?? jsonResponse({}, 500)));
+
+    globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch;
+    const page = mountPage("now");
+
+    try {
+      await settle();
+
+      const [retry] = queryFakeElements(page.container, (el) => el.nodeName === "BUTTON" && el.textContent === "Try again");
+
+      expect(retry).toBeDefined();
+
+      await act(async () => {
+        fireFakePointer(retry!, "click");
+        await settleMicrotasks();
+      });
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(String(fetchMock.mock.calls[1]?.[0])).toBe("/api/pages/now");
+      expect(textsOf(page, "H1")).toEqual(["Now"]);
+      expect(page.container.textContent).not.toContain("could not be loaded");
     } finally {
       unmountFakeDomRoot(page);
     }

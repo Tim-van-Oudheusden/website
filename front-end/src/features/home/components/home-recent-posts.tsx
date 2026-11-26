@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import type { ArticleSummary } from "shared/articles";
 import { compareArticles } from "shared/articles";
 
+import { formatArticleDate } from "@/features/articles/lib/article-date";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import type { ContentLoader } from "@/shared/lib/content-loader";
 
@@ -33,6 +34,9 @@ export function RecentPostsList({ posts }: { posts: ArticleSummary[] }): JSX.Ele
             to={`/articles/${post.slug}`}
             className="group flex flex-col gap-2 rounded-xl border border-white/15 bg-(--site-section-well-bg) px-5 py-4"
           >
+            <time dateTime={post.date} className="text-sm text-(--ink-5)/60 dark:text-white/70">
+              {formatArticleDate(post.date)}
+            </time>
             <span className="font-semibold tracking-tight text-(--ink-5) dark:text-(--paper-1)">
               {post.title}
             </span>
