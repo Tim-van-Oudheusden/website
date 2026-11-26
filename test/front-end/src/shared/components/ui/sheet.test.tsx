@@ -181,6 +181,22 @@ describe("sheet interaction", () => {
     }
   });
 
+  test("content slides on the drawer curve, 500ms in and 300ms out", () => {
+    const sheet = mountSheet({}, true);
+    const doc = document as unknown as FakeDocument;
+
+    try {
+      const classes = (findBySlot(doc.body, "sheet-content").getAttribute("class") ?? "").split(/\s+/);
+
+      expect(classes).toContain("ease-drawer");
+      expect(classes).not.toContain("ease-in-out");
+      expect(classes).toContain("data-[state=open]:duration-500");
+      expect(classes).toContain("data-[state=closed]:duration-300");
+    } finally {
+      unmountFakeDomRoot(sheet.mount);
+    }
+  });
+
   test("Escape closes the sheet and reports both transitions through onOpenChange", () => {
     const sheet = mountSheet();
     const doc = document as unknown as FakeDocument;

@@ -362,3 +362,19 @@
     --tw-prose-invert-td-borders: var(--border);
   }
 }
+
+/* tw-animate-css has no reduced-motion rule: fade the sheet and dropdown instead of
+   sliding or scaling them. Unlayered so it beats the animation utilities. */
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="sheet-content"],
+  [data-slot="dropdown-menu-content"] {
+    --tw-enter-translate-x: 0;
+    --tw-exit-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-exit-translate-y: 0;
+    --tw-enter-scale: 1;
+    --tw-exit-scale: 1;
+    --tw-enter-opacity: 0;
+    --tw-exit-opacity: 0;
+  }
+}
