@@ -56,8 +56,6 @@
     fill: transparent;
     stroke: var(--ha-hex);
     stroke-width: 1.5;
-    transform-box: fill-box;
-    transform-origin: center;
 
     &[data-lit] {
       fill: var(--ha-hex-lit);
@@ -371,16 +369,6 @@
       animation-delay: 1.8s;
     }
 
-    & .ha-node::after {
-      animation: ha-breathe 3.6s ease-in-out infinite;
-      animation-delay: calc(var(--ha-i, 0) * 0.6s);
-    }
-
-    & .ha-cell[data-lit] {
-      animation: ha-cell 5s ease-in-out infinite;
-      animation-delay: calc(var(--ha-i, 0) * 1s);
-    }
-
     & .ha-live::after {
       animation: ha-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
     }
@@ -425,32 +413,6 @@
 @keyframes ha-flow-y {
   to {
     transform: translateY(440%);
-  }
-}
-
-@keyframes ha-breathe {
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.12);
-  }
-}
-
-@keyframes ha-cell {
-  0%,
-  100% {
-    opacity: 0.35;
-    transform: scale(0.92);
-  }
-
-  40% {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 

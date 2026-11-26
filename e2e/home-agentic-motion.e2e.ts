@@ -53,10 +53,24 @@ async function hoverMovement(page: Page): Promise<{ ctaDy: number; arrowTranslat
 }
 
 test.describe("Home agentic teaser motion", () => {
-  test("runs the conduit, node, honeycomb and live animations by default", async ({ page }) => {
+  test("runs only the conduit flow pulse and the LIVE ping by default", async ({ page }) => {
     await openTeaser(page);
 
-    expect(new Set(await teaserAnimations(page))).toEqual(new Set(["ha-flow-x", "ha-breathe", "ha-cell", "ha-ping"]));
+    expect(new Set(await teaserAnimations(page))).toEqual(new Set(["ha-flow-x", "ha-ping"]));
+  });
+
+  test("shows the node halos and the lit honeycomb cells at rest, fully opaque and unscaled", async ({ page }) => {
+    await openTeaser(page);
+
+    const restStates = await page.evaluate(() =>
+      [
+        ...[...document.querySelectorAll(".home-agentic .ha-node")].map((node) => getComputedStyle(node, "::after")),
+        ...[...document.querySelectorAll(".home-agentic .ha-cell[data-lit]")].map((cell) => getComputedStyle(cell)),
+      ].map(({ opacity, transform }) => ({ opacity, transform })),
+    );
+
+    expect(restStates).not.toHaveLength(0);
+    expect(new Set(restStates.map((state) => JSON.stringify(state)))).toEqual(new Set([JSON.stringify({ opacity: "1", transform: "none" })]));
   });
 
   test("lifts the link and nudges its arrow on hover by default", async ({ page }) => {

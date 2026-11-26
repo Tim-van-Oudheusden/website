@@ -86,6 +86,15 @@ describe("ARTICLES_PAGE_TYPOGRAPHY_CLASSES", () => {
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkActive).toContain("text-[var(--ink-4)]");
     expect(ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLinkInactive).toContain("text-[var(--site-toc-inactive)]");
   });
+
+  test("moves the table-of-contents highlight over 150ms, since it changes continuously while scrolling", () => {
+    for (const classes of [ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocItem, ARTICLES_PAGE_TYPOGRAPHY_CLASSES.tocLink]) {
+      const tokens = classes.split(" ");
+
+      expect(tokens).toContain("duration-150");
+      expect(tokens.filter((token) => token.startsWith("duration-") && token !== "duration-150")).toEqual([]);
+    }
+  });
 });
 
 describe("ArticleLocationTrail", () => {
