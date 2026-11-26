@@ -32,7 +32,7 @@ export function RecentPostsList({ posts }: { posts: ArticleSummary[] }): JSX.Ele
         <li key={post.slug}>
           <Link
             to={`/articles/${post.slug}`}
-            className="group flex flex-col gap-2 rounded-xl border border-white/15 bg-(--site-section-well-bg) px-5 py-4"
+            className="group flex flex-col gap-2 rounded-xl border border-(--ink-5)/10 bg-(--site-section-well-bg) px-5 py-4 transition-[border-color,scale] duration-150 ease-out hover:border-(--ink-5)/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--site-accent) active:scale-[0.99] motion-reduce:transition-none dark:border-(--paper-1)/15 dark:hover:border-(--paper-1)/40"
           >
             <time dateTime={post.date} className="text-sm text-(--ink-5)/60 dark:text-white/70">
               {formatArticleDate(post.date)}

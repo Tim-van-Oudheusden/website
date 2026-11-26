@@ -50,7 +50,7 @@ export function HomeSectionHeading({
               strokeWidth="2"
               stroke="currentColor"
               strokeDasharray="175.93"
-              className="text-(--site-accent) [stroke-dashoffset:175.93] transition-[stroke-dashoffset] duration-500 ease-out group-hover:[stroke-dashoffset:0] group-focus-visible:[stroke-dashoffset:0] motion-reduce:transition-none"
+              className="text-(--site-accent) [stroke-dashoffset:175.93] transition-[stroke-dashoffset] duration-300 ease-out group-hover:[stroke-dashoffset:0] group-focus-visible:[stroke-dashoffset:0] motion-reduce:transition-none"
             />
           </svg>
           <ArrowRight className="size-8 transition-transform duration-300 group-hover:translate-x-1 group-focus-visible:translate-x-1 motion-reduce:transition-none" />

@@ -170,6 +170,23 @@ describe("RecentPostsList", () => {
       ["2026-01-10", "January 10th, 2026"],
     ]);
   });
+
+  test("gives each card a visible edge, a darker hover edge, an accent focus outline and a press scale", () => {
+    const cards = [...renderPostsList(FIXTURE_POSTS).matchAll(/<a [^>]*class="([^"]*)"/g)].map((match) => (match[1] ?? "").split(" "));
+
+    expect(cards).toHaveLength(FIXTURE_POSTS.length);
+
+    for (const card of cards) {
+      expect(card).not.toContain("border-white/15");
+      expect(card).toContain("border");
+      expect(card.some((token) => token.startsWith("border-(--"))).toBe(true);
+      expect(card.some((token) => token.startsWith("hover:border-"))).toBe(true);
+      expect(card).toContain("focus-visible:outline-(--site-accent)");
+      expect(card).toContain("active:scale-[0.99]");
+      expect(card).toContain("duration-150");
+      expect(card).toContain("motion-reduce:transition-none");
+    }
+  });
 });
 
 describe("what's-new section copy", () => {

@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -81,5 +83,19 @@ describe("HomeAgentic", () => {
     expect(cta[0]).toContain(`href="${AGENTIC_PAGE_PATH}"`);
     expect(cta[0]).not.toContain("target=");
     expect(textOf(cta[0] ?? "")).toContain(section.ctaLabel);
+  });
+});
+
+describe("home-agentic.css", () => {
+  const css = readFileSync(
+    resolve(import.meta.dir, "../../../../../../front-end/src/features/home/components/home-agentic.css"),
+    "utf8",
+  );
+  const keyframes = [...css.matchAll(/@keyframes ([\w-]+)/g)].map((match) => match[1]);
+  const animated = [...css.matchAll(/animation(?:-name)?: ([\w-]+)/g)].map((match) => match[1]);
+
+  test("keeps only the flow pulse and the LIVE ping as running loops", () => {
+    expect(new Set(keyframes)).toEqual(new Set(["ha-flow-x", "ha-flow-y", "ha-ping"]));
+    expect(new Set(animated)).toEqual(new Set(["ha-flow-x", "ha-flow-y", "ha-ping"]));
   });
 });

@@ -162,4 +162,40 @@ describe("RecommendedArticleCard copy link", () => {
       unmountFakeDomRoot(mount);
     }
   });
+
+  test("crossfades the copy icon into the check icon with opacity and a 2px blur over 200ms", async () => {
+    stubClipboard(() => Promise.resolve());
+    const mount = mountIntoBody(cardElement(article()));
+
+    /** Class tokens of the button's Copy and Check icons, both always rendered so one can fade into the other. */
+    function iconClasses(): { copy: string[]; check: string[] } {
+      function classesOf(icon: string): string[] {
+        const [svg] = queryFakeElements(copyButton(mount), (el) => (el.getAttribute("class") ?? "").split(" ").includes(`lucide-${icon}`));
+
+        return (svg?.getAttribute("class") ?? "").split(" ");
+      }
+
+      return { copy: classesOf("copy"), check: classesOf("check") };
+    }
+
+    try {
+      const idle = iconClasses();
+
+      for (const icon of [idle.copy, idle.check]) {
+        expect(icon).toEqual(expect.arrayContaining(["transition-[opacity,filter]", "duration-200", "ease-out", "motion-reduce:transition-none"]));
+      }
+
+      expect(idle.copy).toContain("opacity-100");
+      expect(idle.check).toEqual(expect.arrayContaining(["opacity-0", "blur-[2px]"]));
+
+      await clickCopy(mount);
+      const copied = iconClasses();
+
+      expect(copied.copy).toEqual(expect.arrayContaining(["opacity-0", "blur-[2px]"]));
+      expect(copied.check).toContain("opacity-100");
+      expect(copied.check).not.toContain("blur-[2px]");
+    } finally {
+      unmountFakeDomRoot(mount);
+    }
+  });
 });

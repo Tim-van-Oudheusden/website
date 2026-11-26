@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import { Check, Copy } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useId, useState } from "react";
@@ -25,6 +26,11 @@ const COPY_ANNOUNCEMENTS: Record<CopyStatus, string> = {
   copied: "Link copied to clipboard",
   failed: "Couldn't copy link",
 };
+
+/** Copy and Check share a grid cell and crossfade: opacity plus a 2px blur, 200ms. */
+const COPY_ICON_CLASSES = "col-start-1 row-start-1 size-5 transition-[opacity,filter] duration-200 ease-out motion-reduce:transition-none";
+const COPY_ICON_SHOWN = "opacity-100";
+const COPY_ICON_HIDDEN = "opacity-0 blur-[2px]";
 
 /**
  * Copies the article's absolute URL: an always-visible icon button with a 44px
@@ -73,7 +79,11 @@ function CopyArticleLinkButton({ path }: { path: string }): JSX.Element {
         onClick={copyLink}
         className="absolute top-[calc(52.5cqw_+_2rem_+_(1.375rem_*_1.5_-_2.75rem)_/_2)] right-0 size-11 text-(--ink-2) dark:text-(--paper-5)"
       >
-        {status === "copied" ? <Check aria-hidden="true" className="size-5" /> : <Copy aria-hidden="true" className="size-5" />}
+        {/* Both icons share one grid cell so the outgoing one fades and blurs while the incoming one sharpens. */}
+        <span className="grid">
+          <Copy aria-hidden="true" className={cn(COPY_ICON_CLASSES, status === "copied" ? COPY_ICON_HIDDEN : COPY_ICON_SHOWN)} />
+          <Check aria-hidden="true" className={cn(COPY_ICON_CLASSES, status === "copied" ? COPY_ICON_SHOWN : COPY_ICON_HIDDEN)} />
+        </span>
         <span className="sr-only">{COPY_LABELS[status]}</span>
       </Button>
       <span aria-live="polite" className="sr-only">{COPY_ANNOUNCEMENTS[status]}</span>

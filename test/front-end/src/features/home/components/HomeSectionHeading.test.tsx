@@ -30,4 +30,12 @@ describe("HomeSectionHeading", () => {
     expect(html).toContain("Picked from the blog, especially for you.");
     expect(html).toMatch(/<a [^>]*href="\/articles"[^>]*>[\s\S]*See all articles[\s\S]*<\/a>/);
   });
+
+  test("draws the hover ring around the arrow within the 300ms hover budget", () => {
+    const ring = /<circle [^>]*stroke-dasharray="175.93"[^>]*class="([^"]*)"/.exec(renderHeading())?.[1]?.split(" ") ?? [];
+
+    expect(ring).toContain("transition-[stroke-dashoffset]");
+    expect(ring).toContain("duration-300");
+    expect(ring).not.toContain("duration-500");
+  });
 });
