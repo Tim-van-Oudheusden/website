@@ -3,13 +3,13 @@ import { ArrowUpRight } from "lucide-react";
 import type { JSX } from "react";
 
 import { Badge } from "@/shared/components/ui/badge";
+import { SITE_WELL_BLEED_CLASSES } from "@/shared/lib/content-edge";
 
 import type { ExperienceEntry } from "../config/experience";
-import { headingIdFor } from "../config/home-sections";
 import { formatExperienceRange, sortNewestFirst } from "../lib/experience-dates";
 import type { HomeExperienceSection } from "../types/home-section";
 
-import { HOME_SECTION_FRAME_CLASSES, HomeSectionFrame } from "./home-section-shell";
+import { HomeHeadedSectionShell } from "./home-section-shell";
 
 /** Arrow that rests 1px low and nudges up-right on link hover or keyboard focus. */
 const LINK_ARROW_CLASSES = "ml-1 inline-block size-4 translate-y-px transition-transform duration-150 group-hover/link:translate-x-1 group-hover/link:-translate-y-1 group-focus-visible/link:translate-x-1 group-focus-visible/link:-translate-y-1 motion-reduce:transition-none";
@@ -183,66 +183,62 @@ export function HomeExperience({ section }: HomeExperienceProps): JSX.Element {
   const groups = groupByCompany(sortNewestFirst(section.entries));
 
   return (
-    <HomeSectionFrame section={section} as="section" className={HOME_SECTION_FRAME_CLASSES}>
-      {/* One column, as wide as the timeline, centered in the section: the heading stays aligned with the rows. */}
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-10 md:max-w-3xl">
-        <div className="flex flex-col gap-3">
-          <h2
-            id={headingIdFor(section.id)}
-            className="text-[1.875rem] leading-tight sm:text-[2.5rem] text-(--ink-5) dark:text-(--paper-1)"
-          >
-            {section.heading}
-          </h2>
-          <p className="text-lg leading-relaxed text-(--ink-2) dark:text-(--paper-5)">{section.body}</p>
-        </div>
-        <div>
-          <ol className="lg:[&:has([data-role]:focus-within)_[data-role]:not(:focus-within)>div]:opacity-50 lg:[&:has([data-role]:hover)_[data-role]:not(:hover)>div]:opacity-50">
-            {groups.map((group, index) => {
-              const onWell = group.length > 1;
+    <HomeHeadedSectionShell
+      as="section"
+      section={section}
+      heading={section.heading}
+      subheading={section.body}
+      link={null}
+      headingAlign="start"
+    >
+      {/* The timeline keeps a readable width, starting on the content edge under the heading. */}
+      <div className="max-w-3xl">
+        <ol className="lg:[&:has([data-role]:focus-within)_[data-role]:not(:focus-within)>div]:opacity-50 lg:[&:has([data-role]:hover)_[data-role]:not(:hover)>div]:opacity-50">
+          {groups.map((group, index) => {
+            const onWell = group.length > 1;
 
-              return (
-                <li
-                  key={`${group[0]?.company ?? ""}-${group[0]?.start ?? ""}`}
-                  // Every company keeps the same side padding (pulled back out with a negative margin) so all rows
-                  // align; only a company with several positions shows the panel.
-                  className={cn(
-                    "-mx-4 px-4 sm:-mx-6 sm:px-6",
-                    index === groups.length - 1 ? "" : "mb-12",
-                    onWell
-                      ? "rounded-2xl bg-(--paper-1)/50 py-6 ring-1 ring-black/5 ring-inset dark:bg-(--site-section-well-bg) dark:ring-white/10"
-                      : "",
-                  )}
-                >
-                  <ol>
-                    {group.map((role, roleIndex) => (
-                      <RoleRow
-                        key={`${role.company}-${role.start}`}
-                        role={role}
-                        lastInGroup={roleIndex === group.length - 1}
-                        onWell={onWell}
-                      />
-                    ))}
-                  </ol>
-                </li>
-              );
-            })}
-          </ol>
-          <a
-            href={section.profileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View full profile on LinkedIn (opens in a new tab)"
-            className="group/link mt-12 inline-block leading-tight font-semibold text-(--ink-5) transition-colors duration-150 hover:text-(--site-accent) focus-visible:text-(--site-accent) dark:text-(--paper-1) motion-reduce:transition-none"
-          >
-            View full profile on
-            {" "}
-            <span className="inline-block">
-              LinkedIn
-              <ArrowUpRight aria-hidden="true" className={LINK_ARROW_CLASSES} />
-            </span>
-          </a>
-        </div>
+            return (
+              <li
+                key={`${group[0]?.company ?? ""}-${group[0]?.start ?? ""}`}
+                // Every company is padded the same (the well bleed) so all rows align; only a company with
+                // several positions shows the panel.
+                className={cn(
+                  SITE_WELL_BLEED_CLASSES,
+                  index === groups.length - 1 ? "" : "mb-12",
+                  onWell
+                    ? "rounded-2xl bg-(--paper-1)/50 py-6 ring-1 ring-black/5 ring-inset dark:bg-(--site-section-well-bg) dark:ring-white/10"
+                    : "",
+                )}
+              >
+                <ol>
+                  {group.map((role, roleIndex) => (
+                    <RoleRow
+                      key={`${role.company}-${role.start}`}
+                      role={role}
+                      lastInGroup={roleIndex === group.length - 1}
+                      onWell={onWell}
+                    />
+                  ))}
+                </ol>
+              </li>
+            );
+          })}
+        </ol>
+        <a
+          href={section.profileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="View full profile on LinkedIn (opens in a new tab)"
+          className="group/link mt-12 inline-block leading-tight font-semibold text-(--ink-5) transition-colors duration-150 hover:text-(--site-accent) focus-visible:text-(--site-accent) dark:text-(--paper-1) motion-reduce:transition-none"
+        >
+          View full profile on
+          {" "}
+          <span className="inline-block">
+            LinkedIn
+            <ArrowUpRight aria-hidden="true" className={LINK_ARROW_CLASSES} />
+          </span>
+        </a>
       </div>
-    </HomeSectionFrame>
+    </HomeHeadedSectionShell>
   );
 }

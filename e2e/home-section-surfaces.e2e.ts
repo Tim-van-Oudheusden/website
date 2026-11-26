@@ -40,22 +40,18 @@ test.describe("Home section surfaces", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
   });
 
-  test("centers the experience column, heading and timeline together, in the section", async ({ page }) => {
+  // The experience column used to be centred in the section; since #1358 it starts on the page's one content edge.
+  test("starts the experience timeline under its heading, on the content edge", async ({ page }) => {
     await openHome(page, { theme: "light", content: [] });
 
     const section = page.locator("section#experience");
-    const sectionBox = await section.boundingBox();
     const headingBox = await section.getByRole("heading", { level: 2, name: "Experience" }).boundingBox();
     const timelineBox = await section.locator("ol").first().boundingBox();
 
-    if (sectionBox === null || headingBox === null || timelineBox === null) {
+    if (headingBox === null || timelineBox === null) {
       throw new Error("Experience section is not laid out");
     }
 
-    const leftGap = timelineBox.x - sectionBox.x;
-    const rightGap = sectionBox.x + sectionBox.width - (timelineBox.x + timelineBox.width);
-
-    expect(Math.abs(leftGap - rightGap)).toBeLessThanOrEqual(1);
     expect(headingBox.x).toBeCloseTo(timelineBox.x, 0);
   });
 

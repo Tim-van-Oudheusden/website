@@ -10,7 +10,7 @@ test.describe("Home start portrait layout", () => {
     await expect(portrait).toBeVisible();
 
     const layout = await page.evaluate(() => {
-      const whiteBox = document.querySelector("section#start > div");
+      const whiteBox = document.querySelector("[data-testid='start-white-box']");
       const image = document.querySelector("section#start [data-testid='start-portrait']");
 
       if (whiteBox === null || image === null) {

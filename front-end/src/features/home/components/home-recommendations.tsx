@@ -6,7 +6,6 @@ import type { ArticleSummary } from "shared/articles";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import type { ContentLoader } from "@/shared/lib/content-loader";
 
-import { headingIdFor } from "../config/home-sections";
 import {
   RECOMMENDED_ARTICLES_COUNT,
   resolveRecommendedPool,
@@ -15,8 +14,7 @@ import {
 import type { HomeRecommendationsSection } from "../types/home-section";
 
 import { HomeLoadSlot } from "./home-load-slot";
-import { HomeSectionHeading } from "./home-section-heading";
-import { HOME_SECTION_FRAME_CLASSES, HomeSectionFrame } from "./home-section-shell";
+import { HomeHeadedSectionShell } from "./home-section-shell";
 import { RecommendedArticleCard, RecommendedArticleCardSkeleton } from "./recommended-article-card";
 
 const CARD_GRID_CLASSES = "grid grid-cols-1 gap-x-4 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-6";
@@ -86,17 +84,15 @@ export function HomeRecommendations({ section, loader }: HomeRecommendationsProp
   const { status, data: articles } = useLoadOnMount(load, "Failed to load recommendations");
 
   return (
-    <HomeSectionFrame section={section} as="section" className={HOME_SECTION_FRAME_CLASSES}>
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-10 md:max-w-3xl lg:max-w-296 lg:gap-12">
-        <HomeSectionHeading
-          headingId={headingIdFor(section.id)}
-          heading={section.heading}
-          subheading={section.body}
-          linkLabel={section.linkLabel}
-          linkTo={section.linkTo}
-        />
-        <RecommendationsContent articles={articles} loadError={status === "error"} />
-      </div>
-    </HomeSectionFrame>
+    <HomeHeadedSectionShell
+      as="section"
+      section={section}
+      heading={section.heading}
+      subheading={section.body}
+      link={{ label: section.linkLabel, to: section.linkTo }}
+      headingAlign="start"
+    >
+      <RecommendationsContent articles={articles} loadError={status === "error"} />
+    </HomeHeadedSectionShell>
   );
 }

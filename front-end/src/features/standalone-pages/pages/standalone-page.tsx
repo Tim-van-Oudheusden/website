@@ -10,6 +10,7 @@ import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { Button } from "@/shared/components/ui/button";
 import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
+import { SITE_CONTENT_GUTTER_CLASSES } from "@/shared/lib/content-edge";
 
 import { fetchPage } from "../lib/page-loader";
 
@@ -70,7 +71,7 @@ function StandalonePageContent({ slug, retry }: StandalonePageProps & { retry: (
   }
 
   return (
-    <main id={MAIN_CONTENT_ID} className="w-full flex-1 bg-[var(--site-page-bg)] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+    <main id={MAIN_CONTENT_ID} className={`w-full flex-1 bg-[var(--site-page-bg)] py-8 sm:py-10 ${SITE_CONTENT_GUTTER_CLASSES}`}>
       <article className="mx-auto w-full max-w-[75ch]">
         <header className="mb-8">
           <h1 className="text-[1.75rem] font-semibold tracking-tight sm:text-[2rem]">{page.title}</h1>

@@ -83,6 +83,13 @@ describe("HomePage", () => {
     }
   });
 
+  test("has exactly one h1, the hero heading", () => {
+    const headings = renderHomePage().match(/<h1[ >][\s\S]*?<\/h1>/g) ?? [];
+
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toContain(HOME_SECTIONS[0]?.heading ?? "");
+  });
+
   test("wires the floating nav to the section list", () => {
     const html = renderHomePage();
 

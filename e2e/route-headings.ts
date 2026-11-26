@@ -3,7 +3,7 @@
  * data, away from the spec, so `test/front-end/src/App.test.tsx` can hold it to the route table.
  */
 export const ROUTE_HEADINGS = [
-  ["/", "Experience"],
+  ["/", "Build with Tim."],
   ["/projects", "Projects"],
   ["/projects/dailies", "Dailies"],
   ["/agentic", "Agentic"],

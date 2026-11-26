@@ -9,6 +9,7 @@ import { ROUTES } from "shared";
 import { MAIN_CONTENT_ID } from "@/shared/components/skip-link";
 import { useDocumentTitle } from "@/shared/hooks/use-document-title";
 import { usePollingApiGet } from "@/shared/hooks/use-polling-api-get";
+import { SITE_CONTENT_CONTAINER_CLASSES } from "@/shared/lib/content-edge";
 
 import { AGENTIC_COPY } from "../config/agentic-copy";
 import { buildHiveViewModel } from "../lib/hive-view-model";
@@ -54,7 +55,7 @@ export function AgenticPage(): JSX.Element {
       {/* Until the view's chunk loads, the page still has its title. */}
       <Suspense
         fallback={(
-          <div className="mx-auto max-w-screen-xl px-4 pt-[calc(var(--site-top-bar-height)+2.5rem)] sm:px-6 lg:px-8">
+          <div className={`${SITE_CONTENT_CONTAINER_CLASSES} pt-[calc(var(--site-top-bar-height)+2.5rem)]`}>
             <h1 className="text-[2rem] font-semibold tracking-tight">{AGENTIC_COPY.title}</h1>
             <p className="mt-4">Loading…</p>
           </div>

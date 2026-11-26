@@ -1,6 +1,8 @@
+import { cn } from "cn";
 import type { JSX, MouseEvent } from "react";
 
 import { Button } from "@/shared/components/ui/button";
+import { SITE_WELL_BLEED_CLASSES } from "@/shared/lib/content-edge";
 
 import { headingIdFor } from "../config/home-sections";
 import type { HomeSectionId, HomeStartSection } from "../types/home-section";
@@ -20,19 +22,23 @@ export function HomeSectionStart({ section, onCtaActivate }: HomeSectionStartPro
 
   return (
     <HomeSectionFrame section={section} as="section" className={HOME_SECTION_FRAME_CLASSES}>
+      {/* The well reaches past the content edge by the fixed well bleed and pads the hero text back onto it. */}
       <div
         data-testid="start-white-box"
-        className="relative w-full max-w-6xl lg:max-w-332 min-h-116 rounded-[2rem] bg-(--site-section-well-bg) shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] overflow-visible"
+        className={cn(
+          "relative min-h-116 rounded-[2rem] bg-(--site-section-well-bg) shadow-[inset_0_1px_3px_rgba(0,0,0,0.12)] overflow-visible",
+          SITE_WELL_BLEED_CLASSES,
+        )}
       >
-        <div className="pl-7.5 pr-5 py-8 sm:pl-12 sm:pr-8 sm:py-10 lg:pl-9 lg:pr-6">
-          <div className="flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-296 md:pr-[clamp(14rem,30vw,30rem)]">
+        <div className="py-8 sm:py-10">
+          <div className="flex max-w-2xl flex-col gap-8 md:max-w-3xl lg:max-w-none md:pr-[clamp(14rem,30vw,30rem)]">
             <div className="flex flex-1 flex-col gap-5">
-              <h2
+              <h1
                 id={headingIdFor(section.id)}
                 className="font-bold tracking-tight text-(--ink-5) dark:text-(--paper-1) text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem] leading-[1.05]"
               >
                 {section.heading}
-              </h2>
+              </h1>
               <p className="max-w-[60ch] text-lg sm:text-xl leading-[1.55] text-(--ink-5) dark:text-white/80">
                 {section.body}
               </p>

@@ -121,7 +121,8 @@ export function HomeRecentPosts({ section, loader }: HomeRecentPostsProps): JSX.
       as="section"
       section={section}
       heading={section.heading}
-      body={section.body}
+      subheading={section.body}
+      link={null}
       headingAlign="start"
     >
       <RecentPostsContent posts={posts} loadError={status === "error"} />

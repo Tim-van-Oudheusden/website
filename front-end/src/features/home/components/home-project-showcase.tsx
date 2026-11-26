@@ -6,14 +6,12 @@ import type { ProjectFrontmatter } from "shared";
 import { useLoadOnMount } from "@/shared/hooks/use-load-on-mount";
 import type { ContentLoader } from "@/shared/lib/content-loader";
 
-import { headingIdFor } from "../config/home-sections";
 import type { ShowcaseTileSize } from "../lib/showcase-projects";
 import { selectShowcaseProjects, SHOWCASE_PROJECTS_LIMIT, showcaseTileSizes } from "../lib/showcase-projects";
 import type { HomeProjectsSection } from "../types/home-section";
 
 import { HomeLoadSlot } from "./home-load-slot";
-import { HomeSectionHeading } from "./home-section-heading";
-import { HOME_SECTION_FRAME_CLASSES, HomeSectionFrame } from "./home-section-shell";
+import { HomeHeadedSectionShell } from "./home-section-shell";
 import { ProjectShowcaseCard, ProjectShowcaseCardSkeleton } from "./project-showcase-card";
 
 /**
@@ -99,17 +97,15 @@ export function HomeProjectShowcase({ section, loader }: HomeProjectShowcaseProp
   const featured = projects?.[0];
 
   return (
-    <HomeSectionFrame section={section} as="section" className={HOME_SECTION_FRAME_CLASSES}>
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-16 md:max-w-3xl lg:max-w-296">
-        <HomeSectionHeading
-          headingId={headingIdFor(section.id)}
-          heading={section.heading}
-          subheading={featured === undefined ? section.body : section.featuredSubheading(featured.title)}
-          linkLabel={section.linkLabel}
-          linkTo={section.linkTo}
-        />
-        <ShowcaseContent projects={projects} loadError={status === "error"} />
-      </div>
-    </HomeSectionFrame>
+    <HomeHeadedSectionShell
+      as="section"
+      section={section}
+      heading={section.heading}
+      subheading={featured === undefined ? section.body : section.featuredSubheading(featured.title)}
+      link={{ label: section.linkLabel, to: section.linkTo }}
+      headingAlign="start"
+    >
+      <ShowcaseContent projects={projects} loadError={status === "error"} />
+    </HomeHeadedSectionShell>
   );
 }
