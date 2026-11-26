@@ -13,16 +13,28 @@ interface Readout {
   unit: string;
 }
 
+const PLURAL_RULES = new Intl.PluralRules("en");
+
 /** The live number shown under each flow step, or null when its part is missing. */
 function readouts(model: HiveViewModel): Record<FlowStepId, Readout | null> {
   const { hive, repo } = model;
 
   return {
-    issue: hive === null ? null : { value: String(hive.work.issues), unit: "issues open now" },
+    issue: hive === null
+      ? null
+      : {
+          value: String(hive.work.issues),
+          unit: `${PLURAL_RULES.select(hive.work.issues) === "one" ? "issue" : "issues"} open now`,
+        },
     agent: hive === null
       ? null
       : { value: `${String(hive.agents.running)}/${String(hive.agents.total)}`, unit: "agents running" },
-    pullRequest: repo === null ? null : { value: String(repo.totals.opened), unit: `PRs opened in ${AGENTIC_COPY.window}` },
+    pullRequest: repo === null
+      ? null
+      : {
+          value: String(repo.totals.opened),
+          unit: `${PLURAL_RULES.select(repo.totals.opened) === "one" ? "PR" : "PRs"} opened in ${AGENTIC_COPY.window}`,
+        },
     checks: hive === null ? null : { value: String(hive.work.mergeable), unit: "ready to merge now" },
     merge: repo === null ? null : { value: String(repo.totals.merged), unit: `merged in ${AGENTIC_COPY.window}` },
   };

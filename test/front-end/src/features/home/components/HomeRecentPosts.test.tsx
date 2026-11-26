@@ -159,6 +159,23 @@ describe("RecentPostsList", () => {
     expect(html).not.toContain("release-notes");
     expect(html).not.toMatch(/\/docs/i);
   });
+
+  test("shows each post's publication date", () => {
+    const html = renderPostsList(selectRecentPosts(FIXTURE_POSTS));
+    const dates = [...html.matchAll(/<time dateTime="([^"]*)"[^>]*>([^<]*)<\/time>/g)].map(([, iso, text]) => [iso, text]);
+
+    expect(dates).toEqual([
+      ["2026-03-15", "March 15th, 2026"],
+      ["2026-02-20", "February 20th, 2026"],
+      ["2026-01-10", "January 10th, 2026"],
+    ]);
+  });
+});
+
+describe("what's-new section copy", () => {
+  test("introduces the strip as the latest articles, newest first", () => {
+    expect(RECENT_POSTS_SECTION?.body).toBe("The latest articles, newest first.");
+  });
 });
 
 describe("RecentPostsContent", () => {

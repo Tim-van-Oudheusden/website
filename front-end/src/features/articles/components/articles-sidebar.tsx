@@ -93,8 +93,8 @@ export function ArticlesSidebar({ articles, selectedSlug }: ArticlesSidebarProps
                             articleStateClass,
                           )}
                         >
-                          <FileText className="size-4" />
-                          <span className="truncate">{article.title}</span>
+                          <FileText className="mt-0.5 size-4" />
+                          <span className="line-clamp-2">{article.title}</span>
                         </Link>
                       );
                     })}

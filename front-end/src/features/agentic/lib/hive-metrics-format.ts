@@ -7,6 +7,8 @@ const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
+/** Under this age an update reads "just now" rather than a second count. */
+const JUST_NOW = 5 * SECOND;
 
 const ONE_DECIMAL = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 1 });
 
@@ -17,9 +19,13 @@ export function formatClock(iso: string, timeZone: string | null): string {
   return new Intl.DateTimeFormat("en-GB", { ...options, timeZone: timeZone ?? undefined }).format(Date.parse(iso));
 }
 
-/** "40 s ago", "3 min ago", "2 h ago", "4 d ago"; never negative. */
+/** "just now" for the first 5 seconds, then "40 s ago", "3 min ago", "2 h ago", "4 d ago"; never negative. */
 export function formatAgo(iso: string, now: number): string {
   const elapsed = Math.max(0, now - Date.parse(iso));
+
+  if (elapsed < JUST_NOW) {
+    return "just now";
+  }
 
   if (elapsed < MINUTE) {
     return `${String(Math.round(elapsed / SECOND))} s ago`;

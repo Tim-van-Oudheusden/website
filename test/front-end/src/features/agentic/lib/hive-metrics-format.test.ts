@@ -16,7 +16,14 @@ describe("hive metrics formats", () => {
     expect(formatAgo(AT, MS + (3 * 60_000) + 59_000)).toBe("3 min ago");
     expect(formatAgo(AT, MS + (2 * 3_600_000) + 1)).toBe("2 h ago");
     expect(formatAgo(AT, MS + (4 * 86_400_000))).toBe("4 d ago");
-    expect(formatAgo(AT, MS - 5_000)).toBe("0 s ago");
+    expect(formatAgo(AT, MS - 5_000)).toBe("just now");
+  });
+
+  test("reads \"just now\" for the first 5 seconds, then counts seconds as before", () => {
+    expect(formatAgo(AT, MS)).toBe("just now");
+    expect(formatAgo(AT, MS + 4_999)).toBe("just now");
+    expect(formatAgo(AT, MS + 5_000)).toBe("5 s ago");
+    expect(formatAgo(AT, MS + 5_400)).toBe("5 s ago");
   });
 
   test("gives run times in seconds, minutes or hours, and times to merge in minutes below an hour", () => {

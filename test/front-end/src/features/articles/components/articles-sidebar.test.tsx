@@ -74,6 +74,14 @@ describe("ArticlesSidebar", () => {
     expect(html).toContain("bg-[var(--ink-5)]");
   });
 
+  test("wraps a long title onto a second line instead of cutting it off with an ellipsis", () => {
+    const html = renderSidebar();
+    const title = /<span class="([^"]*)">My operating system is a container image, yes, really<\/span>/.exec(html)?.[1] ?? "";
+
+    expect(title.split(" ")).toContain("line-clamp-2");
+    expect(title.split(" ")).not.toContain("truncate");
+  });
+
   test("labels the list with a heading below the article title's h1", () => {
     const html = renderSidebar();
 

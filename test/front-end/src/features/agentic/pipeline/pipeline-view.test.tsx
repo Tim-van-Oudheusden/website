@@ -50,6 +50,26 @@ describe("PipelineView", () => {
     });
   });
 
+  test.each([
+    [0, "0 issues open now", "0 PRs opened in 30 days"],
+    [1, "1 issue open now", "1 PR opened in 30 days"],
+    [2, "2 issues open now", "2 PRs opened in 30 days"],
+  ])("names the open issues and opened PRs in the singular only at a count of 1 (%i)", (count, issues, prs) => {
+    const live = liveMetrics();
+
+    if (live.hive === null || live.repo === null) {
+      throw new Error("Expected live hive and repo metrics");
+    }
+
+    const text = textOf(render(liveModel({
+      hive: { ...live.hive, work: { ...live.hive.work, issues: count } },
+      repo: { ...live.repo, days: [{ t: "2026-11-02T00:00:00.000Z", opened: count, merged: 3, closedUnmerged: 0 }] },
+    })));
+
+    expect(text).toContain(` ${issues} `);
+    expect(text).toContain(` ${prs} `);
+  });
+
   test("shows the agents' tasks as one chart over the span the hours cover", () => {
     const html = render(liveModel());
     const agents = /<li class="pl-station" aria-labelledby="pl-station-2"[\s\S]*?<\/li>/.exec(html)?.[0] ?? "";
