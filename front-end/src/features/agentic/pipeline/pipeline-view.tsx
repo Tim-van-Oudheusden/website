@@ -6,14 +6,13 @@ import type { FlowStepId } from "../config/agentic-copy";
 import { AGENTIC_COPY, AGENTIC_LINKS } from "../config/agentic-copy";
 import type { HiveStatusView, HiveViewModel } from "../lib/hive-view-model";
 
+import { pluralWord } from "./pipeline-parts";
 import { Stations } from "./pipeline-stations";
 
 interface Readout {
   value: string;
   unit: string;
 }
-
-const PLURAL_RULES = new Intl.PluralRules("en");
 
 /** The live number shown under each flow step, or null when its part is missing. */
 function readouts(model: HiveViewModel): Record<FlowStepId, Readout | null> {
@@ -24,7 +23,7 @@ function readouts(model: HiveViewModel): Record<FlowStepId, Readout | null> {
       ? null
       : {
           value: String(hive.work.issues),
-          unit: `${PLURAL_RULES.select(hive.work.issues) === "one" ? "issue" : "issues"} open now`,
+          unit: `${pluralWord(hive.work.issues, "issue", "issues")} open now`,
         },
     agent: hive === null
       ? null
@@ -33,7 +32,7 @@ function readouts(model: HiveViewModel): Record<FlowStepId, Readout | null> {
       ? null
       : {
           value: String(repo.totals.opened),
-          unit: `${PLURAL_RULES.select(repo.totals.opened) === "one" ? "PR" : "PRs"} opened in ${AGENTIC_COPY.window}`,
+          unit: `${pluralWord(repo.totals.opened, "PR", "PRs")} opened in ${AGENTIC_COPY.window}`,
         },
     checks: hive === null ? null : { value: String(hive.work.mergeable), unit: "ready to merge now" },
     merge: repo === null ? null : { value: String(repo.totals.merged), unit: `merged in ${AGENTIC_COPY.window}` },
