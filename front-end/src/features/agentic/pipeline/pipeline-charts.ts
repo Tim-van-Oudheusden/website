@@ -2,10 +2,12 @@ import type { LegendComponentOption, TooltipComponentOption, XAXisComponentOptio
 import type { SankeySeriesOption } from "echarts/charts";
 import type { LinearGradientObject } from "echarts/core";
 
+import type { MergedSource } from "shared";
+import { GOVERNOR_MODES } from "shared";
+
 import type { ChartOption, ChartTable, CssReader } from "../components/echart";
 import { AGENTIC_COPY } from "../config/agentic-copy";
-import type { BackendRunsView, ContributorsView, HiveWidgetView, MergedSource, RepoView } from "../lib/hive-view-model";
-import { GOVERNOR_MODES } from "../lib/hive-view-model";
+import type { BackendRunsView, ContributorsView, HiveWidgetView, RepoView } from "../lib/hive-view-model";
 
 /** A chart as the page draws it: its option builder and the numbers behind it. */
 export interface PipelineChart {

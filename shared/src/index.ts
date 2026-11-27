@@ -284,8 +284,16 @@ export type ServiceStatus = "ok" | "degraded" | "error";
 
 /* ── Hive metrics (GET /hive/metrics) ── */
 
+/** Hive governor modes, coolest first: the governor rises with the size of the queue. Hive sends them upper-cased. */
+export const GOVERNOR_MODES = ["idle", "quiet", "busy", "surge"] as const;
+
 /** Hive governor mode; Hive sends IDLE/QUIET/BUSY/SURGE, lower-cased here. */
-export type GovernorMode = "idle" | "quiet" | "busy" | "surge";
+export type GovernorMode = (typeof GOVERNOR_MODES)[number];
+
+/** Who wrote a merged PR, as `mergedBySource` keys (docs/metrics/README.md, "How PRs are attributed"), Hive first. */
+export const MERGED_SOURCES = ["hive", "claudeCode", "dependabot", "other"] as const;
+
+export type MergedSource = (typeof MERGED_SOURCES)[number];
 
 /**
  * Public, allowlisted Hive metrics: only counts, durations, modes and
@@ -335,7 +343,7 @@ export interface HivePublicMetrics {
     to: string;
     /** `HIVE_METRICS_WINDOW_DAYS` UTC days, oldest first, the last one today. */
     days: { t: string; opened: number; merged: number; closedUnmerged: number }[];
-    mergedBySource: { t: string; hive: number; claudeCode: number; dependabot: number; other: number }[];
+    mergedBySource: ({ t: string } & Record<MergedSource, number>)[];
     /** PRs merged in the window, created → merged. */
     medianHoursToMerge: number | null;
     p90HoursToMerge: number | null;

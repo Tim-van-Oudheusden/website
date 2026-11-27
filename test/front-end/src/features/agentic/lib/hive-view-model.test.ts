@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import type { HiveMetricsResponse, HivePublicMetrics } from "shared";
+import { GOVERNOR_MODES, MERGED_SOURCES } from "shared";
 
 import { buildHiveViewModel } from "../../../../../../front-end/src/features/agentic/lib/hive-view-model";
 import type { PollingApiGetState } from "../../../../../../front-end/src/shared/hooks/use-polling-api-get";
@@ -92,6 +93,12 @@ describe("buildHiveViewModel hive", () => {
       { mode: "busy", points: 1, share: 0.25 },
       { mode: "surge", points: 0, share: 0 },
     ]);
+  });
+
+  test("gives a share for every governor mode the metrics contract defines, in the contract's order", () => {
+    const { hive } = buildHiveViewModel(poll(live()), NOW, "UTC");
+
+    expect(hive?.modeShare.map((share) => share.mode)).toEqual([...GOVERNOR_MODES]);
   });
 
   test("keeps one point per evaluation when Hive repeats a timestamp, as the live widget does", () => {
@@ -193,5 +200,11 @@ describe("buildHiveViewModel repo", () => {
     ]);
 
     expect(view?.timeToMerge).toEqual({ median: "30 min", p90: "14 h" });
+  });
+
+  test("names every merge source the metrics contract defines, in the contract's order", () => {
+    const view = buildHiveViewModel(poll(live(metrics({ hive: null, repo }))), NOW, "UTC").repo;
+
+    expect(view?.sources.map((source) => source.key)).toEqual([...MERGED_SOURCES]);
   });
 });
