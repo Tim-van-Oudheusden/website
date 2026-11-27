@@ -9,9 +9,14 @@ export function percent(share: number): string {
   return `${String(Math.round(share * 100))}%`;
 }
 
+/** "task" for 1, "tasks" otherwise: the word alone, for text that places the number elsewhere. */
+export function pluralWord(count: number, one: string, many: string): string {
+  return count === 1 ? one : many;
+}
+
 /** "1 task", "3 tasks". */
 export function plural(count: number, one: string, many: string): string {
-  return `${String(count)} ${count === 1 ? one : many}`;
+  return `${String(count)} ${pluralWord(count, one, many)}`;
 }
 
 export interface GaugeProps {

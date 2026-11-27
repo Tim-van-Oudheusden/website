@@ -14,7 +14,7 @@ import {
   runsChart,
   tasksChart,
 } from "./pipeline-charts";
-import { ChartPanel, Gauge, Missing, percent, plural, Station } from "./pipeline-parts";
+import { ChartPanel, Gauge, Missing, percent, plural, pluralWord, Station } from "./pipeline-parts";
 
 function ModeShare({ hive }: { hive: HiveWidgetView }): JSX.Element {
   return (
@@ -250,7 +250,7 @@ function RunsStation({ contributors }: { contributors: ContributorsView | null }
 
 /** The caption under a pull request count: "pull request, 30 days" when it is 1. */
 function windowOfPrs(count: number): string {
-  return `${count === 1 ? "pull request" : "pull requests"}, ${AGENTIC_COPY.window}`;
+  return `${pluralWord(count, "pull request", "pull requests")}, ${AGENTIC_COPY.window}`;
 }
 
 function PullRequestsStation({ repo }: { repo: RepoView | null }): JSX.Element {
@@ -321,7 +321,7 @@ function MergedStation({ repo }: { repo: RepoView | null }): JSX.Element {
       <p className="pl-headline">
         {"Hive wrote "}
         <span className="pl-glow-number">{hive.merged}</span>
-        {` of ${String(repo.merged)} merged ${repo.merged === 1 ? "PR" : "PRs"}`}
+        {` of ${String(repo.merged)} merged ${pluralWord(repo.merged, "PR", "PRs")}`}
       </p>
       <ul className="pl-sources" aria-label="Merged pull requests by author">
         {repo.sources.map((source) => (
