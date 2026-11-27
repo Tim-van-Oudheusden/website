@@ -1,4 +1,5 @@
 import type { GovernorMode, HivePublicMetrics } from "shared";
+import { GOVERNOR_MODES } from "shared";
 
 import type { ContributorHour } from "./contributor-history";
 import { windowStart } from "./repo-pr-activity";
@@ -37,12 +38,9 @@ const HOUR_MS = 3_600_000;
 const DAY_MS = 86_400_000;
 
 /** Hive's governor modes (hive `src/pkg/governor/governor.go`), keyed by the upper-case wire value. */
-const GOVERNOR_MODES: Readonly<Record<string, GovernorMode>> = {
-  IDLE: "idle",
-  QUIET: "quiet",
-  BUSY: "busy",
-  SURGE: "surge",
-};
+const WIRE_GOVERNOR_MODES: Readonly<Record<string, GovernorMode>> = Object.fromEntries(
+  GOVERNOR_MODES.map((mode) => [mode.toUpperCase(), mode]),
+);
 
 /** Largest epoch-millisecond value a `Date` can hold. */
 const MAX_DATE_MS = 8.64e15;
@@ -61,8 +59,8 @@ function count(value: unknown): number | null {
 function historyPoint(raw: unknown): HistoryPoint | null {
   const t = count(field(raw, "t"));
   const govMode = field(raw, "govMode");
-  const mode = typeof govMode === "string" && Object.hasOwn(GOVERNOR_MODES, govMode)
-    ? (GOVERNOR_MODES[govMode] ?? null)
+  const mode = typeof govMode === "string" && Object.hasOwn(WIRE_GOVERNOR_MODES, govMode)
+    ? (WIRE_GOVERNOR_MODES[govMode] ?? null)
     : null;
   const issues = count(field(raw, "govIssues"));
   const prs = count(field(raw, "govPrs"));

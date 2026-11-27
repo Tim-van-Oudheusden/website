@@ -1,4 +1,5 @@
-import type { GovernorMode, HiveMetricsResponse, HivePublicMetrics } from "shared";
+import type { GovernorMode, HiveMetricsResponse, HivePublicMetrics, MergedSource } from "shared";
+import { GOVERNOR_MODES, MERGED_SOURCES as MERGED_SOURCE_KEYS } from "shared";
 
 import type { PollingApiGetState } from "@/shared/hooks/use-polling-api-get";
 
@@ -11,9 +12,6 @@ import {
   formatSpan,
   formatUtcDay,
 } from "./hive-metrics-format";
-
-/** Governor modes, coolest first: the governor rises with the size of the queue. */
-export const GOVERNOR_MODES: readonly GovernorMode[] = ["idle", "quiet", "busy", "surge"];
 
 /**
  * What the page can say about its numbers: "Live · updated 40 s ago", "Stale · last update 14:05" or "Offline".
@@ -86,16 +84,25 @@ export interface ContributorsView {
   };
 }
 
-/** Who wrote a merged PR (docs/metrics/README.md, "How PRs are attributed"). */
-export type MergedSource = "hive" | "claudeCode" | "dependabot" | "other";
+/** How the page names each author; a source without a case fails to compile. */
+function mergedSourceName(key: MergedSource): string {
+  switch (key) {
+    case "hive":
+      return "Hive";
+    case "claudeCode":
+      return "Claude Code";
+    case "dependabot":
+      return "Dependabot";
+    case "other":
+      return "other";
+  }
+}
 
 /** Authors in the order the page lists them, Hive first. */
-export const MERGED_SOURCES: readonly { key: MergedSource; name: string }[] = [
-  { key: "hive", name: "Hive" },
-  { key: "claudeCode", name: "Claude Code" },
-  { key: "dependabot", name: "Dependabot" },
-  { key: "other", name: "other" },
-];
+export const MERGED_SOURCES: readonly { key: MergedSource; name: string }[] = MERGED_SOURCE_KEYS.map((key) => ({
+  key,
+  name: mergedSourceName(key),
+}));
 
 /** This repo's public pull requests over the last 30 UTC days; `label` is "Mon 27 Oct". */
 export interface RepoView {

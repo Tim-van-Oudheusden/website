@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { HivePublicMetrics } from "shared";
+import { GOVERNOR_MODES } from "shared";
 
 import type { HiveUpstreamPayloads } from "../../../../../back-end/src/features/hive/hive-public-metrics";
 import { buildHivePublicMetrics } from "../../../../../back-end/src/features/hive/hive-public-metrics";
@@ -187,6 +188,16 @@ describe("buildHivePublicMetrics hive", () => {
       ["2026-11-02T11:00:00.000Z", 11],
       ["2026-11-02T12:00:00.000Z", 12],
     ]);
+  });
+
+  test("reads every governor mode the metrics contract defines from Hive's upper-case wire value", () => {
+    const hive = hiveFrom({
+      agents: [],
+      history: GOVERNOR_MODES.map((mode, hour) =>
+        point({ t: Date.UTC(2026, 10, 2, hour), govMode: mode.toUpperCase() })),
+    });
+
+    expect(hive?.history.map((entry) => entry.mode)).toEqual([...GOVERNOR_MODES]);
   });
 
   test("is null when the widget summary is unavailable, while contributors still build", () => {
