@@ -12,9 +12,11 @@ export interface Attribution {
 
 // Hive's signature is a line of its own, usually near the end of the body but
 // not always last, so match any line. It reads like
-// "— hive: agent=quality backend=claude model=claude-opus-5-5 effort=high";
-// contributor runs leave out `agent=`.
-const HIVE_SIGNATURE = /^— hive: (.*)$/m;
+// "-- hive: agent=quality backend=claude model=claude-opus-5-5 effort=high";
+// contributor runs leave out `agent=`. Hive signed with an em dash ("— hive:")
+// until 2026-11-20; that form is still accepted so older PRs keep their
+// attribution.
+const HIVE_SIGNATURE = /^(?:--|—) hive: (.*)$/m;
 
 export function attribute(pr: { headRefName: string; body: string }): Attribution {
   const signature = HIVE_SIGNATURE.exec(pr.body)?.[1];

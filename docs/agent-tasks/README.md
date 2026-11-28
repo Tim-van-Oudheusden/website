@@ -12,11 +12,11 @@ direction. The coordination rules behind it are in
 
 | Link | Carries the issue number as | Example | Enforced by |
 | --- | --- | --- | --- |
-| Issue | The task itself, filed by a person, an agent or a workflow; Hive's issues end with `— hive: agent=<name>` | #968 | — |
+| Issue | The task itself, filed by a person, an agent or a workflow; Hive's issues end with `-- hive: agent=<name>` | #968 | — |
 | Claim | Assignee, or Hive's `hive/claimed-by-<agent>` or `hive/in-progress` label | `gh issue edit 968 --add-assignee @me` | Convention ([`multi-agent.md`](../multi-agent.md#the-hand-off-loop)) |
 | Branch | `<type>/<N>-<slug>` for local agents; `claude/issue-<N>-<timestamp>` for Claude Code in CI | `ci/968-strategy-report` | Convention |
 | Commit | `(#<N>)` at the end of the Conventional Commits subject | `ci: add weekly strategy report dashboard (#968)` | Convention |
-| Pull request | `Fixes #<N>` in the body (or `Closes`, `Resolves`, `Refs`); Hive's PRs also end with `— hive: agent=<name> … model=<model>` | #970 | `PR review rubric` check (`scripts/pr-review-check.sh`), required on `main` |
+| Pull request | `Fixes #<N>` in the body (or `Closes`, `Resolves`, `Refs`); Hive's PRs also end with `-- hive: agent=<name> … model=<model>` (`— hive:` before 2026-11-20) | #970 | `PR review rubric` check (`scripts/pr-review-check.sh`), required on `main` |
 | Merge | Merge commit `Merge pull request #<PR> from <owner>/<branch>`, written by the merge queue, Hive's merge sweep or the maintainer | `b96a92b` | `main` only changes through merged PRs |
 | Close | The merge closes the issue through `Fixes #<N>`: GitHub does it when the maintainer or Hive's merge sweep merges, `scripts/merge-queue.sh land` when the merge queue does (a `GITHUB_TOKEN` merge closes nothing) | #968 closed by #970 | GitHub, or the merge queue |
 
@@ -51,7 +51,7 @@ gh pr list --state merged --search "<commit>"   # the PR, whose body links the i
 From an agent to everything it did: filter PRs by author or branch, e.g.
 `gh pr list --state all --author app/hive-worker-bee` for Hive,
 `gh pr list --state all --search "head:claude/"` for Claude Code in CI. Hive's
-`— hive: agent=<name>` signature line in each PR body names the Hive agent.
+`-- hive: agent=<name>` signature line in each PR body names the Hive agent.
 
 ## When the chain breaks
 
