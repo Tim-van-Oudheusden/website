@@ -49,7 +49,10 @@ export interface HiveWidgetView {
   modeShare: { mode: GovernorMode; points: number; share: number }[];
 }
 
-/** One backend's runs over the last 30 days; `p50`/`p95` are its own run-time percentiles ("5 min"), or null. */
+/**
+ * One backend's runs over the last `HIVE_METRICS_WINDOW_DAYS` days; `p50`/`p95` are its own run-time percentiles
+ * ("5 min"), or null.
+ */
 export interface BackendRunsView {
   name: string;
   runs: number;
@@ -62,7 +65,10 @@ export interface BackendRunsView {
   p95: string | null;
 }
 
-/** The contributor agents connected to this hive: tasks per UTC day, and runs over the last 30 days. */
+/**
+ * The contributor agents connected to this hive: tasks per UTC day, and runs over the last
+ * `HIVE_METRICS_WINDOW_DAYS` days.
+ */
 export interface ContributorsView {
   tasksTotal: number;
   /** Contributor agents connected in the latest hour Hive measured. */
@@ -104,7 +110,7 @@ export const MERGED_SOURCES: readonly { key: MergedSource; name: string }[] = ME
   name: mergedSourceName(key),
 }));
 
-/** This repo's public pull requests over the last 30 UTC days; `label` is "Mon 27 Oct". */
+/** This repo's public pull requests over the last `HIVE_METRICS_WINDOW_DAYS` UTC days; `label` is "Mon 27 Oct". */
 export interface RepoView {
   days: { t: string; label: string; opened: number; merged: number; closedUnmerged: number }[];
   totals: { opened: number; merged: number; closedUnmerged: number };
