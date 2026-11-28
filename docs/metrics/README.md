@@ -155,8 +155,9 @@ A record of what reached `main` and who was behind it. Each PR merged in the
 window (default 7 days) is attributed to one source, checked in this order:
 
 - **Hive** — the PR body ends with Hive's signature line
-  (`— hive: agent=<name> … model=<model> …`); the agent and model are taken
-  from it. Contributor runs sign without `agent=`, shown as `—`.
+  (`-- hive: agent=<name> … model=<model> …`, or `— hive:` on PRs from before
+  2026-11-20); the agent and model are taken from it. Contributor runs sign
+  without `agent=`, shown as `—`.
 - **Claude Code (CI)** — head branch `claude/*`.
 - **Dependabot** — head branch `dependabot/*`.
 - **Other** — anything else: the maintainer, or a local coding agent
